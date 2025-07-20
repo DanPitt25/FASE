@@ -165,7 +165,7 @@ export default function Page() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative min-h-screen flex items-center overflow-hidden">
         {/* Background Images - Right Side Only */}
         <div className="absolute right-0 top-0 w-3/5 h-full">
           {cities.map((city, index) => (
@@ -338,7 +338,7 @@ export default function Page() {
       </section>
 
       {/* Conference Section */}
-      <section className="bg-fase-warm-gray py-12">
+      <section className="bg-fase-ice-blue py-16">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">FASE European Conference</h2>
