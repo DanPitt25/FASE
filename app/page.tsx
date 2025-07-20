@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showCityNav, setShowCityNav] = useState(false);
+  const [showSectionNav, setShowSectionNav] = useState(false);
   
   const cities = [
     { name: 'Amsterdam', image: '/amsterdam.jpg' },
@@ -14,6 +14,13 @@ export default function Page() {
     { name: 'Paris', image: '/paris.jpg' },
     { name: 'Rome', image: '/rome.jpg' },
     { name: 'Vienna', image: '/vienna.jpg' }
+  ];
+
+  const sections = [
+    { name: 'Home', id: 'hero' },
+    { name: 'What We Offer', id: 'services' },
+    { name: 'Conference', id: 'conference' },
+    { name: 'Join FASE', id: 'cta' }
   ];
 
   useEffect(() => {
@@ -166,7 +173,7 @@ export default function Page() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
         {/* Background Images - Right Side Only */}
         <div className="absolute right-0 top-0 w-3/5 h-full">
           {cities.map((city, index) => (
@@ -249,46 +256,43 @@ export default function Page() {
           </div>
         </div>
 
-        {/* City Navigation Menu */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        {/* Section Navigation Menu */}
+        <div className="absolute bottom-8 right-8 z-20">
           <div className="relative">
             {/* Toggle Button */}
             <button
-              onClick={() => setShowCityNav(!showCityNav)}
-              className="bg-white/90 backdrop-blur-sm text-fase-navy px-4 py-2 rounded-full shadow-lg hover:bg-white transition-all duration-200 flex items-center space-x-2 border border-fase-light-gray"
+              onClick={() => setShowSectionNav(!showSectionNav)}
+              className="bg-white/90 backdrop-blur-sm text-fase-navy p-3 rounded-full shadow-lg hover:bg-white transition-all duration-200 border border-fase-light-gray"
+              title="Navigate sections"
             >
-              <span className="text-sm font-medium">{cities[currentImageIndex].name}</span>
               <svg 
-                className={`w-4 h-4 transition-transform duration-200 ${showCityNav ? 'rotate-180' : ''}`} 
+                className={`w-5 h-5 transition-transform duration-200 ${showSectionNav ? 'rotate-45' : ''}`} 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
             {/* Dropdown Menu */}
-            {showCityNav && (
-              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-fase-light-gray overflow-hidden min-w-max">
+            {showSectionNav && (
+              <div className="absolute bottom-full mb-2 right-0 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-fase-light-gray overflow-hidden min-w-max">
                 <div className="py-2">
-                  {cities.map((city, index) => (
+                  {sections.map((section, index) => (
                     <button
-                      key={city.name}
+                      key={section.id}
                       onClick={() => {
-                        setCurrentImageIndex(index);
-                        setShowCityNav(false);
+                        document.getElementById(section.id)?.scrollIntoView({ 
+                          behavior: 'smooth',
+                          block: 'start'
+                        });
+                        setShowSectionNav(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center space-x-3 ${
-                        index === currentImageIndex
-                          ? 'bg-fase-ice-blue text-fase-navy font-medium'
-                          : 'text-fase-dark-slate hover:bg-fase-ice-blue hover:text-fase-navy'
-                      }`}
+                      className="w-full text-left px-4 py-3 text-sm transition-colors duration-150 flex items-center space-x-3 hover:bg-fase-ice-blue hover:text-fase-navy text-fase-dark-slate"
                     >
-                      <div className={`w-2 h-2 rounded-full ${
-                        index === currentImageIndex ? 'bg-fase-orange' : 'bg-fase-blue-gray'
-                      }`}></div>
-                      <span>{city.name}</span>
+                      <div className="w-2 h-2 bg-fase-orange rounded-full"></div>
+                      <span className="font-medium">{section.name}</span>
                     </button>
                   ))}
                 </div>
@@ -299,7 +303,7 @@ export default function Page() {
       </section>
 
       {/* Core Services Section */}
-      <section className="py-16 bg-white">
+      <section id="services" className="py-16 bg-white">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">What FASE Offers</h2>
@@ -387,7 +391,7 @@ export default function Page() {
       </section>
 
       {/* Conference Section */}
-      <section className="bg-fase-ice-blue py-16">
+      <section id="conference" className="bg-fase-ice-blue py-16">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">FASE European Conference</h2>
@@ -443,7 +447,7 @@ export default function Page() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-fase-navy py-16">
+      <section id="cta" className="bg-fase-navy py-16">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
           <h2 className="text-4xl md:text-5xl font-futura font-bold text-white mb-8">
             Join FASE
