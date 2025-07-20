@@ -1,50 +1,36 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { pgTable, serial, varchar } from 'drizzle-orm/pg-core';
-import { eq } from 'drizzle-orm';
-import postgres from 'postgres';
-import { genSaltSync, hashSync } from 'bcrypt-ts';
+// Firebase database functions
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { app } from 'lib/firebase';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
-let db = drizzle(client);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export async function getUser(email: string) {
-  const users = await ensureTableExists();
-  return await db.select().from(users).where(eq(users.email, email));
+  try {
+    const userDoc = await getDoc(doc(db, 'users', email));
+    return userDoc.exists() ? [userDoc.data()] : [];
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return [];
+  }
 }
 
 export async function createUser(email: string, password: string) {
-  const users = await ensureTableExists();
-  let salt = genSaltSync(10);
-  let hash = hashSync(password, salt);
-
-  return await db.insert(users).values({ email, password: hash });
-}
-
-async function ensureTableExists() {
-  const result = await client`
-    SELECT EXISTS (
-      SELECT FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name = 'User'
-    );`;
-
-  if (!result[0].exists) {
-    await client`
-      CREATE TABLE "User" (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(64),
-        password VARCHAR(64)
-      );`;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Store additional user data in Firestore
+    await setDoc(doc(db, 'users', email), {
+      email: email,
+      uid: user.uid,
+      createdAt: new Date().toISOString()
+    });
+    
+    return { success: true, uid: user.uid };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
   }
-
-  const table = pgTable('User', {
-    id: serial('id').primaryKey(),
-    email: varchar('email', { length: 64 }),
-    password: varchar('password', { length: 64 }),
-  });
-
-  return table;
 }
