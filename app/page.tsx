@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showCityNav, setShowCityNav] = useState(false);
   
   const cities = [
     { name: 'Amsterdam', image: '/amsterdam.jpg' },
@@ -245,6 +246,54 @@ export default function Page() {
             <div className="hidden lg:block">
               {/* Space for right side content if needed */}
             </div>
+          </div>
+        </div>
+
+        {/* City Navigation Menu */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="relative">
+            {/* Toggle Button */}
+            <button
+              onClick={() => setShowCityNav(!showCityNav)}
+              className="bg-white/90 backdrop-blur-sm text-fase-navy px-4 py-2 rounded-full shadow-lg hover:bg-white transition-all duration-200 flex items-center space-x-2 border border-fase-light-gray"
+            >
+              <span className="text-sm font-medium">{cities[currentImageIndex].name}</span>
+              <svg 
+                className={`w-4 h-4 transition-transform duration-200 ${showCityNav ? 'rotate-180' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showCityNav && (
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-fase-light-gray overflow-hidden min-w-max">
+                <div className="py-2">
+                  {cities.map((city, index) => (
+                    <button
+                      key={city.name}
+                      onClick={() => {
+                        setCurrentImageIndex(index);
+                        setShowCityNav(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center space-x-3 ${
+                        index === currentImageIndex
+                          ? 'bg-fase-ice-blue text-fase-navy font-medium'
+                          : 'text-fase-dark-slate hover:bg-fase-ice-blue hover:text-fase-navy'
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full ${
+                        index === currentImageIndex ? 'bg-fase-orange' : 'bg-fase-blue-gray'
+                      }`}></div>
+                      <span>{city.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
