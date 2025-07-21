@@ -1,6 +1,6 @@
 # FASE Website
 
-A modern website for FASE (Federation of Associations of Spanish Engineers) built with Next.js, featuring user authentication, Firebase integration, and responsive design.
+A website for FASE.
 
 ## Features
 
