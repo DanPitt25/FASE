@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showSectionNav, setShowSectionNav] = useState(false);
+  const [showNavPanel, setShowNavPanel] = useState(false);
+  const [currentSection, setCurrentSection] = useState('hero');
   
   const cities = [
     { name: 'Amsterdam', image: '/amsterdam.jpg' },
@@ -31,31 +32,136 @@ export default function Page() {
     return () => clearInterval(interval);
   }, [cities.length]);
 
+  // Track current section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      
+      // Find which section is currently in view
+      let foundSection = 'hero'; // default
+      
+      for (const section of sections) {
+        const element = document.getElementById(section.id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const offsetTop = window.scrollY + rect.top;
+          
+          // If we've scrolled past the start of this section
+          if (scrollPosition >= offsetTop) {
+            foundSection = section.id;
+          }
+        }
+      }
+      
+      setCurrentSection(foundSection);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [sections]);
+
   return (
-    <div className="min-h-screen bg-fase-ice-blue font-lato">
-      {/* Navigation */}
-      <nav className="bg-white shadow-lg border-b border-fase-light-gray">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between">
-            {/* Left Side - Logo spanning both rows */}
-            <div className="flex items-center py-3">
-              <div className="flex-shrink-0 flex items-center">
-                <div className="relative">
-                  <img 
-                    src="/europe.jpg" 
-                    alt="Europe Map" 
-                    className="h-16 w-auto object-contain rounded-sm"
-                    style={{
-                      filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
-                      objectPosition: 'center'
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-fase-ice-blue bg-opacity-30 rounded-sm"></div>
-                </div>
-                <div className="border-l border-fase-light-gray h-14 mx-3"></div>
-                <h1 className="text-4xl font-futura font-bold text-fase-navy ml-3">FASE</h1>
-              </div>
+    <div className="flex min-h-screen bg-fase-ice-blue font-lato">
+      {/* Collapsible Navigation Sidebar */}
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-light-gray z-40`}>
+        <div className="w-80 h-full">
+          <div className="p-6">
+            {/* Panel Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-futura font-bold text-fase-navy">Navigation</h2>
+              <button
+                onClick={() => setShowNavPanel(false)}
+                className="p-2 hover:bg-fase-ice-blue rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-fase-dark-slate" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
             </div>
+
+            {/* Navigation Items */}
+            <nav className="space-y-3">
+              {sections.map((section, index) => (
+                <button
+                  key={section.id}
+                  onClick={() => {
+                    if (section.id === 'hero') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      document.getElementById(section.id)?.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    }
+                  }}
+                  className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 group ${
+                    currentSection === section.id 
+                      ? 'bg-fase-orange text-white' 
+                      : 'hover:bg-fase-ice-blue'
+                  }`}
+                >
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold transition-colors ${
+                    currentSection === section.id 
+                      ? 'bg-white text-fase-orange' 
+                      : 'bg-fase-navy text-white group-hover:bg-fase-orange'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className={`text-base font-medium transition-colors ${
+                    currentSection === section.id 
+                      ? 'text-white' 
+                      : 'text-fase-navy group-hover:text-fase-orange'
+                  }`}>
+                    {section.name}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Container */}
+      <div className={`flex-1 relative transition-all duration-300 ${showNavPanel ? 'ml-80' : 'ml-0'}`}>
+        {/* Menu Toggle Tab - Fixed to viewport */}
+        <button
+          onClick={() => setShowNavPanel(!showNavPanel)}
+          className="fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8 rounded-r-xl shadow-lg border border-l-0 border-fase-light-gray hover:bg-white transition-all duration-200 flex flex-col items-center space-y-2"
+        >
+          <div className="flex flex-col space-y-1">
+            <div className="w-1.5 h-1.5 bg-fase-navy rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-fase-orange rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-fase-navy rounded-full"></div>
+          </div>
+          <span className="text-xs font-medium text-fase-navy transform rotate-90 whitespace-nowrap">NAV</span>
+        </button>
+
+        {/* Navigation */}
+        <nav className="bg-white shadow-lg border-b border-fase-light-gray">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between">
+              {/* Left Side - Logo */}
+              <div className="flex items-center py-3">
+                <div className="flex-shrink-0 flex items-center">
+                  <div className="relative">
+                    <img 
+                      src="/europe.jpg" 
+                      alt="Europe Map" 
+                      className="h-16 w-auto object-contain rounded-sm"
+                      style={{
+                        filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
+                        objectPosition: 'center'
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-fase-ice-blue bg-opacity-30 rounded-sm"></div>
+                  </div>
+                  <div className="border-l border-fase-light-gray h-14 mx-3"></div>
+                  <h1 className="text-4xl font-futura font-bold text-fase-navy mx-3">FASE</h1>
+                  <div className="border-l border-fase-light-gray h-14 mx-3"></div>
+                </div>
+              </div>
 
             {/* Right Side - Two row layout */}
             <div className="flex flex-col justify-center">
@@ -172,8 +278,9 @@ export default function Page() {
         </div>
       </nav>
 
+
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
+      <section id="hero" className="relative h-[calc(100vh-80px)] flex items-center overflow-hidden">
         {/* Background Images - Right Side Only */}
         <div className="absolute right-0 top-0 w-3/5 h-full">
           {cities.map((city, index) => (
@@ -256,54 +363,10 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Section Navigation Menu */}
-        <div className="absolute bottom-8 right-8 z-20">
-          <div className="relative">
-            {/* Toggle Button */}
-            <button
-              onClick={() => setShowSectionNav(!showSectionNav)}
-              className="bg-white/90 backdrop-blur-sm text-fase-navy p-3 rounded-full shadow-lg hover:bg-white transition-all duration-200 border border-fase-light-gray"
-              title="Navigate sections"
-            >
-              <svg 
-                className={`w-5 h-5 transition-transform duration-200 ${showSectionNav ? 'rotate-45' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            {/* Dropdown Menu */}
-            {showSectionNav && (
-              <div className="absolute bottom-full mb-2 right-0 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-fase-light-gray overflow-hidden min-w-max">
-                <div className="py-2">
-                  {sections.map((section, index) => (
-                    <button
-                      key={section.id}
-                      onClick={() => {
-                        document.getElementById(section.id)?.scrollIntoView({ 
-                          behavior: 'smooth',
-                          block: 'start'
-                        });
-                        setShowSectionNav(false);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm transition-colors duration-150 flex items-center space-x-3 hover:bg-fase-ice-blue hover:text-fase-navy text-fase-dark-slate"
-                    >
-                      <div className="w-2 h-2 bg-fase-orange rounded-full"></div>
-                      <span className="font-medium">{section.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </section>
 
       {/* Core Services Section */}
-      <section id="services" className="py-16 bg-white">
+      <section id="services" className="min-h-screen flex items-center bg-white">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">What FASE Offers</h2>
@@ -312,18 +375,18 @@ export default function Page() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-16">
-            <div className="text-center p-8 rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1">
-              <div className="w-20 h-20 bg-fase-sage rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-10 mb-16 transition-all duration-300`}>
+            <div className={`text-center rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1 ${showNavPanel ? 'p-6' : 'p-8'}`}>
+              <div className={`bg-fase-sage rounded-full flex items-center justify-center mx-auto shadow-lg transition-all duration-300 ${showNavPanel ? 'w-16 h-16 mb-4' : 'w-20 h-20 mb-6'}`}>
+                <svg className={`text-white transition-all duration-300 ${showNavPanel ? 'w-8 h-8' : 'w-10 h-10'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-futura font-semibold text-fase-navy mb-4">Pan-European Events</h3>
-              <p className="text-fase-dark-slate text-lg leading-relaxed">Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development.</p>
+              <h3 className={`font-futura font-semibold text-fase-navy transition-all duration-300 ${showNavPanel ? 'text-xl mb-3' : 'text-2xl mb-4'}`}>Pan-European Events</h3>
+              <p className={`text-fase-dark-slate leading-relaxed transition-all duration-300 ${showNavPanel ? 'text-base' : 'text-lg'}`}>Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development.</p>
             </div>
             
-            <div className="text-center p-8 rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1">
+            <div className={`text-center rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1 ${showNavPanel ? 'p-6' : 'p-8'}`}>
               <div className="w-20 h-20 bg-fase-navy rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -333,7 +396,7 @@ export default function Page() {
               <p className="text-fase-dark-slate text-lg leading-relaxed">Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members.</p>
             </div>
             
-            <div className="text-center p-8 rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1">
+            <div className={`text-center rounded-xl border border-fase-light-gray hover:shadow-xl hover:border-fase-sage transition-all duration-300 bg-fase-ice-blue transform hover:-translate-y-1 ${showNavPanel ? 'p-6' : 'p-8'}`}>
               <div className="w-20 h-20 bg-fase-orange rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
@@ -391,7 +454,7 @@ export default function Page() {
       </section>
 
       {/* Conference Section */}
-      <section id="conference" className="bg-fase-ice-blue py-16">
+      <section id="conference" className="min-h-screen flex items-center bg-fase-ice-blue">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">FASE European Conference</h2>
@@ -447,7 +510,7 @@ export default function Page() {
       </section>
 
       {/* CTA Section */}
-      <section id="cta" className="bg-fase-navy py-16">
+      <section id="cta" className="min-h-screen flex items-center bg-fase-navy">
         <div className="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
           <h2 className="text-4xl md:text-5xl font-futura font-bold text-white mb-8">
             Join FASE
@@ -501,6 +564,7 @@ export default function Page() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
