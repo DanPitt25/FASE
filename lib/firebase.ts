@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyB3T8X5QNU5iYG89u5XWyGhrIdKjnb2be0",
   authDomain: "fase-site.firebaseapp.com",
   projectId: "fase-site",
-  storageBucket: "fase-site.appspot.com",  // Note: typo in yours (see below)
+  storageBucket: "fase-site.appspot.com",
   messagingSenderId: "1031442839092",
   appId: "1:1031442839092:web:57238d8824182cbbda7c61",
   measurementId: "G-MPQWL4XJYH"
