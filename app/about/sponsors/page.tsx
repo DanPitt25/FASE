@@ -34,7 +34,7 @@ export default function SponsorsPage() {
               Our Sponsors
             </h1>
             <p className="text-xl sm:text-2xl text-fase-ice-blue max-w-4xl mx-auto leading-relaxed">
-              Industry leaders supporting FASE's mission to strengthen the European MGA community.
+              Industry leaders supporting FASE&apos;s mission to strengthen the European MGA community.
             </p>
           </div>
         </section>
@@ -119,7 +119,7 @@ export default function SponsorsPage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Founding Supporters</h2>
               <p className="text-xl text-fase-dark-slate max-w-3xl mx-auto">
-                Forward-thinking organizations showing early support for FASE's mission.
+                Forward-thinking organizations showing early support for FASE&apos;s mission.
               </p>
             </div>
 
@@ -153,7 +153,7 @@ export default function SponsorsPage() {
             <div className="bg-fase-navy rounded-2xl p-8 text-center text-white">
               <h3 className="text-2xl font-futura font-bold mb-4">Join Our Sponsors</h3>
               <p className="text-fase-ice-blue mb-6 max-w-2xl mx-auto">
-                Sponsorship packages are available for FASE's inaugural events and ongoing activities. 
+                Sponsorship packages are available for FASE&apos;s inaugural events and ongoing activities. 
                 Support the growth of the European MGA community.
               </p>
               <a href="/sponsorship" className="bg-fase-orange text-white px-8 py-3 rounded-lg font-medium hover:bg-yellow-600 transition duration-300">

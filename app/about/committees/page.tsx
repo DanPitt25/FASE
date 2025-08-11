@@ -34,7 +34,7 @@ export default function CommitteesPage() {
               Committees & Governance
             </h1>
             <p className="text-xl sm:text-2xl text-fase-ice-blue max-w-4xl mx-auto leading-relaxed">
-              Collaborative leadership driving FASE's mission across European markets.
+              Collaborative leadership driving FASE&apos;s mission across European markets.
             </p>
           </div>
         </section>

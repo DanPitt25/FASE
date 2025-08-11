@@ -155,7 +155,7 @@ export default function MembershipDirectoryPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Be Listed in Our Directory</h2>
             <p className="text-xl text-fase-dark-slate mb-8 max-w-3xl mx-auto">
-              Register your interest to be included in FASE's comprehensive membership directory when we launch.
+              Register your interest to be included in FASE&apos;s comprehensive membership directory when we launch.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="/join" className="bg-fase-navy text-white px-8 py-4 rounded-xl text-lg font-medium hover:bg-fase-dark-slate transition duration-300">

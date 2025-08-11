@@ -103,7 +103,7 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-futura font-semibold text-fase-navy mb-2">Our Sponsors</h3>
-                <p className="text-fase-dark-slate">Meet the organizations that support FASE's mission.</p>
+                <p className="text-fase-dark-slate">Meet the organizations that support FASE&apos;s mission.</p>
               </a>
             </div>
           </div>
