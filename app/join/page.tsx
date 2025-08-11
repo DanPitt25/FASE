@@ -17,7 +17,7 @@ export default function JoinPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-futura font-bold text-white mb-6">Join FASE</h1>
             <p className="text-xl text-fase-ice-blue max-w-3xl mx-auto">
-              Become part of Europe's premier MGA community. Three membership categories available to serve the entire ecosystem.
+              Become part of Europe&apos;s premier MGA community. Three membership categories available to serve the entire ecosystem.
             </p>
           </div>
         </section>

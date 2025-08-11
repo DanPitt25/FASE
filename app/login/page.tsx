@@ -25,7 +25,7 @@ export default function Login() {
         >
           <SubmitButton>Sign in</SubmitButton>
           <p className="text-center text-sm text-gray-600">
-            {"Don't have an account? "}
+            {"Don&apos;t have an account? "}
             <Link href="/register" className="font-semibold text-gray-800">
               Sign up
             </Link>
