@@ -1,10 +1,9 @@
 import './globals.css';
-
 import { GeistSans } from 'geist/font/sans';
 
-let title = 'Next.js + Postgres Auth Starter';
+let title = 'FASE - Federation of European MGAs';
 let description =
-  'This is a Next.js starter kit that uses NextAuth.js for simple email + password login and a Postgres database to persist the data.';
+  'The voice of Managing General Agents across Europe, driving innovation and excellence in the insurance marketplace.';
 
 export const metadata = {
   title,
@@ -14,7 +13,7 @@ export const metadata = {
     title,
     description,
   },
-  metadataBase: new URL('https://nextjs-postgres-auth.vercel.app'),
+  metadataBase: new URL('https://fase-site.vercel.app'),
 };
 
 export default function RootLayout({
@@ -24,6 +23,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" href="/europe.jpg" as="image" />
+      </head>
       <body className={GeistSans.variable}>{children}</body>
     </html>
   );

@@ -212,80 +212,40 @@ export default function Page() {
               <div className="hidden lg:flex items-center space-x-6 py-1">
                 {/* About Us Dropdown */}
                 <div className="relative group">
-                  <button className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium flex items-center">
+                  <a href="/about" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium flex items-center">
                     About Us
                     <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                  </button>
+                  </a>
                   <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-light-gray rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="py-2">
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Who We Are</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Committees</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Membership Directory</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Affiliates & Associates</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Sponsors</a>
+                      <a href="/about/who-we-are" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Who We Are</a>
+                      <a href="/about/committees" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Committees</a>
+                      <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Membership Directory</a>
+                      <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Affiliates & Associates</a>
+                      <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Sponsors</a>
                     </div>
                   </div>
                 </div>
 
-                {/* Join Us Dropdown */}
-                <div className="relative group">
-                  <button className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium flex items-center">
-                    Join Us
-                    <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gray rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">MGA</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Market Practitioner</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Supplier</a>
-                    </div>
-                  </div>
-                </div>
+                {/* Join Us Link */}
+                <a href="/join" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Join Us</a>
 
                 {/* Sponsorship Link */}
-                <a href="#" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Sponsorship</a>
+                <a href="/sponsorship" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Sponsorship</a>
 
-                {/* Events Dropdown */}
-                <div className="relative group">
-                  <button className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium flex items-center">
-                    Events
-                    <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gray rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Sample Event 1</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Sample Event 2</a>
-                    </div>
-                  </div>
-                </div>
+                {/* Events Link */}
+                <a href="/events" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Events</a>
 
-                {/* Knowledge & Education Dropdown */}
-                <div className="relative group">
-                  <button className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium flex items-center">
-                    Knowledge & Education
-                    <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gray rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Example 1</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-fase-dark-slate hover:bg-fase-ice-blue">Example 2</a>
-                    </div>
-                  </div>
-                </div>
+                {/* Knowledge & Education Link */}
+                <a href="/knowledge" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Knowledge & Education</a>
 
                 {/* News Link */}
-                <a href="#" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">News</a>
+                <a href="/news" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">News</a>
 
                 {/* Member Portal */}
-                <a href="#" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Member Portal</a>
+                <a href="/member-portal" className="text-fase-dark-slate hover:text-fase-navy px-3 py-2 text-sm font-medium">Member Portal</a>
 
                 {/* Sign In Button */}
                 <a href="/login" className="bg-fase-navy text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-fase-dark-slate transition duration-200">Sign In</a>
@@ -322,22 +282,22 @@ export default function Page() {
             </div>
 
             {/* Mobile Navigation Links */}
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">About Us</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Join Us</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Sponsorship</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Events</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Knowledge & Education</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">News</a>
-            <a href="#" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Member Portal</a>
+            <a href="/about" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">About Us</a>
+            <a href="/join" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Join Us</a>
+            <a href="/sponsorship" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Sponsorship</a>
+            <a href="/events" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Events</a>
+            <a href="/knowledge" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Knowledge & Education</a>
+            <a href="/news" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">News</a>
+            <a href="/member-portal" className="block px-3 py-2 text-base font-medium text-fase-dark-slate hover:text-fase-navy hover:bg-fase-ice-blue rounded-md">Member Portal</a>
             <a href="/login" className="block px-3 py-2 mt-2 text-base font-medium text-white bg-fase-navy hover:bg-fase-dark-slate rounded-md text-center">Sign In</a>
           </div>
         </div>
       )}
 
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-[calc(100vh-80px)] flex items-center overflow-hidden">
-        {/* Background Images - Right Side Only */}
-        <div className="absolute right-0 top-0 w-3/5 h-full">
+      <section id="hero" className="relative min-h-[calc(100vh-120px)] min-h-[calc(100svh-120px)] md:min-h-[calc(100vh-80px)] flex items-center overflow-hidden">
+        {/* Background Images - Desktop Only */}
+        <div className="hidden md:block absolute right-0 top-0 w-3/5 h-full">
           {cities.map((city, index) => (
             <div
               key={city.name}
@@ -372,9 +332,9 @@ export default function Page() {
         ></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-200px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start md:items-center md:min-h-[calc(100vh-200px)] pt-2 md:pt-0">
             {/* Left Content */}
-            <div className="text-left mt-8 md:mt-0 md:py-16">
+            <div className="text-left md:py-16">
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-futura font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
                 Federation of European <span className="text-fase-orange">MGAs</span>
               </h1>
