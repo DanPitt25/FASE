@@ -55,10 +55,15 @@ export default function PageLayout({
                     <button
                       key={section.id}
                       onClick={() => {
-                        document.getElementById(section.id)?.scrollIntoView({ 
-                          behavior: 'smooth',
-                          block: 'start'
-                        });
+                        const element = document.getElementById(section.id);
+                        if (element) {
+                          const headerHeight = 80; // Approximate header height
+                          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+                          window.scrollTo({
+                            top: elementPosition - headerHeight,
+                            behavior: 'smooth'
+                          });
+                        }
                       }}
                       className="w-full flex items-center space-x-3 p-3 transition-all duration-200 group hover:bg-fase-pearl"
                     >

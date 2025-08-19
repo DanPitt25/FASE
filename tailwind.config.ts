@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         'fase': {
-          'navy': '#085275',
+          'navy': '#063e56',
           'steel': '#4a4a4a',
           'graphite': '#6b6b6b', 
           'platinum': '#8d8d8d',

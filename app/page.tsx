@@ -97,10 +97,15 @@ export default function Page() {
                     if (section.id === 'hero') {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
-                      document.getElementById(section.id)?.scrollIntoView({ 
-                        behavior: 'smooth',
-                        block: 'start'
-                      });
+                      const element = document.getElementById(section.id);
+                      if (element) {
+                        const headerHeight = 80; // Approximate header height
+                        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+                        window.scrollTo({
+                          top: elementPosition - headerHeight,
+                          behavior: 'smooth'
+                        });
+                      }
                     }
                   }}
                   className={`w-full flex items-center space-x-3 p-3 transition-all duration-200 group ${
@@ -311,10 +316,10 @@ export default function Page() {
           {/* Left Content */}
           <div className="text-left md:py-16">
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-futura font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
-              Federation of European <span className="text-fase-navy">MGAs</span>
+              The Federation of European <span className="text-fase-navy">Managing General Agents</span>
             </h1>
             <p className="text-lg sm:text-xl text-fase-steel mb-6 font-lato leading-relaxed">
-              A voice to improve awareness of the critical role that MGAs play in the insurance value chain. A forum for MGAs, capacity providers and service providers to meet, exchange ideas and insights, and do business together across Europe.
+              A clear voice for the most responsive, innovative and customer-friendly businesses in insurance. A unique forum for MGAs, capacity providers and service providers to meet, exchange ideas and insights, and do business together across Europe.
             </p>
             <div className="mb-8">
               <div className="grid grid-cols-2 gap-4 text-sm text-fase-platinum">
