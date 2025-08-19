@@ -8,11 +8,12 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  updatePassword,
   reload,
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
-import { createUserProfile, getUserProfile, UserProfile } from './firestore';
+import { createUserProfile, getUserProfile, updateUserProfile, UserProfile } from './firestore';
 
 export interface AuthUser {
   uid: string;
@@ -56,9 +57,12 @@ export const completeSignupAfterVerification = async (email: string, password: s
       throw new Error('Email mismatch');
     }
     
-    // Create the account now that email is verified
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Complete email link sign-in (this creates the account with verified email)
+    const userCredential = await signInWithEmailLink(auth, email, window.location.href);
     const user = userCredential.user;
+    
+    // Set password for the account
+    await updatePassword(user, password);
     
     // Create display name
     const displayName = registrationData.organisation 
@@ -70,8 +74,11 @@ export const completeSignupAfterVerification = async (email: string, password: s
       displayName: displayName
     });
 
-    // Create Firestore user profile
+    // Create Firestore user profile with verified email
     await createUserProfile(user.uid, email, displayName, registrationData.personalName, registrationData.organisation);
+    
+    // Update Firestore to mark email as verified
+    await updateUserProfile(user.uid, { emailVerified: true });
     
     // Clear pending registration
     localStorage.removeItem('pendingRegistration');
@@ -149,7 +156,7 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
         uid: user.uid,
         email: user.email,
         displayName: userProfile?.displayName || user.displayName,
-        emailVerified: user.emailVerified,
+        emailVerified: userProfile?.emailVerified ?? user.emailVerified,
         twoFactorEnabled: userProfile?.twoFactorEnabled || false
       });
     } else {
