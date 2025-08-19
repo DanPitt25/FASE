@@ -13,7 +13,7 @@ export default function TitleHero({
   fullHeight = true,
   id
 }: TitleHeroProps) {
-  const heightClass = fullHeight ? 'min-h-screen flex items-center' : 'py-24';
+  const heightClass = fullHeight ? 'min-h-[calc(100vh-5.5rem)] flex items-center' : 'py-24';
   
   return (
     <section id={id} className={`relative ${backgroundClass} ${heightClass} overflow-hidden`}>

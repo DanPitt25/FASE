@@ -306,7 +306,7 @@ export default function Page() {
         currentImageIndex={currentImageIndex}
         fullHeight={true}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start md:items-center md:min-h-[calc(100vh-200px)] pt-2 md:pt-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start md:items-center md:min-h-[calc(100vh-5.5rem)] pt-2 md:pt-0">
           {/* Left Content */}
           <div className="text-left md:py-16">
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-futura font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">

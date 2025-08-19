@@ -23,7 +23,7 @@ export default function ContentHero({
   className = ''
 }: ContentHeroProps) {
   const heightClass = fullHeight 
-    ? 'min-h-[calc(100vh-120px)] min-h-[calc(100svh-120px)] md:min-h-[calc(100vh-80px)] flex items-center' 
+    ? 'min-h-[calc(100vh-5.5rem)] flex items-center' 
     : 'py-20';
 
   return (
