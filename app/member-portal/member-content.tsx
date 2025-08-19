@@ -62,53 +62,40 @@ export default function MemberContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div className="text-center">
       <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">
         Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ''} to Your Member Portal
       </h2>
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
-        <div className="mb-6">
-          <h3 className="text-xl font-futura font-semibold text-fase-navy mb-4">Your Account</h3>
-          <div className="space-y-2 text-left">
-            <p className="text-fase-steel">
-              <strong>Personal Name:</strong> {userProfile?.personalName || 'Not set'}
-            </p>
-            <p className="text-fase-steel">
-              <strong>Organisation:</strong> {userProfile?.organisation || 'Not specified'}
-            </p>
-            <p className="text-fase-steel">
-              <strong>Email:</strong> {user.email}
-            </p>
-            <p className="text-fase-steel">
-              <strong>Member ID:</strong> {user.uid.substring(0, 8)}...
-            </p>
-            <p className="text-fase-steel">
-              <strong>Email Status:</strong> 
-              <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                ✓ Verified
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="border-t border-fase-silver pt-6">
-          <h4 className="text-lg font-futura font-semibold text-fase-navy mb-4">Member Resources</h4>
-          <p className="text-fase-steel mb-6">
-            More member resources and features will be available as FASE continues to grow and develop.
+      
+      <div className="mb-8">
+        <h3 className="text-xl font-futura font-semibold text-fase-navy mb-4">Your Account</h3>
+        <div className="space-y-2 text-left max-w-md mx-auto">
+          <p className="text-fase-steel">
+            <strong>Personal Name:</strong> {userProfile?.personalName || "Not set"}
           </p>
-          
-          <div className="space-y-4">
-            <Button href="/about" variant="secondary" size="medium" className="w-full">
-              Learn More About FASE
-            </Button>
-            <Button href="/events" variant="secondary" size="medium" className="w-full">
-              View Upcoming Events
-            </Button>
-            <Button href="/knowledge" variant="secondary" size="medium" className="w-full">
-              Access Knowledge Base
-            </Button>
-          </div>
+          <p className="text-fase-steel">
+            <strong>Organisation:</strong> {userProfile?.organisation || "Not specified"}
+          </p>
+          <p className="text-fase-steel">
+            <strong>Email:</strong> {user.email}
+          </p>
+          <p className="text-fase-steel">
+            <strong>Member ID:</strong> {user.uid.substring(0, 8)}...
+          </p>
+          <p className="text-fase-steel">
+            <strong>Email Status:</strong> 
+            <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+              ✓ Verified
+            </span>
+          </p>
         </div>
+      </div>
+
+      <div className="border-t border-fase-silver pt-8 mx-auto max-w-md">
+        <h4 className="text-lg font-futura font-semibold text-fase-navy mb-4">Member Resources</h4>
+        <p className="text-fase-steel">
+          Your member dashboard is being developed. Additional features and resources will be available soon as FASE continues to grow and expand our digital platform.
+        </p>
       </div>
     </div>
   );
