@@ -5,6 +5,18 @@ import { useRouter } from 'next/navigation';
 import { signUp } from '../../lib/auth';
 import Button from '../../components/Button';
 
+// Password validation function
+const validatePassword = (password: string) => {
+  const requirements = {
+    length: password.length >= 8,
+    capital: /[A-Z]/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  };
+  
+  const isValid = requirements.length && requirements.capital && requirements.special;
+  return { requirements, isValid };
+};
+
 export default function RegisterForm() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,6 +24,7 @@ export default function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,8 +41,14 @@ export default function RegisterForm() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    const { isValid, requirements } = validatePassword(password);
+    if (!isValid) {
+      let errorMsg = 'Password must include: ';
+      const missing = [];
+      if (!requirements.length) missing.push('at least 8 characters');
+      if (!requirements.capital) missing.push('one capital letter');
+      if (!requirements.special) missing.push('one special character');
+      setError(errorMsg + missing.join(', '));
       return;
     }
     
@@ -58,7 +77,7 @@ export default function RegisterForm() {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
-          placeholder="Your full name"
+          placeholder="Personal or Business Name"
           className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
@@ -85,10 +104,41 @@ export default function RegisterForm() {
           id="password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setShowPasswordReqs(e.target.value.length > 0);
+          }}
+          onFocus={() => setShowPasswordReqs(true)}
+          onBlur={() => setShowPasswordReqs(password.length > 0)}
           required
           className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
+        
+        {/* Password Requirements */}
+        {showPasswordReqs && (
+          <div className="mt-2 p-3 bg-fase-paper rounded-md border border-fase-silver">
+            <p className="text-xs font-medium text-fase-steel mb-2">Password must include:</p>
+            {(() => {
+              const { requirements } = validatePassword(password);
+              return (
+                <div className="space-y-1">
+                  <div className={`text-xs flex items-center ${requirements.length ? 'text-green-600' : 'text-fase-steel'}`}>
+                    <span className="mr-2">{requirements.length ? '✓' : '○'}</span>
+                    At least 8 characters
+                  </div>
+                  <div className={`text-xs flex items-center ${requirements.capital ? 'text-green-600' : 'text-fase-steel'}`}>
+                    <span className="mr-2">{requirements.capital ? '✓' : '○'}</span>
+                    One capital letter (A-Z)
+                  </div>
+                  <div className={`text-xs flex items-center ${requirements.special ? 'text-green-600' : 'text-fase-steel'}`}>
+                    <span className="mr-2">{requirements.special ? '✓' : '○'}</span>
+                    One special character (!@#$%^&*...)
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       <div>

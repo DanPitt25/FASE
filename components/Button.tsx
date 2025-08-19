@@ -6,6 +6,7 @@ interface ButtonProps {
   size?: 'small' | 'medium' | 'large';
   className?: string;
   disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export default function Button({ 
@@ -15,7 +16,8 @@ export default function Button({
   variant = 'primary', 
   size = 'medium',
   className = '',
-  disabled = false 
+  disabled = false,
+  type = 'button'
 }: ButtonProps) {
   const sizeClasses = {
     small: 'px-4 py-2 text-sm',
@@ -54,6 +56,7 @@ export default function Button({
 
   return (
     <button 
+      type={type}
       onClick={disabled ? undefined : onClick} 
       className={baseClasses}
       disabled={disabled}
