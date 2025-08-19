@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import Button from './Button';
+import { useAuth } from '../contexts/AuthContext';
+import { signOut } from '../lib/auth';
 
 interface HeaderProps {
   currentPage?: string;
@@ -12,10 +15,21 @@ interface HeaderProps {
 export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   const handleImageLoad = () => {
     setImageLoaded(true);
     onLoad?.();
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -134,7 +148,23 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 <a href="/member-portal" className={`px-3 py-2 text-sm font-medium ${
                   currentPage === 'member-portal' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
                 }`}>Member Portal</a>
-                <Button href="/login" variant="primary" size="small">Sign In</Button>
+                {loading ? (
+                  <div className="w-20 h-8 bg-fase-pearl animate-pulse rounded"></div>
+                ) : user ? (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-fase-steel">
+                      {user.displayName || user.email?.split('@')[0]}
+                    </span>
+                    <button
+                      onClick={handleSignOut}
+                      className="text-sm text-fase-steel hover:text-fase-navy"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <Button href="/login" variant="primary" size="small">Sign In</Button>
+                )}
               </div>
             </div>
           </div>
@@ -186,7 +216,23 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <a href="/member-portal" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
             }`}>Member Portal</a>
-            <Button href="/login" variant="primary" size="medium" className="w-full text-center mt-2">Sign In</Button>
+            {loading ? (
+              <div className="w-full h-10 bg-fase-pearl animate-pulse rounded mt-2"></div>
+            ) : user ? (
+              <div className="mt-4 pt-4 border-t border-fase-silver">
+                <div className="text-center text-sm text-fase-steel mb-2">
+                  Signed in as: {user.displayName || user.email?.split('@')[0]}
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-center py-2 px-4 bg-fase-steel text-white rounded hover:bg-fase-graphite transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Button href="/login" variant="primary" size="medium" className="w-full text-center mt-2">Sign In</Button>
+            )}
           </div>
         </div>
       )}
