@@ -67,6 +67,12 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <div className="flex flex-col justify-center">
               {/* Top Row - Search and Language - Hidden on Mobile */}
               <div className="hidden md:flex items-center justify-end space-x-6 py-1">
+                {user && (
+                  <div className="text-sm text-fase-steel">
+                    Logged in as {user.displayName || user.email?.split("@")[0]}
+                  </div>
+                )}
+                
                 <div className="relative">
                   <input
                     type="text"
@@ -151,17 +157,12 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 {loading ? (
                   <div className="w-20 h-8 bg-fase-pearl animate-pulse rounded"></div>
                 ) : user ? (
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm text-fase-steel">
-                      {user.displayName || user.email?.split('@')[0]}
-                    </span>
-                    <button
-                      onClick={handleSignOut}
-                      className="text-sm text-fase-steel hover:text-fase-navy"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="px-3 py-2 text-sm font-medium text-fase-steel hover:text-fase-navy"
+                  >
+                    Sign Out
+                  </button>
                 ) : (
                   <Button href="/login" variant="primary" size="small">Sign In</Button>
                 )}

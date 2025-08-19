@@ -535,8 +535,8 @@ export default function Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-2xl font-futura font-bold mb-4 text-fase-navy">FASE</h3>
-              <p className="text-fase-silver">
+              <h3 className="text-2xl font-futura font-bold mb-4 text-white">FASE</h3>
+              <p className="text-white">
                 The Federation of European MGAs - representing the MGA community across Europe.
               </p>
             </div>
