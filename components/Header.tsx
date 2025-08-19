@@ -125,10 +125,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </a>
                   <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-silver  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="py-2">
+                      <a href="/what-is-an-mga" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">What is an MGA?</a>
                       <a href="/about/who-we-are" className={`block px-4 py-2 text-sm ${
                         currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-pearl font-medium' : 'text-fase-steel hover:bg-fase-pearl'
                       }`}>Who We Are</a>
-                      <a href="/about/committees" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Committees</a>
+                      <a href="/about/advisory-board" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Advisory Board</a>
                       <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Membership Directory</a>
                       <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Affiliates & Associates</a>
                       <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Sponsors</a>

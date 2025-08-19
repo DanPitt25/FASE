@@ -18,7 +18,7 @@ export default function CommitteesPage() {
       <main className="flex-1">
         <TitleHero 
           id="hero"
-          title="Committees & Governance"
+          title="Advisory Board & Governance"
           subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
           fullHeight={true}
         />
