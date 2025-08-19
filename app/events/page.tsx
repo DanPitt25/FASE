@@ -1,37 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import Header from '../../components/Header';
+import PageLayout from '../../components/PageLayout';
+import TitleHero from '../../components/TitleHero';
+import ContentHero from '../../components/ContentHero';
+import Button from '../../components/Button';
 
 export default function EventsPage() {
-  const [headerLoaded, setHeaderLoaded] = useState(false);
+  const sections = [
+    { name: 'Overview', id: 'hero' },
+    { name: 'Coming Soon', id: 'coming-soon' }
+  ];
 
   return (
-    <div className={`min-h-screen bg-fase-ice-blue font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <Header currentPage="events" onLoad={() => setHeaderLoaded(true)} />
-      
+    <PageLayout currentPage="events" sections={sections}>
       <main className="flex-1">
-        <section className="bg-fase-navy py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-futura font-bold text-white mb-6">Events</h1>
-            <p className="text-xl text-fase-ice-blue max-w-3xl mx-auto">
-              Join our pan-European conferences and networking events.
-            </p>
-          </div>
-        </section>
+        <TitleHero
+          id="hero"
+          title="Events"
+          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          fullHeight={true}
+        />
         
-        <section className="py-20 bg-white">
+        <ContentHero id="coming-soon" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">Coming Soon</h2>
-            <p className="text-lg text-fase-dark-slate mb-8">
+            <p className="text-lg text-fase-steel mb-8">
               Our inaugural conference will be announced once FASE officially launches.
             </p>
-            <a href="/" className="bg-fase-orange text-white px-8 py-3 rounded-md font-medium hover:bg-yellow-600 transition duration-200">
+            <Button href="/" variant="primary" size="large">
               Back to Home
-            </a>
+            </Button>
           </div>
-        </section>
+        </ContentHero>
       </main>
-    </div>
+    </PageLayout>
   );
 }

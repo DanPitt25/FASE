@@ -1,68 +1,53 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { useState } from 'react';
-import Header from '../../../components/Header';
+import PageLayout from '../../../components/PageLayout';
+import TitleHero from '../../../components/TitleHero';
+import ContentHero from '../../../components/ContentHero';
+import Button from '../../../components/Button';
 
 export default function SponsorsPage() {
-  const [headerLoaded, setHeaderLoaded] = useState(false);
+  const sections = [
+    { name: 'Overview', id: 'hero' },
+    { name: 'Sponsorship Levels', id: 'sponsorship-levels' },
+    { name: 'Founding Supporters', id: 'founding-supporters' },
+    { name: 'Why Sponsor', id: 'why-sponsor' },
+    { name: 'Become a Sponsor', id: 'become-sponsor' }
+  ];
 
   return (
-    <div className={`min-h-screen bg-fase-ice-blue font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <Header currentPage="about" onLoad={() => setHeaderLoaded(true)} />
-
+    <PageLayout currentPage="about" sections={sections}>
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative bg-fase-navy py-24 overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}></div>
-          </div>
-          
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <nav className="flex justify-center mb-8">
-              <ol className="flex items-center space-x-2 text-sm">
-                <li><a href="/" className="text-fase-ice-blue hover:text-white">Home</a></li>
-                <li className="text-fase-ice-blue">/</li>
-                <li><a href="/about" className="text-fase-ice-blue hover:text-white">About</a></li>
-                <li className="text-fase-ice-blue">/</li>
-                <li className="text-white font-medium">Our Sponsors</li>
-              </ol>
-            </nav>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-futura font-bold text-white mb-6 leading-tight">
-              Our Sponsors
-            </h1>
-            <p className="text-xl sm:text-2xl text-fase-ice-blue max-w-4xl mx-auto leading-relaxed">
-              Industry leaders supporting FASE&apos;s mission to strengthen the European MGA community.
-            </p>
-          </div>
-        </section>
+        <TitleHero 
+          id="hero"
+          title="Our Sponsors"
+          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          fullHeight={true}
+        />
 
         {/* Sponsorship Tiers */}
-        <section className="py-20 bg-white">
+        <ContentHero id="sponsorship-levels" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Sponsorship Levels</h2>
-              <p className="text-xl text-fase-dark-slate max-w-3xl mx-auto">
+              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 Multiple sponsorship opportunities designed to showcase your commitment to the European MGA community.
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
               {/* Platinum Sponsors */}
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 text-center border-2 border-gray-300">
-                <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200  p-8 text-center border-2 border-gray-300">
+                <div className="w-20 h-20 bg-gray-600  flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3l14 9-14 9V3z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Platinum Sponsors</h3>
-                <p className="text-fase-dark-slate leading-relaxed mb-6">
+                <p className="text-fase-steel leading-relaxed mb-6">
                   Premier level recognition with maximum visibility across all FASE activities.
                 </p>
-                <ul className="text-left text-fase-dark-slate text-sm space-y-2">
+                <ul className="text-left text-fase-steel text-sm space-y-2">
                   <li>• Conference title sponsorship</li>
                   <li>• Logo on all marketing materials</li>
                   <li>• Speaking opportunities</li>
@@ -72,17 +57,17 @@ export default function SponsorsPage() {
               </div>
 
               {/* Gold Sponsors */}
-              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl p-8 text-center border-2 border-yellow-400">
-                <div className="w-20 h-20 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200  p-8 text-center border-2 border-yellow-400">
+                <div className="w-20 h-20 bg-yellow-600  flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Gold Sponsors</h3>
-                <p className="text-fase-dark-slate leading-relaxed mb-6">
+                <p className="text-fase-steel leading-relaxed mb-6">
                   High-level visibility with significant branding opportunities.
                 </p>
-                <ul className="text-left text-fase-dark-slate text-sm space-y-2">
+                <ul className="text-left text-fase-steel text-sm space-y-2">
                   <li>• Session sponsorship</li>
                   <li>• Website logo placement</li>
                   <li>• Networking event branding</li>
@@ -92,17 +77,17 @@ export default function SponsorsPage() {
               </div>
 
               {/* Silver Sponsors */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 text-center border-2 border-gray-300">
-                <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100  p-8 text-center border-2 border-gray-300">
+                <div className="w-20 h-20 bg-gray-400  flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Silver Sponsors</h3>
-                <p className="text-fase-dark-slate leading-relaxed mb-6">
+                <p className="text-fase-steel leading-relaxed mb-6">
                   Supporting level with valuable exposure and networking benefits.
                 </p>
-                <ul className="text-left text-fase-dark-slate text-sm space-y-2">
+                <ul className="text-left text-fase-steel text-sm space-y-2">
                   <li>• Logo in event materials</li>
                   <li>• Directory listing</li>
                   <li>• Networking participation</li>
@@ -112,14 +97,14 @@ export default function SponsorsPage() {
               </div>
             </div>
           </div>
-        </section>
+        </ContentHero>
 
         {/* Current Sponsors Preview */}
-        <section className="py-20 bg-fase-ice-blue">
+        <ContentHero id="founding-supporters" fullHeight={true} className="bg-fase-paper py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Founding Supporters</h2>
-              <p className="text-xl text-fase-dark-slate max-w-3xl mx-auto">
+              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 Forward-thinking organizations showing early support for FASE&apos;s mission.
               </p>
             </div>
@@ -132,13 +117,13 @@ export default function SponsorsPage() {
                 { name: "[Company Name]", type: "Gold", sector: "Consulting" },
                 { name: "[Company Name]", type: "Silver", sector: "Insurance" }
               ].map((sponsor, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center">
-                  <div className="w-16 h-16 bg-fase-blue-gray rounded-full flex items-center justify-center mx-auto mb-4">
+                <div key={index} className="bg-white  p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+                  <div className="w-16 h-16 bg-fase-platinum  flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-futura font-bold text-sm">LOGO</span>
                   </div>
                   <h3 className="text-lg font-futura font-bold text-fase-navy mb-2">{sponsor.name}</h3>
-                  <p className="text-fase-blue-gray text-sm mb-2">{sponsor.sector}</p>
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                  <p className="text-fase-platinum text-sm mb-2">{sponsor.sector}</p>
+                  <div className={`inline-block px-3 py-1  text-xs font-medium ${
                     sponsor.type === 'Platinum' 
                       ? 'bg-gray-600 text-white' 
                       : sponsor.type === 'Gold'
@@ -151,93 +136,93 @@ export default function SponsorsPage() {
               ))}
             </div>
 
-            <div className="bg-fase-navy rounded-2xl p-8 text-center text-white">
+            <div className="bg-fase-navy  p-8 text-center text-white">
               <h3 className="text-2xl font-futura font-bold mb-4">Join Our Sponsors</h3>
-              <p className="text-fase-ice-blue mb-6 max-w-2xl mx-auto">
+              <p className="text-fase-paper mb-6 max-w-2xl mx-auto">
                 Sponsorship packages are available for FASE&apos;s inaugural events and ongoing activities. 
                 Support the growth of the European MGA community.
               </p>
-              <a href="/sponsorship" className="bg-fase-orange text-white px-8 py-3 rounded-lg font-medium hover:bg-yellow-600 transition duration-300">
+              <Button href="/sponsorship" variant="primary" size="large">
                 Explore Sponsorship
-              </a>
+              </Button>
             </div>
           </div>
-        </section>
+        </ContentHero>
 
         {/* Sponsorship Benefits */}
-        <section className="py-20 bg-white">
+        <ContentHero id="why-sponsor" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Why Sponsor FASE?</h2>
-              <p className="text-xl text-fase-dark-slate max-w-3xl mx-auto">
+              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 Position your organization at the forefront of European MGA development.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-sage rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-graphite  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-futura font-semibold text-fase-navy mb-2">Market Visibility</h3>
-                <p className="text-fase-dark-slate text-sm">Reach decision-makers across European MGA markets</p>
+                <p className="text-fase-steel text-sm">Reach decision-makers across European MGA markets</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-navy rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-navy  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-futura font-semibold text-fase-navy mb-2">Network Access</h3>
-                <p className="text-fase-dark-slate text-sm">Direct engagement with industry leaders and prospects</p>
+                <p className="text-fase-steel text-sm">Direct engagement with industry leaders and prospects</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-orange rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-navy  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-futura font-semibold text-fase-navy mb-2">Thought Leadership</h3>
-                <p className="text-fase-dark-slate text-sm">Platform to share expertise and industry insights</p>
+                <p className="text-fase-steel text-sm">Platform to share expertise and industry insights</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-blue-gray rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-platinum  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-futura font-semibold text-fase-navy mb-2">Industry Support</h3>
-                <p className="text-fase-dark-slate text-sm">Demonstrate commitment to sector development</p>
+                <p className="text-fase-steel text-sm">Demonstrate commitment to sector development</p>
               </div>
             </div>
           </div>
-        </section>
+        </ContentHero>
 
         {/* CTA */}
-        <section className="py-20 bg-fase-navy">
+        <ContentHero id="become-sponsor" fullHeight={true} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-futura font-bold text-white mb-6">Become a FASE Sponsor</h2>
-            <p className="text-xl text-fase-ice-blue mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-fase-paper mb-8 max-w-3xl mx-auto">
               Support the European MGA community while advancing your business objectives. 
               Sponsorship packages available for all budget levels.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/sponsorship" className="bg-fase-orange text-white px-8 py-4 rounded-xl text-lg font-medium hover:bg-yellow-600 transition duration-300">
+              <Button href="/sponsorship" variant="primary" size="large">
                 View Sponsorship Options
-              </a>
-              <a href="/about" className="bg-white text-fase-navy px-8 py-4 rounded-xl text-lg font-medium hover:bg-gray-50 transition duration-300">
+              </Button>
+              <Button href="/about" variant="secondary" size="large">
                 Back to About
-              </a>
+              </Button>
             </div>
           </div>
-        </section>
+        </ContentHero>
       </main>
-    </div>
+    </PageLayout>
   );
 }

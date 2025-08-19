@@ -5,14 +5,13 @@
 @tailwind utilities;
 
 :root {
-  --fase-dark-slate: #434f5d;
   --fase-navy: #085275;
-  --fase-sage: #5e8269;
-  --fase-blue-gray: #8c9cab;
-  --fase-light-gray: #bac6ca;
-  --fase-warm-gray: #d9d5d2;
-  --fase-ice-blue: #ebf7ff;
-  --fase-orange: #ffac3f;
+  --fase-steel: #4a4a4a;
+  --fase-graphite: #6b6b6b;
+  --fase-platinum: #8d8d8d;
+  --fase-silver: #b5b5b5;
+  --fase-pearl: #e8e8e8;
+  --fase-paper: #f8f8f8;
 }
 
 @layer base {

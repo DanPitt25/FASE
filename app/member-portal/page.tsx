@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Header from '../../components/Header';
+import Button from '../../components/Button';
 
 export default function MemberPortalPage() {
   const [headerLoaded, setHeaderLoaded] = useState(false);
@@ -15,7 +16,7 @@ export default function MemberPortalPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-futura font-bold text-white mb-6">Member Portal</h1>
             <p className="text-xl text-fase-ice-blue max-w-3xl mx-auto">
-              Access exclusive member resources and connect with the community.
+              FASE - The Federation of European MGAs - representing the MGA community across Europe.
             </p>
           </div>
         </section>
@@ -23,16 +24,16 @@ export default function MemberPortalPage() {
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">Member Access Required</h2>
-            <p className="text-lg text-fase-dark-slate mb-8">
+            <p className="text-lg text-fase-steel mb-8">
               The member portal will be available to registered members after FASE launches.
             </p>
             <div className="space-x-4">
-              <a href="/join" className="bg-fase-orange text-white px-8 py-3 rounded-md font-medium hover:bg-yellow-600 transition duration-200">
+              <Button href="/join" variant="primary" size="large">
                 Register Interest
-              </a>
-              <a href="/" className="bg-white text-fase-navy px-8 py-3 rounded-md font-medium hover:bg-gray-50 transition duration-200 border border-fase-light-gray">
+              </Button>
+              <Button href="/" variant="secondary" size="large">
                 Back to Home
-              </a>
+              </Button>
             </div>
           </div>
         </section>
