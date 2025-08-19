@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signUp } from '../../lib/auth';
+import { sendVerificationForSignup } from '../../lib/auth';
 import Button from '../../components/Button';
+import { handleAuthError } from '../../lib/auth-errors';
 
 // Password validation function
 const validatePassword = (password: string) => {
@@ -18,21 +18,22 @@ const validatePassword = (password: string) => {
 };
 
 export default function RegisterForm() {
-  const [displayName, setDisplayName] = useState('');
+  const [personalName, setPersonalName] = useState('');
+  const [organisation, setOrganisation] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
-  const router = useRouter();
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     
-    if (!displayName.trim()) {
-      setError('Display name is required');
+    if (!personalName.trim()) {
+      setError('Personal name is required');
       return;
     }
     
@@ -56,28 +57,71 @@ export default function RegisterForm() {
     setError('');
 
     try {
-      await signUp(email, password, displayName.trim());
-      router.push('/member-portal');
+      // Store password for later use (after email verification)
+      localStorage.setItem('pendingPassword', password);
+      
+      await sendVerificationForSignup(email, personalName.trim(), organisation.trim() || undefined);
+      setEmailSent(true);
     } catch (error: any) {
-      setError(error.message);
+      setError(handleAuthError(error));
     } finally {
       setLoading(false);
     }
   };
 
+  if (emailSent) {
+    return (
+      <div className="text-center">
+        <div className="w-16 h-16 bg-fase-navy rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-futura font-bold text-fase-navy mb-2">Check Your Email</h2>
+        <p className="text-fase-steel mb-6">
+          We've sent a verification link to <strong>{email}</strong>
+        </p>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+          <p className="text-blue-800 text-sm">
+            ✓ Please check your email and click the verification link to complete your registration.
+          </p>
+        </div>
+        
+        <p className="text-xs text-fase-steel text-center">
+          Don't see the email? Check your spam folder. The link will expire in 1 hour.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="displayName" className="block text-sm font-medium text-fase-steel">
-          Display Name
+        <label htmlFor="personalName" className="block text-sm font-medium text-fase-steel">
+          Personal Name
         </label>
         <input
-          id="displayName"
+          id="personalName"
           type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          value={personalName}
+          onChange={(e) => setPersonalName(e.target.value)}
           required
-          placeholder="Personal or Business Name"
+          placeholder="Your full name"
+          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="organisation" className="block text-sm font-medium text-fase-steel">
+          Organisation
+        </label>
+        <input
+          id="organisation"
+          type="text"
+          value={organisation}
+          onChange={(e) => setOrganisation(e.target.value)}
+          placeholder="Company or organisation name (optional)"
           className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
