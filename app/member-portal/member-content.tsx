@@ -32,7 +32,9 @@ export default function MemberContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">Welcome to Your Member Portal</h2>
+      <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">
+        Welcome{user.displayName ? `, ${user.displayName}` : ''} to Your Member Portal
+      </h2>
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
         <div className="mb-6">
           <h3 className="text-xl font-futura font-semibold text-fase-navy mb-4">Your Account</h3>

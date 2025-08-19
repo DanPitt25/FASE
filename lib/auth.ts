@@ -15,15 +15,12 @@ export interface AuthUser {
 }
 
 // Sign up new user
-export const signUp = async (email: string, password: string): Promise<AuthUser> => {
+export const signUp = async (email: string, password: string, displayName: string): Promise<AuthUser> => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Extract display name from email (part before @)
-    const displayName = email.split('@')[0];
-    
-    // Update user profile with display name
+    // Update user profile with provided display name
     await updateProfile(user, {
       displayName: displayName
     });
