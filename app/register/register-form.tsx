@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { sendVerificationForSignup } from '../../lib/auth';
-import Button from '../../components/Button';
-import { handleAuthError } from '../../lib/auth-errors';
+import { useState } from "react";
+import { sendVerificationForSignup } from "../../lib/auth";
+import Button from "../../components/Button";
+import { handleAuthError } from "../../lib/auth-errors";
 
 // Password validation function
 const validatePassword = (password: string) => {
@@ -18,12 +18,12 @@ const validatePassword = (password: string) => {
 };
 
 export default function RegisterForm() {
-  const [personalName, setPersonalName] = useState('');
-  const [organisation, setOrganisation] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [personalName, setPersonalName] = useState("");
+  const [organisation, setOrganisation] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -33,32 +33,32 @@ export default function RegisterForm() {
     if (loading) return;
     
     if (!personalName.trim()) {
-      setError('Personal name is required');
+      setError("Personal name is required");
       return;
     }
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     const { isValid, requirements } = validatePassword(password);
     if (!isValid) {
-      let errorMsg = 'Password must include: ';
+      let errorMsg = "Password must include: ";
       const missing = [];
-      if (!requirements.length) missing.push('at least 8 characters');
-      if (!requirements.capital) missing.push('one capital letter');
-      if (!requirements.special) missing.push('one special character');
-      setError(errorMsg + missing.join(', '));
+      if (!requirements.length) missing.push("at least 8 characters");
+      if (!requirements.capital) missing.push("one capital letter");
+      if (!requirements.special) missing.push("one special character");
+      setError(errorMsg + missing.join(", "));
       return;
     }
     
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Store password for later use (after email verification)
-      localStorage.setItem('pendingPassword', password);
+      localStorage.setItem("pendingPassword", password);
       
       await sendVerificationForSignup(email, personalName.trim(), organisation.trim() || undefined);
       setEmailSent(true);
@@ -79,7 +79,7 @@ export default function RegisterForm() {
         </div>
         <h2 className="text-2xl font-futura font-bold text-fase-navy mb-2">Check Your Email</h2>
         <p className="text-fase-steel mb-6">
-          We've sent a verification link to <strong>{email}</strong>
+          We&apos;ve sent a verification link to <strong>{email}</strong>
         </p>
         
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
@@ -89,7 +89,7 @@ export default function RegisterForm() {
         </div>
         
         <p className="text-xs text-fase-steel text-center">
-          Don't see the email? Check your spam folder. The link will expire in 1 hour.
+          Don&apos;t see the email? Check your spam folder. The link will expire in 1 hour.
         </p>
       </div>
     );
@@ -166,16 +166,16 @@ export default function RegisterForm() {
               const { requirements } = validatePassword(password);
               return (
                 <div className="space-y-1">
-                  <div className={`text-xs flex items-center ${requirements.length ? 'text-green-600' : 'text-fase-steel'}`}>
-                    <span className="mr-2">{requirements.length ? '✓' : '○'}</span>
+                  <div className={`text-xs flex items-center ${requirements.length ? "text-green-600" : "text-fase-steel"}`}>
+                    <span className="mr-2">{requirements.length ? "✓" : "○"}</span>
                     At least 8 characters
                   </div>
-                  <div className={`text-xs flex items-center ${requirements.capital ? 'text-green-600' : 'text-fase-steel'}`}>
-                    <span className="mr-2">{requirements.capital ? '✓' : '○'}</span>
+                  <div className={`text-xs flex items-center ${requirements.capital ? "text-green-600" : "text-fase-steel"}`}>
+                    <span className="mr-2">{requirements.capital ? "✓" : "○"}</span>
                     One capital letter (A-Z)
                   </div>
-                  <div className={`text-xs flex items-center ${requirements.special ? 'text-green-600' : 'text-fase-steel'}`}>
-                    <span className="mr-2">{requirements.special ? '✓' : '○'}</span>
+                  <div className={`text-xs flex items-center ${requirements.special ? "text-green-600" : "text-fase-steel"}`}>
+                    <span className="mr-2">{requirements.special ? "✓" : "○"}</span>
                     One special character (!@#$%^&*...)
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function RegisterForm() {
         className="w-full"
         disabled={loading}
       >
-        {loading ? 'Creating Account...' : 'Create Account'}
+        {loading ? "Creating Account..." : "Create Account"}
       </Button>
     </form>
   );
