@@ -1,5 +1,6 @@
 import './globals.css';
 import { GeistSans } from 'geist/font/sans';
+import { AuthProvider } from '../contexts/AuthContext';
 
 let title = 'FASE - Federation of European MGAs';
 let description =
@@ -26,7 +27,11 @@ export default function RootLayout({
       <head>
         <link rel="preload" href="/europe.jpg" as="image" />
       </head>
-      <body className={GeistSans.variable}>{children}</body>
+      <body className={GeistSans.variable}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

@@ -1,37 +1,37 @@
 import Link from 'next/link';
-import { Form } from 'app/form';
-import { signIn } from 'app/auth';
-import { SubmitButton } from 'app/submit-button';
+import LoginForm from './login-form';
 
 export default function Login() {
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
-      <div className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 shadow-xl">
-        <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 py-6 pt-8 text-center sm:px-16">
-          <h3 className="text-xl font-semibold">Sign In</h3>
-          <p className="text-sm text-gray-500">
-            Use your email and password to sign in
+    <div className="flex min-h-screen w-screen items-center justify-center bg-fase-paper">
+      <div className="z-10 w-full max-w-md overflow-hidden rounded-lg border border-fase-silver shadow-xl">
+        <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-silver bg-white px-4 py-6 pt-8 text-center sm:px-16">
+          <div className="flex items-center space-x-3 mb-4">
+            <img 
+              src="/europe.jpg" 
+              alt="Europe Map" 
+              className="h-10 w-auto object-contain"
+              style={{
+                filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
+              }}
+            />
+            <h1 className="text-2xl font-futura font-bold text-fase-navy">FASE</h1>
+          </div>
+          <h3 className="text-xl font-futura font-semibold text-fase-navy">Sign In</h3>
+          <p className="text-sm text-fase-steel">
+            Access your FASE member portal
           </p>
         </div>
-        <Form
-          action={async (formData: FormData) => {
-            'use server';
-            await signIn('credentials', {
-              redirectTo: '/protected',
-              email: formData.get('email') as string,
-              password: formData.get('password') as string,
-            });
-          }}
-        >
-          <SubmitButton>Sign in</SubmitButton>
-          <p className="text-center text-sm text-gray-600">
-            {"Don&apos;t have an account? "}
-            <Link href="/register" className="font-semibold text-gray-800">
+        <div className="bg-white px-4 py-8 sm:px-16">
+          <LoginForm />
+          <p className="text-center text-sm text-fase-steel mt-6">
+            {"Don't have an account? "}
+            <Link href="/register" className="font-semibold text-fase-navy hover:underline">
               Sign up
             </Link>
             {' for free.'}
           </p>
-        </Form>
+        </div>
       </div>
     </div>
   );

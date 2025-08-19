@@ -3,12 +3,12 @@
 import PageLayout from '../../components/PageLayout';
 import TitleHero from '../../components/TitleHero';
 import ContentHero from '../../components/ContentHero';
-import Button from '../../components/Button';
+import MemberContent from './member-content';
 
 export default function MemberPortalPage() {
   const sections = [
     { name: 'Overview', id: 'hero' },
-    { name: 'Member Access', id: 'member-access' }
+    { name: 'Member Portal', id: 'member-portal' }
   ];
 
   return (
@@ -21,21 +21,8 @@ export default function MemberPortalPage() {
           fullHeight={true}
         />
         
-        <ContentHero id="member-access" fullHeight={true} className="bg-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">Member Access Required</h2>
-            <p className="text-lg text-fase-steel mb-8">
-              The member portal will be available to registered members after FASE launches.
-            </p>
-            <div className="space-x-4">
-              <Button href="/join" variant="primary" size="large">
-                Register Interest
-              </Button>
-              <Button href="/" variant="secondary" size="large">
-                Back to Home
-              </Button>
-            </div>
-          </div>
+        <ContentHero id="member-portal" fullHeight={true} className="bg-white py-20">
+          <MemberContent />
         </ContentHero>
       </main>
     </PageLayout>
