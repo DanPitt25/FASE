@@ -1,11 +1,11 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Button from '../../components/Button';
-import EmailVerification from '../../components/EmailVerification';
-import { getUserProfile, UserProfile } from '../../lib/firestore';
+import { useAuth } from "../../contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Button from "../../components/Button";
+import EmailVerification from "../../components/EmailVerification";
+import { getUserProfile, UserProfile } from "../../lib/firestore";
 
 export default function MemberContent() {
   const { user, loading } = useAuth();
@@ -15,7 +15,7 @@ export default function MemberContent() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push("/login");
     } else if (!loading && user && !user.emailVerified) {
       // Redirect unverified users to verification
       setShowEmailVerification(true);
@@ -64,7 +64,7 @@ export default function MemberContent() {
   return (
     <div className="text-center">
       <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">
-        Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ''} to Your Member Portal
+        Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ""} to Your Member Portal
       </h2>
       
       <div className="mb-8">
@@ -80,7 +80,7 @@ export default function MemberContent() {
             <strong>Email:</strong> {user.email}
           </p>
           <p className="text-fase-steel">
-            <strong>Member ID:</strong> {user.uid.substring(0, 8)}...
+            <strong>Member ID:</strong> {user.uid.substring(0, 8)}…
           </p>
           <p className="text-fase-steel">
             <strong>Email Status:</strong> 
