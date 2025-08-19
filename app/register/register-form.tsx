@@ -79,7 +79,7 @@ export default function RegisterForm() {
         </div>
         <h2 className="text-2xl font-futura font-bold text-fase-navy mb-2">Check Your Email</h2>
         <p className="text-fase-steel mb-6">
-          We&apos;ve sent a verification link to <strong>{email}</strong>
+          We have sent a verification link to <strong>{email}</strong>
         </p>
         
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
@@ -89,7 +89,7 @@ export default function RegisterForm() {
         </div>
         
         <p className="text-xs text-fase-steel text-center">
-          Don&apos;t see the email? Check your spam folder. The link will expire in 1 hour.
+          Do not see the email? Check your spam folder. The link will expire in 1 hour.
         </p>
       </div>
     );
