@@ -2,18 +2,36 @@
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '../../components/Button';
+import EmailVerification from '../../components/EmailVerification';
+import { getUserProfile, UserProfile } from '../../lib/firestore';
 
 export default function MemberContent() {
   const { user, loading } = useAuth();
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+    } else if (!loading && user && !user.emailVerified) {
+      // Redirect unverified users to verification
+      setShowEmailVerification(true);
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.uid) {
+        const profile = await getUserProfile(user.uid);
+        setUserProfile(profile);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [user]);
 
   if (loading) {
     return (
@@ -30,23 +48,45 @@ export default function MemberContent() {
     return null; // Will redirect to login
   }
 
+  // Show email verification if needed
+  if (showEmailVerification || (user && !user.emailVerified)) {
+    return (
+      <EmailVerification 
+        onVerified={() => {
+          setShowEmailVerification(false);
+          // Refresh the page to update user state
+          window.location.reload();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">
-        Welcome{user.displayName ? `, ${user.displayName}` : ''} to Your Member Portal
+        Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ''} to Your Member Portal
       </h2>
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
         <div className="mb-6">
           <h3 className="text-xl font-futura font-semibold text-fase-navy mb-4">Your Account</h3>
           <div className="space-y-2 text-left">
             <p className="text-fase-steel">
-              <strong>Display Name:</strong> {user.displayName || 'Not set'}
+              <strong>Personal Name:</strong> {userProfile?.personalName || 'Not set'}
+            </p>
+            <p className="text-fase-steel">
+              <strong>Organisation:</strong> {userProfile?.organisation || 'Not specified'}
             </p>
             <p className="text-fase-steel">
               <strong>Email:</strong> {user.email}
             </p>
             <p className="text-fase-steel">
               <strong>Member ID:</strong> {user.uid.substring(0, 8)}...
+            </p>
+            <p className="text-fase-steel">
+              <strong>Email Status:</strong> 
+              <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                ✓ Verified
+              </span>
             </p>
           </div>
         </div>

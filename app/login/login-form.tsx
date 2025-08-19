@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from '../../lib/auth';
 import Button from '../../components/Button';
+import { handleAuthError } from '../../lib/auth-errors';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ export default function LoginForm() {
       await signIn(email, password);
       router.push('/member-portal');
     } catch (error: any) {
-      setError(error.message);
+      setError(handleAuthError(error));
     } finally {
       setLoading(false);
     }
