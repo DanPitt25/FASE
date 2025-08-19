@@ -37,9 +37,11 @@ export default function AboutPage() {
                 <p className="text-fase-steel text-lg leading-relaxed">
                   Our mission is to improve awareness of the critical role that MGAs play in the insurance value chain while creating a forum for MGAs, capacity providers, and service providers to connect and do business together.
                 </p>
-                <Button href="/about/who-we-are" variant="primary" size="medium">
-                  Learn More About Us
-                </Button>
+                <div className="mt-8">
+                  <Button href="/about/who-we-are" variant="primary" size="medium">
+                    Learn More About Us
+                  </Button>
+                </div>
               </div>
 
               {/* Our Impact */}
