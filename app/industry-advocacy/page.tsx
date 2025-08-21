@@ -18,6 +18,7 @@ export default function IndustryAdvocacyPage() {
           id="hero"
           title="Industry Advocacy"
           subtitle="Voice for MGAs in regulatory discussions at national and pan-European levels."
+          backgroundImage="/regulatory.jpg"
           fullHeight={true}
         />
         

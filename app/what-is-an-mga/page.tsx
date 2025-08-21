@@ -18,6 +18,7 @@ export default function WhatIsAnMGAPage() {
           id="hero"
           title="What is an MGA?"
           subtitle="Understanding Managing General Agents and their role in the insurance ecosystem"
+          backgroundImage="/london.jpg"
           fullHeight={true}
         />
 

@@ -17,7 +17,8 @@ export default function NewsPage() {
         <TitleHero
           id="hero"
           title="News"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/europe.jpg"
           fullHeight={true}
         />
         

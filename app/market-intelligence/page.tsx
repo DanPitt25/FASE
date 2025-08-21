@@ -18,6 +18,7 @@ export default function MarketIntelligencePage() {
           id="hero"
           title="Market Intelligence"
           subtitle="Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights."
+          backgroundImage="/market.jpg"
           fullHeight={true}
         />
         

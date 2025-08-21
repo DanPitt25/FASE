@@ -19,7 +19,8 @@ export default function CommitteesPage() {
         <TitleHero 
           id="hero"
           title="Advisory Board & Governance"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/rome.jpg"
           fullHeight={true}
         />
 

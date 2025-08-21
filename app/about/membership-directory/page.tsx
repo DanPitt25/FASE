@@ -20,7 +20,8 @@ export default function MembershipDirectoryPage() {
         <TitleHero 
           id="hero"
           title="Membership Directory"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/madrid.jpg"
           fullHeight={true}
         />
 

@@ -21,7 +21,8 @@ export default function JoinPage() {
         <TitleHero 
           id="hero"
           title="Join FASE"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/vienna.jpg"
           fullHeight={true}
         />
 

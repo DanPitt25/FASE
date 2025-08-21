@@ -23,7 +23,8 @@ export default function WhoWeArePage() {
         <TitleHero 
           id="hero"
           title="Who We Are"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/paris.jpg"
           fullHeight={true}
         />
 
