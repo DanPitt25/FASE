@@ -17,7 +17,8 @@ export default function KnowledgePage() {
         <TitleHero
           id="hero"
           title="Knowledge & Education"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/education.jpg"
           fullHeight={true}
         />
         

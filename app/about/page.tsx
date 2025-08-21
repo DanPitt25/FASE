@@ -20,7 +20,8 @@ export default function AboutPage() {
         <TitleHero 
           id="hero"
           title="About FASE"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/london.jpg"
           fullHeight={true}
         />
 
