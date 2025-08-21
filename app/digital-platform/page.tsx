@@ -18,6 +18,7 @@ export default function DigitalPlatformPage() {
           id="hero"
           title="Digital Platform"
           subtitle="Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members."
+          backgroundImage="/data.jpg"
           fullHeight={true}
         />
         

@@ -20,7 +20,8 @@ export default function AffiliatesPage() {
         <TitleHero 
           id="hero"
           title="Affiliates & Associates"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/amsterdam.jpg"
           fullHeight={true}
         />
 

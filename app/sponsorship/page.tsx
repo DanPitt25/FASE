@@ -17,7 +17,8 @@ export default function SponsorshipPage() {
         <TitleHero
           id="hero"
           title="Sponsorship"
-          subtitle="FASE - The Federation of European MGAs - representing the MGA community across Europe."
+          useDefaultSubtitle={true}
+          backgroundImage="/conference.jpg"
           fullHeight={true}
         />
         

@@ -18,6 +18,7 @@ export default function CapacityTransparencyPage() {
           id="hero"
           title="Capacity Transparency"
           subtitle="Enhanced transparency on insurer appetite for MGA-sourced business by geography and class."
+          backgroundImage="/capacity.jpg"
           fullHeight={true}
         />
         
