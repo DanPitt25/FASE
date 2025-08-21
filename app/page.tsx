@@ -1,18 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ServiceCard from '../components/ServiceCard';
-import FeatureBox from '../components/FeatureBox';
 import CTASection from '../components/CTASection';
 import ContentHero from '../components/ContentHero';
 import Button from '../components/Button';
 import Footer from '../components/Footer';
+import Header from '../components/Header';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showNavPanel, setShowNavPanel] = useState(false);
   const [currentSection, setCurrentSection] = useState('hero');
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [currentServiceIndex, setCurrentServiceIndex] = useState(-1);
   
   const cities = [
     { name: 'Amsterdam', image: '/amsterdam.jpg' },
@@ -22,6 +21,80 @@ export default function Page() {
     { name: 'Paris', image: '/paris.jpg' },
     { name: 'Rome', image: '/rome.jpg' },
     { name: 'Vienna', image: '/vienna.jpg' }
+  ];
+
+  const services = [
+    {
+      title: "Pan-European Events",
+      description: "Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development.",
+      image: "/conference.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      )
+    },
+    {
+      title: "Digital Platform",
+      description: "Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members.",
+      image: "/data.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      )
+    },
+    {
+      title: "Market Intelligence",
+      description: "Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights.",
+      image: "/market.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+        </svg>
+      )
+    },
+    {
+      title: "Industry Advocacy",
+      description: "Voice for MGAs in regulatory discussions at national and pan-European levels.",
+      image: "/regulatory.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      )
+    },
+    {
+      title: "Education & Training",
+      description: "Online education and training modules for MGA employees across various specialisms.",
+      image: "/training.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      )
+    },
+    {
+      title: "Market Research",
+      description: "Research capabilities for MGAs seeking access to new European markets and growth opportunities.",
+      image: "/market.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9V3" />
+        </svg>
+      )
+    },
+    {
+      title: "Capacity Transparency",
+      description: "Enhanced transparency on insurer appetite for MGA-sourced business by geography and class.",
+      image: "/capacity.jpg",
+      icon: (
+        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    }
   ];
 
   const sections = [
@@ -150,160 +223,7 @@ export default function Page() {
           <span className="text-xs font-medium text-fase-steel transform rotate-90 whitespace-nowrap">NAV</span>
         </button>
 
-        {/* Navigation */}
-        <nav className="sticky top-0 z-50 bg-white shadow-lg border-b border-fase-silver">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between">
-              {/* Left Side - Logo */}
-              <div className="flex items-center py-3">
-                <div className="flex-shrink-0 flex items-center">
-                  <div className="relative">
-                    <img 
-                      src="/europe.jpg" 
-                      alt="Europe Map" 
-                      className="h-16 w-auto object-contain "
-                      style={{
-                        filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
-                        objectPosition: 'center'
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-fase-paper bg-opacity-30 "></div>
-                  </div>
-                  <div className="border-l border-fase-silver h-14 mx-3"></div>
-                  <h1 className="text-4xl font-futura font-bold text-fase-navy mx-3">FASE</h1>
-                  <div className="border-l border-fase-silver h-14 mx-3"></div>
-                </div>
-              </div>
-
-            {/* Right Side - Two row layout */}
-            <div className="flex flex-col justify-center">
-              {/* Top Row - Search and Language - Hidden on Mobile */}
-              <div className="hidden md:flex items-center justify-end space-x-6 py-1">
-                {/* Search */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="bg-fase-paper text-fase-steel px-4 py-1 pr-10  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
-                  />
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                
-                {/* Language Selector */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-fase-steel">Language:</span>
-                  <select className="bg-white text-fase-steel text-sm border border-fase-silver rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="es">Español</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Mobile Menu Button */}
-              <div className="flex items-center justify-end lg:hidden">
-                <button
-                  onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2  text-fase-steel hover:text-fase-steel focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {showMobileMenu ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                  </svg>
-                </button>
-              </div>
-
-              {/* Desktop Navigation Menu */}
-              <div className="hidden lg:flex items-center space-x-6 py-1">
-                {/* About Us Dropdown */}
-                <div className="relative group">
-                  <a href="/about" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium flex items-center">
-                    About Us
-                    <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </a>
-                  <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-silver  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <a href="/about/who-we-are" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-paper">Who We Are</a>
-                      <a href="/about/committees" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-paper">Committees</a>
-                      <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-paper">Membership Directory</a>
-                      <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-paper">Affiliates & Associates</a>
-                      <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-paper">Sponsors</a>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Join Us Link */}
-                <a href="/join" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">Join Us</a>
-
-                {/* Sponsorship Link */}
-                <a href="/sponsorship" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">Sponsorship</a>
-
-                {/* Events Link */}
-                <a href="/events" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">Events</a>
-
-                {/* Knowledge & Education Link */}
-                <a href="/knowledge" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">Knowledge & Education</a>
-
-                {/* News Link */}
-                <a href="/news" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">News</a>
-
-                {/* Member Portal */}
-                <a href="/member-portal" className="text-fase-steel hover:text-fase-steel px-3 py-2 text-sm font-medium">Member Portal</a>
-
-                {/* Sign In Button */}
-                <Button href="/login" variant="primary" size="small">Sign In</Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Navigation Menu */}
-      {showMobileMenu && (
-        <div className="lg:hidden bg-white border-b border-fase-silver shadow-lg">
-          <div className="px-4 py-2 space-y-1">
-            {/* Mobile Search */}
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full bg-fase-paper text-fase-steel px-4 py-2 pr-10  text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
-              />
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            
-            {/* Mobile Language Selector */}
-            <div className="mb-4">
-              <select className="w-full bg-white text-fase-steel text-sm border border-fase-silver rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fase-navy">
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="es">Español</option>
-              </select>
-            </div>
-
-            {/* Mobile Navigation Links */}
-            <a href="/about" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">About Us</a>
-            <a href="/join" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">Join Us</a>
-            <a href="/sponsorship" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">Sponsorship</a>
-            <a href="/events" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">Events</a>
-            <a href="/knowledge" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">Knowledge & Education</a>
-            <a href="/news" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">News</a>
-            <a href="/member-portal" className="block px-3 py-2 text-base font-medium text-fase-steel hover:text-fase-steel hover:bg-fase-paper ">Member Portal</a>
-            <a href="/login" className="block px-3 py-2 mt-2 text-base font-medium text-white bg-fase-navy hover:bg-fase-steel  text-center">Sign In</a>
-          </div>
-        </div>
-      )}
+        <Header currentPage="home" />
 
       {/* Hero Section */}
       <ContentHero 
@@ -315,14 +235,14 @@ export default function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start md:items-center md:min-h-[calc(100vh-5.5rem)] pt-2 md:pt-0">
           {/* Left Content */}
           <div className="text-left md:py-16">
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-futura font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-futura font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
               The Federation of European <span className="text-fase-navy">Managing General Agents</span>
             </h1>
             <p className="text-lg sm:text-xl text-fase-steel mb-6 font-lato leading-relaxed">
               A clear voice for the most responsive, innovative and customer-friendly businesses in insurance. A unique forum for MGAs, capacity providers and service providers to meet, exchange ideas and insights, and do business together across Europe.
             </p>
             <div className="mb-8">
-              <div className="grid grid-cols-2 gap-4 text-sm text-fase-platinum">
+              <div className="grid grid-cols-2 gap-4 text-base text-fase-platinum">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-fase-graphite  mr-2"></div>
                   <span>Pan-European Events</span>
@@ -359,102 +279,101 @@ export default function Page() {
       </ContentHero>
 
       {/* Core Services Section */}
-      <ContentHero 
-        id="services" 
-        fullHeight={true}
-        className="bg-white py-16"
-      >
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-futura font-bold text-fase-navy mb-4">What FASE Offers</h2>
-            <p className="text-base sm:text-lg md:text-xl text-fase-steel max-w-3xl mx-auto px-4">
-              A unified voice and forum for European MGAs, providing advocacy, networking, and market intelligence.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-12 sm:mb-16">
-            <ServiceCard
-              icon={
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              }
-              title="Pan-European Events"
-              description="Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development."
-              variant="primary"
-              size="medium"
-            />
-            
-            <ServiceCard
-              icon={
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              }
-              title="Digital Platform"
-              description="Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members."
-              variant="primary"
-              size="medium"
-            />
-            
-            <ServiceCard
-              icon={
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                </svg>
-              }
-              title="Market Intelligence"
-              description="Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights."
-              variant="primary"
-              size="medium"
-            />
+      <section id="services" className="relative h-[calc(100vh-5.5rem)] flex items-center overflow-hidden bg-fase-paper">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 py-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-futura font-bold text-fase-navy">What FASE Offers</h2>
           </div>
 
-          {/* Additional Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            <FeatureBox
-              icon={
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              }
-              title="Industry Advocacy"
-              description="Voice for MGAs in regulatory discussions at national and pan-European levels."
-            />
-            
-            <FeatureBox
-              icon={
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              }
-              title="Education & Training"
-              description="Online education and training modules for MGA employees across various specialisms."
-            />
-            
-            <FeatureBox
-              icon={
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9V3" />
-                </svg>
-              }
-              title="Market Research"
-              description="Research capabilities for MGAs seeking access to new European markets and growth opportunities."
-            />
-            
-            <FeatureBox
-              icon={
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              }
-              title="Capacity Transparency"
-              description="Enhanced transparency on insurer appetite for MGA-sourced business by geography and class."
-            />
+          {/* Postcard-style Container */}
+          <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-5xl mx-auto h-[calc(100vh-16rem)]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+              {/* Left Side - Image */}
+              <div className="relative w-full h-full">
+                {/* Default image when nothing is selected */}
+                <div className={`absolute inset-0 transition-opacity duration-500 ${
+                  currentServiceIndex === -1 ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  <img 
+                    src="/conference.jpg" 
+                    alt="Conference" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Service-specific images */}
+                {services.map((service, index) => (
+                  <div
+                    key={index}
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      currentServiceIndex === index ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    <img 
+                      src={service.image} 
+                      alt={service.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Right Side - Content */}
+              <div className="h-full flex flex-col justify-center overflow-hidden">
+                <div className="p-6 lg:p-8 overflow-y-auto">
+                  <div className="space-y-1">
+                    {services.map((service, index) => (
+                      <div key={index} className="border-b border-fase-pearl last:border-b-0">
+                        <button
+                          onClick={() => {
+                            const newIndex = currentServiceIndex === index ? -1 : index;
+                            setCurrentServiceIndex(newIndex);
+                          }}
+                          className={`w-full text-left py-4 transition-all duration-300 font-medium ${
+                            currentServiceIndex === index 
+                              ? 'text-fase-navy text-base font-semibold' 
+                              : 'text-fase-steel hover:text-fase-navy text-sm'
+                          }`}
+                        >
+                          {service.title}
+                        </button>
+                        
+                        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                          currentServiceIndex === index 
+                            ? 'max-h-48 opacity-100 pb-4' 
+                            : 'max-h-0 opacity-0'
+                        }`}>
+                          <p className="text-fase-steel text-sm leading-relaxed mb-3">
+                            {service.description}
+                          </p>
+                          <a 
+                            href={
+                              service.title === "Pan-European Events" ? "/events" :
+                              service.title === "Education & Training" ? "/knowledge" :
+                              service.title === "Digital Platform" ? "/digital-platform" :
+                              service.title === "Market Intelligence" ? "/market-intelligence" :
+                              service.title === "Industry Advocacy" ? "/industry-advocacy" :
+                              service.title === "Market Research" ? "/market-intelligence" :
+                              service.title === "Capacity Transparency" ? "/capacity-transparency" :
+                              "#"
+                            }
+                            className="inline-flex items-center text-fase-navy hover:text-fase-steel transition-colors text-sm font-medium underline"
+                          >
+                            Learn More
+                            <svg className="w-2.5 h-2.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </ContentHero>
+      </section>
+
 
       {/* Conference Section */}
       <ContentHero 

@@ -13,6 +13,10 @@ export default {
           'silver': '#b5b5b5',
           'pearl': '#e8e8e8',
           'paper': '#f8f8f8',
+          'teal': '#0891b2',
+          'gold': '#d97706',
+          'emerald': '#059669',
+          'orange': '#ea580c',
         }
       },
       fontFamily: {
