@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from '../../lib/auth';
+import { signIn, resendVerificationEmail } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
 
@@ -12,6 +12,9 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,9 +35,32 @@ export default function LoginForm() {
       await signIn(email, password);
       router.push('/member-portal');
     } catch (error: any) {
-      setError(handleAuthError(error));
+      const errorMessage = handleAuthError(error);
+      setError(errorMessage);
+      
+      // Show resend option if it's an email verification error
+      if (errorMessage.includes('verify your email')) {
+        setShowResendOption(true);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email || !password) return;
+    
+    setResendLoading(true);
+    setResendMessage('');
+    
+    try {
+      await resendVerificationEmail(email, password);
+      setResendMessage('Verification email sent! Please check your inbox.');
+      setShowResendOption(false);
+    } catch (error: any) {
+      setResendMessage(handleAuthError(error));
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -89,6 +115,32 @@ export default function LoginForm() {
 
       {error && (
         <div className="text-red-600 text-sm">{error}</div>
+      )}
+
+      {showResendOption && (
+        <div className="rounded-md bg-blue-50 p-4 border border-blue-200">
+          <div className="text-sm text-blue-800 mb-3">
+            <strong>Need a new verification email?</strong>
+            <br />
+            We can resend the verification email to your inbox.
+          </div>
+          <Button 
+            type="button"
+            variant="secondary" 
+            size="small"
+            onClick={handleResendVerification}
+            disabled={resendLoading}
+            className="w-full"
+          >
+            {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+          </Button>
+        </div>
+      )}
+
+      {resendMessage && (
+        <div className={`text-sm ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
+          {resendMessage}
+        </div>
       )}
 
       <Button 
