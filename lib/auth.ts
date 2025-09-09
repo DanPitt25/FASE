@@ -58,6 +58,13 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
+    // Check if email is verified
+    if (!user.emailVerified) {
+      // Sign out immediately if email not verified
+      await firebaseSignOut(auth);
+      throw new Error('Please verify your email address before signing in. Check your inbox for a verification email.');
+    }
+    
     // Get user profile from Firestore
     const userProfile = await getUserProfile(user.uid);
     
@@ -86,6 +93,13 @@ export const signOut = async (): Promise<void> => {
 export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
+      // If email is not verified, sign out automatically
+      if (!user.emailVerified) {
+        await firebaseSignOut(auth);
+        callback(null);
+        return;
+      }
+      
       // Get user profile from Firestore
       const userProfile = await getUserProfile(user.uid);
       
@@ -102,14 +116,44 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
   });
 };
 
-// Send email verification
+// Send email verification to current user
 export const sendVerificationEmail = async (): Promise<void> => {
   if (!auth.currentUser) {
     throw new Error('No user is currently signed in');
   }
   
   try {
-    await sendEmailVerification(auth.currentUser);
+    const actionCodeSettings = {
+      url: `${window.location.origin}/login?verified=true`,
+      handleCodeInApp: false,
+    };
+    
+    await sendEmailVerification(auth.currentUser, actionCodeSettings);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+// Resend verification email for a specific user (without staying signed in)
+export const resendVerificationEmail = async (email: string, password: string): Promise<void> => {
+  try {
+    // Temporarily sign in to send verification email
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    if (user.emailVerified) {
+      throw new Error('Email is already verified. You can sign in normally.');
+    }
+    
+    const actionCodeSettings = {
+      url: `${window.location.origin}/login?verified=true`,
+      handleCodeInApp: false,
+    };
+    
+    await sendEmailVerification(user, actionCodeSettings);
+    
+    // Sign out immediately after sending verification
+    await firebaseSignOut(auth);
   } catch (error: any) {
     throw new Error(error.message);
   }
