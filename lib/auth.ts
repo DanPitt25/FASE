@@ -44,7 +44,7 @@ export const createAccountWithVerification = async (email: string, password: str
   
   // Send verification email with custom redirect
   const actionCodeSettings = {
-    url: `${window.location.origin}/login?verified=true`,
+    url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
     handleCodeInApp: false,
   };
   
@@ -124,7 +124,7 @@ export const sendVerificationEmail = async (): Promise<void> => {
   
   try {
     const actionCodeSettings = {
-      url: `${window.location.origin}/login?verified=true`,
+      url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
       handleCodeInApp: false,
     };
     
@@ -146,7 +146,7 @@ export const resendVerificationEmail = async (email: string, password: string): 
     }
     
     const actionCodeSettings = {
-      url: `${window.location.origin}/login?verified=true`,
+      url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
       handleCodeInApp: false,
     };
     
