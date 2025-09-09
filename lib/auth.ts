@@ -93,7 +93,7 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
         uid: user.uid,
         email: user.email,
         displayName: userProfile?.displayName || user.displayName,
-        emailVerified: userProfile?.emailVerified ?? user.emailVerified,
+        emailVerified: user.emailVerified, // Always use Firebase Auth as source of truth
         twoFactorEnabled: userProfile?.twoFactorEnabled || false
       });
     } else {
