@@ -23,97 +23,34 @@ export interface AuthUser {
   twoFactorEnabled?: boolean;
 }
 
-// Send verification email before account creation
-export const sendVerificationForSignup = async (email: string, personalName: string, organisation?: string): Promise<void> => {
+// Create account and send verification email
+export const createAccountWithVerification = async (email: string, password: string, personalName: string, organisation?: string): Promise<void> => {
+  // Create the account first
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  
+  // Create display name
+  const displayName = organisation 
+    ? `${personalName} (${organisation})`
+    : personalName;
+  
+  // Update Firebase Auth profile
+  await updateProfile(user, {
+    displayName: displayName
+  });
+
+  // Create Firestore user profile (emailVerified will be false initially)
+  await createUserProfile(user.uid, email, displayName, personalName, organisation);
+  
+  // Send verification email with custom redirect
   const actionCodeSettings = {
-    url: `${window.location.origin}/verify-signup`,
-    handleCodeInApp: true,
-  };
-
-  // Store registration data locally for after verification
-  const registrationData = {
-    email,
-    personalName,
-    organisation,
-    timestamp: Date.now()
+    url: `${window.location.origin}/login?verified=true`,
+    handleCodeInApp: false,
   };
   
-  localStorage.setItem('pendingRegistration', JSON.stringify(registrationData));
-  
-  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+  await sendEmailVerification(user, actionCodeSettings);
 };
 
-// Complete signup after email verification
-export const completeSignupAfterVerification = async (email: string, password: string): Promise<AuthUser> => {
-  try {
-    // Get stored registration data
-    const storedData = localStorage.getItem('pendingRegistration');
-    if (!storedData) {
-      throw new Error('No pending registration found');
-    }
-    
-    const registrationData = JSON.parse(storedData);
-    if (registrationData.email !== email) {
-      throw new Error('Email mismatch');
-    }
-    
-    // Complete email link sign-in (this creates the account with verified email)
-    const userCredential = await signInWithEmailLink(auth, email, window.location.href);
-    const user = userCredential.user;
-    
-    // Set password for the account
-    await updatePassword(user, password);
-    
-    // Create display name
-    const displayName = registrationData.organisation 
-      ? `${registrationData.personalName} (${registrationData.organisation})`
-      : registrationData.personalName;
-    
-    // Update Firebase Auth profile
-    await updateProfile(user, {
-      displayName: displayName
-    });
-
-    // Create Firestore user profile with verified email
-    await createUserProfile(user.uid, email, displayName, registrationData.personalName, registrationData.organisation);
-    
-    // Update Firestore to mark email as verified
-    await updateUserProfile(user.uid, { emailVerified: true });
-    
-    // Clear pending registration
-    localStorage.removeItem('pendingRegistration');
-
-    return {
-      uid: user.uid,
-      email: user.email,
-      displayName: displayName,
-      emailVerified: true, // Email was verified via link
-      twoFactorEnabled: false
-    };
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
-
-// Check if current URL is a signup verification link
-export const isSignupVerificationLink = (): boolean => {
-  return isSignInWithEmailLink(auth, window.location.href);
-};
-
-// Handle signup verification link
-export const handleSignupVerificationLink = async (): Promise<string | null> => {
-  if (!isSignInWithEmailLink(auth, window.location.href)) {
-    return null;
-  }
-  
-  const storedData = localStorage.getItem('pendingRegistration');
-  if (!storedData) {
-    throw new Error('No pending registration found');
-  }
-  
-  const registrationData = JSON.parse(storedData);
-  return registrationData.email;
-};
 
 // Sign in existing user
 export const signIn = async (email: string, password: string): Promise<AuthUser> => {

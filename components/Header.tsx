@@ -5,7 +5,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Button from './Button';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { signOut } from '../lib/auth';
+import { useTranslations } from 'next-intl';
 
 interface HeaderProps {
   currentPage?: string;
@@ -16,7 +18,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { user, loading } = useAuth();
+  const { locale, setLocale } = useLocale();
   const router = useRouter();
+  const t = useTranslations('Header');
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -69,14 +73,14 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <div className="hidden md:flex items-center justify-end space-x-6 py-1">
                 {user && (
                   <div className="text-sm text-fase-steel">
-                    Logged in as {user.displayName || user.email?.split("@")[0]}
+                    {t('logged_in_as')} {user.displayName || user.email?.split("@")[0]}
                   </div>
                 )}
                 
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder={t('search_placeholder')}
                     className="bg-fase-pearl text-fase-steel px-4 py-1 pr-10  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
                   />
                   <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,13 +89,14 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-fase-steel">Language:</span>
-                  <select className="bg-white text-fase-steel text-sm border border-fase-silver rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy">
+                  <span className="text-sm text-fase-steel">{t('language_label')}</span>
+                  <select 
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value as 'en' | 'fr')}
+                    className="bg-white text-fase-steel text-sm border border-fase-silver rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  >
                     <option value="en">English</option>
-                    <option value="de">Deutsch</option>
                     <option value="fr">Français</option>
-                    <option value="es">Español</option>
-                    <option value="it">Italiano</option>
                   </select>
                 </div>
               </div>
@@ -113,48 +118,47 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               </div>
 
               {/* Desktop Navigation Menu */}
-              <div className="hidden lg:flex items-center space-x-6 py-1">
-                <div className="relative group">
-                  <a href="/about" className={`px-3 py-2 text-sm font-medium flex items-center ${
-                    currentPage === 'about' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                  }`}>
-                    About Us
-                    <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </a>
-                  <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-silver  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
-                      <a href="/what-is-an-mga" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">What is an MGA?</a>
-                      <a href="/about/who-we-are" className={`block px-4 py-2 text-sm ${
-                        currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-pearl font-medium' : 'text-fase-steel hover:bg-fase-pearl'
-                      }`}>Who We Are</a>
-                      <a href="/about/advisory-board" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Advisory Board</a>
-                      <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Membership Directory</a>
-                      <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Affiliates & Associates</a>
-                      <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Sponsors</a>
+              <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
+                <div className="flex items-center space-x-6">
+                  <div className="relative group">
+                    <a href="/about" className={`px-4 py-2 text-sm font-medium flex items-center whitespace-nowrap ${
+                      currentPage === 'about' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                    }`}>
+                      {t('about_us')}
+                      <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </a>
+                    <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-silver  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-2">
+                        <a href="/what-is-an-mga" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">What is an MGA?</a>
+                        <a href="/about/who-we-are" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-pearl font-medium' : 'text-fase-steel hover:bg-fase-pearl'
+                        }`}>Who We Are</a>
+                        <a href="/about/advisory-board" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Advisory Board</a>
+                        <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Membership Directory</a>
+                        <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Affiliates & Associates</a>
+                        <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-steel hover:bg-fase-pearl">Sponsors</a>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <a href="/join" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'join' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>Join Us</a>
-                <a href="/sponsorship" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'sponsorship' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>Sponsorship</a>
-                <a href="/events" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'events' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>Events</a>
-                <a href="/knowledge" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'knowledge' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>Knowledge & Education</a>
-                <a href="/news" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'news' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>News</a>
-                <a href="/member-portal" className={`px-3 py-2 text-sm font-medium ${
-                  currentPage === 'member-portal' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
-                }`}>Member Portal</a>
+                  <a href="/join" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                    currentPage === 'join' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                  }`}>{t('join_us')}</a>
+                  <a href="/sponsorship" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                    currentPage === 'sponsorship' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                  }`}>{t('sponsorship')}</a>
+                  <a href="/events" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                    currentPage === 'events' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                  }`}>{t('events')}</a>
+                  <a href="/news" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                    currentPage === 'news' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                  }`}>{t('news')}</a>
+                  <a href="/member-portal" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                    currentPage === 'member-portal' ? 'text-fase-navy' : 'text-fase-steel hover:text-fase-navy'
+                  }`}>{t('member_portal')}</a>
+                </div>
                 {loading ? (
                   <div className="w-20 h-8 bg-fase-pearl animate-pulse rounded"></div>
                 ) : user ? (
@@ -162,10 +166,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     onClick={handleSignOut}
                     className="px-3 py-2 text-sm font-medium text-fase-steel hover:text-fase-navy"
                   >
-                    Sign Out
+                    {t('sign_out')}
                   </button>
                 ) : (
-                  <Button href="/login" variant="primary" size="small">Sign In</Button>
+                  <Button href="/login" variant="primary" size="small">{t('sign_in')}</Button>
                 )}
               </div>
             </div>
@@ -180,7 +184,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <div className="relative mb-4">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder={t('search_placeholder')}
                 className="w-full bg-fase-pearl text-fase-steel px-4 py-2 pr-10  text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
               />
               <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,51 +193,50 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             </div>
             
             <div className="mb-4">
-              <select className="w-full bg-white text-fase-steel text-sm border border-fase-silver rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fase-navy">
+              <select 
+                value={locale}
+                onChange={(e) => setLocale(e.target.value as 'en' | 'fr')}
+                className="w-full bg-white text-fase-steel text-sm border border-fase-silver rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fase-navy"
+              >
                 <option value="en">English</option>
                 <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="es">Español</option>
               </select>
             </div>
 
             <a href="/about" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'about' || currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>About Us</a>
+            }`}>{t('about_us')}</a>
             <a href="/join" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'join' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>Join Us</a>
+            }`}>{t('join_us')}</a>
             <a href="/sponsorship" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'sponsorship' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>Sponsorship</a>
+            }`}>{t('sponsorship')}</a>
             <a href="/events" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'events' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>Events</a>
-            <a href="/knowledge" className={`block px-3 py-2 text-base font-medium  ${
-              currentPage === 'knowledge' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>Knowledge & Education</a>
+            }`}>{t('events')}</a>
             <a href="/news" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'news' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>News</a>
+            }`}>{t('news')}</a>
             <a href="/member-portal" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-pearl' : 'text-fase-steel hover:text-fase-navy hover:bg-fase-pearl'
-            }`}>Member Portal</a>
+            }`}>{t('member_portal')}</a>
             {loading ? (
               <div className="w-full h-10 bg-fase-pearl animate-pulse rounded mt-2"></div>
             ) : user ? (
               <div className="mt-4 pt-4 border-t border-fase-silver">
                 <div className="text-center text-sm text-fase-steel mb-2">
-                  Signed in as: {user.displayName || user.email?.split('@')[0]}
+                  {t('signed_in_as')} {user.displayName || user.email?.split('@')[0]}
                 </div>
                 <button
                   onClick={handleSignOut}
                   className="w-full text-center py-2 px-4 bg-fase-steel text-white rounded hover:bg-fase-graphite transition-colors"
                 >
-                  Sign Out
+                  {t('sign_out')}
                 </button>
               </div>
             ) : (
-              <Button href="/login" variant="primary" size="medium" className="w-full text-center mt-2">Sign In</Button>
+              <Button href="/login" variant="primary" size="medium" className="w-full text-center mt-2">{t('sign_in')}</Button>
             )}
           </div>
         </div>
