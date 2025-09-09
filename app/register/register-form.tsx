@@ -74,18 +74,12 @@ export default function RegisterForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <h2 className="text-2xl font-futura font-bold text-fase-navy mb-2">Check Your Email</h2>
+        <h2 className="text-2xl font-futura font-bold text-fase-navy mb-4">Check Your Email</h2>
         <p className="text-fase-steel mb-6">
-          We have sent a verification link to <strong>{email}</strong>
+          Click the verification link sent to <strong>{email}</strong>
         </p>
         
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-          <p className="text-blue-800 text-sm">
-            ✓ Your account has been created! Please check your email and click the verification link to verify your email address.
-          </p>
-        </div>
-        
-        <div className="text-center">
+        <div className="text-center mb-4">
           <a
             href="/login"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-graphite focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
@@ -95,7 +89,7 @@ export default function RegisterForm() {
         </div>
         
         <p className="text-xs text-fase-steel text-center">
-          Do not see the email? Check your spam folder. The link will expire in 1 hour.
+          Check your spam folder if you don't see the email.
         </p>
       </div>
     );
