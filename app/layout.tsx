@@ -2,8 +2,7 @@ import './globals.css';
 import { GeistSans } from 'geist/font/sans';
 import { AuthProvider } from '../contexts/AuthContext';
 import { LocaleProvider } from '../contexts/LocaleContext';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import DynamicIntlProvider from '../components/DynamicIntlProvider';
 
 let title = 'FASE - Federation of European MGAs';
 let description =
@@ -25,8 +24,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Get messages for the current locale
-  const messages = await getMessages();
+  // Load both message sets for dynamic switching
+  const enMessages = (await import('../messages/en.json')).default;
+  const frMessages = (await import('../messages/fr.json')).default;
+  const allMessages = { en: enMessages, fr: frMessages };
   
   return (
     <html lang="en">
@@ -34,13 +35,13 @@ export default async function RootLayout({
         <link rel="preload" href="/europe.jpg" as="image" />
       </head>
       <body className={GeistSans.variable}>
-        <NextIntlClientProvider messages={messages}>
-          <LocaleProvider>
+        <LocaleProvider>
+          <DynamicIntlProvider allMessages={allMessages}>
             <AuthProvider>
               {children}
             </AuthProvider>
-          </LocaleProvider>
-        </NextIntlClientProvider>
+          </DynamicIntlProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
