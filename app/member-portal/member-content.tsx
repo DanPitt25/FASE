@@ -108,157 +108,178 @@ export default function MemberContent() {
   }
 
   return (
-    <div className="text-center">
-      <h2 className="text-3xl font-futura font-bold text-fase-navy mb-6">
-        Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ""} to Your Member Portal
-      </h2>
-      
-      <div className="mb-8">
-        <h3 className="text-xl font-futura font-semibold text-fase-navy mb-4">Your Account</h3>
-        <div className="space-y-2 text-left max-w-md mx-auto">
-          <p className="text-fase-steel">
-            <strong>Personal Name:</strong> {userProfile?.personalName || "Not set"}
-          </p>
-          <p className="text-fase-steel">
-            <strong>Organisation:</strong> {userProfile?.organisation || "Not specified"}
-          </p>
-          <p className="text-fase-steel">
-            <strong>Email:</strong> {user.email}
-          </p>
-          <p className="text-fase-steel">
-            <strong>Member ID:</strong> {user.uid.substring(0, 8)}…
-          </p>
-          <p className="text-fase-steel">
-            <strong>Email Status:</strong> 
-            <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-futura font-bold text-fase-navy mb-2">Member Portal</h1>
+        <p className="text-fase-steel">
+          Welcome{userProfile?.personalName ? `, ${userProfile.personalName}` : ""}
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Account Information Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-futura font-semibold text-fase-navy">Account Information</h2>
+            <div className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
               ✓ Verified
-            </span>
-          </p>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-fase-steel font-medium">Name</label>
+              <p className="text-fase-navy">{userProfile?.personalName || "Not set"}</p>
+            </div>
+            
+            {userProfile?.organisation && (
+              <div>
+                <label className="text-sm text-fase-steel font-medium">Organisation</label>
+                <p className="text-fase-navy">{userProfile.organisation}</p>
+              </div>
+            )}
+            
+            <div>
+              <label className="text-sm text-fase-steel font-medium">Email Address</label>
+              <p className="text-fase-navy">{user.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Member Profile Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-futura font-semibold text-fase-navy">Member Profile</h2>
+            <Button 
+              variant={isEditing ? "secondary" : "primary"} 
+              size="small"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              {isEditing ? "Cancel" : subscriber ? "Edit" : "Setup"}
+            </Button>
+          </div>
+
+          {!isEditing ? (
+            // Display Mode
+            <div className="space-y-4">
+              {subscriber ? (
+                <>
+                  <div>
+                    <label className="text-sm text-fase-steel font-medium">Organization Type</label>
+                    <p className="text-fase-navy capitalize">{subscriber.type}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm text-fase-steel font-medium">Access Level</label>
+                    <p className="text-fase-navy capitalize">{subscriber.access}</p>
+                  </div>
+                  
+                  {subscriber.logo && (
+                    <div>
+                      <label className="text-sm text-fase-steel font-medium">Organization Logo</label>
+                      <div className="mt-2 w-24 h-16 border border-fase-silver rounded-lg flex items-center justify-center bg-fase-pearl overflow-hidden">
+                        <img 
+                          src={subscriber.logo} 
+                          alt="Organization Logo" 
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'block';
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-fase-steel hidden">No logo</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-fase-steel">
+                  <p className="mb-4">Complete your member profile to access additional features</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Edit Mode
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Organization Type
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({...formData, type: e.target.value as Subscriber['type']})}
+                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                >
+                  <option value="individual">Individual</option>
+                  <option value="MGA">MGA</option>
+                  <option value="provider">Provider</option>
+                  <option value="carrier">Carrier</option>
+                  <option value="internal">Internal</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Access Level
+                </label>
+                <select
+                  value={formData.access}
+                  onChange={(e) => setFormData({...formData, access: e.target.value as Subscriber['access']})}
+                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                >
+                  <option value="none">None</option>
+                  <option value="subscriber">Subscriber</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Logo URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={formData.logo}
+                  onChange={(e) => setFormData({...formData, logo: e.target.value})}
+                  placeholder="https://example.com/logo.png"
+                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button variant="primary" size="medium" onClick={handleSaveSubscriber}>
+                  {subscriber ? "Save Changes" : "Create Profile"}
+                </Button>
+                <Button variant="secondary" size="medium" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="border-t border-fase-silver pt-8 mx-auto max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h4 className="text-lg font-futura font-semibold text-fase-navy">Subscriber Profile</h4>
-          <Button 
-            variant={isEditing ? "secondary" : "primary"} 
-            size="small"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            {isEditing ? "Cancel" : subscriber ? "Edit" : "Create Profile"}
-          </Button>
+      {/* Additional sections can be added here */}
+      <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+        <h2 className="text-xl font-futura font-semibold text-fase-navy mb-4">Member Resources</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <h3 className="font-medium text-fase-navy mb-2">Events & Conferences</h3>
+            <p className="text-sm text-fase-steel">Access upcoming FASE events and conference materials</p>
+          </div>
+          <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <h3 className="font-medium text-fase-navy mb-2">Knowledge Hub</h3>
+            <p className="text-sm text-fase-steel">Browse industry insights and educational resources</p>
+          </div>
+          <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <h3 className="font-medium text-fase-navy mb-2">Member Directory</h3>
+            <p className="text-sm text-fase-steel">Connect with other FASE members and partners</p>
+          </div>
         </div>
-
-        {!isEditing ? (
-          // Display Mode
-          <div className="space-y-4 text-left">
-            {subscriber ? (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-fase-steel font-medium">Organization Type</p>
-                    <p className="text-fase-navy capitalize">{subscriber.type}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-fase-steel font-medium">Access Level</p>
-                    <p className="text-fase-navy capitalize">{subscriber.access}</p>
-                  </div>
-                </div>
-                
-                {subscriber.logo && (
-                  <div>
-                    <p className="text-sm text-fase-steel font-medium mb-2">Organization Logo</p>
-                    <div className="w-32 h-20 border border-fase-silver rounded flex items-center justify-center bg-fase-pearl">
-                      <img 
-                        src={subscriber.logo} 
-                        alt="Organization Logo" 
-                        className="max-w-full max-h-full object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (nextElement) {
-                            nextElement.style.display = 'block';
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-fase-steel hidden">Logo unavailable</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 text-xs text-fase-steel">
-                  <p>Last updated: {subscriber.updatedAt ? new Date(subscriber.updatedAt.seconds * 1000).toLocaleDateString() : 'Unknown'}</p>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-fase-steel mb-4">
-                  No subscriber profile found. Create your profile to access member features.
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          // Edit Mode
-          <div className="space-y-6 text-left">
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Organization Type *
-              </label>
-              <select
-                value={formData.type}
-                onChange={(e) => setFormData({...formData, type: e.target.value as Subscriber['type']})}
-                className="w-full px-3 py-2 border border-fase-silver rounded-md focus:outline-none focus:ring-2 focus:ring-fase-navy"
-              >
-                <option value="individual">Individual</option>
-                <option value="MGA">MGA</option>
-                <option value="provider">Provider</option>
-                <option value="carrier">Carrier</option>
-                <option value="internal">Internal</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Access Level *
-              </label>
-              <select
-                value={formData.access}
-                onChange={(e) => setFormData({...formData, access: e.target.value as Subscriber['access']})}
-                className="w-full px-3 py-2 border border-fase-silver rounded-md focus:outline-none focus:ring-2 focus:ring-fase-navy"
-              >
-                <option value="none">None</option>
-                <option value="subscriber">Subscriber</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Logo URL
-              </label>
-              <input
-                type="url"
-                value={formData.logo}
-                onChange={(e) => setFormData({...formData, logo: e.target.value})}
-                placeholder="gs://fase-site.firebasestorage.app/graphics/logos/your-logo.png"
-                className="w-full px-3 py-2 border border-fase-silver rounded-md focus:outline-none focus:ring-2 focus:ring-fase-navy"
-              />
-              <p className="text-xs text-fase-steel mt-1">
-                Upload logos to Firebase Storage under /graphics/logos/ and paste the URL here
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button variant="primary" size="medium" onClick={handleSaveSubscriber}>
-                {subscriber ? "Update Profile" : "Create Profile"}
-              </Button>
-              <Button variant="secondary" size="medium" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
