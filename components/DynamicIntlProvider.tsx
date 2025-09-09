@@ -1,7 +1,8 @@
 'use client';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { ReactNode } from 'react';
+import { useLocale } from '../contexts/LocaleContext';
+import { ReactNode, useEffect, useState } from 'react';
 
 interface DynamicIntlProviderProps {
   children: ReactNode;
@@ -9,12 +10,18 @@ interface DynamicIntlProviderProps {
 }
 
 export default function DynamicIntlProvider({ children, allMessages }: DynamicIntlProviderProps) {
-  // Just use English by default for now to fix the SSR issue
-  // TODO: Re-implement dynamic locale switching after fixing SSR
-  const locale = 'en';
+  const { locale } = useLocale();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by using en as default until mounted
+  const currentLocale = isMounted ? locale : 'en';
   
   return (
-    <NextIntlClientProvider locale={locale} messages={allMessages[locale]}>
+    <NextIntlClientProvider locale={currentLocale} messages={allMessages[currentLocale]}>
       {children}
     </NextIntlClientProvider>
   );
