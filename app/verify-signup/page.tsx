@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { applyActionCode } from 'firebase/auth';
+import { applyActionCode, reload } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 
 function VerifyEmailContent() {
@@ -16,9 +16,14 @@ function VerifyEmailContent() {
     const oobCode = searchParams.get('oobCode');
 
     if (mode === 'verifyEmail' && oobCode) {
-      // Apply the email verification code (this updates Firebase Auth automatically)
+      // Apply the email verification code
       applyActionCode(auth, oobCode)
-        .then(() => {
+        .then(async () => {
+          // Reload user state if user is signed in (same device scenario)
+          if (auth.currentUser) {
+            await reload(auth.currentUser);
+          }
+          
           setStatus('success');
           // Redirect to login after 3 seconds
           setTimeout(() => {
