@@ -175,7 +175,10 @@ export default function MemberContent() {
                         className="max-w-full max-h-full object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'block';
+                          const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextElement) {
+                            nextElement.style.display = 'block';
+                          }
                         }}
                       />
                       <span className="text-xs text-fase-steel hidden">Logo unavailable</span>
