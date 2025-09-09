@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { sendVerificationForSignup } from "../../lib/auth";
+import { createAccountWithVerification } from "../../lib/auth";
 import Button from "../../components/Button";
 import { handleAuthError } from "../../lib/auth-errors";
 
@@ -57,10 +57,7 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      // Store password for later use (after email verification)
-      localStorage.setItem("pendingPassword", password);
-      
-      await sendVerificationForSignup(email, personalName.trim(), organisation.trim() || undefined);
+      await createAccountWithVerification(email, password, personalName.trim(), organisation.trim() || undefined);
       setEmailSent(true);
     } catch (error: any) {
       setError(handleAuthError(error));
@@ -84,8 +81,17 @@ export default function RegisterForm() {
         
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
           <p className="text-blue-800 text-sm">
-            ✓ Please check your email and click the verification link to complete your registration.
+            ✓ Your account has been created! Please check your email and click the verification link to verify your email address.
           </p>
+        </div>
+        
+        <div className="text-center">
+          <a
+            href="/login"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-graphite focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+          >
+            Continue to Sign In
+          </a>
         </div>
         
         <p className="text-xs text-fase-steel text-center">
