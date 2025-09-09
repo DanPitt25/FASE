@@ -1,0 +1,17 @@
+{
+  "Header": {
+    "search_placeholder": "Rechercher...",
+    "language_label": "Langue :",
+    "about_us": "À Propos",
+    "join_us": "Nous Rejoindre", 
+    "sponsorship": "Parrainage",
+    "events": "Événements",
+    "knowledge": "Connaissances & Éducation",
+    "news": "Actualités",
+    "member_portal": "Portail Membre",
+    "sign_in": "Se Connecter",
+    "sign_out": "Se Déconnecter",
+    "logged_in_as": "Connecté en tant que",
+    "signed_in_as": "Connecté en tant que :"
+  }
+}

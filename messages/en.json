@@ -1,0 +1,17 @@
+{
+  "Header": {
+    "search_placeholder": "Search...",
+    "language_label": "Language:",
+    "about_us": "About Us",
+    "join_us": "Join Us", 
+    "sponsorship": "Sponsorship",
+    "events": "Events",
+    "knowledge": "Knowledge & Education",
+    "news": "News",
+    "member_portal": "Member Portal",
+    "sign_in": "Sign In",
+    "sign_out": "Sign Out",
+    "logged_in_as": "Logged in as",
+    "signed_in_as": "Signed in as:"
+  }
+}
