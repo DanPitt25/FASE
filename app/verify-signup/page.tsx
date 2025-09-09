@@ -2,8 +2,11 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { applyActionCode } from 'firebase/auth';
+import { applyActionCode, checkActionCode } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
+import { updateUserProfile, getUserProfile } from '../../lib/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
@@ -16,9 +19,24 @@ function VerifyEmailContent() {
     const oobCode = searchParams.get('oobCode');
 
     if (mode === 'verifyEmail' && oobCode) {
-      // Apply the email verification code
-      applyActionCode(auth, oobCode)
-        .then(() => {
+      // First check the action code to get the email
+      checkActionCode(auth, oobCode)
+        .then(async (info) => {
+          // Apply the email verification code
+          await applyActionCode(auth, oobCode);
+          
+          // Find user by email and update Firestore profile
+          const email = info.data.email;
+          if (email) {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('email', '==', email));
+            const querySnapshot = await getDocs(q);
+            
+            querySnapshot.forEach(async (doc) => {
+              await updateUserProfile(doc.id, { emailVerified: true });
+            });
+          }
+          
           setStatus('success');
           // Redirect to login after 3 seconds
           setTimeout(() => {
