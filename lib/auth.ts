@@ -39,6 +39,9 @@ export const createAccountWithVerification = async (email: string, password: str
     displayName: displayName
   });
 
+  // Create Firestore user profile (emailVerified will be false initially)
+  await createUserProfile(user.uid, email, displayName, personalName, organisation);
+  
   // Send verification email with custom redirect
   const actionCodeSettings = {
     url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
@@ -46,12 +49,6 @@ export const createAccountWithVerification = async (email: string, password: str
   };
   
   await sendEmailVerification(user, actionCodeSettings);
-  
-  // Sign out immediately to prevent verification lockdown interference
-  await firebaseSignOut(auth);
-  
-  // Create Firestore user profile after sign out (using stored user data)
-  await createUserProfile(user.uid, email, displayName, personalName, organisation);
 };
 
 
@@ -96,13 +93,6 @@ export const signOut = async (): Promise<void> => {
 export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
-      // If email is not verified, sign out automatically
-      if (!user.emailVerified) {
-        await firebaseSignOut(auth);
-        callback(null);
-        return;
-      }
-      
       // Get user profile from Firestore
       const userProfile = await getUserProfile(user.uid);
       
