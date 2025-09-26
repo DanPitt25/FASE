@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only if API key is available
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    })
+  : null;
 
 // Pricing mapping based on premium brackets
 const getPriceForPremiumBracket = (bracket: string): number => {
@@ -20,6 +23,14 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is available
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Payment processing not available' },
+        { status: 503 }
+      );
+    }
+
     // Debug: Log environment variables
     console.log('Stripe secret key exists:', !!process.env.STRIPE_SECRET_KEY);
     console.log('Stripe secret key prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
