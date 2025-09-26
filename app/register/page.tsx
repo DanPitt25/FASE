@@ -15,12 +15,9 @@ export default function Register() {
                 filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
               }}
             />
-            <h1 className="text-2xl font-futura font-bold text-fase-navy">FASE</h1>
+            <h1 className="text-2xl font-playfair font-bold text-fase-navy">FASE</h1>
           </div>
-          <h3 className="text-xl font-futura font-semibold text-fase-navy">Create Account</h3>
-          <p className="text-sm text-fase-steel">
-            Join the FASE community
-          </p>
+          <h3 className="text-xl font-playfair font-semibold text-fase-navy">Create Account</h3>
         </div>
         <div className="bg-white px-4 py-8 sm:px-16">
           <RegisterForm />

@@ -16,9 +16,9 @@ export default function Login() {
                 filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
               }}
             />
-            <h1 className="text-2xl font-futura font-bold text-fase-navy">FASE</h1>
+            <h1 className="text-2xl font-playfair font-bold text-fase-navy">FASE</h1>
           </div>
-          <h3 className="text-xl font-futura font-semibold text-fase-navy">Sign In</h3>
+          <h3 className="text-xl font-playfair font-semibold text-fase-navy">Sign In</h3>
           <p className="text-sm text-fase-steel">
             Access your FASE member portal
           </p>

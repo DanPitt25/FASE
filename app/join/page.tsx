@@ -30,7 +30,7 @@ export default function JoinPage() {
         <ContentHero id="membership-types" fullHeight={true} className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-futura font-bold text-fase-navy mb-4">Choose Your Membership</h2>
+              <h2 className="text-3xl font-playfair font-bold text-fase-navy mb-4">Choose Your Membership</h2>
               <p className="text-lg text-fase-steel max-w-2xl mx-auto">
                 FASE offers three distinct membership categories to serve MGAs, market practitioners, and service providers across Europe.
               </p>
@@ -46,7 +46,7 @@ export default function JoinPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">MGA Member</h3>
+                  <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">MGA Member</h3>
                   <p className="text-fase-steel mb-6">
                     Full membership for Managing General Agents operating in Europe.
                   </p>
@@ -95,7 +95,7 @@ export default function JoinPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Market Practitioner</h3>
+                  <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Market Practitioner</h3>
                   <p className="text-fase-steel mb-6">
                     For capacity providers, insurers, and reinsurers working with MGAs.
                   </p>
@@ -144,7 +144,7 @@ export default function JoinPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Supplier</h3>
+                  <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Supplier</h3>
                   <p className="text-fase-steel mb-6">
                     For service providers supporting the MGA ecosystem.
                   </p>
@@ -188,18 +188,18 @@ export default function JoinPage() {
 
             {/* Launch Information */}
             <div className="bg-fase-navy p-8 text-center text-white">
-              <h3 className="text-2xl font-futura font-bold mb-4">Federation Launch</h3>
+              <h3 className="text-2xl font-playfair font-bold mb-4">Federation Launch</h3>
               <p className="text-fase-paper mb-6 max-w-3xl mx-auto">
                 FASE will be officially launched when a quorum of fifty (50) MGAs have registered their interest. 
                 No membership dues will be payable before this point. Register your interest today to help us reach this milestone.
               </p>
               <div className="flex justify-center items-center space-x-8">
                 <div className="text-center">
-                  <div className="text-4xl font-futura font-bold text-fase-navy mb-2">0</div>
+                  <div className="text-4xl font-playfair font-bold text-fase-navy mb-2">0</div>
                   <div className="text-sm text-fase-paper">Current Registrations</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-futura font-bold text-fase-navy mb-2">50</div>
+                  <div className="text-4xl font-playfair font-bold text-fase-navy mb-2">50</div>
                   <div className="text-sm text-fase-paper">Target for Launch</div>
                 </div>
               </div>

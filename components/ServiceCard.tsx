@@ -55,7 +55,7 @@ export default function ServiceCard({
   const classes = {
     card: `text-center ${sizeClasses[size].card} ${variantClasses[variant].card}`,
     icon: `${sizeClasses[size].icon} ${variantClasses[variant].icon} flex items-center justify-center mx-auto shadow-lg`,
-    title: `${sizeClasses[size].title} font-futura font-semibold ${variantClasses[variant].title} mb-3 sm:mb-4`,
+    title: `${sizeClasses[size].title} font-playfair font-semibold ${variantClasses[variant].title} mb-3 sm:mb-4`,
     description: `${sizeClasses[size].description} ${variantClasses[variant].description} leading-relaxed`
   };
 

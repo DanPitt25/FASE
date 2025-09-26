@@ -20,7 +20,7 @@ export default {
         }
       },
       fontFamily: {
-        'futura': ['Futura', 'Lato', 'system-ui', 'sans-serif'],
+        'playfair': ['Playfair Display', 'serif'],
         'lato': ['Lato', 'system-ui', 'sans-serif'],
       }
     }

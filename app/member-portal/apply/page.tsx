@@ -66,6 +66,57 @@ const ValidatedInput = ({
   );
 };
 
+// Reusable validated select component
+const ValidatedSelect = ({ 
+  label, 
+  fieldKey, 
+  value, 
+  onChange, 
+  options,
+  required = false,
+  className = "",
+  touchedFields,
+  attemptedNext,
+  markFieldTouched
+}: {
+  label: string;
+  fieldKey: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{value: string, label: string}>;
+  required?: boolean;
+  className?: string;
+  touchedFields: Record<string, boolean>;
+  attemptedNext: boolean;
+  markFieldTouched: (fieldKey: string) => void;
+}) => {
+  const isValid = value.trim() !== '';
+  const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
+  
+  return (
+    <div className={className}>
+      <label className="block text-sm font-medium text-fase-navy mb-2">
+        {label} {required && '*'}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          markFieldTouched(fieldKey);
+        }}
+        onBlur={() => markFieldTouched(fieldKey)}
+        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+          shouldShowValidation ? 'border-red-300' : 'border-fase-silver'
+        }`}
+      >
+        {options.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 // Reusable validated checkbox component
 const ValidatedCheckbox = ({ 
   label, 
@@ -129,15 +180,9 @@ export default function MembershipApplication() {
   useEffect(() => {
     setNewOrgData(prev => ({
       ...prev,
-      seniorLeadership: prev.seniorLeadership.length === 0 
-        ? [{ name: '', role: '', email: '' }] 
-        : prev.seniorLeadership,
       keyContacts: prev.keyContacts.length === 0 
         ? [{ name: '', role: '', email: '', phone: '' }] 
         : prev.keyContacts,
-      technicalPartners: prev.technicalPartners.length === 0 
-        ? [''] 
-        : prev.technicalPartners,
       targetMarkets: prev.targetMarkets.length === 0 
         ? [''] 
         : prev.targetMarkets,
@@ -151,7 +196,7 @@ export default function MembershipApplication() {
     // Introduction & Basic Info
     membershipType: 'corporate' as 'corporate' | 'individual',
     organizationName: '',
-    organizationType: 'MGA' as 'MGA' | 'carrier' | 'provider',
+    organizationType: '' as '' | 'MGA' | 'carrier' | 'provider',
     
     // Privacy & Data
     privacyAgreed: false,
@@ -184,9 +229,6 @@ export default function MembershipApplication() {
       country: 'United Kingdom'
     },
     
-    // Senior Leadership
-    seniorLeadership: [] as Array<{name: string, role: string, email: string}>,
-    
     // Member Key Contacts
     keyContacts: [] as Array<{name: string, role: string, email: string, phone: string}>,
     
@@ -213,11 +255,6 @@ export default function MembershipApplication() {
     distributionChannels: [] as string[],
     brokerNetwork: '',
     
-    // Technology
-    managementSystem: '',
-    dataAnalytics: '',
-    technicalPartners: [] as string[],
-    
     // Portfolio & GWP
     grossWrittenPremiums: '' as '' | '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
     portfolioMix: {} as Record<string, number>,
@@ -237,7 +274,23 @@ export default function MembershipApplication() {
     // Demographics
     employeeCount: '',
     yearEstablished: '',
-    ownershipStructure: ''
+    ownershipStructure: '',
+    
+    // Association Memberships
+    hasOtherAssociations: false,
+    otherAssociationMemberships: '',
+
+    // Carrier-specific fields
+    carrierType: '', // Lloyd's syndicate, European carrier, etc.
+    licenseNumber: '',
+    linesOfBusiness: [] as string[],
+    capitalBase: '',
+
+    // Service Provider fields
+    serviceCategories: [] as string[],
+    serviceDescription: '',
+    targetClients: [] as string[],
+    certifications: ''
   });
 
   // Define steps based on membership type
@@ -246,14 +299,11 @@ export default function MembershipApplication() {
     { id: 'privacy', title: 'Privacy, Data and Disclosure', required: true },
     { id: 'primary-contact', title: 'Primary Contact Details', required: true },
     { id: 'organisation', title: 'Organisation Details', required: true },
-    { id: 'regulatory', title: 'Regulatory & Compliance', required: true },
     { id: 'registered-address', title: 'Registered Address', required: true },
-    { id: 'leadership', title: 'Senior Leadership Team', required: true },
     { id: 'key-contacts', title: 'Member Key Contacts', required: false },
     { id: 'invoicing-address', title: 'Invoicing Address', required: true },
     { id: 'invoicing-contact', title: 'Invoicing Contact Details', required: true },
     { id: 'distribution', title: 'Distribution Strategy', required: false },
-    { id: 'technology', title: 'Technology', required: false },
     { id: 'portfolio', title: 'Portfolio Mix & GWP', required: true },
     { id: 'product-lines', title: 'Product Lines', required: false },
     { id: 'claims', title: 'Claims Model', required: false },
@@ -272,15 +322,59 @@ export default function MembershipApplication() {
     { id: 'submit', title: 'Complete and Submit', required: true }
   ];
 
-  // Use appropriate steps based on membership type
-  const membershipSteps = newOrgData.membershipType === 'individual' ? individualSteps : corporateSteps;
+  // Simplified steps for carriers (insurance companies providing capacity)
+  const carrierSteps = [
+    { id: 'introduction', title: 'Introduction', required: true },
+    { id: 'privacy', title: 'Privacy, Data and Disclosure', required: true },
+    { id: 'primary-contact', title: 'Primary Contact Details', required: true },
+    { id: 'organisation', title: 'Organisation Details', required: true },
+    { id: 'registered-address', title: 'Registered Address', required: true },
+    { id: 'carrier-details', title: 'Carrier Information', required: true },
+    { id: 'invoicing-address', title: 'Invoicing Address', required: true },
+    { id: 'invoicing-contact', title: 'Invoicing Contact Details', required: true },
+    { id: 'payment', title: 'Membership Payment', required: true },
+    { id: 'submit', title: 'Complete and Submit', required: true }
+  ];
+
+  // Simplified steps for service providers (technology, legal, consulting, etc.)
+  const serviceProviderSteps = [
+    { id: 'introduction', title: 'Introduction', required: true },
+    { id: 'privacy', title: 'Privacy, Data and Disclosure', required: true },
+    { id: 'primary-contact', title: 'Primary Contact Details', required: true },
+    { id: 'organisation', title: 'Organisation Details', required: true },
+    { id: 'registered-address', title: 'Registered Address', required: true },
+    { id: 'service-details', title: 'Service Information', required: true },
+    { id: 'invoicing-address', title: 'Invoicing Address', required: true },
+    { id: 'invoicing-contact', title: 'Invoicing Contact Details', required: true },
+    { id: 'payment', title: 'Membership Payment', required: true },
+    { id: 'submit', title: 'Complete and Submit', required: true }
+  ];
+
+  // Use appropriate steps based on membership type and organization type
+  const getMembershipSteps = () => {
+    if (newOrgData.membershipType === 'individual') {
+      return individualSteps;
+    } else if (newOrgData.organizationType === 'carrier') {
+      return carrierSteps;
+    } else if (newOrgData.organizationType === 'provider') {
+      return serviceProviderSteps;
+    } else {
+      return corporateSteps; // MGA and other corporate types
+    }
+  };
+
+  const membershipSteps = getMembershipSteps();
 
   // Helper function to check validation for any step by ID
   const checkStepValidation = (stepId: string) => {
     switch (stepId) {
       case 'introduction':
-        return newOrgData.organizationName.trim() !== '' && 
-               (newOrgData.membershipType === 'individual' || newOrgData.membershipType === 'corporate');
+        if (newOrgData.membershipType === 'corporate') {
+          return newOrgData.organizationName.trim() !== '' && 
+                 newOrgData.organizationType !== '';
+        } else {
+          return newOrgData.organizationName.trim() !== '';
+        }
       
       case 'privacy':
         return newOrgData.privacyAgreed && newOrgData.dataProcessingAgreed;
@@ -300,22 +394,11 @@ export default function MembershipApplication() {
       case 'organisation':
         return newOrgData.registeredNumber.trim() !== '';
       
-      case 'regulatory':
-        return true; // No required fields for regulatory step
-      
       case 'registered-address':
         return newOrgData.registeredAddress.line1.trim() !== '' &&
                newOrgData.registeredAddress.city.trim() !== '' &&
                newOrgData.registeredAddress.postcode.trim() !== '' &&
                newOrgData.registeredAddress.country.trim() !== '';
-      
-      case 'leadership':
-        return newOrgData.seniorLeadership.length > 0 &&
-               newOrgData.seniorLeadership.every(leader => 
-                 leader.name.trim() !== '' && 
-                 leader.role.trim() !== '' && 
-                 leader.email.trim() !== ''
-               );
       
       case 'invoicing-address':
         if (newOrgData.invoicingAddress.sameAsRegistered) {
@@ -337,6 +420,14 @@ export default function MembershipApplication() {
           return newOrgData.grossWrittenPremiums !== '';
         }
         return true;
+      
+      case 'carrier-details':
+        return newOrgData.carrierType.trim() !== '' &&
+               newOrgData.linesOfBusiness.length > 0;
+      
+      case 'service-details':
+        return newOrgData.serviceCategories.length > 0 &&
+               newOrgData.serviceDescription.trim() !== '';
       
       case 'payment':
         return true; // Payment step is valid when user selects a payment method
@@ -364,6 +455,34 @@ export default function MembershipApplication() {
   // Helper function to determine if validation styling should be shown
   const shouldShowValidation = (fieldKey: string, isValid: boolean) => {
     return (touchedFields[fieldKey] || attemptedNext) && !isValid;
+  };
+
+  // Calculate annual fee with discount
+  const calculateAnnualFee = (membershipType: string, organizationType: string, grossWrittenPremiums: string, hasOtherAssociations: boolean) => {
+    let baseFee = 0;
+    
+    if (membershipType === 'individual') {
+      baseFee = 500;
+    } else if (organizationType === 'MGA' && grossWrittenPremiums) {
+      switch (grossWrittenPremiums) {
+        case '<10m': baseFee = 900; break;
+        case '10-20m': baseFee = 1500; break;
+        case '20-50m': baseFee = 2000; break;
+        case '50-100m': baseFee = 2800; break;
+        case '100-500m': baseFee = 4200; break;
+        case '500m+': baseFee = 6400; break;
+        default: baseFee = 900; break;
+      }
+    } else {
+      baseFee = 900; // Default corporate fee
+    }
+    
+    // Apply 20% discount for corporate members of other associations only
+    if (hasOtherAssociations && membershipType === 'corporate') {
+      baseFee = Math.round(baseFee * 0.8);
+    }
+    
+    return baseFee;
   };
 
   // Helper to mark a field as touched
@@ -445,9 +564,6 @@ export default function MembershipApplication() {
           country: newOrgData.registeredAddress.country,
         },
         
-        // Senior leadership
-        seniorLeadership: newOrgData.seniorLeadership,
-        
         // Key contacts (if any)
         keyContacts: newOrgData.keyContacts.length > 0 ? newOrgData.keyContacts : undefined,
         
@@ -473,12 +589,6 @@ export default function MembershipApplication() {
         distributionStrategy: newOrgData.distributionChannels.length > 0 ? {
           channels: newOrgData.distributionChannels,
           brokerNetwork: newOrgData.brokerNetwork,
-        } : undefined,
-        
-        technology: newOrgData.managementSystem || newOrgData.dataAnalytics || newOrgData.technicalPartners.length > 0 ? {
-          managementSystem: newOrgData.managementSystem,
-          dataAnalytics: newOrgData.dataAnalytics,
-          technicalPartners: newOrgData.technicalPartners,
         } : undefined,
         
         // Portfolio information
@@ -507,6 +617,22 @@ export default function MembershipApplication() {
           employeeCount: newOrgData.employeeCount,
           yearEstablished: newOrgData.yearEstablished,
           ownership: newOrgData.ownershipStructure,
+        } : undefined,
+
+        // Carrier-specific information
+        carrierDetails: newOrgData.organizationType === 'carrier' ? {
+          carrierType: newOrgData.carrierType,
+          licenseNumber: newOrgData.licenseNumber,
+          linesOfBusiness: newOrgData.linesOfBusiness,
+          capitalBase: newOrgData.capitalBase,
+        } : undefined,
+
+        // Service provider information
+        serviceDetails: newOrgData.organizationType === 'provider' ? {
+          serviceCategories: newOrgData.serviceCategories,
+          serviceDescription: newOrgData.serviceDescription,
+          targetClients: newOrgData.targetClients,
+          certifications: newOrgData.certifications,
         } : undefined,
         
         // Terms agreement
@@ -542,7 +668,7 @@ export default function MembershipApplication() {
           <div className="space-y-6">
             <div>
               <p className="text-fase-steel mb-4">
-                Welcome to the FASE membership application. This form will collect the information needed to process your membership.
+                Welcome to the FASE membership application. This form will collect the information needed to process your application.
               </p>
             </div>
             
@@ -576,24 +702,66 @@ export default function MembershipApplication() {
             />
 
             {newOrgData.membershipType === 'corporate' && (
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Organization Type
-                </label>
-                <select
-                  value={newOrgData.organizationType}
-                  onChange={(e) => setNewOrgData({ 
-                    ...newOrgData, 
-                    organizationType: e.target.value as 'MGA' | 'carrier' | 'provider' 
-                  })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="MGA">MGA</option>
-                  <option value="carrier">Carrier</option>
-                  <option value="provider">Service Provider</option>
-                </select>
-              </div>
+              <ValidatedSelect
+                label="Organization Type"
+                fieldKey="organizationType"
+                value={newOrgData.organizationType}
+                onChange={(value) => setNewOrgData({ 
+                  ...newOrgData, 
+                  organizationType: value as '' | 'MGA' | 'carrier' | 'provider' 
+                })}
+                required={true}
+                touchedFields={touchedFields}
+                attemptedNext={attemptedNext}
+                markFieldTouched={markFieldTouched}
+                options={[
+                  { value: '', label: 'Select organization type...' },
+                  { value: 'MGA', label: 'MGA' },
+                  { value: 'carrier', label: 'Carrier' },
+                  { value: 'provider', label: 'Service Provider' }
+                ]}
+              />
             )}
+            
+            <div className="space-y-4">
+              <ValidatedCheckbox
+                label="Are you a member of any other insurance associations?"
+                fieldKey="hasOtherAssociations"
+                checked={newOrgData.hasOtherAssociations}
+                onChange={(checked) => setNewOrgData({ 
+                  ...newOrgData, 
+                  hasOtherAssociations: checked,
+                  otherAssociationMemberships: checked ? newOrgData.otherAssociationMemberships : ''
+                })}
+                required={false}
+                touchedFields={touchedFields}
+                attemptedNext={attemptedNext}
+                markFieldTouched={markFieldTouched}
+              />
+              
+              {newOrgData.hasOtherAssociations && (
+                <ValidatedSelect
+                  label="Other Association Memberships"
+                  fieldKey="otherAssociationMemberships"
+                  value={newOrgData.otherAssociationMemberships}
+                  onChange={(value) => setNewOrgData({ 
+                    ...newOrgData, 
+                    otherAssociationMemberships: value 
+                  })}
+                  required={false}
+                  touchedFields={touchedFields}
+                  attemptedNext={attemptedNext}
+                  markFieldTouched={markFieldTouched}
+                  options={[
+                    { value: '', label: 'Select association...' },
+                    { value: 'ASASE', label: 'ASASE' },
+                    { value: 'NVGA', label: 'NVGA' },
+                    { value: 'MGAA', label: 'MGAA' },
+                    { value: 'other', label: 'Other' }
+                  ]}
+                />
+              )}
+            </div>
           </div>
         );
 
@@ -694,87 +862,13 @@ export default function MembershipApplication() {
           </div>
         );
 
-      case 'regulatory':
-        return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-fase-steel mb-4">
-                Provide regulatory and compliance information for your organization.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  FCA/Regulatory Number
-                </label>
-                <input
-                  type="text"
-                  value={newOrgData.fcarNumber}
-                  onChange={(e) => setNewOrgData({ ...newOrgData, fcarNumber: e.target.value })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Primary Regulatory Body
-                </label>
-                <select
-                  value={newOrgData.regulatoryBody}
-                  onChange={(e) => setNewOrgData({ ...newOrgData, regulatoryBody: e.target.value })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="">Select regulatory body</option>
-                  <option value="FCA">Financial Conduct Authority (FCA)</option>
-                  <option value="PRA">Prudential Regulation Authority (PRA)</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Authorized Activities
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                {[
-                  'Insurance Mediation', 'Reinsurance', 'Insurance Business',
-                  'Investment Services', 'Claims Management', 'Other'
-                ].map((activity) => (
-                  <label key={activity} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={newOrgData.authorizedActivities.includes(activity)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewOrgData({
-                            ...newOrgData,
-                            authorizedActivities: [...newOrgData.authorizedActivities, activity]
-                          });
-                        } else {
-                          setNewOrgData({
-                            ...newOrgData,
-                            authorizedActivities: newOrgData.authorizedActivities.filter(a => a !== activity)
-                          });
-                        }
-                      }}
-                      className="w-4 h-4 text-fase-navy border-fase-silver rounded focus:ring-fase-navy"
-                    />
-                    <span className="text-sm text-fase-steel">{activity}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
 
       case 'registered-address':
         return (
           <div className="space-y-6">
             <div>
               <p className="text-fase-steel mb-4">
-                Provide the registered address for your organization.
+                Provide the registered address of your head office.
               </p>
             </div>
             
@@ -841,7 +935,7 @@ export default function MembershipApplication() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ValidatedInput
-                  label="Postcode"
+                  label="Postcode / ZIP Code"
                   fieldKey="registeredAddress.postcode"
                   value={newOrgData.registeredAddress.postcode}
                   onChange={(value) => setNewOrgData({ 
@@ -866,11 +960,48 @@ export default function MembershipApplication() {
                     })}
                     className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   >
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Ireland">Ireland</option>
-                    <option value="Germany">Germany</option>
+                    <option value="">Select country...</option>
+                    {/* European Countries */}
+                    <option value="Austria">Austria</option>
+                    <option value="Belgium">Belgium</option>
+                    <option value="Bulgaria">Bulgaria</option>
+                    <option value="Croatia">Croatia</option>
+                    <option value="Cyprus">Cyprus</option>
+                    <option value="Czech Republic">Czech Republic</option>
+                    <option value="Denmark">Denmark</option>
+                    <option value="Estonia">Estonia</option>
+                    <option value="Finland">Finland</option>
                     <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Greece">Greece</option>
+                    <option value="Hungary">Hungary</option>
+                    <option value="Iceland">Iceland</option>
+                    <option value="Ireland">Ireland</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Latvia">Latvia</option>
+                    <option value="Liechtenstein">Liechtenstein</option>
+                    <option value="Lithuania">Lithuania</option>
+                    <option value="Luxembourg">Luxembourg</option>
+                    <option value="Malta">Malta</option>
                     <option value="Netherlands">Netherlands</option>
+                    <option value="Norway">Norway</option>
+                    <option value="Poland">Poland</option>
+                    <option value="Portugal">Portugal</option>
+                    <option value="Romania">Romania</option>
+                    <option value="Slovakia">Slovakia</option>
+                    <option value="Slovenia">Slovenia</option>
+                    <option value="Spain">Spain</option>
+                    <option value="Sweden">Sweden</option>
+                    <option value="Switzerland">Switzerland</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    {/* Non-European Countries */}
+                    <option value="United States">United States</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Australia">Australia</option>
+                    <option value="New Zealand">New Zealand</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Hong Kong">Hong Kong</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -879,115 +1010,6 @@ export default function MembershipApplication() {
           </div>
         );
 
-      case 'leadership':
-        return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-fase-steel mb-4">
-                List the senior leadership team members (CEO, CTO, etc.). At least one member is required.
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              {newOrgData.seniorLeadership.map((leader, index) => (
-                <div key={index} className="bg-fase-pearl p-4 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-fase-navy mb-2">
-                        Full Name *
-                      </label>
-                      <ValidatedInput
-                        label=""
-                        fieldKey={`seniorLeadership.${index}.name`}
-                        value={leader.name}
-                        onChange={(value) => {
-                          const updatedLeadership = [...newOrgData.seniorLeadership];
-                          updatedLeadership[index] = { ...leader, name: value };
-                          setNewOrgData({ ...newOrgData, seniorLeadership: updatedLeadership });
-                        }}
-                        required={true}
-                        hideRequiredIndicator={true}
-                        touchedFields={touchedFields}
-                        attemptedNext={attemptedNext}
-                        markFieldTouched={markFieldTouched}
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-fase-navy mb-2">
-                        Role/Title *
-                      </label>
-                      <ValidatedInput
-                        label=""
-                        fieldKey={`seniorLeadership.${index}.role`}
-                        value={leader.role}
-                        onChange={(value) => {
-                          const updatedLeadership = [...newOrgData.seniorLeadership];
-                          updatedLeadership[index] = { ...leader, role: value };
-                          setNewOrgData({ ...newOrgData, seniorLeadership: updatedLeadership });
-                        }}
-                        required={true}
-                        hideRequiredIndicator={true}
-                        touchedFields={touchedFields}
-                        attemptedNext={attemptedNext}
-                        markFieldTouched={markFieldTouched}
-                      />
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Email *
-                        </label>
-                        <ValidatedInput
-                          label=""
-                          fieldKey={`seniorLeadership.${index}.email`}
-                          type="email"
-                          value={leader.email}
-                          onChange={(value) => {
-                            const updatedLeadership = [...newOrgData.seniorLeadership];
-                            updatedLeadership[index] = { ...leader, email: value };
-                            setNewOrgData({ ...newOrgData, seniorLeadership: updatedLeadership });
-                          }}
-                          required={true}
-                          hideRequiredIndicator={true}
-                          touchedFields={touchedFields}
-                          attemptedNext={attemptedNext}
-                          markFieldTouched={markFieldTouched}
-                        />
-                      </div>
-                      <div className="pt-7">
-                        <button
-                          onClick={() => {
-                            const updatedLeadership = newOrgData.seniorLeadership.filter((_, i) => i !== index);
-                            setNewOrgData({ ...newOrgData, seniorLeadership: updatedLeadership });
-                          }}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button
-                onClick={() => {
-                  setNewOrgData({
-                    ...newOrgData,
-                    seniorLeadership: [...newOrgData.seniorLeadership, { name: '', role: '', email: '' }]
-                  });
-                }}
-                className="w-full p-3 border-2 border-dashed border-fase-silver rounded-lg text-fase-steel hover:border-fase-navy hover:text-fase-navy transition-colors"
-              >
-                + Add Leadership Member
-              </button>
-            </div>
-          </div>
-        );
 
       case 'primary-contact':
         return (
@@ -1011,7 +1033,7 @@ export default function MembershipApplication() {
               />
               
               <ValidatedInput
-                label="Role/Title"
+                label="Title"
                 fieldKey="primaryContactRole"
                 value={newOrgData.primaryContactRole}
                 onChange={(value) => setNewOrgData({ ...newOrgData, primaryContactRole: value })}
@@ -1120,7 +1142,7 @@ export default function MembershipApplication() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ValidatedInput
-                  label="Postcode"
+                  label="Postcode / ZIP Code"
                   fieldKey="registeredAddress.postcode"
                   value={newOrgData.registeredAddress.postcode}
                   onChange={(value) => setNewOrgData({ 
@@ -1146,11 +1168,47 @@ export default function MembershipApplication() {
                     className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   >
                     <option value="">Select country...</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Ireland">Ireland</option>
-                    <option value="Germany">Germany</option>
+                    {/* European Countries */}
+                    <option value="Austria">Austria</option>
+                    <option value="Belgium">Belgium</option>
+                    <option value="Bulgaria">Bulgaria</option>
+                    <option value="Croatia">Croatia</option>
+                    <option value="Cyprus">Cyprus</option>
+                    <option value="Czech Republic">Czech Republic</option>
+                    <option value="Denmark">Denmark</option>
+                    <option value="Estonia">Estonia</option>
+                    <option value="Finland">Finland</option>
                     <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Greece">Greece</option>
+                    <option value="Hungary">Hungary</option>
+                    <option value="Iceland">Iceland</option>
+                    <option value="Ireland">Ireland</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Latvia">Latvia</option>
+                    <option value="Liechtenstein">Liechtenstein</option>
+                    <option value="Lithuania">Lithuania</option>
+                    <option value="Luxembourg">Luxembourg</option>
+                    <option value="Malta">Malta</option>
                     <option value="Netherlands">Netherlands</option>
+                    <option value="Norway">Norway</option>
+                    <option value="Poland">Poland</option>
+                    <option value="Portugal">Portugal</option>
+                    <option value="Romania">Romania</option>
+                    <option value="Slovakia">Slovakia</option>
+                    <option value="Slovenia">Slovenia</option>
+                    <option value="Spain">Spain</option>
+                    <option value="Sweden">Sweden</option>
+                    <option value="Switzerland">Switzerland</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    {/* Non-European Countries */}
+                    <option value="United States">United States</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Australia">Australia</option>
+                    <option value="New Zealand">New Zealand</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Hong Kong">Hong Kong</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -1189,12 +1247,12 @@ export default function MembershipApplication() {
                     }`}
                   >
                     <option value="">Select premium bracket</option>
-                    <option value="<10m">Less than €10M (€900/year)</option>
-                    <option value="10-20m">€10M - €20M (€1,500/year)</option>
-                    <option value="20-50m">€20M - €50M (€2,000/year)</option>
-                    <option value="50-100m">€50M - €100M (€2,800/year)</option>
-                    <option value="100-500m">€100M - €500M (€4,200/year)</option>
-                    <option value="500m+">€500M+ (€6,400/year)</option>
+                    <option value="<10m">Less than €10M</option>
+                    <option value="10-20m">€10M - €20M</option>
+                    <option value="20-50m">€20M - €50M</option>
+                    <option value="50-100m">€50M - €100M</option>
+                    <option value="100-500m">€100M - €500M</option>
+                    <option value="500m+">€500M+</option>
                   </select>
                   <p className="text-xs text-fase-steel mt-1">
                     This determines your annual membership fee
@@ -1207,7 +1265,7 @@ export default function MembershipApplication() {
                   Portfolio Mix by Line of Business
                 </label>
                 <p className="text-xs text-fase-steel mb-3">
-                  Indicate the percentage breakdown of your business across different lines (should total 100%)
+                  Provide an approximate percentage breakdown of your business across different lines
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1244,12 +1302,8 @@ export default function MembershipApplication() {
                 
                 <div className="mt-3 p-3 bg-fase-pearl rounded-lg">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-fase-steel">Total Percentage:</span>
-                    <span className={`font-medium ${
-                      Object.values(newOrgData.portfolioMix).reduce((sum, val) => sum + (val || 0), 0) === 100
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}>
+                    <span className="text-fase-steel">Total Percentage (Approximate):</span>
+                    <span className="font-medium text-fase-navy">
                       {Object.values(newOrgData.portfolioMix).reduce((sum, val) => sum + (val || 0), 0)}%
                     </span>
                   </div>
@@ -1259,11 +1313,231 @@ export default function MembershipApplication() {
           </div>
         );
 
+      case 'carrier-details':
+        return (
+          <div className="space-y-6">
+            <div>
+              <p className="text-fase-steel mb-4">
+                Please provide information about your carrier organization and the types of insurance you provide.
+              </p>
+            </div>
+            
+            <ValidatedSelect
+              label="Carrier Type"
+              fieldKey="carrierType"
+              value={newOrgData.carrierType}
+              onChange={(value) => setNewOrgData({ ...newOrgData, carrierType: value })}
+              required={true}
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+              options={[
+                { value: '', label: 'Select carrier type...' },
+                { value: 'lloyds-syndicate', label: "Lloyd's Syndicate" },
+                { value: 'european-insurer', label: 'European Insurer' },
+                { value: 'reinsurer', label: 'Reinsurer' },
+                { value: 'captive', label: 'Captive Insurance Company' },
+                { value: 'mutual', label: 'Mutual Insurance Company' },
+                { value: 'other', label: 'Other' }
+              ]}
+            />
+            
+            <ValidatedInput
+              label="License/Registration Number"
+              fieldKey="licenseNumber"
+              value={newOrgData.licenseNumber}
+              onChange={(value) => setNewOrgData({ ...newOrgData, licenseNumber: value })}
+              placeholder="Enter your license or registration number"
+              required={false}
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+            />
+            
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-2">
+                Lines of Business Offered *
+              </label>
+              <p className="text-xs text-fase-steel mb-3">
+                Select the insurance lines your organization provides capacity for
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  'Motor', 'Property', 'Liability', 'Marine', 'Aviation', 'Energy',
+                  'Cyber', 'Professional Indemnity', 'Directors & Officers', 'Trade Credit',
+                  'Political Risk', 'Terrorism', 'Catastrophe', 'Other Specialty'
+                ].map((line) => (
+                  <label key={line} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={newOrgData.linesOfBusiness.includes(line)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewOrgData({
+                            ...newOrgData,
+                            linesOfBusiness: [...newOrgData.linesOfBusiness, line]
+                          });
+                        } else {
+                          setNewOrgData({
+                            ...newOrgData,
+                            linesOfBusiness: newOrgData.linesOfBusiness.filter(l => l !== line)
+                          });
+                        }
+                        markFieldTouched('linesOfBusiness');
+                      }}
+                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                    />
+                    <span className="text-sm text-fase-steel">{line}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <ValidatedSelect
+              label="Capital Base"
+              fieldKey="capitalBase"
+              value={newOrgData.capitalBase}
+              onChange={(value) => setNewOrgData({ ...newOrgData, capitalBase: value })}
+              required={false}
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+              options={[
+                { value: '', label: 'Select capital base...' },
+                { value: '<50m', label: 'Less than €50M' },
+                { value: '50-100m', label: '€50M - €100M' },
+                { value: '100-500m', label: '€100M - €500M' },
+                { value: '500m-1b', label: '€500M - €1B' },
+                { value: '1b+', label: 'Over €1B' }
+              ]}
+            />
+          </div>
+        );
+
+      case 'service-details':
+        return (
+          <div className="space-y-6">
+            <div>
+              <p className="text-fase-steel mb-4">
+                Please describe the services your organization provides to the insurance industry.
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-2">
+                Service Categories *
+              </label>
+              <p className="text-xs text-fase-steel mb-3">
+                Select all categories that describe your services
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  'Technology/Software', 'Legal Services', 'Consulting', 'Actuarial Services',
+                  'Claims Management', 'Risk Management', 'Compliance & Regulatory',
+                  'Data & Analytics', 'Marketing & Communications', 'Financial Services',
+                  'HR & Recruitment', 'Training & Education', 'Facilities Management', 'Other'
+                ].map((category) => (
+                  <label key={category} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={newOrgData.serviceCategories.includes(category)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewOrgData({
+                            ...newOrgData,
+                            serviceCategories: [...newOrgData.serviceCategories, category]
+                          });
+                        } else {
+                          setNewOrgData({
+                            ...newOrgData,
+                            serviceCategories: newOrgData.serviceCategories.filter(c => c !== category)
+                          });
+                        }
+                        markFieldTouched('serviceCategories');
+                      }}
+                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                    />
+                    <span className="text-sm text-fase-steel">{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-2">
+                Service Description *
+              </label>
+              <textarea
+                value={newOrgData.serviceDescription}
+                onChange={(e) => {
+                  setNewOrgData({ ...newOrgData, serviceDescription: e.target.value });
+                  markFieldTouched('serviceDescription');
+                }}
+                onBlur={() => markFieldTouched('serviceDescription')}
+                placeholder="Describe your services and how they support the insurance industry..."
+                rows={4}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+                  shouldShowValidation('serviceDescription', newOrgData.serviceDescription.trim() !== '') ? 'border-red-300' : 'border-fase-silver'
+                }`}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-2">
+                Target Client Types
+              </label>
+              <p className="text-xs text-fase-steel mb-3">
+                Who are your primary clients in the insurance ecosystem?
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  'MGAs', 'Insurance Carriers', 'Reinsurers', 'Brokers',
+                  'Lloyd\'s Syndicates', 'Captives', 'Risk Managers', 'Other'
+                ].map((client) => (
+                  <label key={client} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={newOrgData.targetClients.includes(client)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewOrgData({
+                            ...newOrgData,
+                            targetClients: [...newOrgData.targetClients, client]
+                          });
+                        } else {
+                          setNewOrgData({
+                            ...newOrgData,
+                            targetClients: newOrgData.targetClients.filter(c => c !== client)
+                          });
+                        }
+                      }}
+                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                    />
+                    <span className="text-sm text-fase-steel">{client}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <ValidatedInput
+              label="Professional Certifications"
+              fieldKey="certifications"
+              value={newOrgData.certifications}
+              onChange={(value) => setNewOrgData({ ...newOrgData, certifications: value })}
+              placeholder="List any relevant professional certifications or accreditations"
+              required={false}
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+            />
+          </div>
+        );
+
       case 'payment':
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-futura font-semibold text-fase-navy mb-2">
+              <h3 className="text-lg font-playfair font-semibold text-fase-navy mb-2">
                 Choose Payment Method
               </h3>
               <p className="text-fase-steel mb-4">
@@ -1287,6 +1561,8 @@ export default function MembershipApplication() {
                           organizationType: newOrgData.organizationType,
                           membershipType: newOrgData.membershipType,
                           grossWrittenPremiums: newOrgData.grossWrittenPremiums,
+                          hasOtherAssociations: newOrgData.hasOtherAssociations,
+                          otherAssociationMemberships: newOrgData.otherAssociationMemberships,
                           userEmail: user?.email,
                           userId: user?.uid
                         })
@@ -1363,18 +1639,16 @@ export default function MembershipApplication() {
                     <span className="text-fase-navy">{newOrgData.grossWrittenPremiums}</span>
                   </div>
                 )}
+                {newOrgData.hasOtherAssociations && newOrgData.otherAssociationMemberships && newOrgData.membershipType === 'corporate' && (
+                  <div className="flex justify-between">
+                    <span className="text-green-600 text-sm">Association Member Discount (20%):</span>
+                    <span className="text-green-600 text-sm">Applied</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-medium border-t border-fase-silver pt-2 mt-2">
                   <span className="text-fase-navy">Annual Fee:</span>
                   <span className="text-fase-navy">
-                    €{newOrgData.membershipType === 'individual' ? '500' : 
-                        newOrgData.organizationType === 'MGA' && newOrgData.grossWrittenPremiums ? 
-                          (newOrgData.grossWrittenPremiums === '<10m' ? '900' :
-                           newOrgData.grossWrittenPremiums === '10-20m' ? '1,500' :
-                           newOrgData.grossWrittenPremiums === '20-50m' ? '2,000' :
-                           newOrgData.grossWrittenPremiums === '50-100m' ? '2,800' :
-                           newOrgData.grossWrittenPremiums === '100-500m' ? '4,200' :
-                           newOrgData.grossWrittenPremiums === '500m+' ? '6,400' : '900') : '900'
-                    }
+                    €{calculateAnnualFee(newOrgData.membershipType, newOrgData.organizationType, newOrgData.grossWrittenPremiums, newOrgData.hasOtherAssociations).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -1391,7 +1665,7 @@ export default function MembershipApplication() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-futura font-semibold text-fase-navy mb-2">
+              <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">
                 Review and Submit Application
               </h3>
               <p className="text-fase-steel mb-6">
@@ -1425,18 +1699,16 @@ export default function MembershipApplication() {
                       <p className="text-fase-navy">{newOrgData.grossWrittenPremiums}</p>
                     </div>
                   )}
+                  {newOrgData.hasOtherAssociations && newOrgData.otherAssociationMemberships && newOrgData.membershipType === 'corporate' && (
+                    <div>
+                      <span className="text-green-600 font-medium text-sm">Association Member Discount:</span>
+                      <p className="text-green-600 font-semibold text-sm">20% Applied</p>
+                    </div>
+                  )}
                   <div>
                     <span className="text-fase-steel font-medium">Annual Fee:</span>
                     <p className="text-fase-navy font-semibold">
-                      €{newOrgData.membershipType === 'individual' ? '500' : 
-                          newOrgData.organizationType === 'MGA' && newOrgData.grossWrittenPremiums ? 
-                            (newOrgData.grossWrittenPremiums === '<10m' ? '900' :
-                             newOrgData.grossWrittenPremiums === '10-20m' ? '1,500' :
-                             newOrgData.grossWrittenPremiums === '20-50m' ? '2,000' :
-                             newOrgData.grossWrittenPremiums === '50-100m' ? '2,800' :
-                             newOrgData.grossWrittenPremiums === '100-500m' ? '4,200' :
-                             newOrgData.grossWrittenPremiums === '500m+' ? '6,400' : '900') : '900'
-                      }
+                      €{calculateAnnualFee(newOrgData.membershipType, newOrgData.organizationType, newOrgData.grossWrittenPremiums, newOrgData.hasOtherAssociations).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -1536,7 +1808,7 @@ export default function MembershipApplication() {
                     />
                     
                     <ValidatedInput
-                      label="Role/Title"
+                      label="Title"
                       fieldKey={`keyContacts.${index}.role`}
                       value={contact.role}
                       onChange={(value) => {
@@ -1729,7 +2001,7 @@ export default function MembershipApplication() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <ValidatedInput
-                    label="Postcode"
+                    label="Postcode / ZIP Code"
                     fieldKey="invoicingAddress.postcode"
                     value={newOrgData.invoicingAddress.postcode}
                     onChange={(value) => setNewOrgData({
@@ -1789,7 +2061,7 @@ export default function MembershipApplication() {
               />
               
               <ValidatedInput
-                label="Role/Title"
+                label="Title"
                 fieldKey="invoicingContact.role"
                 value={newOrgData.invoicingContact.role}
                 onChange={(value) => setNewOrgData({
@@ -1893,87 +2165,6 @@ export default function MembershipApplication() {
           </div>
         );
 
-      case 'technology':
-        return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-fase-steel mb-4">
-                Information about your technology infrastructure (optional).
-              </p>
-            </div>
-            
-            <ValidatedInput
-              label="Management System"
-              fieldKey="managementSystem"
-              value={newOrgData.managementSystem}
-              onChange={(value) => setNewOrgData({ ...newOrgData, managementSystem: value })}
-              placeholder="Enter your primary management system"
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-            <ValidatedInput
-              label="Data Analytics Platform"
-              fieldKey="dataAnalytics"
-              value={newOrgData.dataAnalytics}
-              onChange={(value) => setNewOrgData({ ...newOrgData, dataAnalytics: value })}
-              placeholder="Enter your data analytics platform"
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Technical Partners
-              </label>
-              <div className="space-y-2">
-                {newOrgData.technicalPartners.map((partner, index) => (
-                  <div key={index} className="flex gap-2">
-                    <ValidatedInput
-                      label=""
-                      fieldKey={`technicalPartners.${index}`}
-                      value={partner}
-                      onChange={(value) => {
-                        const updatedPartners = [...newOrgData.technicalPartners];
-                        updatedPartners[index] = value;
-                        setNewOrgData({ ...newOrgData, technicalPartners: updatedPartners });
-                      }}
-                      placeholder="Enter technical partner"
-                      className="flex-1"
-                      touchedFields={touchedFields}
-                      attemptedNext={attemptedNext}
-                      markFieldTouched={markFieldTouched}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updatedPartners = newOrgData.technicalPartners.filter((_, i) => i !== index);
-                        setNewOrgData({ ...newOrgData, technicalPartners: updatedPartners });
-                      }}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewOrgData({
-                      ...newOrgData,
-                      technicalPartners: [...newOrgData.technicalPartners, '']
-                    });
-                  }}
-                  className="text-fase-navy hover:text-fase-steel"
-                >
-                  + Add Technical Partner
-                </button>
-              </div>
-            </div>
-          </div>
-        );
 
       case 'product-lines':
         return (
@@ -2281,35 +2472,12 @@ export default function MembershipApplication() {
       {/* Main Header */}
       <Header currentPage="member-portal" />
       
-      {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-fase-silver">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.push('/member-portal')}
-                className="text-fase-navy hover:text-fase-steel mr-4"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <h1 className="text-xl font-futura font-semibold text-fase-navy">
-                Membership Application
-              </h1>
-            </div>
-            <div className="text-sm text-fase-steel">
-              Step {currentStep + 1} of {membershipSteps.length}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Sidebar */}
           <div className="w-80 bg-white border border-fase-silver rounded-lg p-6 h-fit">
-            <h3 className="font-futura font-semibold text-fase-navy mb-4">Application Progress</h3>
+            <h3 className="font-playfair font-semibold text-fase-navy mb-4">Application Progress</h3>
             <div className="space-y-1">
               {membershipSteps.map((step, index) => {
                 // Check if all previous required steps are valid
@@ -2377,7 +2545,7 @@ export default function MembershipApplication() {
             <div className="bg-white border border-fase-silver rounded-lg p-8">
               {/* Step Header */}
               <div className="mb-8">
-                <h2 className="text-2xl font-futura font-bold text-fase-navy mb-2">
+                <h2 className="text-2xl font-playfair font-bold text-fase-navy mb-2">
                   {membershipSteps[currentStep]?.title}
                 </h2>
                 <div className="flex items-center text-sm text-fase-steel">

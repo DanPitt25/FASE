@@ -35,7 +35,7 @@ export default function WhoWeArePage() {
               {/* Content */}
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Our Mission</h2>
+                  <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Our Mission</h2>
                   <p className="text-lg text-fase-steel leading-relaxed mb-6">
                     FASE exists to elevate the profile and influence of Managing General Agents across Europe. We serve as the unified voice for MGAs, advocating for their interests while fostering collaboration between MGAs, capacity providers, and service organizations.
                   </p>
@@ -84,7 +84,7 @@ export default function WhoWeArePage() {
         <ContentHero id="values" fullHeight={true} className="bg-fase-paper py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Our Core Values</h2>
+              <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Our Core Values</h2>
               <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 The principles that guide everything we do as we build the future of European MGA collaboration.
               </p>
@@ -98,7 +98,7 @@ export default function WhoWeArePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Innovation</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Innovation</h3>
                 <p className="text-fase-steel leading-relaxed">
                   Championing forward-thinking approaches to insurance distribution and embracing digital transformation across the MGA landscape.
                 </p>
@@ -111,7 +111,7 @@ export default function WhoWeArePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Collaboration</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Collaboration</h3>
                 <p className="text-fase-steel leading-relaxed">
                   Building bridges between MGAs, insurers, and service providers to create a stronger, more connected European insurance ecosystem.
                 </p>
@@ -124,7 +124,7 @@ export default function WhoWeArePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Excellence</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Excellence</h3>
                 <p className="text-fase-steel leading-relaxed">
                   Setting the highest standards for professional conduct, market practices, and service delivery throughout our community.
                 </p>
@@ -137,7 +137,7 @@ export default function WhoWeArePage() {
         <ContentHero id="leadership" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Leadership Team</h2>
+              <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Leadership Team</h2>
               <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 Industry veterans and visionaries driving FASE&apos;s mission across European markets.
               </p>
@@ -164,7 +164,7 @@ export default function WhoWeArePage() {
                     </div>
                   </div>
                   <div className="p-6 text-center">
-                    <h3 className="text-xl font-futura font-bold text-fase-navy mb-2">{leader.name}</h3>
+                    <h3 className="text-xl font-playfair font-bold text-fase-navy mb-2">{leader.name}</h3>
                     <p className="text-fase-steel font-medium">{leader.role}</p>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function WhoWeArePage() {
         <ContentHero id="community" fullHeight={true} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-futura font-bold text-white mb-6">Our Growing Community</h2>
+              <h2 className="text-4xl font-playfair font-bold text-white mb-6">Our Growing Community</h2>
               <p className="text-xl text-fase-paper max-w-3xl mx-auto">
                 Building momentum across European markets as we work toward our official launch.
               </p>
@@ -185,19 +185,19 @@ export default function WhoWeArePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
               <div className="space-y-2">
-                <div className="text-5xl font-futura font-bold text-fase-navy">15+</div>
+                <div className="text-5xl font-playfair font-bold text-fase-navy">15+</div>
                 <div className="text-fase-paper">Countries Represented</div>
               </div>
               <div className="space-y-2">
-                <div className="text-5xl font-futura font-bold text-fase-navy">150+</div>
+                <div className="text-5xl font-playfair font-bold text-fase-navy">150+</div>
                 <div className="text-fase-paper">Industry Partners</div>
               </div>
               <div className="space-y-2">
-                <div className="text-5xl font-futura font-bold text-fase-navy">€2.5B+</div>
+                <div className="text-5xl font-playfair font-bold text-fase-navy">€2.5B+</div>
                 <div className="text-fase-paper">Combined Premium Volume</div>
               </div>
               <div className="space-y-2">
-                <div className="text-5xl font-futura font-bold text-fase-navy">50</div>
+                <div className="text-5xl font-playfair font-bold text-fase-navy">50</div>
                 <div className="text-fase-paper">MGAs Needed for Launch</div>
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function WhoWeArePage() {
         {/* CTA Section */}
         <ContentHero id="join" fullHeight={true} className="bg-fase-paper py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Ready to Shape the Future?</h2>
+            <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Ready to Shape the Future?</h2>
             <p className="text-xl text-fase-steel mb-8 max-w-3xl mx-auto">
               Join the growing community of forward-thinking MGAs and industry partners building the future of European insurance distribution.
             </p>

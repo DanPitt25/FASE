@@ -18,7 +18,7 @@ export default function FeatureBox({
           {icon}
         </div>
         <div>
-          <h4 className="font-futura font-semibold text-fase-navy mb-1">{title}</h4>
+          <h4 className="font-playfair font-semibold text-fase-navy mb-1">{title}</h4>
           <p className="text-fase-steel text-sm leading-relaxed">{description}</p>
         </div>
       </div>
@@ -30,7 +30,7 @@ export default function FeatureBox({
       <div className="w-16 h-16 bg-fase-navy flex items-center justify-center mx-auto mb-4">
         {icon}
       </div>
-      <h4 className="text-lg font-futura font-semibold text-fase-navy mb-2">{title}</h4>
+      <h4 className="text-lg font-playfair font-semibold text-fase-navy mb-2">{title}</h4>
       <p className="text-fase-steel text-sm leading-relaxed">{description}</p>
     </div>
   );
