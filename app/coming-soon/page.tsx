@@ -317,24 +317,18 @@ export default function ComingSoonPage() {
 
       {/* Mobile Brochure Modal */}
       {showBrochureModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-fase-navy rounded-lg max-w-sm w-full relative" style={{ backgroundColor: '#2D5574' }}>
-            {/* Close button */}
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2">
+          <div className="bg-fase-navy rounded-lg w-full max-w-xs max-h-[90vh] overflow-hidden relative" style={{ backgroundColor: '#2D5574' }}>
+            {/* Close button overlaying the brochure */}
             <button
               onClick={() => setShowBrochureModal(false)}
-              className="absolute -top-2 -right-2 bg-fase-cream text-fase-navy w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10"
-              style={{ backgroundColor: '#EBE8E4', color: '#15252F' }}
+              className="absolute top-2 right-2 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-20 hover:bg-black/80 transition-colors"
             >
               ✕
             </button>
             
-            {/* Modal content */}
-            <div className="p-4">
-              <h3 className="text-xl font-playfair font-light mb-4 text-center" style={{ color: '#EBE8E4' }}>
-                FASE Brochure
-              </h3>
-              <BrochureViewer isParentHovered={true} />
-            </div>
+            {/* Modal content - no padding, no title */}
+            <BrochureViewer isParentHovered={true} />
           </div>
         </div>
       )}
