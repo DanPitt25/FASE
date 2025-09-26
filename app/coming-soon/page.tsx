@@ -239,8 +239,8 @@ export default function ComingSoonPage() {
                 backgroundColor: '#E2A560', 
                 color: '#15252F'
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#E6C06E'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#E2A560'}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#E6C06E'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#E2A560'}
             >
               Keep me updated
             </button>
