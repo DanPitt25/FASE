@@ -29,7 +29,7 @@ export default function AffiliatesPage() {
         <ContentHero id="framework" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Partnership Framework</h2>
+              <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Partnership Framework</h2>
               <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 FASE collaborates with industry organizations, associations, and stakeholders across Europe.
               </p>
@@ -43,7 +43,7 @@ export default function AffiliatesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Strategic Affiliates</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Strategic Affiliates</h3>
                 <p className="text-fase-steel leading-relaxed mb-6">
                   National MGA associations and industry bodies with formal collaboration agreements.
                 </p>
@@ -62,7 +62,7 @@ export default function AffiliatesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Industry Associates</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Industry Associates</h3>
                 <p className="text-fase-steel leading-relaxed mb-6">
                   Professional service providers and industry stakeholders supporting MGA operations.
                 </p>
@@ -81,7 +81,7 @@ export default function AffiliatesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-futura font-bold text-fase-navy mb-4">Regulatory Partners</h3>
+                <h3 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Regulatory Partners</h3>
                 <p className="text-fase-steel leading-relaxed mb-6">
                   Dialogue with regulators and policy makers across European markets.
                 </p>
@@ -100,7 +100,7 @@ export default function AffiliatesPage() {
         <ContentHero id="relationships" fullHeight={true} className="bg-fase-paper py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Key Relationships</h2>
+              <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Key Relationships</h2>
               <p className="text-xl text-fase-steel max-w-3xl mx-auto">
                 Building on established industry relationships as we formalize FASE partnerships.
               </p>
@@ -118,7 +118,7 @@ export default function AffiliatesPage() {
                 <div key={index} className="bg-white  p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-futura font-bold text-fase-navy mb-2 leading-tight">{partner.name}</h3>
+                      <h3 className="text-lg font-playfair font-bold text-fase-navy mb-2 leading-tight">{partner.name}</h3>
                       <p className="text-fase-platinum text-sm">{partner.country}</p>
                     </div>
                   </div>
@@ -142,7 +142,7 @@ export default function AffiliatesPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
-                <h2 className="text-4xl font-futura font-bold text-fase-navy mb-6">Partnership Benefits</h2>
+                <h2 className="text-4xl font-playfair font-bold text-fase-navy mb-6">Partnership Benefits</h2>
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
                     <div className="w-8 h-8 bg-fase-graphite  flex items-center justify-center flex-shrink-0 mt-1">
@@ -151,7 +151,7 @@ export default function AffiliatesPage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-futura font-semibold text-fase-navy mb-2">Market Access</h3>
+                      <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Market Access</h3>
                       <p className="text-fase-steel">Enhanced access to European markets through partner networks and relationships.</p>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export default function AffiliatesPage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-futura font-semibold text-fase-navy mb-2">Knowledge Sharing</h3>
+                      <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Knowledge Sharing</h3>
                       <p className="text-fase-steel">Access to shared research, best practices, and market intelligence across borders.</p>
                     </div>
                   </div>
@@ -175,7 +175,7 @@ export default function AffiliatesPage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xl font-futura font-semibold text-fase-navy mb-2">Collective Voice</h3>
+                      <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Collective Voice</h3>
                       <p className="text-fase-steel">Stronger advocacy position through coordinated industry representation.</p>
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export default function AffiliatesPage() {
         {/* CTA */}
         <ContentHero id="cta" fullHeight={true} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-futura font-bold text-white mb-6">Partner with FASE</h2>
+            <h2 className="text-4xl font-playfair font-bold text-white mb-6">Partner with FASE</h2>
             <p className="text-xl text-fase-paper mb-8 max-w-3xl mx-auto">
               Interested in establishing a partnership? Connect with us to explore collaboration opportunities.
             </p>

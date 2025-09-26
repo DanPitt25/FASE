@@ -62,7 +62,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   <div className="absolute inset-0 bg-fase-pearl bg-opacity-30 "></div>
                 </div>
                 <div className="border-l border-fase-silver h-14 mx-3"></div>
-                <a href="/" className="text-4xl font-futura font-bold text-fase-navy mx-3">FASE</a>
+                <a href="/" className="text-4xl font-playfair font-bold text-fase-navy mx-3">FASE</a>
                 <div className="border-l border-fase-silver h-14 mx-3"></div>
               </div>
             </div>

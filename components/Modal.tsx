@@ -61,7 +61,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
         <div className={`inline-block w-full ${maxWidthClasses[maxWidth]} my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-fase-silver">
-            <h2 className="text-xl font-futura font-semibold text-fase-navy">{title}</h2>
+            <h2 className="text-xl font-playfair font-semibold text-fase-navy">{title}</h2>
             <button
               onClick={onClose}
               className="p-2 text-fase-steel hover:text-fase-navy focus:outline-none focus:ring-2 focus:ring-fase-navy rounded-md"

@@ -4,13 +4,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-2xl font-futura font-bold mb-4 text-white">FASE</h3>
+            <h3 className="text-2xl font-playfair font-bold mb-4 text-white">FASE</h3>
             <p className="text-fase-silver">
               The Federation of European MGAs - representing the MGA community across Europe.
             </p>
           </div>
           <div>
-            <h4 className="text-lg font-futura font-semibold mb-4 text-white">Membership</h4>
+            <h4 className="text-lg font-playfair font-semibold mb-4 text-white">Membership</h4>
             <ul className="space-y-2 text-fase-silver">
               <li><a href="#" className="hover:text-fase-navy transition duration-200">MGA Members</a></li>
               <li><a href="#" className="hover:text-fase-navy transition duration-200">Capacity Providers</a></li>
@@ -18,7 +18,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-lg font-futura font-semibold mb-4 text-white">Resources</h4>
+            <h4 className="text-lg font-playfair font-semibold mb-4 text-white">Resources</h4>
             <ul className="space-y-2 text-fase-silver">
               <li><a href="#" className="hover:text-fase-navy transition duration-200">Knowledge Base</a></li>
               <li><a href="#" className="hover:text-fase-navy transition duration-200">Events</a></li>
@@ -26,7 +26,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-lg font-futura font-semibold mb-4 text-white">Connect</h4>
+            <h4 className="text-lg font-playfair font-semibold mb-4 text-white">Connect</h4>
             <ul className="space-y-2 text-fase-silver">
               <li><a href="#" className="hover:text-fase-navy transition duration-200">Contact Us</a></li>
               <li><a href="#" className="hover:text-fase-navy transition duration-200">Member Portal</a></li>
