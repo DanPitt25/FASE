@@ -6,7 +6,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 // Brochure Viewer Component
-function BrochureViewer() {
+function BrochureViewer({ isParentHovered }: { isParentHovered: boolean }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
   
@@ -40,6 +40,32 @@ function BrochureViewer() {
   
   return (
     <div className="w-80 relative mx-auto">
+      {/* Left Arrow - only visible when parent panel is hovered */}
+      {isParentHovered && (
+        <button 
+          onClick={prevSection}
+          className="absolute -left-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
+          style={{ zIndex: 10 }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Right Arrow - only visible when parent panel is hovered */}
+      {isParentHovered && (
+        <button 
+          onClick={nextSection}
+          className="absolute -right-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
+          style={{ zIndex: 10 }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M9 6L15 12L9 18" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
+
       <div className="relative overflow-hidden rounded-lg shadow-2xl">
         {/* Image container with smooth slide animation */}
         <div 
@@ -64,22 +90,6 @@ function BrochureViewer() {
             </div>
           ))}
         </div>
-        
-        {/* Navigation Arrows */}
-        <button 
-          onClick={prevSection}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 hover:opacity-100 transition-opacity"
-          style={{ color: '#EBE8E4' }}
-        >
-          ←
-        </button>
-        <button 
-          onClick={nextSection}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 hover:opacity-100 transition-opacity"
-          style={{ color: '#EBE8E4' }}
-        >
-          →
-        </button>
       </div>
       
       {/* Progress Dots */}
@@ -106,6 +116,7 @@ export default function ComingSoonPage() {
     email: '',
     phone: ''
   });
+  const [isBrochurePanelHovered, setIsBrochurePanelHovered] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,9 +155,15 @@ export default function ComingSoonPage() {
     <div className="min-h-screen flex" style={{ backgroundColor: '#15252F' }}>
       {/* Left Side - Brochure */}
       <div className="hidden lg:flex items-center justify-center p-8 transition-all duration-500 ease-in-out cursor-pointer brochure-panel" style={{ backgroundColor: '#2D5574', width: '25%' }}
-           onMouseEnter={(e) => e.currentTarget.style.width = '60%'}
-           onMouseLeave={(e) => e.currentTarget.style.width = '25%'}>
-        <BrochureViewer />
+           onMouseEnter={(e) => {
+             e.currentTarget.style.width = '60%';
+             setIsBrochurePanelHovered(true);
+           }}
+           onMouseLeave={(e) => {
+             e.currentTarget.style.width = '25%';
+             setIsBrochurePanelHovered(false);
+           }}>
+        <BrochureViewer isParentHovered={isBrochurePanelHovered} />
       </div>
 
       {/* Right Side - Registration Form */}
