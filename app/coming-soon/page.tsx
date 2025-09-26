@@ -318,7 +318,7 @@ export default function ComingSoonPage() {
       {/* Mobile Brochure Modal */}
       {showBrochureModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2">
-          <div className="bg-fase-navy rounded-lg w-full max-w-xs max-h-[90vh] overflow-hidden relative" style={{ backgroundColor: '#2D5574' }}>
+          <div className="bg-fase-navy rounded-lg w-full max-w-xs max-h-[95vh] overflow-hidden relative" style={{ backgroundColor: '#2D5574' }}>
             {/* Close button overlaying the brochure */}
             <button
               onClick={() => setShowBrochureModal(false)}
