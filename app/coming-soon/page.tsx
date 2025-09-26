@@ -39,30 +39,30 @@ function BrochureViewer({ isParentHovered }: { isParentHovered: boolean }) {
   };
   
   return (
-    <div className="w-full max-w-80 relative mx-auto">
-      {/* Desktop Arrows - only visible when parent panel is hovered */}
-      {isParentHovered && (
-        <>
-          <button 
-            onClick={prevSection}
-            className="hidden lg:block absolute -left-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
-            style={{ zIndex: 10 }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <button 
-            onClick={nextSection}
-            className="hidden lg:block absolute -right-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
-            style={{ zIndex: 10 }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9 6L15 12L9 18" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </>
-      )}
+    <div className="w-80 relative" style={{ margin: '0 auto' }}>
+      {/* Desktop Arrows - always present but conditionally visible */}
+      <button 
+        onClick={prevSection}
+        className={`hidden lg:block absolute -left-12 top-1/2 transform -translate-y-1/2 transition-all duration-300 hover:scale-110 ${
+          isParentHovered ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ zIndex: 10 }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18L9 12L15 6" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      <button 
+        onClick={nextSection}
+        className={`hidden lg:block absolute -right-12 top-1/2 transform -translate-y-1/2 transition-all duration-300 hover:scale-110 ${
+          isParentHovered ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ zIndex: 10 }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6L15 12L9 18" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
 
       {/* Mobile Navigation Arrows - always visible */}
       <button 
@@ -185,7 +185,7 @@ export default function ComingSoonPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="w-full flex-1 flex items-center justify-center p-4 lg:p-8 pt-48 lg:pt-8">
+      <div className="w-full flex-1 flex items-center justify-center p-4 lg:p-8">
         <div className="max-w-md w-full">
           {/* FASE Logo */}
           <div className="text-center mb-8">
@@ -202,9 +202,27 @@ export default function ComingSoonPage() {
             <h1 className="text-4xl font-playfair font-light mb-2" style={{ color: '#EBE8E4' }}>
               Coming soon...
             </h1>
-            <p className="font-light" style={{ color: '#E2A560' }}>
+            <p className="font-light mb-4" style={{ color: '#E2A560' }}>
               Be the first to know when we launch
             </p>
+            <button 
+              className="lg:hidden mb-6 px-4 py-2 rounded-lg transition-colors border"
+              style={{ 
+                borderColor: '#E2A560',
+                color: '#E2A560'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.backgroundColor = '#E2A560';
+                (e.target as HTMLElement).style.color = '#15252F';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.backgroundColor = 'transparent';
+                (e.target as HTMLElement).style.color = '#E2A560';
+              }}
+              onClick={() => window.open('/fase-brochure.pdf', '_blank')}
+            >
+              View Our Brochure
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -296,12 +314,6 @@ export default function ComingSoonPage() {
         </div>
       </div>
 
-      {/* Mobile Brochure Viewer */}
-      <div className="lg:hidden absolute top-4 left-4 right-4 z-20">
-        <div className="rounded-lg p-4 mb-8" style={{ backgroundColor: '#2D5574' }}>
-          <BrochureViewer isParentHovered={true} />
-        </div>
-      </div>
     </div>
   );
 }
