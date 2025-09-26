@@ -8,14 +8,25 @@ import {
 } from '../../../../lib/firestore';
 import { Timestamp } from 'firebase/firestore';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only if API key is available
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    })
+  : null;
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is available
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Webhook processing not available' },
+        { status: 503 }
+      );
+    }
+
     console.log('Webhook received!');
     const body = await request.text();
     const headersList = headers();
