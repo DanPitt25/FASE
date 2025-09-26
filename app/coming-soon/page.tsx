@@ -135,6 +135,7 @@ export default function ComingSoonPage() {
     phone: ''
   });
   const [isBrochurePanelHovered, setIsBrochurePanelHovered] = useState(false);
+  const [showBrochureModal, setShowBrochureModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,7 +220,7 @@ export default function ComingSoonPage() {
                 (e.target as HTMLElement).style.backgroundColor = 'transparent';
                 (e.target as HTMLElement).style.color = '#E2A560';
               }}
-              onClick={() => window.open('/fase-brochure.pdf', '_blank')}
+              onClick={() => setShowBrochureModal(true)}
             >
               View Our Brochure
             </button>
@@ -313,6 +314,30 @@ export default function ComingSoonPage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Brochure Modal */}
+      {showBrochureModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-fase-navy rounded-lg max-w-sm w-full relative" style={{ backgroundColor: '#2D5574' }}>
+            {/* Close button */}
+            <button
+              onClick={() => setShowBrochureModal(false)}
+              className="absolute -top-2 -right-2 bg-fase-cream text-fase-navy w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10"
+              style={{ backgroundColor: '#EBE8E4', color: '#15252F' }}
+            >
+              ✕
+            </button>
+            
+            {/* Modal content */}
+            <div className="p-4">
+              <h3 className="text-xl font-playfair font-light mb-4 text-center" style={{ color: '#EBE8E4' }}>
+                FASE Brochure
+              </h3>
+              <BrochureViewer isParentHovered={true} />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
