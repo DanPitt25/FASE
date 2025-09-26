@@ -39,32 +39,50 @@ function BrochureViewer({ isParentHovered }: { isParentHovered: boolean }) {
   };
   
   return (
-    <div className="w-80 relative mx-auto">
-      {/* Left Arrow - only visible when parent panel is hovered */}
+    <div className="w-full max-w-80 relative mx-auto">
+      {/* Desktop Arrows - only visible when parent panel is hovered */}
       {isParentHovered && (
-        <button 
-          onClick={prevSection}
-          className="absolute -left-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
-          style={{ zIndex: 10 }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+        <>
+          <button 
+            onClick={prevSection}
+            className="hidden lg:block absolute -left-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
+            style={{ zIndex: 10 }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button 
+            onClick={nextSection}
+            className="hidden lg:block absolute -right-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
+            style={{ zIndex: 10 }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 6L15 12L9 18" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </>
       )}
 
-      {/* Right Arrow - only visible when parent panel is hovered */}
-      {isParentHovered && (
-        <button 
-          onClick={nextSection}
-          className="absolute -right-12 top-1/2 transform -translate-y-1/2 opacity-60 hover:opacity-100 transition-all duration-300 hover:scale-110"
-          style={{ zIndex: 10 }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M9 6L15 12L9 18" stroke="#EBE8E4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      )}
+      {/* Mobile Navigation Arrows - always visible */}
+      <button 
+        onClick={prevSection}
+        className="lg:hidden absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-70 hover:opacity-100 transition-opacity"
+        style={{ zIndex: 10 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      <button 
+        onClick={nextSection}
+        className="lg:hidden absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-70 hover:opacity-100 transition-opacity"
+        style={{ zIndex: 10 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
 
       <div className="relative overflow-hidden rounded-lg shadow-2xl">
         {/* Image container with smooth slide animation */}
@@ -74,13 +92,13 @@ function BrochureViewer({ isParentHovered }: { isParentHovered: boolean }) {
           onClick={nextSection}
         >
           {pages.map((page, index) => (
-            <div key={index} className="w-80 flex-shrink-0 p-4">
+            <div key={index} className="w-full lg:w-80 flex-shrink-0 p-2 lg:p-4">
               <Image 
                 src={page}
                 alt={`FASE Brochure Page ${index + 1}`}
                 width={288}
                 height={400}
-                className="w-72 h-auto rounded transition-all duration-300"
+                className="w-full lg:w-72 h-auto rounded transition-all duration-300"
                 style={{
                   filter: 'brightness(1.1)',
                   objectFit: 'contain'
@@ -152,8 +170,8 @@ export default function ComingSoonPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#15252F' }}>
-      {/* Left Side - Brochure */}
+    <div className="min-h-screen flex flex-col lg:flex-row" style={{ backgroundColor: '#15252F' }}>
+      {/* Left Side - Brochure (Desktop) */}
       <div className="hidden lg:flex items-center justify-center p-8 transition-all duration-500 ease-in-out cursor-pointer brochure-panel" style={{ backgroundColor: '#2D5574', width: '25%' }}
            onMouseEnter={(e) => {
              e.currentTarget.style.width = '60%';
@@ -166,8 +184,8 @@ export default function ComingSoonPage() {
         <BrochureViewer isParentHovered={isBrochurePanelHovered} />
       </div>
 
-      {/* Right Side - Registration Form */}
-      <div className="w-full flex-1 flex items-center justify-center p-8">
+      {/* Main Content Area */}
+      <div className="w-full flex-1 flex items-center justify-center p-4 lg:p-8 pt-48 lg:pt-8">
         <div className="max-w-md w-full">
           {/* FASE Logo */}
           <div className="text-center mb-8">
@@ -278,16 +296,10 @@ export default function ComingSoonPage() {
         </div>
       </div>
 
-      {/* Mobile Brochure Preview */}
-      <div className="lg:hidden absolute top-4 left-4 right-4">
+      {/* Mobile Brochure Viewer */}
+      <div className="lg:hidden absolute top-4 left-4 right-4 z-20">
         <div className="rounded-lg p-4 mb-8" style={{ backgroundColor: '#2D5574' }}>
-          <Image 
-            src="/brochure.png" 
-            alt="FASE Brochure" 
-            width={200}
-            height={300}
-            className="w-32 h-auto mx-auto rounded shadow-lg"
-          />
+          <BrochureViewer isParentHovered={true} />
         </div>
       </div>
     </div>
