@@ -30,7 +30,7 @@ export default function WhatIsAnMGAPage() {
           <div className="max-w-4xl mx-auto">
             <div className="prose prose-lg max-w-none">
               <div className="text-center mb-12">
-                <h2 className="text-3xl font-playfair font-bold text-fase-navy mb-6">The MGA Business Model</h2>
+                <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">The MGA Business Model</h2>
               </div>
               
               <div className="space-y-8 text-fase-steel">
@@ -46,7 +46,7 @@ export default function WhatIsAnMGAPage() {
 
                 <div className="grid md:grid-cols-2 gap-8 mt-12">
                   <div>
-                    <h3 className="text-2xl font-playfair font-semibold text-fase-navy mb-4">Focused Expertise</h3>
+                    <h3 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-4">Focused Expertise</h3>
                     <p className="text-lg leading-relaxed">
                       MGAs are typically smaller than traditional balance sheet insurance companies. 
                       They focus on a limited number of insurance products in which they possess deep expertise. 
@@ -56,7 +56,7 @@ export default function WhatIsAnMGAPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-playfair font-semibold text-fase-navy mb-4">Key Characteristics</h3>
+                    <h3 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-4">Key Characteristics</h3>
                     <ul className="space-y-3 text-lg">
                       <li className="flex items-start">
                         <div className="w-2 h-2 bg-fase-navy rounded-full mt-3 mr-3 flex-shrink-0"></div>
@@ -89,7 +89,7 @@ export default function WhatIsAnMGAPage() {
         >
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-playfair font-bold text-fase-navy mb-6">Innovation & Technology</h2>
+              <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">Innovation & Technology</h2>
             </div>
             
             <div className="bg-white p-8 rounded-lg shadow-sm border border-fase-silver">
@@ -107,7 +107,7 @@ export default function WhatIsAnMGAPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Risk Pricing</h3>
+                <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Risk Pricing</h3>
                 <p className="text-fase-steel">Advanced analytics and AI for better risk assessment</p>
               </div>
 
@@ -117,7 +117,7 @@ export default function WhatIsAnMGAPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Operational Efficiency</h3>
+                <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Operational Efficiency</h3>
                 <p className="text-fase-steel">Streamlined processes and automated workflows</p>
               </div>
 
@@ -127,7 +127,7 @@ export default function WhatIsAnMGAPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">Customer Experience</h3>
+                <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Customer Experience</h3>
                 <p className="text-fase-steel">Digital platforms and enhanced service delivery</p>
               </div>
             </div>

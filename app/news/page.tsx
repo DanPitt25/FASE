@@ -24,7 +24,7 @@ export default function NewsPage() {
         
         <ContentHero id="coming-soon" fullHeight={true} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-playfair font-bold text-fase-navy mb-6">Coming Soon</h2>
+            <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">Coming Soon</h2>
             <p className="text-lg text-fase-steel mb-8">
               News and updates will be available once FASE is officially launched.
             </p>

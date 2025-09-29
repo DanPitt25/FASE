@@ -46,7 +46,7 @@ export default function TitleHero({
       )}
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-white mb-6 leading-tight">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-noto-serif font-bold text-white mb-6 leading-tight">
           {title}
         </h1>
         {finalSubtitle && (

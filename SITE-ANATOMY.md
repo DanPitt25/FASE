@@ -200,7 +200,7 @@ Located in `/components/Header.tsx`, the primary navigation includes:
 **Heading Font:** Futura
 - Fallback: Lato, system-ui, sans-serif
 - Usage: Headings (h1-h6), titles, navigation
-- Applied via Tailwind class: `font-playfair`
+- Applied via Tailwind class: `font-noto-serif`
 
 ### Typography Hierarchy
 - **H1**: `text-4xl sm:text-5xl lg:text-6xl` (Homepage hero)

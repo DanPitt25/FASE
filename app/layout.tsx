@@ -1,5 +1,4 @@
 import './globals.css';
-import { GeistSans } from 'geist/font/sans';
 import { AuthProvider } from '../contexts/AuthContext';
 import { LocaleProvider } from '../contexts/LocaleContext';
 import DynamicIntlProvider from '../components/DynamicIntlProvider';
@@ -34,7 +33,7 @@ export default async function RootLayout({
       <head>
         <link rel="preload" href="/fase-logo-mark.png" as="image" />
       </head>
-      <body className={GeistSans.variable}>
+      <body>
         <LocaleProvider>
           <DynamicIntlProvider allMessages={allMessages}>
             <AuthProvider>

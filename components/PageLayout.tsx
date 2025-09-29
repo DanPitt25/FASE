@@ -38,7 +38,7 @@ export default function PageLayout({
               <div className="p-6">
                 {/* Panel Header */}
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-xl font-playfair font-bold text-fase-navy">Navigation</h2>
+                  <h2 className="text-xl font-noto-serif font-bold text-fase-navy">Navigation</h2>
                   <button
                     onClick={() => setShowNavPanel(false)}
                     className="p-2 hover:bg-fase-pearl transition-colors"

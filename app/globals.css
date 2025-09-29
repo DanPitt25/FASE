@@ -1,26 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Serif:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --fase-navy: #085275;
-  --fase-steel: #4a4a4a;
-  --fase-graphite: #6b6b6b;
-  --fase-platinum: #8d8d8d;
-  --fase-silver: #b5b5b5;
-  --fase-pearl: #e8e8e8;
-  --fase-paper: #f8f8f8;
+  --fase-navy: #2D5574;
+  --fase-steel: #231F20;
+  --fase-graphite: #B46A33;
+  --fase-platinum: #E2A560;
+  --fase-silver: #E6C06E;
+  --fase-pearl: #EBE8E4;
+  --fase-paper: #EBE8E4;
 }
 
 @layer base {
   body {
-    font-family: 'Lato', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Futura', 'Lato', system-ui, sans-serif;
+    font-family: 'Noto Serif', serif;
     font-weight: 500;
   }
 }
