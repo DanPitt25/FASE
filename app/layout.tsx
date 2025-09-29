@@ -11,20 +11,6 @@ let description =
 export const metadata = {
   title,
   description,
-  icons: [
-    {
-      rel: 'icon',
-      url: '/favicon.ico',
-    },
-    {
-      rel: 'shortcut icon',
-      url: '/favicon.ico',
-    },
-    {
-      rel: 'apple-touch-icon',
-      url: '/fase-logo-mark.png',
-    },
-  ],
   twitter: {
     card: 'summary_large_image',
     title,
