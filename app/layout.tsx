@@ -11,6 +11,11 @@ let description =
 export const metadata = {
   title,
   description,
+  icons: {
+    icon: '/fase-logo-mark.png',
+    shortcut: '/fase-logo-mark.png',
+    apple: '/fase-logo-mark.png',
+  },
   twitter: {
     card: 'summary_large_image',
     title,
