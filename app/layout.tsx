@@ -14,11 +14,11 @@ export const metadata = {
   icons: [
     {
       rel: 'icon',
-      url: '/fase-logo-mark.png',
+      url: '/favicon.ico',
     },
     {
       rel: 'shortcut icon',
-      url: '/fase-logo-mark.png',
+      url: '/favicon.ico',
     },
     {
       rel: 'apple-touch-icon',
