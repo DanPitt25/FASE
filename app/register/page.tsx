@@ -8,12 +8,9 @@ export default function Register() {
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-silver bg-white px-4 py-6 pt-8 text-center sm:px-16">
           <div className="flex items-center space-x-3 mb-4">
             <img 
-              src="/europe.jpg" 
-              alt="Europe Map" 
+              src="/fase-logo-mark.png" 
+              alt="FASE Logo" 
               className="h-10 w-auto object-contain"
-              style={{
-                filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
-              }}
             />
             <h1 className="text-2xl font-playfair font-bold text-fase-navy">FASE</h1>
           </div>

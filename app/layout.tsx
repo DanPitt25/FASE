@@ -32,7 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preload" href="/europe.jpg" as="image" />
+        <link rel="preload" href="/fase-logo-mark.png" as="image" />
       </head>
       <body className={GeistSans.variable}>
         <LocaleProvider>
