@@ -150,7 +150,7 @@ export default function Page() {
           <div className="p-6">
             {/* Panel Header */}
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-playfair font-bold text-fase-navy">Navigation</h2>
+              <h2 className="text-xl font-noto-serif font-bold text-fase-navy">Navigation</h2>
               <button
                 onClick={() => setShowNavPanel(false)}
                 className="p-2 hover:bg-fase-pearl transition-colors"
@@ -235,28 +235,28 @@ export default function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start md:items-center md:min-h-[calc(100vh-5.5rem)] pt-2 md:pt-0">
           {/* Left Content */}
           <div className="text-left md:py-16">
-            <h1 className="text-xl sm:text-2xl lg:text-4xl font-playfair font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-noto-serif font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
               The Federation of European <span className="text-fase-navy">Managing General Agents</span>
             </h1>
             <p className="text-lg sm:text-xl text-fase-steel mb-6 font-lato leading-relaxed">
               A clear voice for the most responsive, innovative and customer-friendly businesses in insurance. A unique forum for MGAs, capacity providers and service providers to meet, exchange ideas and insights, and do business together across Europe.
             </p>
             <div className="mb-8">
-              <div className="grid grid-cols-2 gap-4 text-base text-fase-platinum">
+              <div className="grid grid-cols-2 gap-4 text-base text-fase-navy">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-fase-graphite  mr-2"></div>
+                  <div className="w-2 h-2 bg-fase-navy mr-2"></div>
                   <span>Pan-European Events</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-fase-steel  mr-2"></div>
+                  <div className="w-2 h-2 bg-fase-navy mr-2"></div>
                   <span>Regulatory Intelligence</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-fase-navy  mr-2"></div>
+                  <div className="w-2 h-2 bg-fase-navy mr-2"></div>
                   <span>Market Research</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-fase-platinum  mr-2"></div>
+                  <div className="w-2 h-2 bg-fase-navy mr-2"></div>
                   <span>Industry Advocacy</span>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function Page() {
       <section id="services" className="relative h-[calc(100vh-5.5rem)] flex items-center overflow-hidden bg-fase-navy">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 py-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-playfair font-bold text-white">What FASE Offers</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-white">What FASE Offers</h2>
           </div>
 
           {/* Postcard-style Container */}
@@ -383,38 +383,38 @@ export default function Page() {
       >
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-playfair font-bold text-fase-navy mb-4">FASE European Conference</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-4">FASE European Conference</h2>
             <p className="text-base sm:text-lg md:text-xl text-fase-steel max-w-2xl mx-auto px-4">
               The premier pan-European gathering for MGAs, capacity providers, and service providers. Date and location to be determined.
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-4 sm:space-y-6">
-              <h3 className="text-2xl sm:text-3xl font-playfair font-bold text-fase-navy mb-4 sm:mb-6">Building the European MGA Community</h3>
+              <h3 className="text-2xl sm:text-3xl font-noto-serif font-bold text-fase-navy mb-4 sm:mb-6">Building the European MGA Community</h3>
               <p className="text-fase-steel text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
                 Following the success of national MGA associations like the MGAA, FASE will host annual conferences to unite the European MGA community. Our events focus on meaningful connections, business development, and industry advocacy.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-steel "></div>
+                  <div className="w-3 h-3 bg-fase-navy"></div>
                   <p className="text-fase-steel"><strong>Format:</strong> Networking-focused conference</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-graphite "></div>
+                  <div className="w-3 h-3 bg-fase-navy"></div>
                   <p className="text-fase-steel"><strong>Focus:</strong> Business connections and market insights</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-navy "></div>
+                  <div className="w-3 h-3 bg-fase-navy"></div>
                   <p className="text-fase-steel"><strong>Audience:</strong> European MGAs and market participants</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-platinum "></div>
+                  <div className="w-3 h-3 bg-fase-navy"></div>
                   <p className="text-fase-steel"><strong>Goal:</strong> Unite the European MGA community</p>
                 </div>
               </div>
             </div>
             <div className="bg-white p-6 sm:p-8 lg:p-10  shadow-xl border border-fase-silver">
-              <h4 className="text-xl sm:text-2xl font-playfair font-semibold text-fase-navy mb-4 sm:mb-6">Sponsorship Opportunities</h4>
+              <h4 className="text-xl sm:text-2xl font-noto-serif font-semibold text-fase-navy mb-4 sm:mb-6">Sponsorship Opportunities</h4>
               <p className="text-fase-steel text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
                 Partner with FASE to reach the European MGA community. Sponsorship packages available for our inaugural conference.
               </p>

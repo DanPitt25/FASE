@@ -12,9 +12,9 @@ export default function Register() {
               alt="FASE Logo" 
               className="h-10 w-auto object-contain"
             />
-            <h1 className="text-2xl font-playfair font-bold text-fase-navy">FASE</h1>
+            <h1 className="text-2xl font-noto-serif font-bold text-fase-navy">FASE</h1>
           </div>
-          <h3 className="text-xl font-playfair font-semibold text-fase-navy">Create Account</h3>
+          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Create Account</h3>
         </div>
         <div className="bg-white px-4 py-8 sm:px-16">
           <RegisterForm />

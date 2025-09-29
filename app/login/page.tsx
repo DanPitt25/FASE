@@ -13,9 +13,9 @@ export default function Login() {
               alt="FASE Logo" 
               className="h-10 w-auto object-contain"
             />
-            <h1 className="text-2xl font-playfair font-bold text-fase-navy">FASE</h1>
+            <h1 className="text-2xl font-noto-serif font-bold text-fase-navy">FASE</h1>
           </div>
-          <h3 className="text-xl font-playfair font-semibold text-fase-navy">Sign In</h3>
+          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Sign In</h3>
           <p className="text-sm text-fase-steel">
             Access your FASE member portal
           </p>

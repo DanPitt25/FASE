@@ -159,7 +159,7 @@ export default function MemberContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-playfair font-bold text-fase-navy">
+        <h1 className="text-3xl font-noto-serif font-bold text-fase-navy">
           {userProfile?.personalName ? `${userProfile.personalName}'s Portal` : "Member Portal"}
         </h1>
       </div>
@@ -168,7 +168,7 @@ export default function MemberContent() {
         {/* Account Information Card */}
         <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-playfair font-semibold text-fase-navy">Account Information</h2>
+            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Account Information</h2>
             <div className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
               ✓ Verified
             </div>
@@ -197,7 +197,7 @@ export default function MemberContent() {
         {/* Member Subscription Card */}
         <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-playfair font-semibold text-fase-navy">Member Subscription</h2>
+            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Member Subscription</h2>
           </div>
 
           {subscriber ? (
@@ -305,7 +305,7 @@ export default function MemberContent() {
       {/* Member Resources - Only show if user has active subscription */}
       {subscriber && subscriber.access === 'subscriber' && (
         <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
-          <h2 className="text-xl font-playfair font-semibold text-fase-navy mb-4">Member Resources</h2>
+          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Member Resources</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
               <h3 className="font-medium text-fase-navy mb-2">Events & Conferences</h3>

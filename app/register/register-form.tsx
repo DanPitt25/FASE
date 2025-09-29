@@ -74,7 +74,7 @@ export default function RegisterForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <h2 className="text-2xl font-playfair font-bold text-fase-navy mb-4">Check Your Email</h2>
+        <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Check Your Email</h2>
         <p className="text-fase-steel mb-6">
           Click the verification link sent to <strong>{email}</strong>
         </p>
@@ -82,7 +82,7 @@ export default function RegisterForm() {
         <div className="text-center mb-4">
           <a
             href="/login"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-graphite focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-platinum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
           >
             Continue to Sign In
           </a>

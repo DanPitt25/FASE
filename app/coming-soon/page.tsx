@@ -200,7 +200,7 @@ export default function ComingSoonPage() {
                 priority
               />
             </div>
-            <h1 className="text-4xl font-playfair font-light mb-2" style={{ color: '#EBE8E4' }}>
+            <h1 className="text-4xl font-noto-serif font-light mb-2" style={{ color: '#EBE8E4' }}>
               Coming soon...
             </h1>
             <p className="font-light mb-4" style={{ color: '#E2A560' }}>

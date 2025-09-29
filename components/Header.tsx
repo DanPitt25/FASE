@@ -57,7 +57,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   />
                 </div>
                 <div className="border-l border-fase-silver h-14 mx-3"></div>
-                <a href="/" className="text-4xl font-playfair font-bold text-fase-navy mx-3">FASE</a>
+                <a href="/" className="text-4xl font-noto-serif font-bold text-fase-navy mx-3">FASE</a>
                 <div className="border-l border-fase-silver h-14 mx-3"></div>
               </div>
             </div>
@@ -78,7 +78,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     placeholder={t('search_placeholder')}
                     className="bg-fase-pearl text-fase-steel px-4 py-1 pr-10  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
                   />
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -182,7 +182,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 placeholder={t('search_placeholder')}
                 className="w-full bg-fase-pearl text-fase-steel px-4 py-2 pr-10  text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-silver"
               />
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-platinum" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -225,7 +225,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-center py-2 px-4 bg-fase-steel text-white rounded hover:bg-fase-graphite transition-colors"
+                  className="w-full text-center py-2 px-4 bg-fase-steel text-white rounded hover:bg-fase-platinum transition-colors"
                 >
                   {t('sign_out')}
                 </button>

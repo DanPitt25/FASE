@@ -69,7 +69,7 @@ function VerifyEmailContent() {
           </p>
           <a
             href="/login?verified=true"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-graphite focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-platinum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
           >
             Go to Sign In
           </a>
@@ -91,7 +91,7 @@ function VerifyEmailContent() {
         <div className="space-y-3">
           <a
             href="/register"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-graphite focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-platinum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
           >
             Register Again
           </a>

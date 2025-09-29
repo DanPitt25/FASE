@@ -1537,7 +1537,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-playfair font-semibold text-fase-navy mb-2">
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
                 Choose Payment Method
               </h3>
               <p className="text-fase-steel mb-4">
@@ -1665,7 +1665,7 @@ export default function MembershipApplication() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-playfair font-semibold text-fase-navy mb-2">
+              <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">
                 Review and Submit Application
               </h3>
               <p className="text-fase-steel mb-6">
@@ -2477,7 +2477,7 @@ export default function MembershipApplication() {
         <div className="flex gap-8">
           {/* Sidebar */}
           <div className="w-80 bg-white border border-fase-silver rounded-lg p-6 h-fit">
-            <h3 className="font-playfair font-semibold text-fase-navy mb-4">Application Progress</h3>
+            <h3 className="font-noto-serif font-semibold text-fase-navy mb-4">Application Progress</h3>
             <div className="space-y-1">
               {membershipSteps.map((step, index) => {
                 // Check if all previous required steps are valid
@@ -2507,7 +2507,7 @@ export default function MembershipApplication() {
                         ? 'bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer'
                         : isAccessible
                         ? 'text-fase-steel hover:bg-fase-pearl cursor-pointer'
-                        : 'text-fase-silver cursor-not-allowed opacity-60'
+                        : 'text-fase-cream cursor-not-allowed opacity-60'
                     }`}
                     onClick={() => {
                       if (isClickable) {
@@ -2545,7 +2545,7 @@ export default function MembershipApplication() {
             <div className="bg-white border border-fase-silver rounded-lg p-8">
               {/* Step Header */}
               <div className="mb-8">
-                <h2 className="text-2xl font-playfair font-bold text-fase-navy mb-2">
+                <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-2">
                   {membershipSteps[currentStep]?.title}
                 </h2>
                 <div className="flex items-center text-sm text-fase-steel">

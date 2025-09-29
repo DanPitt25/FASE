@@ -77,7 +77,7 @@ export default function CTASection({
   return (
     <section id={id} className={`min-h-screen flex items-center ${backgroundClasses[background].section} ${sizeClasses[size].section}`}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 text-center">
-        <h2 className={`${sizeClasses[size].title} font-playfair font-bold ${backgroundClasses[background].title} mb-6 sm:mb-8`}>
+        <h2 className={`${sizeClasses[size].title} font-noto-serif font-bold ${backgroundClasses[background].title} mb-6 sm:mb-8`}>
           {title}
         </h2>
         <p className={`${sizeClasses[size].description} ${backgroundClasses[background].description} mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4`}>
