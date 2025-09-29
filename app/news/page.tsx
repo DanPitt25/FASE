@@ -18,7 +18,7 @@ export default function NewsPage() {
           id="hero"
           title="News"
           useDefaultSubtitle={true}
-          backgroundImage="/europe.jpg"
+          backgroundImage="/fase-logo.png"
           fullHeight={true}
         />
         

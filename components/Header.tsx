@@ -47,19 +47,14 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <div className="flex-shrink-0 flex items-center">
                 <div className="relative w-16 h-16">
                   <Image 
-                    src="/europe.jpg" 
-                    alt="Europe Map" 
+                    src="/fase-logo-mark.png" 
+                    alt="FASE Logo" 
                     width={64}
                     height={64}
-                    className="w-full h-full object-contain "
-                    style={{
-                      filter: 'brightness(0.8) contrast(1.2) saturate(0.7)',
-                      objectPosition: 'center'
-                    }}
+                    className="w-full h-full object-contain"
                     priority
                     onLoad={handleImageLoad}
                   />
-                  <div className="absolute inset-0 bg-fase-pearl bg-opacity-30 "></div>
                 </div>
                 <div className="border-l border-fase-silver h-14 mx-3"></div>
                 <a href="/" className="text-4xl font-playfair font-bold text-fase-navy mx-3">FASE</a>
