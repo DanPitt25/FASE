@@ -1,47 +1,45 @@
 # FASE Website - Site Anatomy
 
 ## Overview
-The Federation of European MGAs (FASE) website is a Next.js 14 application built with TypeScript, Firebase, Tailwind CSS, and NextAuth for authentication. The site serves as the official platform for Europe's premier MGA community.
+The Federation of European MGAs (FASE) website is a Next.js 14 application built with TypeScript, Firebase, Tailwind CSS, and NextAuth for authentication. The site serves as the official platform for Europe's premier MGA community. Features internationalization support with next-intl.
 
 ## 1. Navigation Structure
 
 ### Main Navigation (Desktop)
 Located in `/components/Header.tsx`, the primary navigation includes:
 
-**Top Row (Hidden on Mobile):**
-- Search input field (placeholder: "Search...")
-- Language selector dropdown (English, Deutsch, Français, Español, Italiano)
+**Header Layout:**
+- Left: FASE logo mark with "FASE" text and gold dividers
+- Top Right (Hidden on Mobile): User status, search input, language selector (English/Français only)
+- Main Navigation: About Us dropdown, Join Us, Sponsorship, Events, News, Member Portal, Sign In/Out
 
-**Main Navigation Row:**
-- **About Us** (dropdown menu)
-  - Who We Are (`/about/who-we-are`)
-  - Committees (`/about/committees`)
-  - Membership Directory (`/about/membership-directory`)
-  - Affiliates & Associates (`/about/affiliates`)
-  - Sponsors (`/about/sponsors`)
+**About Us Dropdown Menu:**
+- What is an MGA? (`/what-is-an-mga`)
+- Who We Are (`/about/who-we-are`)
+- Advisory Board (`/about/advisory-board`)
+- Membership Directory (`/about/membership-directory`)
+- Affiliates & Associates (`/about/affiliates`)
+- Sponsors (`/about/sponsors`)
+
+**Main Navigation Links:**
 - **Join Us** (`/join`)
 - **Sponsorship** (`/sponsorship`)
 - **Events** (`/events`)
-- **Knowledge & Education** (`/knowledge`)
 - **News** (`/news`)
 - **Member Portal** (`/member-portal`)
-- **Sign In** button (`/login`)
+- **Sign In/Out** (`/login` or logout action)
 
 ### Mobile Navigation
-- Hamburger menu toggle
-- Collapsible menu with all main navigation items
-- Mobile-optimized search and language selector
-- Responsive design with full-width mobile menu
+- Hamburger menu toggle with X/hamburger icon animation
+- Full-width mobile menu with search and language selector at top
+- All main navigation items in stacked layout
+- User authentication status display
+- Responsive design with FASE cream background highlights
 
 ### Homepage Side Navigation
 - Collapsible sidebar navigation panel (desktop only)
-- Section-based navigation:
-  1. Home (hero section)
-  2. What We Offer (services section)
-  3. Conference (conference section)
-  4. Join FASE (CTA section)
+- Section-based navigation with smooth scroll functionality
 - Visual indicators for current section
-- Smooth scroll functionality
 
 ## 2. Page Inventory
 
@@ -50,69 +48,103 @@ Located in `/components/Header.tsx`, the primary navigation includes:
 #### Homepage (`/app/page.tsx`)
 **Purpose:** Primary landing page showcasing FASE's mission and services
 **Key Features:**
-- Rotating city image carousel (Amsterdam, Hamburg, London, Madrid, Paris, Rome, Vienna)
-- Hero section with organization description
-- Service offerings grid
-- Conference information
+- Hero section with TitleHero component
+- Service offerings grid with multiple service cards
+- Conference information section
 - Call-to-action section
 - Side navigation panel for smooth scrolling
 
 #### About Section
 - **Main About** (`/app/about/page.tsx`) - Overview of FASE with quick links
 - **Who We Are** (`/app/about/who-we-are/page.tsx`) - Detailed mission, values, leadership
-- **Committees** (`/app/about/committees/page.tsx`) - Governance structure
+- **Advisory Board** (`/app/about/advisory-board/page.tsx`) - Leadership and governance
 - **Membership Directory** (`/app/about/membership-directory/page.tsx`) - Member listings
 - **Affiliates & Associates** (`/app/about/affiliates/page.tsx`) - Partner organizations
 - **Sponsors** (`/app/about/sponsors/page.tsx`) - Supporting organizations
+
+#### Information Pages
+- **What is an MGA?** (`/app/what-is-an-mga/page.tsx`) - Educational content about MGAs
+
+#### Service & Industry Pages
+- **Digital Platform** (`/app/digital-platform/page.tsx`) - Technology platform information
+- **Market Intelligence** (`/app/market-intelligence/page.tsx`) - Market data and insights
+- **Industry Advocacy** (`/app/industry-advocacy/page.tsx`) - Advocacy efforts and representation
+- **Knowledge** (`/app/knowledge/page.tsx`) - Educational resources and learning platform
+- **Capacity Transparency** (`/app/capacity-transparency/page.tsx`) - Market capacity information
 
 #### Membership & Engagement
 - **Join Us** (`/app/join/page.tsx`) - Three membership categories with registration
 - **Sponsorship** (`/app/sponsorship/page.tsx`) - Partnership opportunities
 - **Events** (`/app/events/page.tsx`) - Conference and networking events
-- **Knowledge & Education** (`/app/knowledge/page.tsx`) - Educational resources platform
 - **News** (`/app/news/page.tsx`) - Industry news and updates
 
-#### Member Services
+#### Member Services & Authentication
 - **Member Portal** (`/app/member-portal/page.tsx`) - Protected member area
-- **Login** (`/app/login/page.tsx`) - Authentication page
-- **Register** (`/app/register/page.tsx`) - New account creation
+- **Member Portal Apply** (`/app/member-portal/apply/page.tsx`) - Application process
+- **Login** (`/app/login/page.tsx`) - Authentication page with login form
+- **Register** (`/app/register/page.tsx`) - New account creation with register form
+- **Verify Signup** (`/app/verify-signup/page.tsx`) - Email verification process
 - **Protected** (`/app/protected/page.tsx`) - Authenticated content area
 
-### Supporting Components
-- **Form Components** (`/app/form.tsx`, `/app/submit-button.tsx`) - Authentication forms
+#### Utility Pages
+- **Coming Soon** (`/app/coming-soon/page.tsx`) - Placeholder for upcoming features
+
+### Supporting Components & Infrastructure
+- **Authentication Forms** (`/app/login/login-form.tsx`, `/app/register/register-form.tsx`) - Custom form components
+- **Member Content** (`/app/member-portal/member-content.tsx`) - Protected member area content
+- **Form Components** (`/app/form.tsx`, `/app/submit-button.tsx`) - General form utilities
 - **Authentication** (`/app/auth.ts`, `/app/auth.config.ts`) - NextAuth configuration
 - **Database** (`/app/db.ts`) - Database connection and queries
+- **API Routes** (`/app/api/auth/[...nextauth]/route.ts`) - Authentication endpoints
 
 ## 3. Components
 
-### Reusable Components
+### Core Reusable Components
 
 #### Header Component (`/components/Header.tsx`)
 **Function:** Site-wide navigation and branding
 **Features:**
 - Responsive design with mobile hamburger menu
-- Multi-language support
-- Search functionality
-- Logo with Europe map image
-- Current page highlighting
+- Internationalization support (next-intl)
+- Search functionality with FASE cream styling
+- FASE logo mark with brand text and gold dividers
+- About Us dropdown with complete submenu
+- User authentication status display
+- Current page highlighting with FASE navy
 - Smooth animations and transitions
 
 #### TitleHero Component (`/components/TitleHero.tsx`)
 **Function:** Page title sections with consistent styling
 **Features:**
-- Customizable title and subtitle
-- Background pattern overlay
-- Navy blue default background
-- Responsive typography
+- Customizable title and subtitle with optional default FASE subtitle
+- Background pattern overlay or custom background image
+- FASE navy default background with opacity overlay
+- Responsive typography using Noto Serif for headings
 - Centered layout with max-width container
+- Full height or custom height options
+
+#### Button Component (`/components/Button.tsx`)
+**Function:** Consistent button styling across the site
+**Features:**
+- Multiple variants and sizes
+- FASE brand color integration
+- Hover states and transitions
+
+#### Footer Component (`/components/Footer.tsx`)
+**Function:** Site-wide footer with navigation and information
+
+#### PageLayout Component (`/components/PageLayout.tsx`)
+**Function:** Consistent page structure wrapper
 
 ### Specialized Components
-- Authentication forms with NextAuth integration
-- Responsive image galleries
-- Interactive membership selection
-- Service cards with hover effects
-- Statistics display sections
-- Leadership team profiles
+- **ServiceCard** (`/components/ServiceCard.tsx`) - Service offerings display
+- **FeatureBox** (`/components/FeatureBox.tsx`) - Feature highlights
+- **CTASection** (`/components/CTASection.tsx`) - Call-to-action sections
+- **SideNavigation** (`/components/SideNavigation.tsx`) - Homepage section navigation
+- **Modal** (`/components/Modal.tsx`) - Modal dialog component
+- **EmailVerification** (`/components/EmailVerification.tsx`) - Email verification handling
+- **ContentHero** (`/components/ContentHero.tsx`) - Content page hero sections
+- **DynamicIntlProvider** (`/components/DynamicIntlProvider.tsx`) - Internationalization provider
 
 ## 4. Content Sections
 
@@ -163,141 +195,183 @@ Located in `/components/Header.tsx`, the primary navigation includes:
 
 ## 5. Color Scheme
 
-### Primary Color Palette (defined in Tailwind config)
+### Official FASE Brand Color Palette (defined in Tailwind config)
 ```css
-'fase-charcoal': '#2c2c2c'    /* Dark text and backgrounds */
-'fase-navy': '#085275'        /* Primary brand color */
-'fase-steel': '#4a4a4a'       /* Secondary text */
-'fase-graphite': '#6b6b6b'    /* Accent elements */
-'fase-platinum': '#8d8d8d'    /* Light accents */
-'fase-silver': '#b5b5b5'      /* Borders and dividers */
-'fase-pearl': '#e8e8e8'       /* Light backgrounds */
-'fase-paper': '#f8f8f8'       /* Page backgrounds */
-'fase-accent': '#1a1a1a'      /* Call-to-action elements */
+'fase-black': '#231F20'       /* Footer and dark text */
+'fase-navy': '#2D5574'        /* Primary brand color - hero/CTA sections */
+'fase-light-blue': '#93AAC0'  /* Crucial hero accent color */
+'fase-orange': '#B46A33'      /* Accent color */
+'fase-gold': '#E2A560'        /* Accent color */
+'fase-light-gold': '#E6C06E'  /* Accent color and dividers */
+'fase-cream': '#EBE8E4'       /* Hero and light sections, form backgrounds */
+```
+
+### CSS Custom Properties (defined in globals.css)
+```css
+:root {
+  --fase-navy: #2D5574;
+  --fase-black: #231F20;
+  --fase-orange: #B46A33;
+  --fase-gold: #E2A560;
+  --fase-light-gold: #E6C06E;
+  --fase-cream: #EBE8E4;
+  --fase-paper: #EBE8E4;
+}
 ```
 
 ### Color Usage Patterns
-- **Primary Navy** (`#085275`): Main brand color, headers, primary buttons
-- **Charcoal** (`#2c2c2c`): Dark backgrounds, footer
-- **Steel** (`#4a4a4a`): Body text, secondary content
-- **Paper** (`#f8f8f8`): Main page backgrounds
-- **Pearl** (`#e8e8e8`): Section backgrounds, input fields
-- **Accent** (`#1a1a1a`): Call-to-action buttons, emphasis elements
+- **FASE Navy** (`#2D5574`): Primary brand color, navigation highlights, hero sections
+- **FASE Black** (`#231F20`): Footer backgrounds, dark text elements
+- **FASE Cream** (`#EBE8E4`): Light backgrounds, form fields, mobile menu highlights
+- **FASE Light Gold** (`#E6C06E`): Header dividers, borders, accent elements
+- **FASE Gold** (`#E2A560`): Call-to-action elements, buttons
+- **FASE Orange** (`#B46A33`): Secondary accent color
+- **FASE Light Blue** (`#93AAC0`): Hero section accents
 
-### Color Accessibility
-- High contrast ratios maintained throughout
-- Consistent color hierarchy for readability
-- Hover states with appropriate color shifts
+### Color Implementation
+- Consistent brand color usage across all components
+- High contrast ratios for accessibility
+- Hover states with appropriate color transitions
+- Mobile-specific color applications for better UX
 
 ## 6. Typography
 
 ### Font Families
-**Primary Font:** Lato
-- Source: Google Fonts (`@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap')`)
-- Usage: Body text, paragraphs, general content
-- Weights: 400 (regular), 700 (bold)
+**Primary Body Font:** DM Sans
+- Source: Google Fonts (`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Serif:wght@400;500;700&display=swap')`)
+- Usage: Body text, paragraphs, navigation, general content
+- Weights: 400 (regular), 500 (medium), 700 (bold)
+- Applied via Tailwind class: `font-dm-sans`
 
-**Heading Font:** Futura
-- Fallback: Lato, system-ui, sans-serif
-- Usage: Headings (h1-h6), titles, navigation
+**Heading Font:** Noto Serif
+- Source: Google Fonts (same import as above)
+- Usage: Headings (h1-h6), titles, hero sections
+- Weights: 400 (regular), 500 (medium), 700 (bold)
 - Applied via Tailwind class: `font-noto-serif`
 
+### Legacy Font Support
+- **font-playfair**: Maps to Noto Serif for gradual migration
+- **font-lato**: Maps to DM Sans for gradual migration
+
 ### Typography Hierarchy
-- **H1**: `text-4xl sm:text-5xl lg:text-6xl` (Homepage hero)
+- **H1**: `text-4xl sm:text-5xl lg:text-6xl` (Homepage hero titles)
 - **H2**: `text-3xl md:text-4xl` (Section headers)
 - **H3**: `text-2xl sm:text-3xl` (Subsection headers)
 - **Body**: `text-lg` (Standard paragraph text)
-- **Small**: `text-sm` (Captions, metadata)
+- **Small**: `text-sm` (Captions, metadata, form labels)
 
-### Typography Implementation
+### Typography Implementation (globals.css)
 ```css
-body {
-  font-family: 'Lato', system-ui, sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Futura', 'Lato', system-ui, sans-serif;
-  font-weight: 500;
+@layer base {
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Serif', serif;
+    font-weight: 500;
+  }
 }
 ```
+
+### Font Loading Optimization
+- Google Fonts loaded with `display=swap` for performance
+- Critical fonts preloaded for faster rendering
+- Fallback fonts specified for improved loading experience
 
 ## 7. Key Features
 
 ### Interactive Features
 
-#### Image Carousel
-- **Location:** Homepage hero section
-- **Function:** Automated rotation of European city images
-- **Timing:** 7-second intervals
-- **Cities:** Amsterdam, Hamburg, London, Madrid, Paris, Rome, Vienna
-- **Transition:** Smooth fade with 8-second duration
-
 #### Responsive Navigation
-- **Desktop:** Horizontal navigation with dropdown menus
-- **Mobile:** Hamburger menu with slide-out panel
-- **Side Navigation:** Collapsible section navigation (homepage only)
-- **Scroll Tracking:** Active section highlighting
+- **Desktop:** Horizontal navigation with About Us dropdown menu
+- **Mobile:** Hamburger menu with full-screen overlay
+- **Animation:** Smooth X/hamburger icon transitions
+- **User Status:** Displays signed-in user information
+- **Language Toggle:** English/French language switching
 
-#### Membership Selection
-- **Feature:** Interactive membership type selection
-- **Types:** MGA Member, Market Practitioner, Supplier
-- **Interaction:** Click to select, visual feedback
-- **Integration:** Prepared for registration flow
+#### Hero Sections
+- **TitleHero Component:** Consistent page title sections with FASE navy backgrounds
+- **Background Options:** Pattern overlays or custom background images
+- **Typography:** Large Noto Serif headings with responsive sizing
+- **Default Subtitle:** Optional FASE organization description
+
+#### Authentication System
+- **NextAuth Integration:** Complete authentication flow
+- **Custom Forms:** Styled login and registration forms
+- **Email Verification:** Signup verification process
+- **Protected Routes:** Member portal and protected content areas
+- **User Display:** Authenticated user status in header
 
 #### Search Functionality
-- **Location:** Header component
-- **Scope:** Site-wide search input
-- **Responsive:** Full-width on mobile
-- **State:** Prepared for implementation
+- **Location:** Header component (desktop and mobile)
+- **Styling:** FASE cream background with gold borders
+- **Responsive:** Full-width search in mobile menu
+- **State:** Ready for implementation with backend
 
-#### Language Selection
-- **Languages:** English, Deutsch, Français, Español, Italiano
-- **Interface:** Dropdown selector
-- **Scope:** Prepared for internationalization
+#### Language & Internationalization
+- **Framework:** next-intl integration
+- **Languages:** English and French currently supported
+- **Interface:** Dropdown selector in header
+- **Scope:** Site-wide internationalization ready
 
-### Authentication System
-- **Framework:** NextAuth.js
-- **Features:** Email/password authentication
-- **Protected Routes:** Member portal, protected pages
-- **Integration:** Firebase authentication
-- **Forms:** Custom styled login/register forms
+#### Membership Features
+- **Multiple Categories:** MGA Member, Market Practitioner, Supplier
+- **Application Process:** Dedicated member portal application flow
+- **Registration Interest:** Contact forms for membership inquiries
 
 ### Forms and Interactions
-- **Contact Forms:** Prepared form components
-- **Registration:** Interest registration for membership
-- **Authentication:** Login/register functionality
-- **Buttons:** Consistent hover states and transitions
-- **Validation:** Form validation ready for implementation
+- **Custom Authentication Forms:** Styled login/register forms with NextAuth integration
+- **Email Verification:** Complete signup verification workflow
+- **Member Applications:** Dedicated application process in member portal
+- **Contact Forms:** Ready for membership inquiries and general contact
+- **Button Components:** Consistent FASE brand styling with hover states
+- **Form Validation:** Client-side validation ready for implementation
 
 ### Performance Features
-- **Image Optimization:** Next.js Image component
-- **Font Loading:** Optimized Google Fonts loading
-- **Preloading:** Critical images preloaded
-- **Responsive Images:** Adaptive image sizing
-- **Code Splitting:** Next.js automatic splitting
+- **Next.js Image Optimization:** Optimized image loading with proper sizing
+- **Font Loading:** Google Fonts with `display=swap` for performance
+- **Logo Optimization:** FASE logo mark preloading with onLoad callbacks
+- **Responsive Images:** Adaptive image sizing across devices
+- **Code Splitting:** Next.js 14 automatic code splitting
+- **CSS Optimization:** Tailwind CSS with custom FASE brand palette
 
 ### Technical Infrastructure
-- **Framework:** Next.js 14 with App Router
-- **Styling:** Tailwind CSS with custom color palette
-- **Database:** Firebase integration
-- **Deployment:** Configured for Vercel
-- **TypeScript:** Full type safety implementation
+- **Framework:** Next.js 14 with App Router architecture
+- **Styling:** Tailwind CSS with official FASE brand colors
+- **Authentication:** NextAuth.js with custom configuration
+- **Database:** Firebase integration ready
+- **Internationalization:** next-intl for multi-language support
+- **Deployment:** Optimized for Vercel deployment
+- **TypeScript:** Full type safety implementation throughout
 
-## Development Environment
-- **Build Commands:** `npm run dev`, `npm run build`, `npm run lint`
-- **Current Branch:** `mobile-optimization`
+## Current Development Status
+- **Active Branch:** `production-ready` (based on git status)
 - **Main Branch:** `main`
-- **Mobile Status:** Fully responsive with mobile-specific optimizations
+- **Build Commands:** `npm run dev`, `npm run build`, `npm run lint`
+- **Mobile Status:** Fully responsive with mobile-first design
+- **Internationalization:** English/French implemented, ready for expansion
+- **Authentication:** Complete NextAuth flow with Firebase backend
+- **Brand Implementation:** Official FASE colors and typography applied
 
-## Content Management
-- **Static Content:** Hardcoded in components
-- **Dynamic Content:** Prepared for CMS integration
-- **Images:** Stored in `/public` directory
-- **Internationalization:** Architecture ready for multi-language support
+## Content & Asset Management
+- **Static Content:** Component-based content with internationalization support
+- **Images:** FASE logo mark and assets in `/public` directory
+- **Brand Assets:** Official FASE logo mark replacing previous placeholder graphics
+- **Internationalization:** Translation system ready with English/French base
+- **Content Structure:** Modular components ready for CMS integration
+
+## Architecture Overview
+- **Total Pages:** 23 pages including authentication and utility pages
+- **Core Components:** 13 reusable components plus specialized elements
+- **Route Structure:** Organized by feature with nested routing for About section
+- **Authentication:** Protected routes with NextAuth integration
+- **Responsive Design:** Mobile-first approach with desktop enhancements
+- **Brand Consistency:** Official FASE color palette and typography system
 
 ---
 
-*Last Updated: Current as of mobile-optimization branch*
-*Total Pages: 15+ including subpages*
-*Components: 2 reusable + multiple specialized*
-*Responsive: Fully mobile optimized*
+*Last Updated: Production-ready branch with official FASE branding*
+*Pages: 23 total including all authentication and utility pages*
+*Components: 13+ reusable components with specialized implementations*
+*Features: Fully responsive, internationalized, authenticated*
