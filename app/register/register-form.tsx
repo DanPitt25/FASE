@@ -75,20 +75,20 @@ export default function RegisterForm() {
           </svg>
         </div>
         <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Check Your Email</h2>
-        <p className="text-fase-steel mb-6">
+        <p className="text-fase-black mb-6">
           Click the verification link sent to <strong>{email}</strong>
         </p>
         
         <div className="text-center mb-4">
           <a
             href="/login"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-platinum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-fase-navy hover:bg-fase-gold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
           >
             Continue to Sign In
           </a>
         </div>
         
-        <p className="text-xs text-fase-steel text-center">
+        <p className="text-xs text-fase-black text-center">
           Check your spam folder if you don&apos;t see the email.
         </p>
       </div>
@@ -98,7 +98,7 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="personalName" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="personalName" className="block text-sm font-medium text-fase-black">
           Personal Name
         </label>
         <input
@@ -108,12 +108,12 @@ export default function RegisterForm() {
           onChange={(e) => setPersonalName(e.target.value)}
           required
           placeholder="Your full name"
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
       
       <div>
-        <label htmlFor="organisation" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="organisation" className="block text-sm font-medium text-fase-black">
           Organisation
         </label>
         <input
@@ -122,12 +122,12 @@ export default function RegisterForm() {
           value={organisation}
           onChange={(e) => setOrganisation(e.target.value)}
           placeholder="Company or organisation name (optional)"
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
       
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="email" className="block text-sm font-medium text-fase-black">
           Email
         </label>
         <input
@@ -136,12 +136,12 @@ export default function RegisterForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
       
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="password" className="block text-sm font-medium text-fase-black">
           Password
         </label>
         <input
@@ -155,26 +155,26 @@ export default function RegisterForm() {
           onFocus={() => setShowPasswordReqs(true)}
           onBlur={() => setShowPasswordReqs(password.length > 0)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
         
         {/* Password Requirements */}
         {showPasswordReqs && (
-          <div className="mt-2 p-3 bg-fase-paper rounded-md border border-fase-silver">
-            <p className="text-xs font-medium text-fase-steel mb-2">Password must include:</p>
+          <div className="mt-2 p-3 bg-fase-light-blue rounded-md border border-fase-light-gold">
+            <p className="text-xs font-medium text-fase-black mb-2">Password must include:</p>
             {(() => {
               const { requirements } = validatePassword(password);
               return (
                 <div className="space-y-1">
-                  <div className={`text-xs flex items-center ${requirements.length ? "text-green-600" : "text-fase-steel"}`}>
+                  <div className={`text-xs flex items-center ${requirements.length ? "text-green-600" : "text-fase-black"}`}>
                     <span className="mr-2">{requirements.length ? "✓" : "○"}</span>
                     At least 8 characters
                   </div>
-                  <div className={`text-xs flex items-center ${requirements.capital ? "text-green-600" : "text-fase-steel"}`}>
+                  <div className={`text-xs flex items-center ${requirements.capital ? "text-green-600" : "text-fase-black"}`}>
                     <span className="mr-2">{requirements.capital ? "✓" : "○"}</span>
                     One capital letter (A-Z)
                   </div>
-                  <div className={`text-xs flex items-center ${requirements.special ? "text-green-600" : "text-fase-steel"}`}>
+                  <div className={`text-xs flex items-center ${requirements.special ? "text-green-600" : "text-fase-black"}`}>
                     <span className="mr-2">{requirements.special ? "✓" : "○"}</span>
                     One special character (!@#$%^&*...)
                   </div>
@@ -186,7 +186,7 @@ export default function RegisterForm() {
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-fase-black">
           Confirm Password
         </label>
         <input
@@ -195,7 +195,7 @@ export default function RegisterForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
 

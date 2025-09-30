@@ -27,11 +27,11 @@ export default function JoinPage() {
         />
 
         {/* Membership Types */}
-        <ContentHero id="membership-types" fullHeight={true} className="bg-white py-16">
+        <ContentHero id="membership-types" fullHeight={true} className="bg-fase-cream py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-4">Choose Your Membership</h2>
-              <p className="text-lg text-fase-steel max-w-2xl mx-auto">
+              <p className="text-lg text-fase-black max-w-2xl mx-auto">
                 FASE offers three distinct membership categories to serve MGAs, market practitioners, and service providers across Europe.
               </p>
             </div>
@@ -39,15 +39,15 @@ export default function JoinPage() {
             {/* Membership Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {/* MGA Membership */}
-              <div className="bg-fase-paper p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-platinum">
+              <div className="bg-fase-light-blue p-8 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-gold">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-fase-platinum  flex items-center justify-center mx-auto mb-6">
+                  <div className="w-20 h-20 bg-fase-gold  flex items-center justify-center mx-auto mb-6">
                     <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
                   <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">MGA Member</h3>
-                  <p className="text-fase-steel mb-6">
+                  <p className="text-fase-black mb-6">
                     Full membership for Managing General Agents operating in Europe.
                   </p>
                   <div className="text-left space-y-3 mb-8">
@@ -96,7 +96,7 @@ export default function JoinPage() {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Market Practitioner</h3>
-                  <p className="text-fase-steel mb-6">
+                  <p className="text-fase-black mb-6">
                     For capacity providers, insurers, and reinsurers working with MGAs.
                   </p>
                   <div className="text-left space-y-3 mb-8">
@@ -145,7 +145,7 @@ export default function JoinPage() {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Supplier</h3>
-                  <p className="text-fase-steel mb-6">
+                  <p className="text-fase-black mb-6">
                     For service providers supporting the MGA ecosystem.
                   </p>
                   <div className="text-left space-y-3 mb-8">

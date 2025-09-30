@@ -6,21 +6,13 @@ export default {
     extend: {
       colors: {
         'fase': {
-          'navy': '#2D5574',        // Primary blue
-          'black': '#231F20',       // Very dark gray/black
-          'orange': '#B46A33',      // Dark brown/orange
-          'gold': '#E2A560',        // Light brown/gold
-          'light-gold': '#E6C06E',  // Light gold
-          'cream': '#EBE8E4',       // Very light cream
-          // Legacy aliases for backward compatibility
-          'steel': '#231F20',       // Same as black
-          'graphite': '#B46A33',    // Same as orange
-          'platinum': '#E2A560',    // Same as gold
-          'silver': '#E6C06E',      // Same as light-gold
-          'pearl': '#EBE8E4',       // Same as cream
-          'paper': '#EBE8E4',       // Same as cream
-          'teal': '#2D5574',        // Same as navy
-          'emerald': '#B46A33',     // Same as orange
+          'black': '#231F20',       // Footer only
+          'navy': '#2D5574',        // Hero/CTA sections
+          'light-blue': '#93AAC0',  // Crucial hero color
+          'orange': '#B46A33',      // Accent color
+          'gold': '#E2A560',        // Accent color
+          'light-gold': '#E6C06E',  // Accent color  
+          'cream': '#EBE8E4',       // Hero/light sections
         }
       },
       fontFamily: {

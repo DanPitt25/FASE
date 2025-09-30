@@ -39,16 +39,16 @@ export default function ServiceCard({
 
   const variantClasses = {
     primary: {
-      card: 'bg-white border border-fase-silver hover:shadow-xl hover:border-fase-navy transition-all duration-300 transform hover:translate-y-[-2px]',
+      card: 'bg-white border border-fase-light-gold hover:shadow-xl hover:border-fase-navy transition-all duration-300 transform hover:translate-y-[-2px]',
       icon: 'bg-fase-navy text-white',
       title: 'text-fase-navy',
-      description: 'text-fase-steel'
+      description: 'text-fase-black'
     },
     secondary: {
-      card: 'bg-fase-paper border border-fase-silver hover:shadow-lg hover:border-fase-steel transition-all duration-300',
-      icon: 'bg-fase-steel text-white',
+      card: 'bg-fase-light-blue border border-fase-light-gold hover:shadow-lg hover:border-fase-black transition-all duration-300',
+      icon: 'bg-fase-black text-white',
       title: 'text-fase-navy',
-      description: 'text-fase-steel'
+      description: 'text-fase-black'
     }
   };
 

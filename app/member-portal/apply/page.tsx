@@ -58,7 +58,7 @@ const ValidatedInput = ({
         onBlur={() => markFieldTouched(fieldKey)}
         placeholder={placeholder}
         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-          shouldShowValidation ? 'border-red-300' : 'border-fase-silver'
+          shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
         }`}
         {...props}
       />
@@ -106,7 +106,7 @@ const ValidatedSelect = ({
         }}
         onBlur={() => markFieldTouched(fieldKey)}
         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-          shouldShowValidation ? 'border-red-300' : 'border-fase-silver'
+          shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
         }`}
       >
         {options.map(option => (
@@ -154,7 +154,7 @@ const ValidatedCheckbox = ({
         }}
         className="mt-1 mr-3"
       />
-      <span className="text-sm text-fase-steel">
+      <span className="text-sm text-fase-black">
         {label} {required && '*'}
       </span>
     </label>
@@ -667,7 +667,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Welcome to the FASE membership application. This form will collect the information needed to process your application.
               </p>
             </div>
@@ -682,7 +682,7 @@ export default function MembershipApplication() {
                   ...newOrgData, 
                   membershipType: e.target.value as 'corporate' | 'individual' 
                 })}
-                className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               >
                 <option value="corporate">Corporate Membership</option>
                 <option value="individual">Individual Membership</option>
@@ -769,7 +769,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Please review and accept our privacy and data processing terms.
               </p>
             </div>
@@ -804,7 +804,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide additional details about your organization.
               </p>
             </div>
@@ -819,7 +819,7 @@ export default function MembershipApplication() {
                   value={newOrgData.tradingName}
                   onChange={(e) => setNewOrgData({ ...newOrgData, tradingName: e.target.value })}
                   placeholder="If different from organization name"
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>
               
@@ -842,7 +842,7 @@ export default function MembershipApplication() {
                   type="text"
                   value={newOrgData.vatNumber}
                   onChange={(e) => setNewOrgData({ ...newOrgData, vatNumber: e.target.value })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>
               
@@ -855,7 +855,7 @@ export default function MembershipApplication() {
                   value={newOrgData.websiteUrl}
                   onChange={(e) => setNewOrgData({ ...newOrgData, websiteUrl: e.target.value })}
                   placeholder="https://www.example.com"
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>
             </div>
@@ -867,7 +867,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide the registered address of your head office.
               </p>
             </div>
@@ -898,7 +898,7 @@ export default function MembershipApplication() {
                     ...newOrgData, 
                     registeredAddress: { ...newOrgData.registeredAddress, line2: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>
               
@@ -928,7 +928,7 @@ export default function MembershipApplication() {
                       ...newOrgData, 
                       registeredAddress: { ...newOrgData.registeredAddress, county: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   />
                 </div>
               </div>
@@ -958,7 +958,7 @@ export default function MembershipApplication() {
                       ...newOrgData, 
                       registeredAddress: { ...newOrgData.registeredAddress, country: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   >
                     <option value="">Select country...</option>
                     {/* European Countries */}
@@ -1015,7 +1015,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide details for the primary contact for this membership.
               </p>
             </div>
@@ -1074,7 +1074,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide your personal address details.
               </p>
             </div>
@@ -1105,7 +1105,7 @@ export default function MembershipApplication() {
                     ...newOrgData, 
                     registeredAddress: { ...newOrgData.registeredAddress, line2: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>
               
@@ -1135,7 +1135,7 @@ export default function MembershipApplication() {
                       ...newOrgData, 
                       registeredAddress: { ...newOrgData.registeredAddress, county: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   />
                 </div>
               </div>
@@ -1165,7 +1165,7 @@ export default function MembershipApplication() {
                       ...newOrgData, 
                       registeredAddress: { ...newOrgData.registeredAddress, country: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   >
                     <option value="">Select country...</option>
                     {/* European Countries */}
@@ -1221,7 +1221,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide details about your organization&apos;s portfolio mix and gross written premiums.
               </p>
             </div>
@@ -1243,7 +1243,7 @@ export default function MembershipApplication() {
                     }}
                     onBlur={() => markFieldTouched('grossWrittenPremiums')}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-                      shouldShowValidation('grossWrittenPremiums', newOrgData.grossWrittenPremiums !== '') ? 'border-red-300' : 'border-fase-silver'
+                      shouldShowValidation('grossWrittenPremiums', newOrgData.grossWrittenPremiums !== '') ? 'border-red-300' : 'border-fase-light-gold'
                     }`}
                   >
                     <option value="">Select premium bracket</option>
@@ -1254,7 +1254,7 @@ export default function MembershipApplication() {
                     <option value="100-500m">€100M - €500M</option>
                     <option value="500m+">€500M+</option>
                   </select>
-                  <p className="text-xs text-fase-steel mt-1">
+                  <p className="text-xs text-fase-black mt-1">
                     This determines your annual membership fee
                   </p>
                 </div>
@@ -1264,7 +1264,7 @@ export default function MembershipApplication() {
                 <label className="block text-sm font-medium text-fase-navy mb-2">
                   Portfolio Mix by Line of Business
                 </label>
-                <p className="text-xs text-fase-steel mb-3">
+                <p className="text-xs text-fase-black mb-3">
                   Provide an approximate percentage breakdown of your business across different lines
                 </p>
                 
@@ -1275,7 +1275,7 @@ export default function MembershipApplication() {
                     'Specialty', 'Reinsurance'
                   ].map((lineOfBusiness) => (
                     <div key={lineOfBusiness} className="flex items-center gap-3">
-                      <label className="flex-1 text-sm text-fase-steel">{lineOfBusiness}</label>
+                      <label className="flex-1 text-sm text-fase-black">{lineOfBusiness}</label>
                       <div className="flex items-center gap-1">
                         <input
                           type="number"
@@ -1292,17 +1292,17 @@ export default function MembershipApplication() {
                               }
                             });
                           }}
-                          className="w-16 px-2 py-1 border border-fase-silver rounded text-center focus:outline-none focus:ring-1 focus:ring-fase-navy"
+                          className="w-16 px-2 py-1 border border-fase-light-gold rounded text-center focus:outline-none focus:ring-1 focus:ring-fase-navy"
                         />
-                        <span className="text-xs text-fase-steel">%</span>
+                        <span className="text-xs text-fase-black">%</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 
-                <div className="mt-3 p-3 bg-fase-pearl rounded-lg">
+                <div className="mt-3 p-3 bg-fase-cream rounded-lg">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-fase-steel">Total Percentage (Approximate):</span>
+                    <span className="text-fase-black">Total Percentage (Approximate):</span>
                     <span className="font-medium text-fase-navy">
                       {Object.values(newOrgData.portfolioMix).reduce((sum, val) => sum + (val || 0), 0)}%
                     </span>
@@ -1317,7 +1317,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Please provide information about your carrier organization and the types of insurance you provide.
               </p>
             </div>
@@ -1358,7 +1358,7 @@ export default function MembershipApplication() {
               <label className="block text-sm font-medium text-fase-navy mb-2">
                 Lines of Business Offered *
               </label>
-              <p className="text-xs text-fase-steel mb-3">
+              <p className="text-xs text-fase-black mb-3">
                 Select the insurance lines your organization provides capacity for
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1385,9 +1385,9 @@ export default function MembershipApplication() {
                         }
                         markFieldTouched('linesOfBusiness');
                       }}
-                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                      className="rounded border-fase-light-gold text-fase-navy focus:ring-fase-navy"
                     />
-                    <span className="text-sm text-fase-steel">{line}</span>
+                    <span className="text-sm text-fase-black">{line}</span>
                   </label>
                 ))}
               </div>
@@ -1418,7 +1418,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Please describe the services your organization provides to the insurance industry.
               </p>
             </div>
@@ -1427,7 +1427,7 @@ export default function MembershipApplication() {
               <label className="block text-sm font-medium text-fase-navy mb-2">
                 Service Categories *
               </label>
-              <p className="text-xs text-fase-steel mb-3">
+              <p className="text-xs text-fase-black mb-3">
                 Select all categories that describe your services
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1455,9 +1455,9 @@ export default function MembershipApplication() {
                         }
                         markFieldTouched('serviceCategories');
                       }}
-                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                      className="rounded border-fase-light-gold text-fase-navy focus:ring-fase-navy"
                     />
-                    <span className="text-sm text-fase-steel">{category}</span>
+                    <span className="text-sm text-fase-black">{category}</span>
                   </label>
                 ))}
               </div>
@@ -1477,7 +1477,7 @@ export default function MembershipApplication() {
                 placeholder="Describe your services and how they support the insurance industry..."
                 rows={4}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-                  shouldShowValidation('serviceDescription', newOrgData.serviceDescription.trim() !== '') ? 'border-red-300' : 'border-fase-silver'
+                  shouldShowValidation('serviceDescription', newOrgData.serviceDescription.trim() !== '') ? 'border-red-300' : 'border-fase-light-gold'
                 }`}
               />
             </div>
@@ -1486,7 +1486,7 @@ export default function MembershipApplication() {
               <label className="block text-sm font-medium text-fase-navy mb-2">
                 Target Client Types
               </label>
-              <p className="text-xs text-fase-steel mb-3">
+              <p className="text-xs text-fase-black mb-3">
                 Who are your primary clients in the insurance ecosystem?
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1511,9 +1511,9 @@ export default function MembershipApplication() {
                           });
                         }
                       }}
-                      className="rounded border-fase-silver text-fase-navy focus:ring-fase-navy"
+                      className="rounded border-fase-light-gold text-fase-navy focus:ring-fase-navy"
                     />
-                    <span className="text-sm text-fase-steel">{client}</span>
+                    <span className="text-sm text-fase-black">{client}</span>
                   </label>
                 ))}
               </div>
@@ -1540,14 +1540,14 @@ export default function MembershipApplication() {
               <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
                 Choose Payment Method
               </h3>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Select how you would like to pay for your FASE membership.
               </p>
             </div>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div 
-                className="p-6 border-2 border-fase-silver rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
+                className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                 onClick={() => {
                   setIsRedirectingToStripe(true);
                   // Handle Stripe checkout
@@ -1591,7 +1591,7 @@ export default function MembershipApplication() {
                     </svg>
                   </div>
                   <h4 className="font-medium text-fase-navy mb-2">Pay Now (Stripe)</h4>
-                  <p className="text-sm text-fase-steel">
+                  <p className="text-sm text-fase-black">
                     Pay immediately with credit/debit card
                   </p>
                   {isRedirectingToStripe && (
@@ -1603,7 +1603,7 @@ export default function MembershipApplication() {
               </div>
               
               <div 
-                className="p-6 border-2 border-fase-silver rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
+                className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                 onClick={() => {
                   alert('Invoice payment option selected. Your application will be submitted and an invoice will be sent to your billing contact.');
                 }}
@@ -1615,18 +1615,18 @@ export default function MembershipApplication() {
                     </svg>
                   </div>
                   <h4 className="font-medium text-fase-navy mb-2">Invoice Payment</h4>
-                  <p className="text-sm text-fase-steel">
+                  <p className="text-sm text-fase-black">
                     Receive an invoice and pay later
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-fase-pearl p-4 rounded-lg">
+            <div className="bg-fase-cream p-4 rounded-lg">
               <h4 className="font-medium text-fase-navy mb-2">Membership Fee Summary</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-fase-steel">Membership Type:</span>
+                  <span className="text-fase-black">Membership Type:</span>
                   <span className="text-fase-navy">
                     {newOrgData.membershipType === 'individual' 
                       ? 'Individual' 
@@ -1635,7 +1635,7 @@ export default function MembershipApplication() {
                 </div>
                 {newOrgData.membershipType === 'corporate' && newOrgData.organizationType === 'MGA' && newOrgData.grossWrittenPremiums && (
                   <div className="flex justify-between">
-                    <span className="text-fase-steel">Premium Bracket:</span>
+                    <span className="text-fase-black">Premium Bracket:</span>
                     <span className="text-fase-navy">{newOrgData.grossWrittenPremiums}</span>
                   </div>
                 )}
@@ -1645,7 +1645,7 @@ export default function MembershipApplication() {
                     <span className="text-green-600 text-sm">Applied</span>
                   </div>
                 )}
-                <div className="flex justify-between font-medium border-t border-fase-silver pt-2 mt-2">
+                <div className="flex justify-between font-medium border-t border-fase-light-gold pt-2 mt-2">
                   <span className="text-fase-navy">Annual Fee:</span>
                   <span className="text-fase-navy">
                     €{calculateAnnualFee(newOrgData.membershipType, newOrgData.organizationType, newOrgData.grossWrittenPremiums, newOrgData.hasOtherAssociations).toLocaleString()}
@@ -1668,34 +1668,34 @@ export default function MembershipApplication() {
               <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">
                 Review and Submit Application
               </h3>
-              <p className="text-fase-steel mb-6">
+              <p className="text-fase-black mb-6">
                 Please review your membership application details before submitting.
               </p>
             </div>
             
-            <div className="bg-fase-pearl p-6 rounded-lg">
+            <div className="bg-fase-cream p-6 rounded-lg">
               <h4 className="font-medium text-fase-navy mb-4">Application Summary</h4>
               <div className="grid md:grid-cols-2 gap-6 text-sm">
                 <div className="space-y-3">
                   <div>
-                    <span className="text-fase-steel font-medium">Organization:</span>
+                    <span className="text-fase-black font-medium">Organization:</span>
                     <p className="text-fase-navy">{newOrgData.organizationName}</p>
                   </div>
                   <div>
-                    <span className="text-fase-steel font-medium">Type:</span>
+                    <span className="text-fase-black font-medium">Type:</span>
                     <p className="text-fase-navy">{newOrgData.membershipType === 'individual' ? 'Individual' : `${newOrgData.organizationType} Corporate`}</p>
                   </div>
                   <div>
-                    <span className="text-fase-steel font-medium">Primary Contact:</span>
+                    <span className="text-fase-black font-medium">Primary Contact:</span>
                     <p className="text-fase-navy">{newOrgData.primaryContactName}</p>
-                    <p className="text-fase-steel">{newOrgData.primaryContactEmail}</p>
+                    <p className="text-fase-black">{newOrgData.primaryContactEmail}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-3">
                   {newOrgData.grossWrittenPremiums && (
                     <div>
-                      <span className="text-fase-steel font-medium">GWP Bracket:</span>
+                      <span className="text-fase-black font-medium">GWP Bracket:</span>
                       <p className="text-fase-navy">{newOrgData.grossWrittenPremiums}</p>
                     </div>
                   )}
@@ -1706,7 +1706,7 @@ export default function MembershipApplication() {
                     </div>
                   )}
                   <div>
-                    <span className="text-fase-steel font-medium">Annual Fee:</span>
+                    <span className="text-fase-black font-medium">Annual Fee:</span>
                     <p className="text-fase-navy font-semibold">
                       €{calculateAnnualFee(newOrgData.membershipType, newOrgData.organizationType, newOrgData.grossWrittenPremiums, newOrgData.hasOtherAssociations).toLocaleString()}
                     </p>
@@ -1741,7 +1741,7 @@ export default function MembershipApplication() {
               markFieldTouched={markFieldTouched}
             />
             
-            <div className="mt-8 pt-6 border-t border-fase-silver">
+            <div className="mt-8 pt-6 border-t border-fase-light-gold">
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6">
                 <h4 className="font-medium text-blue-800 mb-2">Submit Options</h4>
                 <p className="text-sm text-blue-700">
@@ -1772,7 +1772,7 @@ export default function MembershipApplication() {
                 </Button>
               </div>
               
-              <p className="text-xs text-fase-steel mt-3 text-center">
+              <p className="text-xs text-fase-black mt-3 text-center">
                 Applications submitted without payment will be reviewed and you&apos;ll receive payment instructions via email.
               </p>
             </div>
@@ -1783,14 +1783,14 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Add key contacts for your organization (optional). These are additional contacts who can represent your organization.
               </p>
             </div>
             
             <div className="space-y-4">
               {newOrgData.keyContacts.map((contact, index) => (
-                <div key={index} className="bg-fase-pearl p-4 rounded-lg">
+                <div key={index} className="bg-fase-cream p-4 rounded-lg">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <ValidatedInput
                       label="Full Name"
@@ -1880,7 +1880,7 @@ export default function MembershipApplication() {
                     keyContacts: [...newOrgData.keyContacts, { name: '', role: '', email: '', phone: '' }]
                   });
                 }}
-                className="w-full py-3 border-2 border-dashed border-fase-silver hover:border-fase-navy text-fase-steel hover:text-fase-navy rounded-lg transition-colors"
+                className="w-full py-3 border-2 border-dashed border-fase-light-gold hover:border-fase-navy text-fase-black hover:text-fase-navy rounded-lg transition-colors"
               >
                 + Add Another Contact
               </button>
@@ -1892,7 +1892,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide the address where invoices should be sent.
               </p>
             </div>
@@ -2039,7 +2039,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Provide contact details for invoicing and billing inquiries.
               </p>
             </div>
@@ -2116,7 +2116,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Describe your distribution strategy and channels (optional).
               </p>
             </div>
@@ -2146,7 +2146,7 @@ export default function MembershipApplication() {
                       }}
                       className="mr-2"
                     />
-                    <span className="text-fase-steel">{channel}</span>
+                    <span className="text-fase-black">{channel}</span>
                   </label>
                 ))}
               </div>
@@ -2170,7 +2170,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Information about your product lines and target markets (optional).
               </p>
             </div>
@@ -2200,7 +2200,7 @@ export default function MembershipApplication() {
                       }}
                       className="mr-2"
                     />
-                    <span className="text-fase-steel">{line}</span>
+                    <span className="text-fase-black">{line}</span>
                   </label>
                 ))}
               </div>
@@ -2248,7 +2248,7 @@ export default function MembershipApplication() {
                       targetMarkets: [...newOrgData.targetMarkets, '']
                     });
                   }}
-                  className="text-fase-navy hover:text-fase-steel"
+                  className="text-fase-navy hover:text-fase-black"
                 >
                   + Add Target Market
                 </button>
@@ -2261,7 +2261,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Information about your claims handling model (optional).
               </p>
             </div>
@@ -2273,7 +2273,7 @@ export default function MembershipApplication() {
               <select
                 value={newOrgData.claimsHandling}
                 onChange={(e) => setNewOrgData({ ...newOrgData, claimsHandling: e.target.value })}
-                className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               >
                 <option value="">Select claims handling model</option>
                 <option value="in-house">In-House</option>
@@ -2325,7 +2325,7 @@ export default function MembershipApplication() {
                       claimsPartners: [...newOrgData.claimsPartners, '']
                     });
                   }}
-                  className="text-fase-navy hover:text-fase-steel"
+                  className="text-fase-navy hover:text-fase-black"
                 >
                   + Add Claims Partner
                 </button>
@@ -2338,7 +2338,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Additional information about your organization (optional).
               </p>
             </div>
@@ -2352,7 +2352,7 @@ export default function MembershipApplication() {
                 onChange={(e) => setNewOrgData({ ...newOrgData, businessPlan: e.target.value })}
                 placeholder="Provide a brief summary of your business plan and strategic objectives"
                 rows={4}
-                className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
             
@@ -2365,7 +2365,7 @@ export default function MembershipApplication() {
                 onChange={(e) => setNewOrgData({ ...newOrgData, marketingStrategy: e.target.value })}
                 placeholder="Describe your marketing strategy and customer acquisition approach"
                 rows={4}
-                className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
           </div>
@@ -2375,7 +2375,7 @@ export default function MembershipApplication() {
         return (
           <div className="space-y-6">
             <div>
-              <p className="text-fase-steel mb-4">
+              <p className="text-fase-black mb-4">
                 Demographic information about your organization (optional).
               </p>
             </div>
@@ -2388,7 +2388,7 @@ export default function MembershipApplication() {
                 <select
                   value={newOrgData.employeeCount}
                   onChange={(e) => setNewOrgData({ ...newOrgData, employeeCount: e.target.value })}
-                  className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 >
                   <option value="">Select employee count</option>
                   <option value="1-10">1-10 employees</option>
@@ -2419,7 +2419,7 @@ export default function MembershipApplication() {
               <select
                 value={newOrgData.ownershipStructure}
                 onChange={(e) => setNewOrgData({ ...newOrgData, ownershipStructure: e.target.value })}
-                className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               >
                 <option value="">Select ownership structure</option>
                 <option value="private">Private Company</option>
@@ -2436,7 +2436,7 @@ export default function MembershipApplication() {
       default:
         return (
           <div className="text-center py-8">
-            <p className="text-fase-steel">
+            <p className="text-fase-black">
               Step content for &quot;{currentStepData?.title}&quot; coming soon...
             </p>
           </div>
@@ -2456,8 +2456,8 @@ export default function MembershipApplication() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         <div className="animate-pulse">
-          <div className="h-8 bg-fase-pearl rounded w-1/3 mx-auto mb-4"></div>
-          <div className="h-4 bg-fase-pearl rounded w-1/2 mx-auto"></div>
+          <div className="h-8 bg-fase-cream rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-4 bg-fase-cream rounded w-1/2 mx-auto"></div>
         </div>
       </div>
     );
@@ -2476,7 +2476,7 @@ export default function MembershipApplication() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Sidebar */}
-          <div className="w-80 bg-white border border-fase-silver rounded-lg p-6 h-fit">
+          <div className="w-80 bg-white border border-fase-light-gold rounded-lg p-6 h-fit">
             <h3 className="font-noto-serif font-semibold text-fase-navy mb-4">Application Progress</h3>
             <div className="space-y-1">
               {membershipSteps.map((step, index) => {
@@ -2506,7 +2506,7 @@ export default function MembershipApplication() {
                         : index < currentStep
                         ? 'bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer'
                         : isAccessible
-                        ? 'text-fase-steel hover:bg-fase-pearl cursor-pointer'
+                        ? 'text-fase-black hover:bg-fase-cream cursor-pointer'
                         : 'text-fase-cream cursor-not-allowed opacity-60'
                     }`}
                     onClick={() => {
@@ -2521,7 +2521,7 @@ export default function MembershipApplication() {
                         : index < currentStep
                         ? 'bg-green-500 text-white'
                         : isAccessible
-                        ? 'bg-fase-silver text-fase-steel'
+                        ? 'bg-fase-light-gold text-fase-black'
                         : 'bg-gray-300 text-gray-400'
                     }`}>
                       {index < currentStep ? '✓' : index + 1}
@@ -2542,13 +2542,13 @@ export default function MembershipApplication() {
 
           {/* Main Content */}
           <div className="flex-1">
-            <div className="bg-white border border-fase-silver rounded-lg p-8">
+            <div className="bg-white border border-fase-light-gold rounded-lg p-8">
               {/* Step Header */}
               <div className="mb-8">
                 <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-2">
                   {membershipSteps[currentStep]?.title}
                 </h2>
-                <div className="flex items-center text-sm text-fase-steel">
+                <div className="flex items-center text-sm text-fase-black">
                   <span>Step {currentStep + 1} of {membershipSteps.length}</span>
                   {membershipSteps[currentStep]?.required && (
                     <span className="ml-2 text-red-600">*Required</span>
@@ -2562,7 +2562,7 @@ export default function MembershipApplication() {
               </div>
 
               {/* Navigation */}
-              <div className="flex justify-between pt-6 border-t border-fase-silver">
+              <div className="flex justify-between pt-6 border-t border-fase-light-gold">
                 <Button
                   variant="secondary"
                   onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}

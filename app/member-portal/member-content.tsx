@@ -131,8 +131,8 @@ export default function MemberContent() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         <div className="animate-pulse">
-          <div className="h-8 bg-fase-pearl rounded w-1/3 mx-auto mb-4"></div>
-          <div className="h-4 bg-fase-pearl rounded w-1/2 mx-auto"></div>
+          <div className="h-8 bg-fase-cream rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-4 bg-fase-cream rounded w-1/2 mx-auto"></div>
         </div>
       </div>
     );
@@ -166,7 +166,7 @@ export default function MemberContent() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Account Information Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Account Information</h2>
             <div className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
@@ -176,26 +176,26 @@ export default function MemberContent() {
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-fase-steel font-medium">Name</label>
+              <label className="text-sm text-fase-black font-medium">Name</label>
               <p className="text-fase-navy">{userProfile?.personalName || "Not set"}</p>
             </div>
             
             {userProfile?.organisation && (
               <div>
-                <label className="text-sm text-fase-steel font-medium">Organisation</label>
+                <label className="text-sm text-fase-black font-medium">Organisation</label>
                 <p className="text-fase-navy">{userProfile.organisation}</p>
               </div>
             )}
             
             <div>
-              <label className="text-sm text-fase-steel font-medium">Email Address</label>
+              <label className="text-sm text-fase-black font-medium">Email Address</label>
               <p className="text-fase-navy">{user.email}</p>
             </div>
           </div>
         </div>
 
         {/* Member Subscription Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Member Subscription</h2>
           </div>
@@ -209,19 +209,19 @@ export default function MemberContent() {
               </div>
               
               <div>
-                <label className="text-sm text-fase-steel font-medium">Organization Type</label>
+                <label className="text-sm text-fase-black font-medium">Organization Type</label>
                 <p className="text-fase-navy capitalize">{subscriber.type}</p>
               </div>
               
               <div>
-                <label className="text-sm text-fase-steel font-medium">Access Level</label>
+                <label className="text-sm text-fase-black font-medium">Access Level</label>
                 <p className="text-fase-navy capitalize">{subscriber.access}</p>
               </div>
               
               {subscriber.logo && (
                 <div>
-                  <label className="text-sm text-fase-steel font-medium">Organization Logo</label>
-                  <div className="mt-2 w-24 h-16 border border-fase-silver rounded-lg flex items-center justify-center bg-fase-pearl overflow-hidden">
+                  <label className="text-sm text-fase-black font-medium">Organization Logo</label>
+                  <div className="mt-2 w-24 h-16 border border-fase-light-gold rounded-lg flex items-center justify-center bg-fase-cream overflow-hidden">
                     <img 
                       src={subscriber.logo} 
                       alt="Organization Logo" 
@@ -234,12 +234,12 @@ export default function MemberContent() {
                         }
                       }}
                     />
-                    <span className="text-xs text-fase-steel hidden">No logo</span>
+                    <span className="text-xs text-fase-black hidden">No logo</span>
                   </div>
                 </div>
               )}
 
-              <div className="pt-4 border-t border-fase-silver">
+              <div className="pt-4 border-t border-fase-light-gold">
                 <Button variant="secondary" size="small" onClick={() => {
                   // TODO: Handle subscription management
                   alert('Subscription management coming soon');
@@ -258,7 +258,7 @@ export default function MemberContent() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-fase-navy mb-2">Set Up Your Membership</h3>
-                <p className="text-fase-steel mb-6">
+                <p className="text-fase-black mb-6">
                   Join an existing company membership or register your company as a new FASE member
                 </p>
               </div>
@@ -275,10 +275,10 @@ export default function MemberContent() {
                 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-fase-silver"></div>
+                    <div className="w-full border-t border-fase-light-gold"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-fase-steel">or</span>
+                    <span className="px-2 bg-white text-fase-black">or</span>
                   </div>
                 </div>
 
@@ -292,8 +292,8 @@ export default function MemberContent() {
                 </Button>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-fase-silver">
-                <p className="text-xs text-fase-steel">
+              <div className="mt-6 pt-6 border-t border-fase-light-gold">
+                <p className="text-xs text-fase-black">
                   Need help? <a href="mailto:support@fase.org" className="text-fase-navy hover:underline">Contact support</a>
                 </p>
               </div>
@@ -304,20 +304,20 @@ export default function MemberContent() {
 
       {/* Member Resources - Only show if user has active subscription */}
       {subscriber && subscriber.access === 'subscriber' && (
-        <div className="bg-white rounded-lg shadow-sm border border-fase-silver p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
           <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Member Resources</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
               <h3 className="font-medium text-fase-navy mb-2">Events & Conferences</h3>
-              <p className="text-sm text-fase-steel">Access upcoming FASE events and conference materials</p>
+              <p className="text-sm text-fase-black">Access upcoming FASE events and conference materials</p>
             </div>
-            <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
               <h3 className="font-medium text-fase-navy mb-2">Knowledge Hub</h3>
-              <p className="text-sm text-fase-steel">Browse industry insights and educational resources</p>
+              <p className="text-sm text-fase-black">Browse industry insights and educational resources</p>
             </div>
-            <div className="p-4 border border-fase-silver rounded-lg hover:border-fase-navy transition-colors">
+            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
               <h3 className="font-medium text-fase-navy mb-2">Member Directory</h3>
-              <p className="text-sm text-fase-steel">Connect with other FASE members and partners</p>
+              <p className="text-sm text-fase-black">Connect with other FASE members and partners</p>
             </div>
           </div>
         </div>
@@ -335,7 +335,7 @@ export default function MemberContent() {
         maxWidth="lg"
       >
         <div className="space-y-6">
-          <p className="text-fase-steel">
+          <p className="text-fase-black">
             Search for your company&apos;s existing FASE membership to join their subscription.
           </p>
 
@@ -348,14 +348,14 @@ export default function MemberContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter organization name or location..."
-              className="w-full px-3 py-2 border border-fase-silver rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
             />
           </div>
 
           {isSearching ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto"></div>
-              <p className="text-fase-steel mt-2">Searching...</p>
+              <p className="text-fase-black mt-2">Searching...</p>
             </div>
           ) : searchResults.length > 0 ? (
             <div>
@@ -364,15 +364,15 @@ export default function MemberContent() {
                 {searchResults.map((org) => (
                   <div 
                     key={org.id}
-                    className="p-3 border border-fase-silver rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
+                    className="p-3 border border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                     onClick={() => handleLinkToOrganization(org.id)}
                   >
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-medium text-fase-navy">{org.name}</h4>
-                        <p className="text-sm text-fase-steel">{org.type} • {org.location}</p>
+                        <p className="text-sm text-fase-black">{org.type} • {org.location}</p>
                       </div>
-                      <svg className="w-5 h-5 text-fase-steel" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
@@ -381,14 +381,14 @@ export default function MemberContent() {
               </div>
             </div>
           ) : searchQuery && !isSearching ? (
-            <div className="text-center py-8 text-fase-steel">
+            <div className="text-center py-8 text-fase-black">
               <p>No organizations found matching &quot;{searchQuery}&quot;</p>
               <p className="text-sm mt-2">Try a different search term or create a new subscription.</p>
             </div>
           ) : null}
 
-          <div className="pt-4 border-t border-fase-silver">
-            <p className="text-xs text-fase-steel">
+          <div className="pt-4 border-t border-fase-light-gold">
+            <p className="text-xs text-fase-black">
               Can&apos;t find your organization? You may need to <button 
                 onClick={() => {
                   setShowLinkModal(false);

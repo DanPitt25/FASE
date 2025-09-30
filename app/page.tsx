@@ -143,9 +143,9 @@ export default function Page() {
   }, [sections]);
 
   return (
-    <div className="flex min-h-screen bg-fase-paper font-lato">
+    <div className="flex min-h-screen bg-fase-light-blue font-lato">
       {/* Collapsible Navigation Sidebar */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-silver z-40`}>
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-light-gold z-40`}>
         <div className="w-80 h-full">
           <div className="p-6">
             {/* Panel Header */}
@@ -153,9 +153,9 @@ export default function Page() {
               <h2 className="text-xl font-noto-serif font-bold text-fase-navy">Navigation</h2>
               <button
                 onClick={() => setShowNavPanel(false)}
-                className="p-2 hover:bg-fase-pearl transition-colors"
+                className="p-2 hover:bg-fase-cream transition-colors"
               >
-                <svg className="w-5 h-5 text-fase-steel" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -184,20 +184,20 @@ export default function Page() {
                   className={`w-full flex items-center space-x-3 p-3 transition-all duration-200 group ${
                     currentSection === section.id 
                       ? 'bg-fase-navy text-white' 
-                      : 'hover:bg-fase-pearl'
+                      : 'hover:bg-fase-cream'
                   }`}
                 >
                   <div className={`flex items-center justify-center w-6 h-6 text-xs font-bold transition-colors ${
                     currentSection === section.id 
                       ? 'bg-white text-fase-navy' 
-                      : 'bg-fase-steel text-white group-hover:bg-fase-navy'
+                      : 'bg-fase-black text-white group-hover:bg-fase-navy'
                   }`}>
                     {index + 1}
                   </div>
                   <span className={`text-base font-medium transition-colors ${
                     currentSection === section.id 
                       ? 'text-white' 
-                      : 'text-fase-steel group-hover:text-fase-navy'
+                      : 'text-fase-black group-hover:text-fase-navy'
                   }`}>
                     {section.name}
                   </span>
@@ -213,14 +213,14 @@ export default function Page() {
         {/* Menu Toggle Tab - Hidden on mobile, shown on desktop */}
         <button
           onClick={() => setShowNavPanel(!showNavPanel)}
-          className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8  shadow-lg border border-l-0 border-fase-silver hover:bg-white transition-all duration-200 flex-col items-center space-y-2"
+          className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8  shadow-lg border border-l-0 border-fase-light-gold hover:bg-white transition-all duration-200 flex-col items-center space-y-2"
         >
           <div className="flex flex-col space-y-1">
-            <div className="w-1.5 h-1.5 bg-fase-steel "></div>
+            <div className="w-1.5 h-1.5 bg-fase-black "></div>
             <div className="w-1.5 h-1.5 bg-fase-navy "></div>
-            <div className="w-1.5 h-1.5 bg-fase-steel "></div>
+            <div className="w-1.5 h-1.5 bg-fase-black "></div>
           </div>
-          <span className="text-xs font-medium text-fase-steel transform rotate-90 whitespace-nowrap">NAV</span>
+          <span className="text-xs font-medium text-fase-black transform rotate-90 whitespace-nowrap">NAV</span>
         </button>
 
         <Header currentPage="home" />
@@ -238,7 +238,7 @@ export default function Page() {
             <h1 className="text-xl sm:text-2xl lg:text-4xl font-noto-serif font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
               The Federation of European <span className="text-fase-navy">Managing General Agents</span>
             </h1>
-            <p className="text-lg sm:text-xl text-fase-steel mb-6 font-lato leading-relaxed">
+            <p className="text-lg sm:text-xl text-fase-black mb-6 font-lato leading-relaxed">
               A clear voice for the most responsive, innovative and customer-friendly businesses in insurance. A unique forum for MGAs, capacity providers and service providers to meet, exchange ideas and insights, and do business together across Europe.
             </p>
             <div className="mb-8">
@@ -322,7 +322,7 @@ export default function Page() {
                 <div className="p-6 lg:p-8 overflow-y-auto">
                   <div className="space-y-1">
                     {services.map((service, index) => (
-                      <div key={index} className="border-b border-fase-pearl last:border-b-0">
+                      <div key={index} className="border-b border-fase-cream last:border-b-0">
                         <button
                           onClick={() => {
                             const newIndex = currentServiceIndex === index ? -1 : index;
@@ -331,7 +331,7 @@ export default function Page() {
                           className={`w-full text-left py-4 transition-all duration-300 font-medium ${
                             currentServiceIndex === index 
                               ? 'text-fase-navy text-base font-semibold' 
-                              : 'text-fase-steel hover:text-fase-navy text-sm'
+                              : 'text-fase-black hover:text-fase-navy text-sm'
                           }`}
                         >
                           {service.title}
@@ -342,7 +342,7 @@ export default function Page() {
                             ? 'max-h-48 opacity-100 pb-4' 
                             : 'max-h-0 opacity-0'
                         }`}>
-                          <p className="text-fase-steel text-sm leading-relaxed mb-3">
+                          <p className="text-fase-black text-sm leading-relaxed mb-3">
                             {service.description}
                           </p>
                           <a 
@@ -356,7 +356,7 @@ export default function Page() {
                               service.title === "Capacity Transparency" ? "/capacity-transparency" :
                               "#"
                             }
-                            className="inline-flex items-center text-fase-navy hover:text-fase-steel transition-colors text-sm font-medium underline"
+                            className="inline-flex items-center text-fase-navy hover:text-fase-black transition-colors text-sm font-medium underline"
                           >
                             Learn More
                             <svg className="w-2.5 h-2.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,48 +379,48 @@ export default function Page() {
       <ContentHero 
         id="conference" 
         fullHeight={true}
-        className="bg-fase-paper py-16"
+        className="bg-fase-light-blue py-16"
       >
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-4">FASE European Conference</h2>
-            <p className="text-base sm:text-lg md:text-xl text-fase-steel max-w-2xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-fase-black max-w-2xl mx-auto px-4">
               The premier pan-European gathering for MGAs, capacity providers, and service providers. Date and location to be determined.
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-4 sm:space-y-6">
               <h3 className="text-2xl sm:text-3xl font-noto-serif font-bold text-fase-navy mb-4 sm:mb-6">Building the European MGA Community</h3>
-              <p className="text-fase-steel text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
+              <p className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
                 Following the success of national MGA associations like the MGAA, FASE will host annual conferences to unite the European MGA community. Our events focus on meaningful connections, business development, and industry advocacy.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-steel"><strong>Format:</strong> Networking-focused conference</p>
+                  <p className="text-fase-black"><strong>Format:</strong> Networking-focused conference</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-steel"><strong>Focus:</strong> Business connections and market insights</p>
+                  <p className="text-fase-black"><strong>Focus:</strong> Business connections and market insights</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-steel"><strong>Audience:</strong> European MGAs and market participants</p>
+                  <p className="text-fase-black"><strong>Audience:</strong> European MGAs and market participants</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-steel"><strong>Goal:</strong> Unite the European MGA community</p>
+                  <p className="text-fase-black"><strong>Goal:</strong> Unite the European MGA community</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 sm:p-8 lg:p-10  shadow-xl border border-fase-silver">
+            <div className="bg-white p-6 sm:p-8 lg:p-10  shadow-xl border border-fase-light-gold">
               <h4 className="text-xl sm:text-2xl font-noto-serif font-semibold text-fase-navy mb-4 sm:mb-6">Sponsorship Opportunities</h4>
-              <p className="text-fase-steel text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
+              <p className="text-fase-black text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
                 Partner with FASE to reach the European MGA community. Sponsorship packages available for our inaugural conference.
               </p>
-              <div className="bg-fase-paper p-4 sm:p-6  mb-4 sm:mb-6">
+              <div className="bg-fase-light-blue p-4 sm:p-6  mb-4 sm:mb-6">
                 <h5 className="font-semibold text-fase-navy mb-3">Why Sponsor FASE:</h5>
-                <ul className="text-fase-steel text-sm space-y-2">
+                <ul className="text-fase-black text-sm space-y-2">
                   <li>• Access to pan-European MGA market</li>
                   <li>• Brand visibility across multiple countries</li>
                   <li>• Direct engagement with decision makers</li>

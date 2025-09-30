@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-fase-steel text-white py-12 border-t-4 border-fase-steel">
+    <footer className="bg-fase-black text-white py-12 border-t-4 border-fase-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -34,7 +34,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-fase-platinum mt-8 pt-8 text-center text-fase-cream">
+        <div className="border-t border-fase-gold mt-8 pt-8 text-center text-fase-cream">
           <p>&copy; 2024 FASE - Federation of European MGAs. All rights reserved.</p>
         </div>
       </div>

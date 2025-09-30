@@ -60,11 +60,11 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
         {/* Modal */}
         <div className={`inline-block w-full ${maxWidthClasses[maxWidth]} my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-fase-silver">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-fase-light-gold">
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 text-fase-steel hover:text-fase-navy focus:outline-none focus:ring-2 focus:ring-fase-navy rounded-md"
+              className="p-2 text-fase-black hover:text-fase-navy focus:outline-none focus:ring-2 focus:ring-fase-navy rounded-md"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
