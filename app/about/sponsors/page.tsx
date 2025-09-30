@@ -27,11 +27,11 @@ export default function SponsorsPage() {
         />
 
         {/* Sponsorship Tiers */}
-        <ContentHero id="sponsorship-levels" fullHeight={true} className="bg-white py-20">
+        <ContentHero id="sponsorship-levels" fullHeight={true} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Sponsorship Levels</h2>
-              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
+              <p className="text-xl text-fase-black max-w-3xl mx-auto">
                 Multiple sponsorship opportunities designed to showcase your commitment to the European MGA community.
               </p>
             </div>
@@ -45,10 +45,10 @@ export default function SponsorsPage() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Platinum Sponsors</h3>
-                <p className="text-fase-steel leading-relaxed mb-6">
+                <p className="text-fase-black leading-relaxed mb-6">
                   Premier level recognition with maximum visibility across all FASE activities.
                 </p>
-                <ul className="text-left text-fase-steel text-sm space-y-2">
+                <ul className="text-left text-fase-black text-sm space-y-2">
                   <li>• Conference title sponsorship</li>
                   <li>• Logo on all marketing materials</li>
                   <li>• Speaking opportunities</li>
@@ -65,10 +65,10 @@ export default function SponsorsPage() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Gold Sponsors</h3>
-                <p className="text-fase-steel leading-relaxed mb-6">
+                <p className="text-fase-black leading-relaxed mb-6">
                   High-level visibility with significant branding opportunities.
                 </p>
-                <ul className="text-left text-fase-steel text-sm space-y-2">
+                <ul className="text-left text-fase-black text-sm space-y-2">
                   <li>• Session sponsorship</li>
                   <li>• Website logo placement</li>
                   <li>• Networking event branding</li>
@@ -85,10 +85,10 @@ export default function SponsorsPage() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Silver Sponsors</h3>
-                <p className="text-fase-steel leading-relaxed mb-6">
+                <p className="text-fase-black leading-relaxed mb-6">
                   Supporting level with valuable exposure and networking benefits.
                 </p>
-                <ul className="text-left text-fase-steel text-sm space-y-2">
+                <ul className="text-left text-fase-black text-sm space-y-2">
                   <li>• Logo in event materials</li>
                   <li>• Directory listing</li>
                   <li>• Networking participation</li>
@@ -101,11 +101,11 @@ export default function SponsorsPage() {
         </ContentHero>
 
         {/* Current Sponsors Preview */}
-        <ContentHero id="founding-supporters" fullHeight={true} className="bg-fase-paper py-20">
+        <ContentHero id="founding-supporters" fullHeight={true} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Founding Supporters</h2>
-              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
+              <p className="text-xl text-fase-black max-w-3xl mx-auto">
                 Forward-thinking organizations showing early support for FASE&apos;s mission.
               </p>
             </div>
@@ -119,7 +119,7 @@ export default function SponsorsPage() {
                 { name: "[Company Name]", type: "Silver", sector: "Insurance" }
               ].map((sponsor, index) => (
                 <div key={index} className="bg-white  p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center">
-                  <div className="w-16 h-16 bg-fase-platinum  flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-fase-gold  flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-noto-serif font-bold text-sm">LOGO</span>
                   </div>
                   <h3 className="text-lg font-noto-serif font-bold text-fase-navy mb-2">{sponsor.name}</h3>
@@ -151,25 +151,25 @@ export default function SponsorsPage() {
         </ContentHero>
 
         {/* Sponsorship Benefits */}
-        <ContentHero id="why-sponsor" fullHeight={true} className="bg-white py-20">
+        <ContentHero id="why-sponsor" fullHeight={true} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Why Sponsor FASE?</h2>
-              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
+              <p className="text-xl text-fase-black max-w-3xl mx-auto">
                 Position your organization at the forefront of European MGA development.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-platinum  flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-gold  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Market Visibility</h3>
-                <p className="text-fase-steel text-sm">Reach decision-makers across European MGA markets</p>
+                <p className="text-fase-black text-sm">Reach decision-makers across European MGA markets</p>
               </div>
 
               <div className="text-center">
@@ -179,7 +179,7 @@ export default function SponsorsPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Network Access</h3>
-                <p className="text-fase-steel text-sm">Direct engagement with industry leaders and prospects</p>
+                <p className="text-fase-black text-sm">Direct engagement with industry leaders and prospects</p>
               </div>
 
               <div className="text-center">
@@ -189,24 +189,24 @@ export default function SponsorsPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Thought Leadership</h3>
-                <p className="text-fase-steel text-sm">Platform to share expertise and industry insights</p>
+                <p className="text-fase-black text-sm">Platform to share expertise and industry insights</p>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 bg-fase-platinum  flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-fase-gold  flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Industry Support</h3>
-                <p className="text-fase-steel text-sm">Demonstrate commitment to sector development</p>
+                <p className="text-fase-black text-sm">Demonstrate commitment to sector development</p>
               </div>
             </div>
           </div>
         </ContentHero>
 
         {/* CTA */}
-        <ContentHero id="become-sponsor" fullHeight={true} className="bg-fase-navy py-20">
+        <ContentHero id="become-sponsor" fullHeight={true} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-white mb-6">Become a FASE Sponsor</h2>
             <p className="text-xl text-fase-paper mb-8 max-w-3xl mx-auto">

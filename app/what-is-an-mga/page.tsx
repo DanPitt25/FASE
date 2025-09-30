@@ -33,8 +33,8 @@ export default function WhatIsAnMGAPage() {
                 <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">The MGA Business Model</h2>
               </div>
               
-              <div className="space-y-8 text-fase-steel">
-                <div className="bg-fase-pearl p-8 rounded-lg">
+              <div className="space-y-8 text-fase-black">
+                <div className="bg-fase-cream p-8 rounded-lg">
                   <p className="text-xl leading-relaxed mb-0">
                     An MGA is a simplified insurance business that prices risk and distributes insurance. 
                     It does not maintain a large balance sheet to pay claims; instead it contracts with 
@@ -85,15 +85,15 @@ export default function WhatIsAnMGAPage() {
         <ContentHero 
           id="innovation" 
           fullHeight={false}
-          className="bg-fase-paper py-16"
+          className="bg-fase-light-blue py-16"
         >
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">Innovation & Technology</h2>
             </div>
             
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-fase-silver">
-              <p className="text-xl text-fase-steel leading-relaxed">
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-fase-light-gold">
+              <p className="text-xl text-fase-black leading-relaxed">
                 MGAs have generally found it easier to integrate new technology into their operations 
                 than large insurance companies. They have thus been early adopters of technology to 
                 improve the pricing of risk, increase operational efficiencies and enhance the customer experience.
@@ -108,7 +108,7 @@ export default function WhatIsAnMGAPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Risk Pricing</h3>
-                <p className="text-fase-steel">Advanced analytics and AI for better risk assessment</p>
+                <p className="text-fase-black">Advanced analytics and AI for better risk assessment</p>
               </div>
 
               <div className="text-center">
@@ -118,7 +118,7 @@ export default function WhatIsAnMGAPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Operational Efficiency</h3>
-                <p className="text-fase-steel">Streamlined processes and automated workflows</p>
+                <p className="text-fase-black">Streamlined processes and automated workflows</p>
               </div>
 
               <div className="text-center">
@@ -128,7 +128,7 @@ export default function WhatIsAnMGAPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">Customer Experience</h3>
-                <p className="text-fase-steel">Digital platforms and enhanced service delivery</p>
+                <p className="text-fase-black">Digital platforms and enhanced service delivery</p>
               </div>
             </div>
           </div>

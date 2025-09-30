@@ -46,17 +46,17 @@ export default function CTASection({
     navy: {
       section: 'bg-fase-navy',
       title: 'text-white',
-      description: 'text-fase-paper'
+      description: 'text-fase-light-blue'
     },
     white: {
       section: 'bg-white',
       title: 'text-fase-navy',
-      description: 'text-fase-steel'
+      description: 'text-fase-black'
     },
     paper: {
-      section: 'bg-fase-paper',
+      section: 'bg-fase-light-blue',
       title: 'text-fase-navy',
-      description: 'text-fase-steel'
+      description: 'text-fase-black'
     }
   };
 
@@ -65,12 +65,12 @@ export default function CTASection({
     
     if (background === 'navy') {
       return variant === 'primary' 
-        ? `${baseClasses} bg-white text-fase-navy hover:bg-fase-paper`
+        ? `${baseClasses} bg-white text-fase-navy hover:bg-fase-light-blue`
         : `${baseClasses} bg-transparent text-white border-2 border-white hover:bg-white hover:text-fase-navy`;
     } else {
       return variant === 'primary'
-        ? `${baseClasses} bg-fase-navy text-white hover:bg-fase-steel`
-        : `${baseClasses} bg-white text-fase-navy border-2 border-fase-navy hover:bg-fase-paper`;
+        ? `${baseClasses} bg-fase-navy text-white hover:bg-fase-black`
+        : `${baseClasses} bg-white text-fase-navy border-2 border-fase-navy hover:bg-fase-light-blue`;
     }
   };
 

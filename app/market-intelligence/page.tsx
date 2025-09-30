@@ -22,10 +22,10 @@ export default function MarketIntelligencePage() {
           fullHeight={true}
         />
         
-        <ContentHero id="coming-soon" fullHeight={true} className="bg-white py-20">
+        <ContentHero id="coming-soon" fullHeight={true} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">Coming Soon</h2>
-            <p className="text-lg text-fase-steel mb-8">
+            <p className="text-lg text-fase-black mb-8">
               Comprehensive market intelligence and research reports will be available to FASE members after launch.
             </p>
             <Button href="/" variant="primary" size="large">

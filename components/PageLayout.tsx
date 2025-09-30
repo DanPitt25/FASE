@@ -27,13 +27,13 @@ export default function PageLayout({
   const [showNavPanel, setShowNavPanel] = useState(false);
 
   return (
-    <div className={`min-h-screen bg-fase-paper font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-fase-light-blue font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <Header currentPage={currentPage} onLoad={() => setHeaderLoaded(true)} />
       
       {showSideNav && sections.length > 0 && (
         <>
           {/* Side Navigation */}
-          <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-silver z-40`}>
+          <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-light-gold z-40`}>
             <div className="w-80 h-full">
               <div className="p-6">
                 {/* Panel Header */}
@@ -41,9 +41,9 @@ export default function PageLayout({
                   <h2 className="text-xl font-noto-serif font-bold text-fase-navy">Navigation</h2>
                   <button
                     onClick={() => setShowNavPanel(false)}
-                    className="p-2 hover:bg-fase-pearl transition-colors"
+                    className="p-2 hover:bg-fase-cream transition-colors"
                   >
-                    <svg className="w-5 h-5 text-fase-steel" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
@@ -65,7 +65,7 @@ export default function PageLayout({
                           });
                         }
                       }}
-                      className="w-full flex items-center space-x-3 p-3 transition-all duration-200 group hover:bg-fase-pearl"
+                      className="w-full flex items-center space-x-3 p-3 transition-all duration-200 group hover:bg-fase-cream"
                     >
                       <div className="flex items-center justify-center w-6 h-6 text-xs font-bold bg-fase-navy text-white group-hover:bg-fase-navy">
                         {index + 1}
@@ -83,7 +83,7 @@ export default function PageLayout({
           {/* Menu Toggle Tab */}
           <button
             onClick={() => setShowNavPanel(!showNavPanel)}
-            className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8 shadow-lg border border-l-0 border-fase-silver hover:bg-white transition-all duration-200 flex-col items-center space-y-2"
+            className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8 shadow-lg border border-l-0 border-fase-light-gold hover:bg-white transition-all duration-200 flex-col items-center space-y-2"
           >
             <div className="flex flex-col space-y-1">
               <div className="w-1.5 h-1.5 bg-fase-navy"></div>

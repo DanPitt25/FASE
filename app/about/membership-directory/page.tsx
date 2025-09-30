@@ -26,11 +26,11 @@ export default function MembershipDirectoryPage() {
         />
 
         {/* Directory Preview */}
-        <ContentHero id="directory-preview" fullHeight={true} className="bg-white py-20">
+        <ContentHero id="directory-preview" fullHeight={true} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Growing Community</h2>
-              <p className="text-xl text-fase-steel max-w-3xl mx-auto">
+              <p className="text-xl text-fase-black max-w-3xl mx-auto">
                 Our directory will showcase the diverse FASE community once we officially launch.
               </p>
             </div>
@@ -45,7 +45,7 @@ export default function MembershipDirectoryPage() {
                 { company: "[Company Name]", location: "Paris, FR", type: "Service Provider", specialties: ["Technology"] },
                 { company: "[Company Name]", location: "Madrid, ES", type: "Service Provider", specialties: ["Data Analytics"] }
               ].map((member, index) => (
-                <div key={index} className="bg-fase-paper  p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-fase-silver">
+                <div key={index} className="bg-fase-light-blue  p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-fase-light-gold">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-noto-serif font-bold text-fase-navy mb-1">{member.company}</h3>
@@ -53,7 +53,7 @@ export default function MembershipDirectoryPage() {
                     </div>
                     <div className={`px-3 py-1  text-xs font-medium ${
                       member.type === 'MGA Member' 
-                        ? 'bg-fase-platinum text-white' 
+                        ? 'bg-fase-gold text-white' 
                         : member.type === 'Capacity Provider'
                         ? 'bg-fase-navy text-white'
                         : 'bg-fase-navy text-white'
@@ -62,10 +62,10 @@ export default function MembershipDirectoryPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-fase-steel text-sm font-medium">Specialties:</p>
+                    <p className="text-fase-black text-sm font-medium">Specialties:</p>
                     <div className="flex flex-wrap gap-2">
                       {member.specialties.map((specialty, idx) => (
-                        <span key={idx} className="bg-white px-2 py-1 text-xs text-fase-navy border border-fase-silver">
+                        <span key={idx} className="bg-white px-2 py-1 text-xs text-fase-navy border border-fase-light-gold">
                           {specialty}
                         </span>
                       ))}
@@ -80,7 +80,7 @@ export default function MembershipDirectoryPage() {
               <h3 className="text-2xl font-noto-serif font-bold mb-6">Directory Features</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="space-y-3">
-                  <div className="w-12 h-12 bg-fase-platinum  flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 bg-fase-gold  flex items-center justify-center mx-auto">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -98,7 +98,7 @@ export default function MembershipDirectoryPage() {
                   <p className="text-fase-paper text-sm">Connect directly with members through secure messaging</p>
                 </div>
                 <div className="space-y-3">
-                  <div className="w-12 h-12 bg-fase-platinum  flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 bg-fase-gold  flex items-center justify-center mx-auto">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2z" />
                     </svg>
@@ -112,35 +112,35 @@ export default function MembershipDirectoryPage() {
         </ContentHero>
 
         {/* Stats */}
-        <ContentHero id="directory-size" fullHeight={true} className="bg-fase-paper py-20">
+        <ContentHero id="directory-size" fullHeight={true} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-12">Anticipated Directory Size</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div className="space-y-2">
                 <div className="text-4xl font-noto-serif font-bold text-fase-navy">200+</div>
-                <div className="text-fase-steel">MGA Members</div>
+                <div className="text-fase-black">MGA Members</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl font-noto-serif font-bold text-fase-navy">50+</div>
-                <div className="text-fase-steel">Capacity Providers</div>
+                <div className="text-fase-black">Capacity Providers</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl font-noto-serif font-bold text-fase-navy">100+</div>
-                <div className="text-fase-steel">Service Providers</div>
+                <div className="text-fase-black">Service Providers</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl font-noto-serif font-bold text-fase-navy">20+</div>
-                <div className="text-fase-steel">Countries</div>
+                <div className="text-fase-black">Countries</div>
               </div>
             </div>
           </div>
         </ContentHero>
 
         {/* CTA */}
-        <ContentHero id="get-listed" fullHeight={true} className="bg-white py-20">
+        <ContentHero id="get-listed" fullHeight={true} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Be Listed in Our Directory</h2>
-            <p className="text-xl text-fase-steel mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-fase-black mb-8 max-w-3xl mx-auto">
               Register your interest to be included in FASE&apos;s comprehensive membership directory when we launch.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

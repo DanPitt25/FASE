@@ -6,11 +6,11 @@
 
 :root {
   --fase-navy: #2D5574;
-  --fase-steel: #231F20;
-  --fase-graphite: #B46A33;
-  --fase-platinum: #E2A560;
-  --fase-silver: #E6C06E;
-  --fase-pearl: #EBE8E4;
+  --fase-black: #231F20;
+  --fase-orange: #B46A33;
+  --fase-gold: #E2A560;
+  --fase-light-gold: #E6C06E;
+  --fase-cream: #EBE8E4;
   --fase-paper: #EBE8E4;
 }
 

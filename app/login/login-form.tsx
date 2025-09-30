@@ -86,7 +86,7 @@ export default function LoginForm() {
         </div>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="email" className="block text-sm font-medium text-fase-black">
           Email
         </label>
         <input
@@ -95,12 +95,12 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
       
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-fase-steel">
+        <label htmlFor="password" className="block text-sm font-medium text-fase-black">
           Password
         </label>
         <input
@@ -109,7 +109,7 @@ export default function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-fase-silver rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
+          className="mt-1 block w-full px-3 py-2 border border-fase-light-gold rounded-md shadow-sm focus:outline-none focus:ring-fase-navy focus:border-fase-navy"
         />
       </div>
 

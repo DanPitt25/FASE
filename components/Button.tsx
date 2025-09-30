@@ -26,9 +26,9 @@ export default function Button({
   };
 
   const variantClasses = {
-    primary: 'bg-fase-navy text-white hover:bg-fase-steel border-2 border-fase-navy hover:border-fase-steel',
-    secondary: 'bg-white text-fase-steel border-2 border-fase-steel hover:bg-fase-paper hover:border-fase-navy hover:text-fase-navy',
-    ghost: 'bg-transparent text-fase-steel border-2 border-transparent hover:border-fase-steel hover:bg-fase-paper'
+    primary: 'bg-fase-navy text-white hover:bg-fase-black border-2 border-fase-navy hover:border-fase-black',
+    secondary: 'bg-white text-fase-black border-2 border-fase-black hover:bg-fase-light-blue hover:border-fase-navy hover:text-fase-navy',
+    ghost: 'bg-transparent text-fase-black border-2 border-transparent hover:border-fase-black hover:bg-fase-light-blue'
   };
 
   const baseClasses = `

@@ -62,7 +62,7 @@ export default function EmailVerification({ onVerified }: EmailVerificationProps
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-fase-silver">
+    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-fase-light-gold">
       <div className="text-center mb-6">
         <div className="w-16 h-16 bg-fase-navy rounded-full flex items-center justify-center mx-auto mb-4">
           <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,19 +70,19 @@ export default function EmailVerification({ onVerified }: EmailVerificationProps
           </svg>
         </div>
         <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-2">Verify Your Email</h2>
-        <p className="text-fase-steel">
+        <p className="text-fase-black">
           We need to verify your email address to secure your account.
         </p>
       </div>
 
       <div className="mb-6">
-        <p className="text-sm text-fase-steel text-center mb-4">
+        <p className="text-sm text-fase-black text-center mb-4">
           Email: <strong>{user?.email}</strong>
         </p>
         
         {!emailSent ? (
           <div className="text-center">
-            <p className="text-fase-steel mb-4">
+            <p className="text-fase-black mb-4">
               Click below to send a verification email to your inbox.
             </p>
             <Button 
