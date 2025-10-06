@@ -1,0 +1,720 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import PageLayout from '../../components/PageLayout';
+import TitleHero from '../../components/TitleHero';
+import Button from '../../components/Button';
+import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo } from '../../lib/knowledge-base';
+import { useAuth } from '../../contexts/AuthContext';
+import { useAdmin } from '../../hooks/useAdmin';
+import type { Video, Comment } from '../../lib/knowledge-base';
+
+// Mock data - in production this would come from your database
+const mockVideos = [
+  {
+    id: '1',
+    title: 'Understanding MGA Regulations in Europe',
+    description: 'Comprehensive overview of regulatory framework for MGAs across European markets.',
+    youtubeId: 'dQw4w9WgXcQ', // Mock YouTube ID
+    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+    category: 'Regulatory',
+    tags: ['compliance', 'regulations', 'europe'],
+    author: 'Dr. Sarah Johnson',
+    duration: '45:32',
+    uploadDate: '2024-01-15',
+    views: 1250,
+    likes: 89,
+    comments: [
+      { id: '1', author: 'John Smith', text: 'Very informative presentation!', date: '2024-01-16' },
+      { id: '2', author: 'Maria Garcia', text: 'Helped clarify many regulatory questions.', date: '2024-01-17' }
+    ]
+  },
+  {
+    id: '2',
+    title: 'Digital Transformation for MGAs',
+    description: 'How technology is reshaping the MGA landscape and best practices for digital adoption.',
+    youtubeId: 'dQw4w9WgXcQ',
+    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+    category: 'Technology',
+    tags: ['digital', 'technology', 'innovation'],
+    author: 'Mark Thompson',
+    duration: '38:15',
+    uploadDate: '2024-01-10',
+    views: 892,
+    likes: 67,
+    comments: [
+      { id: '3', author: 'Lisa Chen', text: 'Great insights on digital trends.', date: '2024-01-11' }
+    ]
+  },
+  {
+    id: '3',
+    title: 'Market Opportunities in Eastern Europe',
+    description: 'Analysis of emerging markets and growth opportunities for MGAs in Eastern Europe.',
+    youtubeId: 'dQw4w9WgXcQ',
+    thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+    category: 'Market Analysis',
+    tags: ['market', 'opportunities', 'eastern-europe'],
+    author: 'Andreas Mueller',
+    duration: '52:18',
+    uploadDate: '2024-01-05',
+    views: 1456,
+    likes: 112,
+    comments: []
+  }
+];
+
+const categories = ['All', 'Regulatory', 'Technology', 'Market Analysis', 'Webinars', 'Training'];
+
+export default function KnowledgeBaseWebinarsPage() {
+  const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [videoComments, setVideoComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showAddVideo, setShowAddVideo] = useState(false);
+  const [videoForm, setVideoForm] = useState({
+    title: '',
+    description: '',
+    youtubeId: '',
+    category: 'Regulatory' as const,
+    tags: '',
+    author: '',
+    duration: ''
+  });
+
+  const sections = [
+    { name: 'Video Library', id: 'video-library' }
+  ];
+
+  // Load videos on component mount
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        const videosData = await getVideos();
+        setVideos(videosData);
+        setFilteredVideos(videosData);
+      } catch (error) {
+        console.error('Error loading videos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVideos();
+  }, []);
+
+  // Filter videos based on category and search query
+  useEffect(() => {
+    let filtered = videos;
+    
+    if (selectedCategory) {
+      filtered = filtered.filter(video => video.category === selectedCategory);
+    }
+    
+    if (searchQuery) {
+      filtered = filtered.filter(video => 
+        video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        video.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        video.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+    
+    setFilteredVideos(filtered);
+  }, [videos, selectedCategory, searchQuery]);
+
+  // Handle video form submission
+  const handleAddVideo = async () => {
+    if (!user?.uid || !isAdmin) {
+      alert('Admin access required');
+      return;
+    }
+
+    // Validation
+    if (!videoForm.title.trim() || !videoForm.youtubeId.trim() || !videoForm.author.trim()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const videoData = {
+        title: videoForm.title.trim(),
+        description: videoForm.description.trim(),
+        youtubeId: videoForm.youtubeId.trim(),
+        thumbnail: `https://img.youtube.com/vi/${videoForm.youtubeId.trim()}/maxresdefault.jpg`,
+        category: videoForm.category,
+        tags: videoForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        author: videoForm.author.trim(),
+        duration: videoForm.duration.trim() || '0:00',
+        uploadDate: new Date(),
+        status: 'published' as const
+      };
+
+      const videoId = await createVideo(user.uid, videoData);
+      
+      // Refresh videos list
+      const videosData = await getVideos();
+      setVideos(videosData);
+      setFilteredVideos(videosData);
+      
+      // Reset form and close modal
+      setVideoForm({
+        title: '',
+        description: '',
+        youtubeId: '',
+        category: 'Regulatory',
+        tags: '',
+        author: '',
+        duration: ''
+      });
+      setShowAddVideo(false);
+      
+      alert('Video added successfully!');
+    } catch (error) {
+      console.error('Error adding video:', error);
+      alert('Error adding video. Please try again.');
+    }
+  };
+
+  // Get video count per category
+  const getCategoryCount = (category) => {
+    return videos.filter(video => video.category === category).length;
+  };
+
+  // Get category image
+  const getCategoryImage = (category) => {
+    const images = {
+      'Regulatory': '/regulatory.jpg',
+      'Technology': '/data.jpg', 
+      'Market Analysis': '/market.jpg',
+      'Webinars': '/conference.jpg',
+      'Training': '/training.jpg'
+    };
+    return images[category] || '/conference.jpg';
+  };
+
+  const CategoryCard = ({ category, count, onClick }) => (
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+    >
+      {/* Category Image */}
+      <div className="relative h-48 overflow-hidden">
+        <img 
+          src={getCategoryImage(category)} 
+          alt={category}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+        <div className="absolute top-4 right-4">
+          <span className="bg-white/90 text-fase-navy text-sm px-3 py-1 rounded-full font-medium">
+            {count} video{count !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-xl font-noto-serif font-bold text-white mb-2 group-hover:text-fase-cream transition-colors">
+            {category}
+          </h3>
+        </div>
+      </div>
+      
+      {/* Category Content */}
+      <div className="p-6">
+        <p className="text-fase-black text-sm mb-4">
+          {category === 'Regulatory' && 'Compliance guidelines, regulatory updates, and legal frameworks for MGAs across Europe.'}
+          {category === 'Technology' && 'Digital transformation insights, tech solutions, and innovation in the MGA sector.'}
+          {category === 'Market Analysis' && 'Market trends, opportunities, and strategic insights for European markets.'}
+          {category === 'Webinars' && 'Live sessions and recorded webinars from industry experts and thought leaders.'}
+          {category === 'Training' && 'Educational content and professional development resources for MGA professionals.'}
+        </p>
+        
+        <div className="flex items-center text-fase-navy group-hover:text-fase-black transition-colors">
+          <span className="text-sm font-medium">Browse videos</span>
+          <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+
+  const VideoCard = ({ video }) => {
+    const handleVideoClick = async () => {
+      setSelectedVideo(video);
+      // Increment view count
+      try {
+        await incrementVideoViews(video.id);
+        // Update local video state
+        setVideos(prev => prev.map(v => 
+          v.id === video.id ? { ...v, views: v.views + 1 } : v
+        ));
+      } catch (error) {
+        console.error('Error incrementing views:', error);
+      }
+      
+      // Load comments for this video
+      try {
+        const comments = await getVideoComments(video.id);
+        setVideoComments(comments);
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        setVideoComments([]);
+      }
+    };
+
+    return (
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div 
+          className="relative cursor-pointer"
+          onClick={handleVideoClick}
+        >
+          <img 
+            src={video.thumbnail} 
+            alt={video.title}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
+            <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+              <svg className="w-6 h-6 text-fase-navy ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+          </div>
+          <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+            {video.duration}
+          </div>
+        </div>
+        
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="bg-fase-navy text-white text-xs px-2 py-1 rounded">{video.category}</span>
+            <div className="flex items-center space-x-3 text-xs text-fase-black">
+              <span>{video.views} views</span>
+              <span>{video.likes} likes</span>
+            </div>
+          </div>
+          
+          <h3 className="font-noto-serif font-semibold text-fase-navy mb-2 line-clamp-2 cursor-pointer hover:text-fase-gold transition-colors"
+              onClick={handleVideoClick}>
+            {video.title}
+          </h3>
+          
+          <p className="text-sm text-fase-black mb-3 line-clamp-2">{video.description}</p>
+          
+          <div className="flex items-center justify-between text-xs text-fase-black">
+            <span>By {video.author}</span>
+            <span>{new Date(video.uploadDate).toLocaleDateString()}</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-1 mt-3">
+            {video.tags.slice(0, 3).map(tag => (
+              <span key={tag} className="bg-fase-cream text-fase-navy text-xs px-2 py-1 rounded">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
+
+  return (
+    <PageLayout currentPage="knowledge-base-webinars" sections={sections} hideNavigation={true}>
+      <main className="flex-1 bg-fase-cream min-h-[calc(100vh-5.5rem)] flex flex-col">
+        {/* Main Console */}
+        <div className="flex flex-col overflow-hidden m-6">
+          <div className="flex flex-col bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden" style={{height: 'calc(100vh - 8rem)'}}>
+            {/* Console Header */}
+            <div className="px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy">Knowledge Base</h1>
+                <div className="flex items-center space-x-4">
+                  {selectedCategory && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <button 
+                        onClick={() => setSelectedCategory(null)}
+                        className="text-fase-navy hover:text-fase-gold transition-colors"
+                      >
+                        Categories
+                      </button>
+                      <svg className="w-4 h-4 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span className="text-fase-black">{selectedCategory}</span>
+                    </div>
+                  )}
+                  {isAdmin && (
+                    <Button 
+                      variant="primary" 
+                      size="small"
+                      onClick={() => setShowAddVideo(true)}
+                    >
+                      Link Video
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Console Content */}
+            <div className="flex-1 flex overflow-hidden min-h-0">
+          {selectedVideo ? (
+            /* Video Player Mode */
+            <>
+              {/* Main Video Area */}
+              <div className="flex-1 flex flex-col px-12 py-6">
+                <div className="w-full max-w-4xl aspect-video mx-auto bg-black rounded-lg overflow-hidden shadow-2xl">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}`}
+                    title={selectedVideo.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Sidebar with Details and Comments */}
+              <div className="w-[28rem] bg-white flex flex-col overflow-hidden p-4">
+                {/* Video Details */}
+                <div className="flex-shrink-0 pb-4">
+                  <h2 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2 leading-tight">
+                    {selectedVideo.title}
+                  </h2>
+                  
+                  <div className="flex items-center space-x-3 mb-3">
+                    <span className="bg-fase-navy text-white px-2 py-1 rounded text-xs">{selectedVideo.category}</span>
+                    <span className="text-fase-black text-xs">{selectedVideo.views} views</span>
+                    <span className="text-fase-black text-xs">{new Date(selectedVideo.uploadDate).toLocaleDateString()}</span>
+                  </div>
+                  
+                  <p className="text-fase-black mb-4 leading-relaxed text-sm">{selectedVideo.description}</p>
+                  <p className="text-xs text-fase-black mb-4">Presented by <strong>{selectedVideo.author}</strong></p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {selectedVideo.tags.map(tag => (
+                      <span key={tag} className="bg-fase-light-blue text-fase-navy text-xs px-2 py-1 rounded">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Add Comment Form */}
+                  <div className="mb-4">
+                    <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">
+                      Add a comment
+                    </h3>
+                    <div>
+                      <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Share your thoughts..."
+                        className="w-full p-2 border border-fase-light-gold rounded focus:outline-none focus:ring-1 focus:ring-fase-navy focus:border-fase-navy text-xs"
+                        rows="2"
+                      />
+                      <div className="flex justify-end mt-1">
+                        <Button 
+                          variant="primary" 
+                          size="small"
+                          onClick={async () => {
+                            if (!user) {
+                              alert('Please log in to post a comment');
+                              return;
+                            }
+                            if (!newComment.trim()) {
+                              alert('Please enter a comment');
+                              return;
+                            }
+                            if (!selectedVideo) return;
+
+                            try {
+                              await createComment(
+                                selectedVideo.id,
+                                user.uid,
+                                user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                                newComment.trim()
+                              );
+                              setNewComment('');
+                              
+                              // Refresh comments list
+                              const comments = await getVideoComments(selectedVideo.id);
+                              setVideoComments(comments);
+                            } catch (error) {
+                              console.error('Error posting comment:', error);
+                              alert('Error posting comment. Please try again.');
+                            }
+                          }}
+                        >
+                          Post
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comments Section */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="flex-shrink-0 pb-3">
+                    <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">
+                      Comments ({videoComments.length})
+                    </h3>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="flex-1 overflow-y-auto space-y-2">
+                    {videoComments.map(comment => (
+                      <div key={comment.id} className="bg-gray-50 p-3 rounded text-xs">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-fase-navy text-xs">{comment.authorName}</span>
+                          <span className="text-xs text-fase-black">
+                            {comment.createdAt?.seconds ? 
+                              new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 
+                              'Recent'
+                            }
+                          </span>
+                        </div>
+                        <p className="text-fase-black text-xs">{comment.text}</p>
+                      </div>
+                    ))}
+                    {videoComments.length === 0 && (
+                      <p className="text-fase-black text-center py-4 text-xs">No comments yet. Be the first to comment!</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Browse Mode */
+            <div className="flex-1 flex flex-col">
+              {selectedCategory && (
+                /* Search within category */
+                <div className="p-4 h-24 bg-fase-cream">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={`Search in ${selectedCategory}...`}
+                      className="w-full pl-10 pr-4 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    />
+                    <svg className="absolute left-3 top-2.5 h-5 w-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <div className="mt-2 text-sm text-fase-black">
+                    Showing {filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''} in {selectedCategory}
+                    {searchQuery && ` matching "${searchQuery}"`}
+                  </div>
+                </div>
+              )}
+
+              {/* Content Area */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
+                    <p className="text-fase-black">Loading videos...</p>
+                  </div>
+                ) : !selectedCategory ? (
+                  /* Category Folders */
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categories.slice(1).map(category => (
+                      <CategoryCard 
+                        key={category}
+                        category={category}
+                        count={getCategoryCount(category)}
+                        onClick={() => setSelectedCategory(category)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Video Grid for Selected Category */
+                  <div>
+                    {filteredVideos.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredVideos.map(video => (
+                          <VideoCard key={video.id} video={video} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="w-24 h-24 bg-fase-light-gold bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-12 h-12 text-fase-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-medium text-fase-navy mb-2">No videos found</h3>
+                        <p className="text-fase-black mb-4">
+                          {searchQuery 
+                            ? `No videos in ${selectedCategory} match your search.`
+                            : `No videos available in ${selectedCategory} yet.`
+                          }
+                        </p>
+                        {searchQuery && (
+                          <Button variant="secondary" onClick={() => setSearchQuery('')}>
+                            Clear Search
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+            </div>
+          </div>
+        </div>
+
+        {/* Add Video Modal */}
+        {showAddVideo && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl border border-fase-light-gold max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-noto-serif font-bold text-fase-navy">Link Video</h2>
+                  <button
+                    onClick={() => setShowAddVideo(false)}
+                    className="text-fase-black hover:text-fase-navy"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-2">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={videoForm.title}
+                      onChange={(e) => setVideoForm(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      placeholder="Enter video title"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-2">
+                      YouTube Video ID *
+                    </label>
+                    <input
+                      type="text"
+                      value={videoForm.youtubeId}
+                      onChange={(e) => setVideoForm(prev => ({ ...prev, youtubeId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      placeholder="e.g., dQw4w9WgXcQ"
+                    />
+                    <p className="text-xs text-fase-black mt-1">
+                      Get this from the YouTube URL: youtube.com/watch?v=<strong>VIDEO_ID</strong>
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={videoForm.description}
+                      onChange={(e) => setVideoForm(prev => ({ ...prev, description: e.target.value }))}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      placeholder="Enter video description"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-fase-navy mb-2">
+                        Category *
+                      </label>
+                      <select
+                        value={videoForm.category}
+                        onChange={(e) => setVideoForm(prev => ({ ...prev, category: e.target.value as any }))}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      >
+                        <option value="Regulatory">Regulatory</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Market Analysis">Market Analysis</option>
+                        <option value="Webinars">Webinars</option>
+                        <option value="Training">Training</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-fase-navy mb-2">
+                        Author *
+                      </label>
+                      <input
+                        type="text"
+                        value={videoForm.author}
+                        onChange={(e) => setVideoForm(prev => ({ ...prev, author: e.target.value }))}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                        placeholder="Speaker/Author name"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-fase-navy mb-2">
+                        Duration
+                      </label>
+                      <input
+                        type="text"
+                        value={videoForm.duration}
+                        onChange={(e) => setVideoForm(prev => ({ ...prev, duration: e.target.value }))}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                        placeholder="e.g., 45:32"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-fase-navy mb-2">
+                        Tags
+                      </label>
+                      <input
+                        type="text"
+                        value={videoForm.tags}
+                        onChange={(e) => setVideoForm(prev => ({ ...prev, tags: e.target.value }))}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                        placeholder="tag1, tag2, tag3"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-6 border-t border-fase-light-gold">
+                    <Button
+                      variant="secondary"
+                      size="medium"
+                      onClick={() => setShowAddVideo(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="medium"
+                      onClick={handleAddVideo}
+                    >
+                      Link Video
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </PageLayout>
+  );
+}

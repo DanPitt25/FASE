@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { signOut } from '../lib/auth';
 import { useTranslations } from 'next-intl';
+import { useAdmin } from '../hooks/useAdmin';
 
 interface HeaderProps {
   currentPage?: string;
@@ -21,6 +22,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const { locale, setLocale } = useLocale();
   const router = useRouter();
   const t = useTranslations('Header');
+  const { isAdmin, loading: adminLoading } = useAdmin();
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -153,6 +155,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   <a href="/member-portal" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
                     currentPage === 'member-portal' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
                   }`}>{t('member_portal')}</a>
+                  {!adminLoading && isAdmin && locale === 'en' && (
+                    <a href="/admin-portal" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
+                      currentPage === 'admin-portal' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
+                    }`}>Admin Portal</a>
+                  )}
                 </div>
                 {loading ? (
                   <div className="w-20 h-8 bg-fase-cream animate-pulse rounded"></div>
@@ -216,6 +223,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <a href="/member-portal" className={`block px-3 py-2 text-base font-medium  ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>{t('member_portal')}</a>
+            {!adminLoading && isAdmin && locale === 'en' && (
+              <a href="/admin-portal" className={`block px-3 py-2 text-base font-medium  ${
+                currentPage === 'admin-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Admin Portal</a>
+            )}
             {loading ? (
               <div className="w-full h-10 bg-fase-cream animate-pulse rounded mt-2"></div>
             ) : user ? (
