@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import PageLayout from '../../components/PageLayout';
 import TitleHero from '../../components/TitleHero';
 import Button from '../../components/Button';
-import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo } from '../../lib/knowledge-base';
+import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo, updateComment, deleteComment } from '../../lib/knowledge-base';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdmin } from '../../hooks/useAdmin';
 import type { Video, Comment } from '../../lib/knowledge-base';
@@ -77,6 +77,8 @@ export default function KnowledgeBaseWebinarsPage() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddVideo, setShowAddVideo] = useState(false);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
   const [videoForm, setVideoForm] = useState({
     title: '',
     description: '',
@@ -127,6 +129,48 @@ export default function KnowledgeBaseWebinarsPage() {
     setFilteredVideos(filtered);
   }, [videos, selectedCategory, searchQuery]);
 
+  // Handle comment edit
+  const handleEditComment = async (commentId: string) => {
+    if (!user?.uid || !editText.trim()) return;
+    
+    try {
+      await updateComment(user.uid, commentId, editText.trim());
+      
+      // Refresh comments
+      if (selectedVideo) {
+        const comments = await getVideoComments(selectedVideo.id);
+        setVideoComments(comments);
+      }
+      
+      setEditingComment(null);
+      setEditText('');
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      alert('Error updating comment. Please try again.');
+    }
+  };
+
+  // Handle comment delete
+  const handleDeleteComment = async (commentId: string) => {
+    if (!user?.uid) return;
+    
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+      await deleteComment(user.uid, commentId);
+      
+      // Refresh comments
+      if (selectedVideo) {
+        const comments = await getVideoComments(selectedVideo.id);
+        setVideoComments(comments);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('Error deleting comment. Please try again.');
+    }
+  };
+
+
   // Handle video form submission
   const handleAddVideo = async () => {
     if (!user?.uid || !isAdmin) {
@@ -151,7 +195,12 @@ export default function KnowledgeBaseWebinarsPage() {
         author: videoForm.author.trim(),
         duration: videoForm.duration.trim() || '0:00',
         uploadDate: new Date(),
-        status: 'published' as const
+        status: 'published' as const,
+        isLive: false,
+        requiresRegistration: false,
+        accessLevel: 'free' as const,
+        maxViewers: 0,
+        currentViewers: 0
       };
 
       const videoId = await createVideo(user.uid, videoData);
@@ -181,12 +230,12 @@ export default function KnowledgeBaseWebinarsPage() {
   };
 
   // Get video count per category
-  const getCategoryCount = (category) => {
+  const getCategoryCount = (category: string) => {
     return videos.filter(video => video.category === category).length;
   };
 
   // Get category image
-  const getCategoryImage = (category) => {
+  const getCategoryImage = (category: string) => {
     const images = {
       'Regulatory': '/regulatory.jpg',
       'Technology': '/data.jpg', 
@@ -197,7 +246,7 @@ export default function KnowledgeBaseWebinarsPage() {
     return images[category] || '/conference.jpg';
   };
 
-  const CategoryCard = ({ category, count, onClick }) => (
+  const CategoryCard = ({ category, count, onClick }: { category: string; count: number; onClick: () => void }) => (
     <div 
       onClick={onClick}
       className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
@@ -242,9 +291,10 @@ export default function KnowledgeBaseWebinarsPage() {
     </div>
   );
 
-  const VideoCard = ({ video }) => {
+  const VideoCard = ({ video }: { video: Video }) => {
     const handleVideoClick = async () => {
       setSelectedVideo(video);
+      
       // Increment view count
       try {
         await incrementVideoViews(video.id);
@@ -333,12 +383,17 @@ export default function KnowledgeBaseWebinarsPage() {
             {/* Console Header */}
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy">Knowledge Base</h1>
+                <h1 className="text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy">
+                  {selectedVideo ? selectedVideo.title : selectedCategory || 'Knowledge Base'}
+                </h1>
                 <div className="flex items-center space-x-4">
                   {selectedCategory && (
                     <div className="flex items-center space-x-2 text-sm">
                       <button 
-                        onClick={() => setSelectedCategory(null)}
+                        onClick={() => {
+                          setSelectedCategory(null);
+                          setSelectedVideo(null);
+                        }}
                         className="text-fase-navy hover:text-fase-gold transition-colors"
                       >
                         Categories
@@ -346,7 +401,12 @@ export default function KnowledgeBaseWebinarsPage() {
                       <svg className="w-4 h-4 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <span className="text-fase-black">{selectedCategory}</span>
+                      <button 
+                        onClick={() => setSelectedVideo(null)}
+                        className="text-fase-black hover:text-fase-gold transition-colors"
+                      >
+                        {selectedCategory}
+                      </button>
                     </div>
                   )}
                   {isAdmin && (
@@ -368,8 +428,8 @@ export default function KnowledgeBaseWebinarsPage() {
             /* Video Player Mode */
             <>
               {/* Main Video Area */}
-              <div className="flex-1 flex flex-col px-12 py-6">
-                <div className="w-full max-w-4xl aspect-video mx-auto bg-black rounded-lg overflow-hidden shadow-2xl">
+              <div className="flex-1 flex items-center justify-center p-6 bg-white">
+                <div className="w-full max-w-5xl aspect-video bg-black rounded-lg overflow-hidden shadow-2xl">
                   <iframe
                     src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}`}
                     title={selectedVideo.title}
@@ -385,18 +445,8 @@ export default function KnowledgeBaseWebinarsPage() {
               <div className="w-[28rem] bg-white flex flex-col overflow-hidden p-4">
                 {/* Video Details */}
                 <div className="flex-shrink-0 pb-4">
-                  <h2 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2 leading-tight">
-                    {selectedVideo.title}
-                  </h2>
-                  
-                  <div className="flex items-center space-x-3 mb-3">
-                    <span className="bg-fase-navy text-white px-2 py-1 rounded text-xs">{selectedVideo.category}</span>
-                    <span className="text-fase-black text-xs">{selectedVideo.views} views</span>
-                    <span className="text-fase-black text-xs">{new Date(selectedVideo.uploadDate).toLocaleDateString()}</span>
-                  </div>
-                  
+                  <p className="text-xs text-fase-black mb-3">Presented by <strong>{selectedVideo.author}</strong></p>
                   <p className="text-fase-black mb-4 leading-relaxed text-sm">{selectedVideo.description}</p>
-                  <p className="text-xs text-fase-black mb-4">Presented by <strong>{selectedVideo.author}</strong></p>
                   
                   <div className="flex flex-wrap gap-1 mb-4">
                     {selectedVideo.tags.map(tag => (
@@ -473,14 +523,69 @@ export default function KnowledgeBaseWebinarsPage() {
                       <div key={comment.id} className="bg-gray-50 p-3 rounded text-xs">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-medium text-fase-navy text-xs">{comment.authorName}</span>
-                          <span className="text-xs text-fase-black">
-                            {comment.createdAt?.seconds ? 
-                              new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 
-                              'Recent'
-                            }
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-fase-black">
+                              {comment.createdAt?.seconds ? 
+                                new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 
+                                'Recent'
+                              }
+                            </span>
+                            {user?.uid === comment.authorUid && (
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  onClick={() => {
+                                    setEditingComment(comment.id);
+                                    setEditText(comment.text);
+                                  }}
+                                  className="text-fase-black hover:text-fase-navy transition-colors"
+                                  title="Edit comment"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  className="text-fase-black hover:text-red-600 transition-colors"
+                                  title="Delete comment"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-fase-black text-xs">{comment.text}</p>
+                        {editingComment === comment.id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              className="w-full p-2 border border-fase-light-gold rounded focus:outline-none focus:ring-1 focus:ring-fase-navy focus:border-fase-navy text-xs"
+                              rows="2"
+                            />
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingComment(null);
+                                  setEditText('');
+                                }}
+                                className="px-2 py-1 text-xs text-fase-black hover:text-fase-navy transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleEditComment(comment.id)}
+                                className="px-2 py-1 bg-fase-navy text-white text-xs rounded hover:bg-fase-black transition-colors"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-fase-black text-xs">{comment.text}</p>
+                        )}
                       </div>
                     ))}
                     {videoComments.length === 0 && (
@@ -692,6 +797,7 @@ export default function KnowledgeBaseWebinarsPage() {
                       />
                     </div>
                   </div>
+
 
                   <div className="flex justify-end space-x-3 pt-6 border-t border-fase-light-gold">
                     <Button
