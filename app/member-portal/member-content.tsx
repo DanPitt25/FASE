@@ -311,7 +311,10 @@ export default function MemberContent() {
               <h3 className="font-medium text-fase-navy mb-2">Events & Conferences</h3>
               <p className="text-sm text-fase-black">Access upcoming FASE events and conference materials</p>
             </div>
-            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
+            <div 
+              className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors cursor-pointer"
+              onClick={() => router.push('/knowledge-base-webinars')}
+            >
               <h3 className="font-medium text-fase-navy mb-2">Knowledge Hub</h3>
               <p className="text-sm text-fase-black">Browse industry insights and educational resources</p>
             </div>
@@ -322,6 +325,28 @@ export default function MemberContent() {
           </div>
         </div>
       )}
+
+      {/* Knowledge Base and Webinars - Separate container for all members */}
+      <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-fase-navy bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-fase-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-3">Knowledge Base & Webinars</h2>
+          <p className="text-fase-black mb-6">
+            Access our comprehensive knowledge base, educational resources, and exclusive webinar content designed for insurance professionals
+          </p>
+          <Button 
+            href="/knowledge-base-webinars"
+            variant="primary" 
+            size="medium"
+          >
+            Explore Knowledge Base
+          </Button>
+        </div>
+      </div>
 
       {/* Link to Existing Subscription Modal */}
       <Modal 
