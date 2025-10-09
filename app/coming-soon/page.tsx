@@ -304,11 +304,11 @@ export default function ComingSoonPage() {
             <p className="text-sm" style={{ color: '#B46A33' }}>
               Questions?{' '}
               <a 
-                href="mailto:info@fasemga.org" 
+                href="mailto:info@fasemga.com" 
                 className="hover:underline transition-colors"
                 style={{ color: '#E2A560' }}
               >
-                info@fasemga.org
+                info@fasemga.com
               </a>
             </p>
           </div>
