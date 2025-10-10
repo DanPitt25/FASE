@@ -9,27 +9,29 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// Initialize Firebase Admin SDK with proper service account
-if (!admin.apps.length) {
-  // Skip initialization during build time
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
-    admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  } else {
-    console.warn('Firebase credentials not available - skipping initialization');
+// Initialize Firebase Admin SDK with proper service account (runtime only)
+const initializeFirebaseAdmin = () => {
+  if (admin.apps.length > 0) return;
+  
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    throw new Error('Firebase credentials not configured');
   }
-}
+
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+    : undefined;
+
+  admin.initializeApp({
+    credential: serviceAccount 
+      ? admin.credential.cert(serviceAccount)
+      : admin.credential.applicationDefault(),
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  });
+};
 
 const updateMemberStatus = async (userId: string, paymentStatus: string, paymentMethod: string, paymentId: string) => {
   try {
+    initializeFirebaseAdmin();
     const db = admin.firestore();
     const membersRef = db.collection('members');
     const snapshot = await membersRef.where('uid', '==', userId).limit(1).get();
