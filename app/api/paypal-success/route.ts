@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveMemberApplication } from '../../../lib/firestore';
+import { createMemberApplication } from '../../../lib/firestore';
 
 const PAYPAL_BASE_URL = process.env.PAYPAL_ENVIRONMENT === 'live' 
   ? 'https://api-m.paypal.com' 
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (customData.user_id) {
-      await saveMemberApplication(applicationData, customData.user_id);
+      await createMemberApplication(applicationData, customData.user_id);
     }
 
     // Redirect to success page
