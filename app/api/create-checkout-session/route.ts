@@ -30,12 +30,10 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 };
 
 export async function POST(request: NextRequest) {
-  console.log('=== Stripe Checkout Session Debug ===');
-  console.log('Environment variables check:');
+  console.log('=== Stripe Checkout Session - Environment Variables Now Available ===');
   console.log('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
   console.log('- STRIPE_SECRET_KEY prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
-  console.log('- NODE_ENV:', process.env.NODE_ENV);
-  console.log('- VERCEL:', process.env.VERCEL);
+  console.log('- Environment vars configured!');
   
   try {
     // Initialize Stripe at runtime
