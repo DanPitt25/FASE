@@ -144,7 +144,7 @@ export default function MemberContent() {
     <>
       <UtilityPage
         title={userProfile?.personalName ? `Welcome, ${userProfile.personalName}` : "Member Portal"}
-        subtitle={memberApplications[0]?.organizationName || user.email}
+        subtitle={memberApplications[0]?.organizationName || user.email || undefined}
         logoElement={logoElement}
         statusBadge={statusBadge}
         currentPage="member-portal"

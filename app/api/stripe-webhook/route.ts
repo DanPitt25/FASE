@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import * as admin from 'firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-08-27.basil',
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -99,15 +99,17 @@ export async function POST(request: NextRequest) {
       console.log('Subscription payment successful:', invoice.id);
       
       // For subscription payments, get session metadata from subscription
-      if (invoice.subscription && typeof invoice.subscription === 'string') {
-        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+      const invoiceAny = invoice as any;
+      const subscriptionId = typeof invoiceAny.subscription === 'string' ? invoiceAny.subscription : invoiceAny.subscription?.id;
+      if (subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         if (subscription.metadata?.user_id) {
           try {
             await updateMemberStatus(
               subscription.metadata.user_id,
               'paid',
               'stripe',
-              invoice.id
+              invoice.id || ''
             );
             console.log('Member application updated for subscription user:', subscription.metadata.user_id);
           } catch (error) {

@@ -73,7 +73,7 @@ export default function KnowledgeBaseWebinarsPage() {
   const { user, loading: authLoading } = authContext || { user: null, loading: true };
   const { isAdmin } = useAdmin();
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
@@ -84,7 +84,7 @@ export default function KnowledgeBaseWebinarsPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showAccessModal, setShowAccessModal] = useState(false);
-  const [memberApplications, setMemberApplications] = useState([]);
+  const [memberApplications, setMemberApplications] = useState<any[]>([]);
   const [showAddVideo, setShowAddVideo] = useState(false);
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -284,7 +284,7 @@ export default function KnowledgeBaseWebinarsPage() {
       'Webinars': '/conference.jpg',
       'Training': '/training.jpg'
     };
-    return images[category] || '/conference.jpg';
+    return images[category as keyof typeof images] || '/conference.jpg';
   };
 
   const CategoryCard = ({ category, count, onClick }: { category: string; count: number; onClick: () => void }) => (
@@ -523,7 +523,7 @@ export default function KnowledgeBaseWebinarsPage() {
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Share your thoughts..."
                         className="w-full p-2 border border-fase-light-gold rounded focus:outline-none focus:ring-1 focus:ring-fase-navy focus:border-fase-navy text-xs"
-                        rows="2"
+                        rows={2}
                       />
                       <div className="flex justify-end mt-1">
                         <Button 
@@ -619,7 +619,7 @@ export default function KnowledgeBaseWebinarsPage() {
                               value={editText}
                               onChange={(e) => setEditText(e.target.value)}
                               className="w-full p-2 border border-fase-light-gold rounded focus:outline-none focus:ring-1 focus:ring-fase-navy focus:border-fase-navy text-xs"
-                              rows="2"
+                              rows={2}
                             />
                             <div className="flex justify-end space-x-2">
                               <button
@@ -922,7 +922,7 @@ export default function KnowledgeBaseWebinarsPage() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               size="medium"
               className="flex-1"
               onClick={() => router.push('/member-portal')}

@@ -98,8 +98,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     // Get subscription details
-    const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-    const customer = await stripe.customers.retrieve(session.customer as string) as Stripe.Customer;
+    const subscription = await stripe!.subscriptions.retrieve(session.subscription as string);
+    const customer = await stripe!.customers.retrieve(session.customer as string) as Stripe.Customer;
 
     // Extract metadata from session
     const userId = session.metadata?.user_id;
@@ -183,7 +183,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   
   try {
     if ((invoice as any).subscription) {
-      const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+      const subscription = await stripe!.subscriptions.retrieve((invoice as any).subscription as string);
       const subscriber = await getSubscriberByStripeCustomerId(subscription.customer as string);
       
       if (subscriber) {
@@ -207,7 +207,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   
   try {
     if ((invoice as any).subscription) {
-      const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+      const subscription = await stripe!.subscriptions.retrieve((invoice as any).subscription as string);
       const subscriber = await getSubscriberByStripeCustomerId(subscription.customer as string);
       
       if (subscriber) {

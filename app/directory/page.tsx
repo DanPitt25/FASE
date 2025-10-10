@@ -43,7 +43,7 @@ export default function DirectoryPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showAccessModal, setShowAccessModal] = useState(false);
-  const [memberApplications, setMemberApplications] = useState([]);
+  const [memberApplications, setMemberApplications] = useState<any[]>([]);
 
   // Check user access
   useEffect(() => {
@@ -343,7 +343,7 @@ export default function DirectoryPage() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               size="medium"
               className="flex-1"
               onClick={() => router.push('/member-portal')}
