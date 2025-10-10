@@ -43,12 +43,18 @@ export async function POST(request: NextRequest) {
     // Check if Stripe is available
     if (!stripeInstance) {
       console.error('Stripe initialization failed - returning 503');
+      console.error('Environment check:');
+      console.error('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+      console.error('- All env keys:', Object.keys(process.env).filter(k => k.includes('STRIPE')));
       return NextResponse.json(
         { 
           error: 'Payment processing not available',
           debug: {
             hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-            keyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10)
+            keyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10),
+            allStripeKeys: Object.keys(process.env).filter(k => k.includes('STRIPE')),
+            nodeEnv: process.env.NODE_ENV,
+            isVercel: !!process.env.VERCEL
           }
         },
         { status: 503 }
