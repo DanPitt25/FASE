@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-// Initialize Stripe only if API key is available
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
+let stripe: Stripe | null = null;
+
+// Initialize Stripe at runtime
+const initializeStripe = () => {
+  if (!stripe && process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-08-27.basil',
-    })
-  : null;
+    });
+  }
+  return stripe;
+};
 
 // Pricing mapping based on premium brackets
 const getPriceForPremiumBracket = (bracket: string): number => {
@@ -23,8 +31,11 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Stripe at runtime
+    const stripeInstance = initializeStripe();
+    
     // Check if Stripe is available
-    if (!stripe) {
+    if (!stripeInstance) {
       return NextResponse.json(
         { error: 'Payment processing not available' },
         { status: 503 }
@@ -95,7 +106,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripeInstance.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [

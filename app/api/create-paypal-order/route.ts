@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PAYPAL_BASE_URL = process.env.PAYPAL_ENVIRONMENT === 'live' 
-  ? 'https://api-m.paypal.com' 
-  : 'https://api-m.sandbox.paypal.com';
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
+const getPayPalBaseUrl = () => {
+  return process.env.PAYPAL_ENVIRONMENT === 'live' 
+    ? 'https://api-m.paypal.com' 
+    : 'https://api-m.sandbox.paypal.com';
+};
 
 // Pricing mapping based on premium brackets
 const getPriceForPremiumBracket = (bracket: string): number => {
@@ -23,6 +28,7 @@ async function getAccessToken() {
     throw new Error('PayPal credentials not configured');
   }
 
+  const PAYPAL_BASE_URL = getPayPalBaseUrl();
   const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -84,6 +90,7 @@ export async function POST(request: NextRequest) {
     const accessToken = await getAccessToken();
 
     // Create PayPal order
+    const PAYPAL_BASE_URL = getPayPalBaseUrl();
     const orderResponse = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
       method: 'POST',
       headers: {
