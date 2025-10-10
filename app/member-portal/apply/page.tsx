@@ -929,7 +929,7 @@ export default function MembershipApplication() {
                 Organization Logo (Optional)
               </label>
               <p className="text-xs text-fase-black mb-3">
-                Upload your organization's logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
+                Upload your organization&apos;s logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
               </p>
               
               <div className="flex items-center space-x-4">
@@ -995,7 +995,7 @@ export default function MembershipApplication() {
             
             <div className="space-y-4">
               <ValidatedCheckbox
-                label="I agree to FASE's privacy policy and terms of service"
+                label="I agree to FASE&apos;s privacy policy and terms of service"
                 fieldKey="privacyAgreed"
                 checked={newOrgData.privacyAgreed}
                 onChange={(checked) => setNewOrgData({ ...newOrgData, privacyAgreed: checked })}
@@ -1549,7 +1549,7 @@ export default function MembershipApplication() {
               markFieldTouched={markFieldTouched}
               options={[
                 { value: '', label: 'Select carrier type...' },
-                { value: 'lloyds-syndicate', label: "Lloyd's Syndicate" },
+                { value: 'lloyds-syndicate', label: "Lloyd&apos;s Syndicate" },
                 { value: 'european-insurer', label: 'European Insurer' },
                 { value: 'reinsurer', label: 'Reinsurer' },
                 { value: 'captive', label: 'Captive Insurance Company' },
