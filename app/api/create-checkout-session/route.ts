@@ -30,25 +30,40 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 };
 
 export async function POST(request: NextRequest) {
+  console.log('=== Stripe Checkout Session Debug ===');
+  console.log('Environment variables check:');
+  console.log('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+  console.log('- STRIPE_SECRET_KEY prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
+  console.log('- NODE_ENV:', process.env.NODE_ENV);
+  console.log('- VERCEL:', process.env.VERCEL);
+  
   try {
     // Initialize Stripe at runtime
     const stripeInstance = initializeStripe();
+    console.log('- Stripe instance created:', !!stripeInstance);
     
     // Check if Stripe is available
     if (!stripeInstance) {
+      console.error('Stripe initialization failed - returning 503');
       return NextResponse.json(
-        { error: 'Payment processing not available' },
+        { 
+          error: 'Payment processing not available',
+          debug: {
+            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+            keyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10)
+          }
+        },
         { status: 503 }
       );
     }
-
-    // Debug: Log environment variables
-    console.log('Stripe secret key exists:', !!process.env.STRIPE_SECRET_KEY);
-    console.log('Stripe secret key prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
-    
     
     const requestData = await request.json();
-    console.log('Request data:', requestData);
+    console.log('Request data received:', {
+      organizationName: requestData.organizationName,
+      organizationType: requestData.organizationType,
+      membershipType: requestData.membershipType,
+      userId: requestData.userId
+    });
     
     const { 
       organizationName, 
@@ -145,13 +160,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id, url: session.url });
 
   } catch (error: any) {
+    console.error('=== Stripe Checkout Session Error ===');
     console.error('Error creating checkout session:', error);
-    console.error('Error details:', error.message);
+    console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
+    console.error('Error type:', error.type);
+    console.error('Error code:', error.code);
+    
     return NextResponse.json(
       { 
         error: 'Failed to create checkout session',
-        details: error.message || 'Unknown error'
+        details: error.message || 'Unknown error',
+        type: error.type || 'unknown',
+        code: error.code || 'unknown'
       },
       { status: 500 }
     );
