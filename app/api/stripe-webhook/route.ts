@@ -1,37 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import * as admin from 'firebase-admin';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+let stripe: Stripe;
+let admin: any;
+let endpointSecret: string;
 
-// Initialize Firebase Admin SDK with proper service account (runtime only)
-const initializeFirebaseAdmin = () => {
-  if (admin.apps.length > 0) return;
-  
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    throw new Error('Firebase credentials not configured');
+// Initialize everything at runtime
+const initializeServices = async () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-08-27.basil',
+    });
   }
+  
+  if (!endpointSecret) {
+    endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  }
+  
+  if (!admin) {
+    admin = await import('firebase-admin');
+    
+    if (admin.apps.length === 0) {
+      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        throw new Error('Firebase credentials not configured');
+      }
 
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-    : undefined;
+      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+        : undefined;
 
-  admin.initializeApp({
-    credential: serviceAccount 
-      ? admin.credential.cert(serviceAccount)
-      : admin.credential.applicationDefault(),
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  });
+      admin.initializeApp({
+        credential: serviceAccount 
+          ? admin.credential.cert(serviceAccount)
+          : admin.credential.applicationDefault(),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+  }
 };
 
 const updateMemberStatus = async (userId: string, paymentStatus: string, paymentMethod: string, paymentId: string) => {
   try {
-    initializeFirebaseAdmin();
+    await initializeServices();
     const db = admin.firestore();
     const membersRef = db.collection('members');
     const snapshot = await membersRef.where('uid', '==', userId).limit(1).get();
@@ -58,6 +72,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
 
 
 export async function POST(request: NextRequest) {
+  await initializeServices();
   console.log('Webhook received!');
   
   const body = await request.text();
