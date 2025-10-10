@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createMemberApplication } from '../../../lib/firestore';
+import { updateMemberApplicationPaymentStatus } from '../../../lib/firestore';
 
 const PAYPAL_BASE_URL = process.env.PAYPAL_ENVIRONMENT === 'live' 
   ? 'https://api-m.paypal.com' 
@@ -66,23 +66,14 @@ export async function GET(request: NextRequest) {
       captureData.purchase_units[0]?.payments?.captures[0]?.custom_id || '{}'
     );
 
-    // Save member application to Firestore
-    const applicationData = {
-      organizationName: customData.organization_name || '',
-      organizationType: customData.organization_type || '',
-      membershipType: customData.membership_type || '',
-      grossWrittenPremiums: customData.gross_written_premiums || '',
-      status: 'pending_review',
-      paymentStatus: 'paid',
-      paymentMethod: 'paypal',
-      paymentId: captureData.id,
-      submittedAt: new Date(),
-      userId: customData.user_id || '',
-      userEmail: customData.user_email || '',
-    };
-
+    // Update member application payment status
     if (customData.user_id) {
-      await createMemberApplication(applicationData, customData.user_id);
+      await updateMemberApplicationPaymentStatus(
+        customData.user_id,
+        'paid',
+        'paypal',
+        captureData.id
+      );
     }
 
     // Redirect to success page

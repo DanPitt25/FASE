@@ -66,13 +66,13 @@ export default function VideoPage() {
   const { user, loading: authLoading } = authContext || { user: null, loading: true };
   const router = useRouter();
   const params = useParams();
-  const [video, setVideo] = useState(null);
+  const [video, setVideo] = useState<any>(null);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showAccessModal, setShowAccessModal] = useState(false);
-  const [memberApplications, setMemberApplications] = useState([]);
+  const [memberApplications, setMemberApplications] = useState<any[]>([]);
 
   // Check user access
   useEffect(() => {
@@ -106,7 +106,8 @@ export default function VideoPage() {
 
   useEffect(() => {
     if (params.slug && hasAccess) {
-      const youtubeId = params.slug.split('-')[0];
+      const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+      const youtubeId = slug.split('-')[0];
       const foundVideo = mockVideos.find(v => v.youtubeId === youtubeId);
       
       if (foundVideo) {
@@ -206,7 +207,7 @@ export default function VideoPage() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 size="medium"
                 className="flex-1"
                 onClick={() => router.push('/member-portal')}
@@ -299,7 +300,7 @@ export default function VideoPage() {
               <p className="text-xs text-fase-black mb-3">Presented by <strong>{video.author}</strong></p>
               
               <div className="flex flex-wrap gap-1">
-                {video.tags.map(tag => (
+                {video.tags.map((tag: string) => (
                   <span key={tag} className="bg-fase-light-blue text-fase-navy text-xs px-2 py-1 rounded">
                     #{tag}
                   </span>
@@ -320,7 +321,7 @@ export default function VideoPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
                     className="w-full p-2 border border-fase-light-gold rounded focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    rows="2"
+                    rows={2}
                   />
                   <div className="flex justify-end mt-2">
                     <Button 
@@ -339,7 +340,7 @@ export default function VideoPage() {
 
               {/* Comments List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {video.comments.map(comment => (
+                {video.comments.map((comment: any) => (
                   <div key={comment.id} className="bg-fase-cream p-3 rounded text-sm">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium text-fase-navy text-xs">{comment.author}</span>
@@ -401,7 +402,7 @@ export default function VideoPage() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               size="medium"
               className="flex-1"
               onClick={() => router.push('/member-portal')}
