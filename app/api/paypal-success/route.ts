@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateMemberApplicationPaymentStatus } from '../../../lib/firestore';
 
-const PAYPAL_BASE_URL = process.env.PAYPAL_ENVIRONMENT === 'live' 
-  ? 'https://api-m.paypal.com' 
-  : 'https://api-m.sandbox.paypal.com';
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic';
+
+const getPayPalBaseUrl = () => {
+  return process.env.PAYPAL_ENVIRONMENT === 'live' 
+    ? 'https://api-m.paypal.com' 
+    : 'https://api-m.sandbox.paypal.com';
+};
 
 // Get PayPal access token
 async function getAccessToken() {
@@ -11,6 +15,7 @@ async function getAccessToken() {
     throw new Error('PayPal credentials not configured');
   }
 
+  const PAYPAL_BASE_URL = getPayPalBaseUrl();
   const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -41,6 +46,7 @@ export async function GET(request: NextRequest) {
     const accessToken = await getAccessToken();
 
     // Capture the payment
+    const PAYPAL_BASE_URL = getPayPalBaseUrl();
     const captureResponse = await fetch(
       `${PAYPAL_BASE_URL}/v2/checkout/orders/${token}/capture`,
       {
@@ -68,6 +74,7 @@ export async function GET(request: NextRequest) {
 
     // Update member application payment status
     if (customData.user_id) {
+      const { updateMemberApplicationPaymentStatus } = await import('../../../lib/firestore');
       await updateMemberApplicationPaymentStatus(
         customData.user_id,
         'paid',
