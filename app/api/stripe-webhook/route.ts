@@ -25,6 +25,7 @@ if (!admin.apps.length) {
 
 const updateMemberStatus = async (userId: string, paymentStatus: string, paymentMethod: string, paymentId: string) => {
   try {
+    initializeFirebase();
     const db = admin.firestore();
     const membersRef = db.collection('members');
     const snapshot = await membersRef.where('uid', '==', userId).limit(1).get();
