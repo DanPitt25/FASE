@@ -102,8 +102,8 @@ export async function getOrganizationLogoURL(organizationName: string): Promise<
     const extensions = ['png', 'jpg', 'jpeg', 'svg', 'webp'];
     
     for (const ext of extensions) {
+      const fileName = `${sanitizedOrgName}-logo.${ext}`;
       try {
-        const fileName = `${sanitizedOrgName}-logo.${ext}`;
         const fileRef = ref(storage, `graphics/logos/${fileName}`);
         
         // First check if file exists by getting metadata
@@ -228,8 +228,8 @@ export async function getMemberLogoURL(memberUid: string): Promise<string | null
     const extensions = ['png', 'jpg', 'jpeg', 'svg', 'webp'];
     
     for (const ext of extensions) {
+      const fileName = `${memberUid}-logo.${ext}`;
       try {
-        const fileName = `${memberUid}-logo.${ext}`;
         const fileRef = ref(storage, `graphics/logos/${fileName}`);
         
         // First check if file exists by getting metadata
