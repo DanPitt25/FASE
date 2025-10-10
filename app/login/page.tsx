@@ -25,7 +25,7 @@ export default function Login() {
             <LoginForm />
           </Suspense>
           <p className="text-center text-sm text-fase-black mt-6">
-            {"Don't have an account? "}
+            {"Don&apos;t have an account? "}
             <Link href="/register" className="font-semibold text-fase-navy hover:underline">
               Sign up
             </Link>
