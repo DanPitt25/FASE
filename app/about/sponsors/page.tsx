@@ -27,7 +27,7 @@ export default function SponsorsPage() {
         />
 
         {/* Sponsorship Tiers */}
-        <ContentHero id="sponsorship-levels" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="sponsorship-levels" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Sponsorship Levels</h2>
@@ -101,7 +101,7 @@ export default function SponsorsPage() {
         </ContentHero>
 
         {/* Current Sponsors Preview */}
-        <ContentHero id="founding-supporters" fullHeight={true} className="bg-fase-light-blue py-20">
+        <ContentHero id="founding-supporters" fullHeight={false} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Founding Supporters</h2>
@@ -151,7 +151,7 @@ export default function SponsorsPage() {
         </ContentHero>
 
         {/* Sponsorship Benefits */}
-        <ContentHero id="why-sponsor" fullHeight={true} className="bg-fase-navy py-20">
+        <ContentHero id="why-sponsor" fullHeight={false} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Why Sponsor FASE?</h2>
@@ -206,7 +206,7 @@ export default function SponsorsPage() {
         </ContentHero>
 
         {/* CTA */}
-        <ContentHero id="become-sponsor" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="become-sponsor" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-white mb-6">Become a FASE Sponsor</h2>
             <p className="text-xl text-fase-paper mb-8 max-w-3xl mx-auto">

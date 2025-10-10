@@ -24,7 +24,7 @@ export default function JoinPage() {
         />
 
         {/* Membership Types */}
-        <ContentHero id="membership-types" fullHeight={true} className="bg-fase-cream py-16">
+        <ContentHero id="membership-types" fullHeight={false} className="bg-fase-cream py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-4">Choose Your Membership</h2>

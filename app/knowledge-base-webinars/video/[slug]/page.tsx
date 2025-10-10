@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '../../../../components/PageLayout';
 import Button from '../../../../components/Button';
+import Modal from '../../../../components/Modal';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { getMemberApplicationsByUserId } from '../../../../lib/firestore';
 
 const mockVideos = [
   {
@@ -59,13 +62,50 @@ const mockVideos = [
 ];
 
 export default function VideoPage() {
+  const authContext = useAuth();
+  const { user, loading: authLoading } = authContext || { user: null, loading: true };
+  const router = useRouter();
   const params = useParams();
   const [video, setVideo] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [memberApplications, setMemberApplications] = useState([]);
+
+  // Check user access
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (authLoading) return;
+      
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const applications = await getMemberApplicationsByUserId(user.uid);
+        const hasApprovedMembership = applications.some(app => app.status === 'approved');
+        setMemberApplications(applications);
+        setHasAccess(hasApprovedMembership);
+        
+        if (!hasApprovedMembership) {
+          setShowAccessModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking access:', error);
+        setShowAccessModal(true);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    checkAccess();
+  }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (params.slug) {
+    if (params.slug && hasAccess) {
       const youtubeId = params.slug.split('-')[0];
       const foundVideo = mockVideos.find(v => v.youtubeId === youtubeId);
       
@@ -74,7 +114,24 @@ export default function VideoPage() {
       }
       setLoading(false);
     }
-  }, [params.slug]);
+  }, [params.slug, hasAccess]);
+
+  // Show loading while checking access
+  if (authLoading || checkingAccess) {
+    return (
+      <PageLayout currentPage="knowledge-base-webinars">
+        <main className="flex-1 bg-fase-cream py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-fase-light-gold rounded w-1/3 mx-auto mb-4"></div>
+              <div className="h-4 bg-fase-light-gold rounded w-1/2 mx-auto"></div>
+            </div>
+          </div>
+        </main>
+      </PageLayout>
+    );
+  }
+
 
   if (loading) {
     return (
@@ -93,22 +150,89 @@ export default function VideoPage() {
 
   if (!video) {
     return (
-      <PageLayout currentPage="knowledge-base-webinars">
-        <main className="flex-1 bg-fase-cream py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Video Not Found</h1>
-            <p className="text-fase-black mb-8">The video you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-            <Button href="/knowledge-base-webinars" variant="primary">
-              ← Back to Knowledge Base
-            </Button>
+      <>
+        <PageLayout currentPage="knowledge-base-webinars">
+          <main className="flex-1 bg-fase-cream py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h1 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Video Not Found</h1>
+              <p className="text-fase-black mb-8">The video you&apos;re looking for doesn&apos;t exist or has been removed.</p>
+              <Button href="/knowledge-base-webinars" variant="primary">
+                ← Back to Knowledge Base
+              </Button>
+            </div>
+          </main>
+        </PageLayout>
+
+        {/* Access Denied Modal - duplicate for not found case */}
+        <Modal 
+          isOpen={showAccessModal} 
+          onClose={() => {}} 
+          title="Knowledge Base Access"
+          maxWidth="lg"
+        >
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-fase-orange rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">
+                Active Membership Required
+              </h3>
+              <p className="text-fase-black mb-4">
+                This video content is exclusively available to approved FASE members.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-medium text-blue-800 mb-2">
+                    {memberApplications.length > 0 ? 'Application Under Review' : 'Get Started Today'}
+                  </h4>
+                  <p className="text-sm text-blue-700">
+                    {memberApplications.length > 0 
+                      ? 'Your membership application is being reviewed. Once approved, you\'ll have full access to all knowledge base content.'
+                      : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                variant="outline" 
+                size="medium"
+                className="flex-1"
+                onClick={() => router.push('/member-portal')}
+              >
+                Return to Member Portal
+              </Button>
+              {memberApplications.length === 0 && (
+                <Button 
+                  variant="primary" 
+                  size="medium"
+                  className="flex-1"
+                  onClick={() => router.push('/member-portal/apply')}
+                >
+                  Apply for Membership
+                </Button>
+              )}
+            </div>
           </div>
-        </main>
-      </PageLayout>
+        </Modal>
+      </>
     );
   }
 
   return (
-    <PageLayout currentPage="knowledge-base-webinars">
+    <>
+      <PageLayout currentPage="knowledge-base-webinars">
       <main className="flex-1 bg-fase-cream min-h-[calc(100vh-5.5rem)] flex flex-col">
         {/* Header Section */}
         <div className="bg-white border-b border-fase-light-gold px-6 py-4">
@@ -232,6 +356,71 @@ export default function VideoPage() {
           </div>
         </div>
       </main>
-    </PageLayout>
+      </PageLayout>
+
+      {/* Access Denied Modal */}
+      <Modal 
+        isOpen={showAccessModal} 
+        onClose={() => {}} 
+        title="Knowledge Base Access"
+        maxWidth="lg"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-fase-orange rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">
+              Active Membership Required
+            </h3>
+            <p className="text-fase-black mb-4">
+              This video content is exclusively available to approved FASE members.
+            </p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h4 className="text-sm font-medium text-blue-800 mb-2">
+                  {memberApplications.length > 0 ? 'Application Under Review' : 'Get Started Today'}
+                </h4>
+                <p className="text-sm text-blue-700">
+                  {memberApplications.length > 0 
+                    ? 'Your membership application is being reviewed. Once approved, you\'ll have full access to all knowledge base content.'
+                    : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="outline" 
+              size="medium"
+              className="flex-1"
+              onClick={() => router.push('/member-portal')}
+            >
+              Return to Member Portal
+            </Button>
+            {memberApplications.length === 0 && (
+              <Button 
+                variant="primary" 
+                size="medium"
+                className="flex-1"
+                onClick={() => router.push('/member-portal/apply')}
+              >
+                Apply for Membership
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

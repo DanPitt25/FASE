@@ -1,0 +1,14 @@
+For MGAs:
+
+1. Step 1: "Are you a member of any other MGA associations" should read "European MGA Associations", and include the following:
+    ASASE
+    MGAA
+    NVGA
+    AIMGA
+2. Step 4: Make company registration number optional.
+3. Step 6: Member key contacts, make clear that these are the people who will have access to the Knowledge Hub.
+4. Step 9: Remove the (optional) in brackets, but keep the information optional.
+5. Step 10: Remove (approximate) in brackets, and remove "this will determine your membership fee". Also, ideally this would allow you to select currency and then automatically convert to Euro.
+6. Step 11: remove whole step.
+7. Step 13: remove whole step.
+8. Step 16: add Euro sign before premium bracket.

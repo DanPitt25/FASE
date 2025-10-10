@@ -47,20 +47,17 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             {/* Left Side - Logo */}
             <div className="flex items-center py-3">
               <div className="flex-shrink-0 flex items-center">
-                <div className="relative w-16 h-16">
+                <a href="/" className="relative">
                   <Image 
-                    src="/fase-logo-mark.png" 
+                    src="/fase-logo-rgb.png" 
                     alt="FASE Logo" 
-                    width={64}
+                    width={200}
                     height={64}
-                    className="w-full h-full object-contain"
+                    className="h-16 w-auto object-contain"
                     priority
                     onLoad={handleImageLoad}
                   />
-                </div>
-                <div className="border-l border-fase-light-gold h-14 mx-3"></div>
-                <a href="/" className="text-4xl font-noto-serif font-bold text-fase-navy mx-3">FASE</a>
-                <div className="border-l border-fase-light-gold h-14 mx-3"></div>
+                </a>
               </div>
             </div>
 

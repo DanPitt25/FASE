@@ -145,7 +145,7 @@ export default function Page() {
   return (
     <div className="flex min-h-screen bg-fase-light-blue font-lato">
       {/* Collapsible Navigation Sidebar */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-light-gold z-40`}>
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white shadow-2xl z-40`}>
         <div className="w-80 h-full">
           <div className="p-6">
             {/* Panel Header */}
@@ -181,13 +181,13 @@ export default function Page() {
                       }
                     }
                   }}
-                  className={`w-full flex items-center space-x-3 p-3 transition-all duration-200 group ${
+                  className={`w-full flex items-center space-x-3 p-3 transition-all duration-200 group rounded-lg mx-2 ${
                     currentSection === section.id 
-                      ? 'bg-fase-navy text-white' 
-                      : 'hover:bg-fase-cream'
+                      ? 'bg-fase-navy text-white shadow-lg' 
+                      : 'hover:bg-fase-cream hover:shadow-md'
                   }`}
                 >
-                  <div className={`flex items-center justify-center w-6 h-6 text-xs font-bold transition-colors ${
+                  <div className={`flex items-center justify-center w-6 h-6 text-xs font-bold transition-colors rounded-full ${
                     currentSection === section.id 
                       ? 'bg-white text-fase-navy' 
                       : 'bg-fase-black text-white group-hover:bg-fase-navy'
@@ -213,7 +213,7 @@ export default function Page() {
         {/* Menu Toggle Tab - Hidden on mobile, shown on desktop */}
         <button
           onClick={() => setShowNavPanel(!showNavPanel)}
-          className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm pl-2 pr-4 py-8  shadow-lg border border-l-0 border-fase-light-gold hover:bg-white transition-all duration-200 flex-col items-center space-y-2"
+          className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/95 backdrop-blur-sm pl-2 pr-4 py-8 shadow-xl rounded-r-lg hover:bg-white hover:shadow-2xl transition-all duration-200 flex-col items-center space-y-2"
         >
           <div className="flex flex-col space-y-1">
             <div className="w-1.5 h-1.5 bg-fase-black "></div>
@@ -279,94 +279,91 @@ export default function Page() {
       </ContentHero>
 
       {/* Core Services Section */}
-      <section id="services" className="relative h-[calc(100vh-5.5rem)] flex items-center overflow-hidden bg-fase-navy">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 py-8">
+      <section id="services" className="relative py-8 bg-fase-navy min-h-[calc(100vh-5.5rem)] flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-white">What FASE Offers</h2>
           </div>
 
-          {/* Postcard-style Container */}
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-5xl mx-auto h-[calc(100vh-16rem)]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-              {/* Left Side - Image */}
-              <div className="relative w-full h-full">
-                {/* Default image when nothing is selected */}
-                <div className={`absolute inset-0 transition-opacity duration-500 ${
-                  currentServiceIndex === -1 ? 'opacity-100' : 'opacity-0'
-                }`}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 flex-1 border-2 border-fase-gold rounded-lg shadow-xl overflow-hidden max-w-5xl mx-auto">
+            {/* Left Side - Image */}
+            <div className="relative order-2 lg:order-1">
+              {/* Default image when nothing is selected */}
+              <div className={`absolute inset-0 transition-opacity duration-500 ${
+                currentServiceIndex === -1 ? 'opacity-100' : 'opacity-0'
+              }`}>
+                <img 
+                  src="/conference.jpg" 
+                  alt="Conference" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Service-specific images */}
+              {services.map((service, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    currentServiceIndex === index ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
                   <img 
-                    src="/conference.jpg" 
-                    alt="Conference" 
+                    src={service.image} 
+                    alt={service.title} 
                     className="w-full h-full object-cover"
                   />
                 </div>
-                {/* Service-specific images */}
-                {services.map((service, index) => (
-                  <div
-                    key={index}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      currentServiceIndex === index ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
-                    <img 
-                      src={service.image} 
-                      alt={service.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-              
-              {/* Right Side - Content */}
-              <div className="h-full flex flex-col justify-center overflow-hidden">
-                <div className="p-6 lg:p-8 overflow-y-auto">
-                  <div className="space-y-1">
-                    {services.map((service, index) => (
-                      <div key={index} className="border-b border-fase-cream last:border-b-0">
-                        <button
-                          onClick={() => {
-                            const newIndex = currentServiceIndex === index ? -1 : index;
-                            setCurrentServiceIndex(newIndex);
-                          }}
-                          className={`w-full text-left py-4 transition-all duration-300 font-medium ${
-                            currentServiceIndex === index 
-                              ? 'text-fase-navy text-base font-semibold' 
-                              : 'text-fase-black hover:text-fase-navy text-sm'
-                          }`}
-                        >
-                          {service.title}
-                        </button>
-                        
-                        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              ))}
+            </div>
+            
+            {/* Right Side - Content */}
+            <div className="bg-white order-1 lg:order-2 flex flex-col justify-center">
+              <div className="p-8 lg:p-12">
+                <div className="space-y-1">
+                  {services.map((service, index) => (
+                    <div key={index} className="border-b border-fase-cream last:border-b-0">
+                      <button
+                        onClick={() => {
+                          const newIndex = currentServiceIndex === index ? -1 : index;
+                          setCurrentServiceIndex(newIndex);
+                        }}
+                        className={`w-full text-left py-4 transition-all duration-300 font-medium ${
                           currentServiceIndex === index 
-                            ? 'max-h-48 opacity-100 pb-4' 
-                            : 'max-h-0 opacity-0'
-                        }`}>
-                          <p className="text-fase-black text-sm leading-relaxed mb-3">
-                            {service.description}
-                          </p>
-                          <a 
-                            href={
-                              service.title === "Pan-European Events" ? "/events" :
-                              service.title === "Education & Training" ? "/knowledge" :
-                              service.title === "Digital Platform" ? "/digital-platform" :
-                              service.title === "Market Intelligence" ? "/market-intelligence" :
-                              service.title === "Industry Advocacy" ? "/industry-advocacy" :
-                              service.title === "Market Research" ? "/market-intelligence" :
-                              service.title === "Capacity Transparency" ? "/capacity-transparency" :
-                              "#"
-                            }
-                            className="inline-flex items-center text-fase-navy hover:text-fase-black transition-colors text-sm font-medium underline"
-                          >
-                            Learn More
-                            <svg className="w-2.5 h-2.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </a>
-                        </div>
+                            ? 'text-fase-navy text-lg font-semibold' 
+                            : 'text-fase-black hover:text-fase-navy text-base'
+                        }`}
+                      >
+                        {service.title}
+                      </button>
+                      
+                      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        currentServiceIndex === index 
+                          ? 'max-h-48 opacity-100 pb-4' 
+                          : 'max-h-0 opacity-0'
+                      }`}>
+                        <p className="text-fase-black text-base leading-relaxed mb-4">
+                          {service.description}
+                        </p>
+                        <a 
+                          href={
+                            service.title === "Pan-European Events" ? "/events" :
+                            service.title === "Education & Training" ? "/knowledge" :
+                            service.title === "Digital Platform" ? "/digital-platform" :
+                            service.title === "Market Intelligence" ? "/market-intelligence" :
+                            service.title === "Industry Advocacy" ? "/industry-advocacy" :
+                            service.title === "Market Research" ? "/market-intelligence" :
+                            service.title === "Capacity Transparency" ? "/capacity-transparency" :
+                            "#"
+                          }
+                          className="inline-flex items-center text-fase-navy hover:text-fase-black transition-colors text-base font-medium underline"
+                        >
+                          Learn More
+                          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </a>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -378,8 +375,8 @@ export default function Page() {
       {/* Conference Section */}
       <ContentHero 
         id="conference" 
-        fullHeight={true}
-        className="bg-fase-light-blue py-16"
+        fullHeight={false}
+        className="bg-fase-light-blue py-20"
       >
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12">
@@ -419,7 +416,7 @@ export default function Page() {
                 Partner with FASE to reach the European MGA community. Sponsorship packages available for our inaugural conference.
               </p>
               <div className="bg-fase-light-blue p-4 sm:p-6  mb-4 sm:mb-6">
-                <h5 className="font-semibold text-fase-navy mb-3">Why Sponsor FASE:</h5>
+                <h4 className="font-semibold text-fase-navy mb-3">Why Sponsor FASE:</h4>
                 <ul className="text-fase-black text-sm space-y-2">
                   <li>• Access to pan-European MGA market</li>
                   <li>• Brand visibility across multiple countries</li>

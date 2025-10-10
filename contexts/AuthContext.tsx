@@ -14,7 +14,11 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    return { user: null, loading: true };
+  }
+  return context;
 };
 
 interface AuthProviderProps {

@@ -22,6 +22,7 @@ export interface UserProfile {
   updatedAt: any;
   emailVerified: boolean;
   twoFactorEnabled: boolean;
+  access?: 'none' | 'admin' | 'subscriber'; // Add admin access to users
 }
 
 export interface Subscriber {
@@ -56,6 +57,7 @@ export interface MemberApplication {
   membershipType: 'corporate' | 'individual';
   organizationName: string;
   organizationType: 'MGA' | 'carrier' | 'provider';
+  logoURL?: string; // URL to uploaded logo
   
   // Privacy agreements
   privacyAgreed: boolean;
@@ -431,6 +433,19 @@ export const getSubscriberByStripeSubscriptionId = async (stripeSubscriptionId: 
   }
 };
 
+// ============== DIRECTORY MEMBER INTERFACE ==============
+
+export interface DirectoryMember {
+  id: string;
+  organizationName: string;
+  organizationType: string;
+  country: string;
+  memberSince: string; // Year as string
+  linesOfBusiness: Array<{ name: string; percentage: number }>;
+  logoURL?: string; // Will be null for now
+  website?: string; // Not available in current data structure
+}
+
 // ============== MEMBER APPLICATION FUNCTIONS ==============
 
 // Create member application
@@ -503,6 +518,114 @@ export const updateMemberApplicationStatus = async (
     console.log('Member application status updated:', applicationId, status);
   } catch (error) {
     console.error('Error updating member application status:', error);
+    throw error;
+  }
+};
+
+// Get all member applications (for admin use)
+export const getAllMemberApplications = async (): Promise<MemberApplication[]> => {
+  try {
+    const applicationsRef = collection(db, 'members');
+    const querySnapshot = await getDocs(applicationsRef);
+    
+    return querySnapshot.docs.map(doc => doc.data() as MemberApplication);
+  } catch (error) {
+    console.error('Error getting all member applications:', error);
+    return [];
+  }
+};
+
+// Get member applications by status
+export const getMemberApplicationsByStatus = async (status: MemberApplication['status']): Promise<MemberApplication[]> => {
+  try {
+    const applicationsRef = collection(db, 'members');
+    const q = query(applicationsRef, where('status', '==', status));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => doc.data() as MemberApplication);
+  } catch (error) {
+    console.error('Error getting member applications by status:', error);
+    return [];
+  }
+};
+
+// Get all approved members for directory
+export const getApprovedMembersForDirectory = async (): Promise<DirectoryMember[]> => {
+  try {
+    const membersRef = collection(db, 'members');
+    const q = query(membersRef, where('status', '==', 'approved'));
+    const querySnapshot = await getDocs(q);
+    
+    const directoryMembers: DirectoryMember[] = [];
+    
+    querySnapshot.docs.forEach(doc => {
+      const memberData = doc.data() as MemberApplication;
+      
+      // Extract year from createdAt timestamp
+      let memberSince = 'Unknown';
+      if (memberData.createdAt && memberData.createdAt.toDate) {
+        memberSince = memberData.createdAt.toDate().getFullYear().toString();
+      }
+      
+      // Process portfolio mix into lines of business
+      const linesOfBusiness: Array<{ name: string; percentage: number }> = [];
+      if (memberData.portfolio?.portfolioMix) {
+        Object.entries(memberData.portfolio.portfolioMix).forEach(([line, percentage]) => {
+          if (typeof percentage === 'number' && percentage > 0) {
+            linesOfBusiness.push({ name: line, percentage });
+          }
+        });
+      }
+      
+      const directoryMember: DirectoryMember = {
+        id: doc.id,
+        organizationName: memberData.organizationDetails?.organizationName || memberData.organizationName || 'Unknown Organization',
+        organizationType: memberData.organizationDetails?.organizationType || memberData.organizationType || 'Unknown',
+        country: memberData.registeredAddress?.country || 'Unknown',
+        memberSince,
+        linesOfBusiness,
+        logoURL: memberData.logoURL, // Use logo URL from member application
+        website: memberData.organizationDetails?.websiteUrl
+      };
+      
+      directoryMembers.push(directoryMember);
+    });
+    
+    // Sort by organization name
+    return directoryMembers.sort((a, b) => a.organizationName.localeCompare(b.organizationName));
+  } catch (error) {
+    console.error('Error getting approved members for directory:', error);
+    return [];
+  }
+};
+
+// Update member payment status
+export const updateMemberApplicationPaymentStatus = async (
+  userId: string,
+  paymentStatus: 'pending' | 'paid' | 'failed',
+  paymentMethod?: string,
+  paymentId?: string
+) => {
+  try {
+    const membersRef = collection(db, 'members');
+    const q = query(membersRef, where('uid', '==', userId));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      await updateDoc(doc.ref, {
+        status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+        paymentStatus,
+        paymentMethod: paymentMethod || null,
+        paymentId: paymentId || null,
+        updatedAt: new Date()
+      });
+      console.log('Payment status updated for member:', userId);
+    } else {
+      console.log('No member found with uid:', userId);
+    }
+  } catch (error) {
+    console.error('Error updating payment status:', error);
     throw error;
   }
 };
