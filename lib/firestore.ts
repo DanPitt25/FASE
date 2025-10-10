@@ -579,8 +579,8 @@ export const getApprovedMembersForDirectory = async (): Promise<DirectoryMember[
       
       const directoryMember: DirectoryMember = {
         id: doc.id,
-        organizationName: memberData.organizationDetails?.organizationName || memberData.organizationName || 'Unknown Organization',
-        organizationType: memberData.organizationDetails?.organizationType || memberData.organizationType || 'Unknown',
+        organizationName: memberData.organizationName || 'Unknown Organization',
+        organizationType: memberData.organizationType || 'Unknown',
         country: memberData.registeredAddress?.country || 'Unknown',
         memberSince,
         linesOfBusiness,
