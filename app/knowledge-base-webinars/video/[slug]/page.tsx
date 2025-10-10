@@ -196,7 +196,7 @@ export default function VideoPage() {
                   </h4>
                   <p className="text-sm text-blue-700">
                     {memberApplications.length > 0 
-                      ? 'Your membership application is being reviewed. Once approved, you\'ll have full access to all knowledge base content.'
+                      ? 'Your membership application is being reviewed. Once approved, you&apos;ll have full access to all knowledge base content.'
                       : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
                     }
                   </p>
@@ -391,7 +391,7 @@ export default function VideoPage() {
                 </h4>
                 <p className="text-sm text-blue-700">
                   {memberApplications.length > 0 
-                    ? 'Your membership application is being reviewed. Once approved, you\'ll have full access to all knowledge base content.'
+                    ? 'Your membership application is being reviewed. Once approved, you&apos;ll have full access to all knowledge base content.'
                     : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
                   }
                 </p>
