@@ -30,7 +30,7 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 };
 
 export async function POST(request: NextRequest) {
-  console.log('=== Stripe Checkout Session - Environment Variables Now Available ===');
+  console.log('=== Stripe Checkout Session - Redeploy with Environment Variables ===');
   console.log('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
   console.log('- STRIPE_SECRET_KEY prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
   console.log('- Environment vars configured!');
