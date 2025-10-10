@@ -49,9 +49,17 @@ export async function POST(request: NextRequest) {
     } = requestData;
 
     // Validate required fields
-    if (!organizationName || !organizationType) {
+    if (!organizationName) {
       return NextResponse.json(
-        { error: 'Organization name and type are required' },
+        { error: 'Organization name is required' },
+        { status: 400 }
+      );
+    }
+
+    // For corporate memberships, organizationType is required
+    if (membershipType === 'corporate' && !organizationType) {
+      return NextResponse.json(
+        { error: 'Organization type is required for corporate memberships' },
         { status: 400 }
       );
     }
@@ -112,7 +120,7 @@ export async function POST(request: NextRequest) {
       ],
       metadata: {
         organization_name: organizationName,
-        organization_type: organizationType,
+        organization_type: organizationType || 'individual',
         membership_type: membershipType,
         user_id: userId || '',
         user_email: userEmail || '',

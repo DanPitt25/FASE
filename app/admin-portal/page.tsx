@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useAdmin } from '../../hooks/useAdmin';
 import { getVideos, getPendingComments, moderateComment } from '../../lib/knowledge-base';
 import type { Video, Comment } from '../../lib/knowledge-base';
+import { getAllMemberApplications, updateMemberApplicationStatus, MemberApplication } from '../../lib/firestore';
 import Button from '../../components/Button';
 
 export default function AdminPortalPage() {
@@ -15,8 +16,9 @@ export default function AdminPortalPage() {
   const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
   const [pendingComments, setPendingComments] = useState<Comment[]>([]);
+  const [memberApplications, setMemberApplications] = useState<MemberApplication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'videos' | 'comments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'videos' | 'comments' | 'members'>('overview');
 
   useEffect(() => {
     console.log('Admin portal useEffect:', { authLoading, adminLoading, user: !!user, isAdmin });
@@ -38,12 +40,14 @@ export default function AdminPortalPage() {
 
   const loadData = async () => {
     try {
-      const [videosData, commentsData] = await Promise.all([
+      const [videosData, commentsData, memberApplicationsData] = await Promise.all([
         getVideos(), // Get all published videos
-        user?.uid ? getPendingComments(user.uid) : []
+        user?.uid ? getPendingComments(user.uid) : [],
+        getAllMemberApplications() // Get all member applications
       ]);
       setVideos(videosData);
       setPendingComments(commentsData);
+      setMemberApplications(memberApplicationsData);
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
@@ -62,6 +66,22 @@ export default function AdminPortalPage() {
       alert('Error moderating comment. Please try again.');
     }
   };
+
+  const handleMemberApplicationStatus = async (applicationId: string, status: 'approved' | 'rejected') => {
+    try {
+      await updateMemberApplicationStatus(applicationId, status);
+      setMemberApplications(prev => 
+        prev.map(app => app.id === applicationId ? { ...app, status } : app)
+      );
+    } catch (error) {
+      console.error('Error updating member application:', error);
+      alert('Error updating member application. Please try again.');
+    }
+  };
+
+  const pendingApplications = memberApplications.filter(app => app.status === 'pending');
+  const approvedApplications = memberApplications.filter(app => app.status === 'approved');
+  const rejectedApplications = memberApplications.filter(app => app.status === 'rejected');
 
   if (authLoading || adminLoading) {
     return (
@@ -87,7 +107,7 @@ export default function AdminPortalPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-noto-serif font-bold text-fase-navy mb-2">Admin Portal</h1>
-            <p className="text-fase-black">Manage knowledge base content and moderate comments</p>
+            <p className="text-fase-black">Manage knowledge base content, moderate comments, and review member applications</p>
           </div>
 
           {/* Admin Status Check */}
@@ -108,6 +128,7 @@ export default function AdminPortalPage() {
             <nav className="-mb-px flex space-x-8">
               {[
                 { id: 'overview', label: 'Overview' },
+                { id: 'members', label: 'Members' },
                 { id: 'videos', label: 'Videos' },
                 { id: 'comments', label: 'Comments' }
               ].map(tab => (
@@ -126,6 +147,11 @@ export default function AdminPortalPage() {
                       {pendingComments.length}
                     </span>
                   )}
+                  {tab.id === 'members' && pendingApplications.length > 0 && (
+                    <span className="ml-2 bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
+                      {pendingApplications.length}
+                    </span>
+                  )}
                 </button>
               ))}
             </nav>
@@ -140,7 +166,19 @@ export default function AdminPortalPage() {
           ) : (
             <>
               {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Member Applications</h3>
+                    <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length}</p>
+                    <p className="text-fase-black text-sm">Pending review</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Active Members</h3>
+                    <p className="text-3xl font-bold text-green-600 mb-2">{approvedApplications.length}</p>
+                    <p className="text-fase-black text-sm">Approved members</p>
+                  </div>
+                  
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
                     <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Videos</h3>
                     <p className="text-3xl font-bold text-fase-navy mb-2">{videos.length}</p>
@@ -152,17 +190,121 @@ export default function AdminPortalPage() {
                     <p className="text-3xl font-bold text-red-600 mb-2">{pendingComments.length}</p>
                     <p className="text-fase-black text-sm">Awaiting moderation</p>
                   </div>
-                  
-                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Knowledge Base</h3>
-                    <Button 
-                      href="/knowledge-base-webinars" 
-                      variant="primary" 
-                      size="medium"
-                      className="w-full"
-                    >
-                      Manage Content
-                    </Button>
+                </div>
+              )}
+
+              {activeTab === 'members' && (
+                <div className="space-y-6">
+                  {/* Pending Applications */}
+                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
+                    <div className="p-6 border-b border-fase-light-gold">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Applications</h3>
+                      <p className="text-fase-black text-sm mt-1">Review and approve member applications</p>
+                    </div>
+                    <div className="divide-y divide-fase-light-gold">
+                      {pendingApplications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <p className="text-fase-black">No pending applications to review</p>
+                        </div>
+                      ) : (
+                        pendingApplications.map(application => (
+                          <div key={application.id} className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <span className="font-medium text-fase-navy text-lg">{application.organizationName}</span>
+                                  <span className="ml-3 px-2 py-1 bg-fase-cream text-fase-navy text-xs rounded-full">
+                                    {application.organizationType}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {application.primaryContact.name}</p>
+                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {application.primaryContact.email}</p>
+                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {application.primaryContact.phone}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {application.registeredAddress.country}</p>
+                                    <p className="text-sm text-fase-black"><strong>City:</strong> {application.registeredAddress.city}</p>
+                                    <p className="text-sm text-fase-black"><strong>Applied:</strong> {new Date(application.createdAt.seconds * 1000).toLocaleDateString()}</p>
+                                  </div>
+                                </div>
+                                {application.portfolio?.portfolioMix && (
+                                  <div className="mb-3">
+                                    <p className="text-sm font-medium text-fase-navy mb-1">Portfolio Mix:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {Object.entries(application.portfolio.portfolioMix).map(([line, percentage]) => (
+                                        <span key={line} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                                          {line}: {percentage}%
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex space-x-2 ml-4">
+                                <button
+                                  onClick={() => handleMemberApplicationStatus(application.id, 'approved')}
+                                  className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleMemberApplicationStatus(application.id, 'rejected')}
+                                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Approved Members */}
+                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
+                    <div className="p-6 border-b border-fase-light-gold">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Approved Members</h3>
+                      <p className="text-fase-black text-sm mt-1">Currently active members</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-fase-light-gold">
+                        <thead className="bg-fase-cream">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Organization</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Country</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Contact</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Approved</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-fase-light-gold">
+                          {approvedApplications.map(application => (
+                            <tr key={application.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-fase-navy">{application.organizationName}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                  {application.organizationType}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
+                                {application.registeredAddress.country}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
+                                {application.primaryContact.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
+                                {new Date(application.updatedAt.seconds * 1000).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}

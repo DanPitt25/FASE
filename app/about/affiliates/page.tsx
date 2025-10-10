@@ -26,7 +26,7 @@ export default function AffiliatesPage() {
         />
 
         {/* Partnership Types */}
-        <ContentHero id="framework" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="framework" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Partnership Framework</h2>
@@ -97,7 +97,7 @@ export default function AffiliatesPage() {
         </ContentHero>
 
         {/* Existing Partnerships */}
-        <ContentHero id="relationships" fullHeight={true} className="bg-fase-light-blue py-20">
+        <ContentHero id="relationships" fullHeight={false} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Key Relationships</h2>
@@ -138,7 +138,7 @@ export default function AffiliatesPage() {
         </ContentHero>
 
         {/* Benefits of Partnership */}
-        <ContentHero id="benefits" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="benefits" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
@@ -198,7 +198,7 @@ export default function AffiliatesPage() {
         </ContentHero>
 
         {/* CTA */}
-        <ContentHero id="cta" fullHeight={true} className="bg-fase-navy py-20">
+        <ContentHero id="cta" fullHeight={false} className="bg-fase-navy py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-white mb-6">Partner with FASE</h2>
             <p className="text-xl text-fase-paper mb-8 max-w-3xl mx-auto">

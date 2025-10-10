@@ -26,7 +26,7 @@ export default function AboutPage() {
         />
 
         {/* Content Sections */}
-        <ContentHero id="who-we-are" fullHeight={true} className="bg-fase-cream py-16">
+        <ContentHero id="who-we-are" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Who We Are */}
@@ -77,7 +77,7 @@ export default function AboutPage() {
         </ContentHero>
 
         {/* Quick Links */}
-        <ContentHero id="explore" fullHeight={true} className="bg-fase-light-blue py-16">
+        <ContentHero id="explore" fullHeight={false} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-noto-serif font-bold text-fase-navy text-center mb-12">Explore FASE</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

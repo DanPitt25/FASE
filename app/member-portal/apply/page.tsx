@@ -7,6 +7,7 @@ import Button from "../../../components/Button";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import { createMemberApplication } from "../../../lib/firestore";
+import { uploadMemberLogo, validateLogoFile } from "../../../lib/storage";
 
 // Reusable validated input component
 const ValidatedInput = ({ 
@@ -165,10 +166,15 @@ export default function MembershipApplication() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [isRedirectingToStripe, setIsRedirectingToStripe] = useState(false);
+  const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
+  
+  // Logo upload state
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
 
   // Reset touched fields when changing steps
   useEffect(() => {
@@ -197,6 +203,7 @@ export default function MembershipApplication() {
     membershipType: 'corporate' as 'corporate' | 'individual',
     organizationName: '',
     organizationType: '' as '' | 'MGA' | 'carrier' | 'provider',
+    logoURL: '' as string,
     
     // Privacy & Data
     privacyAgreed: false,
@@ -305,8 +312,6 @@ export default function MembershipApplication() {
     { id: 'invoicing-contact', title: 'Invoicing Contact Details', required: true },
     { id: 'distribution', title: 'Distribution Strategy', required: false },
     { id: 'portfolio', title: 'Portfolio Mix & GWP', required: true },
-    { id: 'product-lines', title: 'Product Lines', required: false },
-    { id: 'claims', title: 'Claims Model', required: false },
     { id: 'general', title: 'General Information', required: false },
     { id: 'demographics', title: 'Organisation Demographics', required: false },
     { id: 'payment', title: 'Membership Payment', required: true },
@@ -392,7 +397,7 @@ export default function MembershipApplication() {
                newOrgData.registeredAddress.country.trim() !== '';
       
       case 'organisation':
-        return newOrgData.registeredNumber.trim() !== '';
+        return true; // No required fields in organisation step
       
       case 'registered-address':
         return newOrgData.registeredAddress.line1.trim() !== '' &&
@@ -427,7 +432,7 @@ export default function MembershipApplication() {
       
       case 'service-details':
         return newOrgData.serviceCategories.length > 0 &&
-               newOrgData.serviceDescription.trim() !== '';
+               (newOrgData.serviceCategories.includes('Other') ? newOrgData.serviceDescription.trim() !== '' : true);
       
       case 'payment':
         return true; // Payment step is valid when user selects a payment method
@@ -526,6 +531,7 @@ export default function MembershipApplication() {
         membershipType: newOrgData.membershipType,
         organizationName: newOrgData.organizationName,
         organizationType: newOrgData.organizationType,
+        logoURL: newOrgData.logoURL,
         
         // Privacy agreements
         privacyAgreed: newOrgData.privacyAgreed,
@@ -657,6 +663,159 @@ export default function MembershipApplication() {
     }
   };
 
+  // Silent application submission for payment flows
+  const submitApplicationSilently = async () => {
+    if (!user?.uid) {
+      throw new Error('User not authenticated');
+    }
+
+    const rawApplicationData = {
+      status: 'pending' as const,
+      
+      // Basic information
+      membershipType: newOrgData.membershipType,
+      organizationName: newOrgData.organizationName,
+      organizationType: newOrgData.organizationType,
+      logoURL: newOrgData.logoURL,
+      
+      // Privacy agreements
+      privacyAgreed: newOrgData.privacyAgreed,
+      dataProcessingAgreed: newOrgData.dataProcessingAgreed,
+      
+      // Primary contact
+      primaryContact: {
+        name: newOrgData.primaryContactName,
+        email: newOrgData.primaryContactEmail,
+        phone: newOrgData.primaryContactPhone,
+        role: newOrgData.primaryContactRole,
+      },
+      
+      // Organization details
+      organizationDetails: {
+        tradingName: newOrgData.tradingName,
+        registeredNumber: newOrgData.registeredNumber,
+        vatNumber: newOrgData.vatNumber,
+        websiteUrl: newOrgData.websiteUrl,
+      },
+      
+      // Regulatory information
+      regulatory: {
+        fcarNumber: newOrgData.fcarNumber,
+        authorizedActivities: newOrgData.authorizedActivities,
+        regulatoryBody: newOrgData.regulatoryBody,
+      },
+      
+      // Registered address
+      registeredAddress: {
+        line1: newOrgData.registeredAddress.line1,
+        line2: newOrgData.registeredAddress.line2,
+        city: newOrgData.registeredAddress.city,
+        county: newOrgData.registeredAddress.county,
+        postcode: newOrgData.registeredAddress.postcode,
+        country: newOrgData.registeredAddress.country,
+      },
+      
+      // Key contacts (if any)
+      keyContacts: newOrgData.keyContacts.length > 0 ? newOrgData.keyContacts : undefined,
+      
+      // Invoicing details (if provided)
+      invoicingAddress: newOrgData.invoicingAddress.line1 ? {
+        line1: newOrgData.invoicingAddress.line1,
+        line2: newOrgData.invoicingAddress.line2,
+        city: newOrgData.invoicingAddress.city,
+        county: newOrgData.invoicingAddress.county,
+        postcode: newOrgData.invoicingAddress.postcode,
+        country: newOrgData.invoicingAddress.country,
+        sameAsRegistered: newOrgData.invoicingAddress.sameAsRegistered,
+      } : undefined,
+      
+      invoicingContact: newOrgData.invoicingContact.name ? {
+        name: newOrgData.invoicingContact.name,
+        email: newOrgData.invoicingContact.email,
+        phone: newOrgData.invoicingContact.phone,
+        role: newOrgData.invoicingContact.role,
+      } : undefined,
+      
+      // Business information
+      distributionStrategy: newOrgData.distributionChannels.length > 0 ? {
+        channels: newOrgData.distributionChannels,
+        brokerNetwork: newOrgData.brokerNetwork,
+      } : undefined,
+      
+      // Portfolio information
+      portfolio: newOrgData.grossWrittenPremiums || Object.keys(newOrgData.portfolioMix).length > 0 ? {
+        grossWrittenPremiums: newOrgData.grossWrittenPremiums,
+        portfolioMix: newOrgData.portfolioMix,
+      } : undefined,
+      
+      productLines: newOrgData.productLines.length > 0 || newOrgData.targetMarkets.length > 0 ? {
+        lines: newOrgData.productLines,
+        targetMarkets: newOrgData.targetMarkets,
+      } : undefined,
+      
+      claimsModel: newOrgData.claimsHandling || newOrgData.claimsPartners.length > 0 ? {
+        handling: newOrgData.claimsHandling,
+        partners: newOrgData.claimsPartners,
+      } : undefined,
+      
+      // Additional information
+      generalInformation: newOrgData.businessPlan || newOrgData.marketingStrategy ? {
+        businessPlan: newOrgData.businessPlan,
+        marketingStrategy: newOrgData.marketingStrategy,
+      } : undefined,
+      
+      demographics: newOrgData.employeeCount || newOrgData.yearEstablished || newOrgData.ownershipStructure ? {
+        employeeCount: newOrgData.employeeCount,
+        yearEstablished: newOrgData.yearEstablished,
+        ownership: newOrgData.ownershipStructure,
+      } : undefined,
+
+      // Carrier-specific information
+      carrierDetails: newOrgData.organizationType === 'carrier' ? {
+        carrierType: newOrgData.carrierType,
+        licenseNumber: newOrgData.licenseNumber,
+        linesOfBusiness: newOrgData.linesOfBusiness,
+        capitalBase: newOrgData.capitalBase,
+      } : undefined,
+
+      // Service provider information
+      serviceDetails: newOrgData.organizationType === 'provider' ? {
+        serviceCategories: newOrgData.serviceCategories,
+        serviceDescription: newOrgData.serviceDescription,
+        targetClients: newOrgData.targetClients,
+        certifications: newOrgData.certifications,
+      } : undefined,
+      
+      // Terms agreement
+      termsAgreed: termsAgreed,
+    };
+
+    // Clean the data to remove undefined values
+    const applicationData = cleanObject(rawApplicationData);
+    
+    // Submit silently without UI changes
+    const applicationId = await createMemberApplication(user.uid, applicationData);
+    return applicationId;
+  };
+
+  // Logo upload handler
+  const handleLogoUpload = async (file: File) => {
+    if (!user?.uid) return;
+    
+    setIsUploadingLogo(true);
+    setLogoUploadError(null);
+    
+    try {
+      validateLogoFile(file);
+      const result = await uploadMemberLogo(file, user.uid);
+      setNewOrgData(prev => ({ ...prev, logoURL: result.downloadURL }));
+      setSelectedLogoFile(file);
+    } catch (error) {
+      setLogoUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
   // Function to render step content
   const renderStepContent = () => {
@@ -725,7 +884,7 @@ export default function MembershipApplication() {
             
             <div className="space-y-4">
               <ValidatedCheckbox
-                label="Are you a member of any other insurance associations?"
+                label="Are you a member of any other European MGA associations?"
                 fieldKey="hasOtherAssociations"
                 checked={newOrgData.hasOtherAssociations}
                 onChange={(checked) => setNewOrgData({ 
@@ -755,11 +914,71 @@ export default function MembershipApplication() {
                   options={[
                     { value: '', label: 'Select association...' },
                     { value: 'ASASE', label: 'ASASE' },
-                    { value: 'NVGA', label: 'NVGA' },
                     { value: 'MGAA', label: 'MGAA' },
+                    { value: 'NVGA', label: 'NVGA' },
+                    { value: 'AIMGA', label: 'AIMGA' },
                     { value: 'other', label: 'Other' }
                   ]}
                 />
+              )}
+            </div>
+
+            {/* Logo Upload Section */}
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-fase-navy mb-2">
+                Organization Logo (Optional)
+              </label>
+              <p className="text-xs text-fase-black mb-3">
+                Upload your organization's logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
+              </p>
+              
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleLogoUpload(file);
+                    }
+                  }}
+                  className="block w-full text-sm text-fase-black
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-lg file:border-0
+                    file:text-sm file:font-medium
+                    file:bg-fase-cream file:text-fase-navy
+                    hover:file:bg-fase-light-gold"
+                  disabled={isUploadingLogo}
+                />
+                
+                {isUploadingLogo && (
+                  <div className="flex items-center text-sm text-fase-navy">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-fase-navy mr-2"></div>
+                    Uploading...
+                  </div>
+                )}
+              </div>
+
+              {logoUploadError && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
+                  {logoUploadError}
+                </p>
+              )}
+
+              {newOrgData.logoURL && (
+                <div className="flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="w-12 h-12 border border-green-300 rounded-lg overflow-hidden">
+                    <img
+                      src={newOrgData.logoURL}
+                      alt="Uploaded logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800">Logo uploaded successfully</p>
+                    <p className="text-xs text-green-600">Your logo will appear in the member directory</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -828,7 +1047,7 @@ export default function MembershipApplication() {
                 fieldKey="registeredNumber"
                 value={newOrgData.registeredNumber}
                 onChange={(value) => setNewOrgData({ ...newOrgData, registeredNumber: value })}
-                required={true}
+                required={false}
                 touchedFields={touchedFields}
                 attemptedNext={attemptedNext}
                 markFieldTouched={markFieldTouched}
@@ -1254,9 +1473,6 @@ export default function MembershipApplication() {
                     <option value="100-500m">€100M - €500M</option>
                     <option value="500m+">€500M+</option>
                   </select>
-                  <p className="text-xs text-fase-black mt-1">
-                    This determines your annual membership fee
-                  </p>
                 </div>
               )}
               
@@ -1265,7 +1481,7 @@ export default function MembershipApplication() {
                   Portfolio Mix by Line of Business
                 </label>
                 <p className="text-xs text-fase-black mb-3">
-                  Provide an approximate percentage breakdown of your business across different lines
+                  Provide a percentage breakdown of your business across different lines
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1448,9 +1664,12 @@ export default function MembershipApplication() {
                             serviceCategories: [...newOrgData.serviceCategories, category]
                           });
                         } else {
+                          const updatedCategories = newOrgData.serviceCategories.filter(c => c !== category);
                           setNewOrgData({
                             ...newOrgData,
-                            serviceCategories: newOrgData.serviceCategories.filter(c => c !== category)
+                            serviceCategories: updatedCategories,
+                            // Clear service description if "Other" is deselected
+                            serviceDescription: category === 'Other' ? '' : newOrgData.serviceDescription
                           });
                         }
                         markFieldTouched('serviceCategories');
@@ -1463,24 +1682,26 @@ export default function MembershipApplication() {
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Service Description *
-              </label>
-              <textarea
-                value={newOrgData.serviceDescription}
-                onChange={(e) => {
-                  setNewOrgData({ ...newOrgData, serviceDescription: e.target.value });
-                  markFieldTouched('serviceDescription');
-                }}
-                onBlur={() => markFieldTouched('serviceDescription')}
-                placeholder="Describe your services and how they support the insurance industry..."
-                rows={4}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-                  shouldShowValidation('serviceDescription', newOrgData.serviceDescription.trim() !== '') ? 'border-red-300' : 'border-fase-light-gold'
-                }`}
-              />
-            </div>
+            {newOrgData.serviceCategories.includes('Other') && (
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-2">
+                  Service Description *
+                </label>
+                <textarea
+                  value={newOrgData.serviceDescription}
+                  onChange={(e) => {
+                    setNewOrgData({ ...newOrgData, serviceDescription: e.target.value });
+                    markFieldTouched('serviceDescription');
+                  }}
+                  onBlur={() => markFieldTouched('serviceDescription')}
+                  placeholder="Describe your services and how they support the insurance industry..."
+                  rows={4}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+                    shouldShowValidation('serviceDescription', newOrgData.serviceDescription.trim() !== '') ? 'border-red-300' : 'border-fase-light-gold'
+                  }`}
+                />
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-2">
@@ -1545,14 +1766,18 @@ export default function MembershipApplication() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div 
                 className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                 onClick={() => {
-                  setIsRedirectingToStripe(true);
+                  setIsRedirectingToPayment(true);
                   // Handle Stripe checkout
                   const handleStripeCheckout = async () => {
                     try {
+                      // First, submit the application to create the member document
+                      await submitApplicationSilently();
+                      
+                      // Then create the Stripe checkout session
                       const response = await fetch('/api/create-checkout-session', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1577,7 +1802,7 @@ export default function MembershipApplication() {
                     } catch (error) {
                       console.error('Error:', error);
                       alert('Failed to redirect to payment. Please try again.');
-                      setIsRedirectingToStripe(false);
+                      setIsRedirectingToPayment(false);
                     }
                   };
                   
@@ -1590,11 +1815,69 @@ export default function MembershipApplication() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
                   </div>
-                  <h4 className="font-medium text-fase-navy mb-2">Pay Now (Stripe)</h4>
+                  <h4 className="font-medium text-fase-navy mb-2">Pay with Card</h4>
                   <p className="text-sm text-fase-black">
-                    Pay immediately with credit/debit card
+                    Secure payment via Stripe
                   </p>
-                  {isRedirectingToStripe && (
+                  {isRedirectingToPayment && (
+                    <div className="mt-3 text-xs text-blue-600">
+                      Redirecting to payment...
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div 
+                className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
+                onClick={() => {
+                  setIsRedirectingToPayment(true);
+                  // Handle PayPal checkout
+                  const handlePayPalCheckout = async () => {
+                    try {
+                      // First, submit the application to create the member document
+                      await submitApplicationSilently();
+                      
+                      // Then create the PayPal order
+                      const response = await fetch('/api/create-paypal-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          organizationName: newOrgData.organizationName,
+                          organizationType: newOrgData.organizationType,
+                          membershipType: newOrgData.membershipType,
+                          grossWrittenPremiums: newOrgData.grossWrittenPremiums,
+                          userEmail: user?.email,
+                          userId: user?.uid
+                        })
+                      });
+                      
+                      if (!response.ok) {
+                        throw new Error('Failed to create PayPal order');
+                      }
+                      
+                      const { approval_url } = await response.json();
+                      window.location.href = approval_url;
+                    } catch (error) {
+                      console.error('Error:', error);
+                      alert('Failed to redirect to PayPal. Please try again.');
+                      setIsRedirectingToPayment(false);
+                    }
+                  };
+                  
+                  handlePayPalCheckout();
+                }}
+              >
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.478 2.446.929 1.496.781 3.519-.404 5.537v.006c-.706 1.235-1.711 2.22-2.927 2.864.745.123 1.35.309 1.795.551.984.537 1.496 1.409 1.496 2.563 0 1.478-.553 2.789-1.584 3.777-.98.938-2.34 1.411-3.942 1.411H7.076z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-medium text-fase-navy mb-2">Pay with PayPal</h4>
+                  <p className="text-sm text-fase-black">
+                    Secure payment via PayPal
+                  </p>
+                  {isRedirectingToPayment && (
                     <div className="mt-3 text-xs text-blue-600">
                       Redirecting to payment...
                     </div>
@@ -1784,7 +2067,7 @@ export default function MembershipApplication() {
           <div className="space-y-6">
             <div>
               <p className="text-fase-black mb-4">
-                Add key contacts for your organization (optional). These are additional contacts who can represent your organization.
+                Add key contacts for your organization (optional). These are the people who will have access to the Knowledge Hub and can represent your organization.
               </p>
             </div>
             
@@ -2117,7 +2400,7 @@ export default function MembershipApplication() {
           <div className="space-y-6">
             <div>
               <p className="text-fase-black mb-4">
-                Describe your distribution strategy and channels (optional).
+                Describe your distribution strategy and channels.
               </p>
             </div>
             
@@ -2165,174 +2448,6 @@ export default function MembershipApplication() {
           </div>
         );
 
-
-      case 'product-lines':
-        return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-fase-black mb-4">
-                Information about your product lines and target markets (optional).
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Product Lines
-              </label>
-              <div className="space-y-2">
-                {['Motor', 'Property', 'Liability', 'Professional Indemnity', 'Cyber', 'Marine', 'Aviation', 'Travel', 'Health', 'Life', 'Other'].map(line => (
-                  <label key={line} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newOrgData.productLines.includes(line)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewOrgData({
-                            ...newOrgData,
-                            productLines: [...newOrgData.productLines, line]
-                          });
-                        } else {
-                          setNewOrgData({
-                            ...newOrgData,
-                            productLines: newOrgData.productLines.filter(l => l !== line)
-                          });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-fase-black">{line}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Target Markets
-              </label>
-              <div className="space-y-2">
-                {newOrgData.targetMarkets.map((market, index) => (
-                  <div key={index} className="flex gap-2">
-                    <ValidatedInput
-                      label=""
-                      fieldKey={`targetMarkets.${index}`}
-                      value={market}
-                      onChange={(value) => {
-                        const updatedMarkets = [...newOrgData.targetMarkets];
-                        updatedMarkets[index] = value;
-                        setNewOrgData({ ...newOrgData, targetMarkets: updatedMarkets });
-                      }}
-                      placeholder="Enter target market"
-                      className="flex-1"
-                      touchedFields={touchedFields}
-                      attemptedNext={attemptedNext}
-                      markFieldTouched={markFieldTouched}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updatedMarkets = newOrgData.targetMarkets.filter((_, i) => i !== index);
-                        setNewOrgData({ ...newOrgData, targetMarkets: updatedMarkets });
-                      }}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewOrgData({
-                      ...newOrgData,
-                      targetMarkets: [...newOrgData.targetMarkets, '']
-                    });
-                  }}
-                  className="text-fase-navy hover:text-fase-black"
-                >
-                  + Add Target Market
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'claims':
-        return (
-          <div className="space-y-6">
-            <div>
-              <p className="text-fase-black mb-4">
-                Information about your claims handling model (optional).
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Claims Handling Model
-              </label>
-              <select
-                value={newOrgData.claimsHandling}
-                onChange={(e) => setNewOrgData({ ...newOrgData, claimsHandling: e.target.value })}
-                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              >
-                <option value="">Select claims handling model</option>
-                <option value="in-house">In-House</option>
-                <option value="outsourced">Outsourced</option>
-                <option value="hybrid">Hybrid Model</option>
-                <option value="carrier-handled">Carrier Handled</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-2">
-                Claims Partners
-              </label>
-              <div className="space-y-2">
-                {newOrgData.claimsPartners.map((partner, index) => (
-                  <div key={index} className="flex gap-2">
-                    <ValidatedInput
-                      label=""
-                      fieldKey={`claimsPartners.${index}`}
-                      value={partner}
-                      onChange={(value) => {
-                        const updatedPartners = [...newOrgData.claimsPartners];
-                        updatedPartners[index] = value;
-                        setNewOrgData({ ...newOrgData, claimsPartners: updatedPartners });
-                      }}
-                      placeholder="Enter claims partner"
-                      className="flex-1"
-                      touchedFields={touchedFields}
-                      attemptedNext={attemptedNext}
-                      markFieldTouched={markFieldTouched}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updatedPartners = newOrgData.claimsPartners.filter((_, i) => i !== index);
-                        setNewOrgData({ ...newOrgData, claimsPartners: updatedPartners });
-                      }}
-                      className="px-3 py-2 text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewOrgData({
-                      ...newOrgData,
-                      claimsPartners: [...newOrgData.claimsPartners, '']
-                    });
-                  }}
-                  className="text-fase-navy hover:text-fase-black"
-                >
-                  + Add Claims Partner
-                </button>
-              </div>
-            </div>
-          </div>
-        );
 
       case 'general':
         return (

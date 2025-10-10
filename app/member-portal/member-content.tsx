@@ -6,22 +6,18 @@ import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import EmailVerification from "../../components/EmailVerification";
 import Modal from "../../components/Modal";
-import { getUserProfile, UserProfile, getSubscriber, createSubscriber, updateSubscriber, Subscriber } from "../../lib/firestore";
+import OrganizationLogo from "../../components/OrganizationLogo";
+import UtilityPage from "../../components/UtilityPage";
+import { getUserProfile, UserProfile, getMemberApplicationsByUserId, MemberApplication } from "../../lib/firestore";
 
 export default function MemberContent() {
-  const { user, loading } = useAuth();
+  const authContext = useAuth();
+  const { user, loading } = authContext || { user: null, loading: true };
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    type: 'individual' as Subscriber['type'],
-    logo: ''
-  });
+  const [memberApplications, setMemberApplications] = useState<MemberApplication[]>([]);
   const [showLinkModal, setShowLinkModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   
   const router = useRouter();
 
@@ -37,60 +33,17 @@ export default function MemberContent() {
   useEffect(() => {
     const fetchUserData = async () => {
       if (user?.uid) {
-        const [profile, subscriberData] = await Promise.all([
+        const [profile, applications] = await Promise.all([
           getUserProfile(user.uid),
-          getSubscriber(user.uid)
+          getMemberApplicationsByUserId(user.uid)
         ]);
         setUserProfile(profile);
-        setSubscriber(subscriberData);
-        
-        // Set form data if subscriber exists
-        if (subscriberData) {
-          setFormData({
-            type: subscriberData.type,
-            logo: subscriberData.logo || ''
-          });
-        }
+        setMemberApplications(applications);
       }
     };
     
     fetchUserData();
   }, [user]);
-
-  // Search for existing subscriptions (placeholder - will query actual subscribers collection)
-  const searchSubscriptions = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    
-    // TODO: Replace with actual Firestore query when subscribers collection exists
-    // For now, return mock data
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-    
-    const mockResults = [
-      { id: '1', name: 'Acme Insurance Group', type: 'MGA', location: 'London, UK' },
-      { id: '2', name: 'European Risk Partners', type: 'Provider', location: 'Amsterdam, NL' },
-      { id: '3', name: 'Continental Underwriters', type: 'Carrier', location: 'Frankfurt, DE' }
-    ].filter(org => 
-      org.name.toLowerCase().includes(query.toLowerCase()) ||
-      org.location.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setSearchResults(mockResults);
-    setIsSearching(false);
-  };
-
-  // Handle search input with debouncing
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      searchSubscriptions(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
 
   const handleLinkToOrganization = (orgId: string) => {
     // TODO: Implement organization verification and linking
@@ -98,34 +51,6 @@ export default function MemberContent() {
     setShowLinkModal(false);
   };
 
-  const handleSaveSubscriber = async () => {
-    if (!user?.uid) return;
-    
-    try {
-      if (subscriber) {
-        // Update existing subscriber (preserve access level)
-        await updateSubscriber(user.uid, {
-          type: formData.type,
-          logo: formData.logo || undefined
-        });
-        const updatedSubscriber = await getSubscriber(user.uid);
-        setSubscriber(updatedSubscriber);
-      } else {
-        // Create new subscriber (access defaults to 'none')
-        const newSubscriber = await createSubscriber(
-          user.uid, 
-          formData.type, 
-          'none',
-          formData.logo || undefined
-        );
-        setSubscriber(newSubscriber);
-      }
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error saving subscriber:', error);
-      alert('Error saving subscriber data. Please try again.');
-    }
-  };
 
   if (loading) {
     return (
@@ -155,280 +80,421 @@ export default function MemberContent() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-noto-serif font-bold text-fase-navy">
-          {userProfile?.personalName ? `${userProfile.personalName}'s Portal` : "Member Portal"}
-        </h1>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Account Information Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Account Information</h2>
-            <div className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
-              ✓ Verified
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-fase-black font-medium">Name</label>
-              <p className="text-fase-navy">{userProfile?.personalName || "Not set"}</p>
-            </div>
-            
-            {userProfile?.organisation && (
-              <div>
-                <label className="text-sm text-fase-black font-medium">Organisation</label>
-                <p className="text-fase-navy">{userProfile.organisation}</p>
-              </div>
-            )}
-            
-            <div>
-              <label className="text-sm text-fase-black font-medium">Email Address</label>
-              <p className="text-fase-navy">{user.email}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Member Subscription Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">Member Subscription</h2>
-          </div>
-
-          {subscriber ? (
-            // Has Subscription - Display Mode
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium text-green-700">Active Subscription</span>
-              </div>
-              
-              <div>
-                <label className="text-sm text-fase-black font-medium">Organization Type</label>
-                <p className="text-fase-navy capitalize">{subscriber.type}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm text-fase-black font-medium">Access Level</label>
-                <p className="text-fase-navy capitalize">{subscriber.access}</p>
-              </div>
-              
-              {subscriber.logo && (
-                <div>
-                  <label className="text-sm text-fase-black font-medium">Organization Logo</label>
-                  <div className="mt-2 w-24 h-16 border border-fase-light-gold rounded-lg flex items-center justify-center bg-fase-cream overflow-hidden">
-                    <img 
-                      src={subscriber.logo} 
-                      alt="Organization Logo" 
-                      className="max-w-full max-h-full object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (nextElement) {
-                          nextElement.style.display = 'block';
-                        }
-                      }}
-                    />
-                    <span className="text-xs text-fase-black hidden">No logo</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-fase-light-gold">
-                <Button variant="secondary" size="small" onClick={() => {
-                  // TODO: Handle subscription management
-                  alert('Subscription management coming soon');
-                }}>
-                  Manage Subscription
-                </Button>
-              </div>
-            </div>
+  // Create logo element for UtilityPage
+  const logoElement = (
+    <div 
+      className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+      onClick={() => setShowSubscriptionModal(true)}
+      title="Manage subscription"
+    >
+      {memberApplications.length > 0 ? (
+        <div className="w-20 h-20 bg-white/10 rounded-lg p-2">
+          {memberApplications[0]?.logoURL ? (
+            <img
+              src={memberApplications[0].logoURL}
+              alt={`${memberApplications[0].organizationName} logo`}
+              className="w-full h-full object-contain"
+            />
           ) : (
-            // No Subscription - Setup Mode
-            <div className="text-center py-8">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-fase-navy bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-fase-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m0 0h2M7 7h10M7 10h10M7 13h10" />
-                  </svg>
+            <div className="w-full h-full bg-white/20 rounded flex items-center justify-center">
+              <span className="text-white font-semibold text-2xl">
+                {(memberApplications[0]?.organizationName || 'O').charAt(0)}
+              </span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="w-20 h-20 bg-white/10 rounded-lg flex items-center justify-center">
+          <span className="text-white font-semibold text-2xl">
+            {userProfile?.personalName?.charAt(0) || user.email?.charAt(0) || 'M'}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
+  // Create status badge element for UtilityPage
+  const statusBadge = (
+    <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+      <div className="text-sm text-white/70 mb-1">Status</div>
+      <div className="text-lg font-semibold text-white">
+        {memberApplications.some(app => app.status === 'approved') ? (
+          <div className="flex items-center space-x-2">
+            <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+            <span>Active Member</span>
+          </div>
+        ) : memberApplications.length > 0 ? (
+          <div className="flex items-center space-x-2">
+            <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
+            <span>Application Pending</span>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <span className="inline-block w-2 h-2 bg-gray-400 rounded-full"></span>
+            <span>Setup Required</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <UtilityPage
+        title={userProfile?.personalName ? `Welcome, ${userProfile.personalName}` : "Member Portal"}
+        subtitle={memberApplications[0]?.organizationName || user.email}
+        logoElement={logoElement}
+        statusBadge={statusBadge}
+        currentPage="member-portal"
+      >
+
+        {/* Alerts Section */}
+        <div className="space-y-4 mb-8">
+          {/* Incomplete Setup Alert */}
+          {memberApplications.length === 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-orange-400 mt-0.5 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-orange-800 mb-2">Membership Setup Incomplete</h3>
+                  <p className="text-sm text-orange-700">
+                    Complete your membership setup to access all FASE member benefits and resources.
+                  </p>
                 </div>
-                <h3 className="text-lg font-medium text-fase-navy mb-2">Set Up Your Membership</h3>
-                <p className="text-fase-black mb-6">
-                  Join an existing company membership or register your company as a new FASE member
-                </p>
               </div>
+            </div>
+          )}
 
-              <div className="space-y-3">
-                <Button 
-                  variant="primary" 
-                  size="medium" 
-                  className="w-full"
-                  onClick={() => router.push('/member-portal/apply')}
-                >
-                  Start New Membership
-                </Button>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-fase-light-gold"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-fase-black">or</span>
-                  </div>
+          {/* Member News/Alerts */}
+          {memberApplications.some(app => app.status === 'approved') && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">Member Updates</h3>
+                  <p className="text-sm text-blue-700">
+                    New regulatory guidelines published. Check the Knowledge Base for the latest compliance updates.
+                  </p>
                 </div>
-
-                <Button 
-                  variant="secondary" 
-                  size="medium" 
-                  className="w-full"
-                  onClick={() => setShowLinkModal(true)}
-                >
-                  My Company is Already a Member
-                </Button>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-fase-light-gold">
-                <p className="text-xs text-fase-black">
-                  Need help? <a href="mailto:support@fase.org" className="text-fase-navy hover:underline">Contact support</a>
-                </p>
               </div>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Member Resources - Only show if user has active subscription */}
-      {subscriber && subscriber.access === 'subscriber' && (
-        <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
-          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Member Resources</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
-              <h3 className="font-medium text-fase-navy mb-2">Events & Conferences</h3>
-              <p className="text-sm text-fase-black">Access upcoming FASE events and conference materials</p>
+        {/* Main Actions - Horizontal Cards */}
+        <div className="space-y-4 mb-8">
+          {memberApplications.some(app => app.status === 'approved') ? (
+            <>
+              {/* Knowledge Base */}
+              <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-fase-light-blue to-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Knowledge Base</h3>
+                      <p className="text-fase-black">Access industry insights, regulatory updates, and educational resources</p>
+                    </div>
+                  </div>
+                  <Button 
+                    href="/knowledge-base-webinars"
+                    variant="primary" 
+                    size="medium"
+                    className="flex-shrink-0"
+                  >
+                    Browse Resources
+                  </Button>
+                </div>
+              </div>
+
+              {/* Events */}
+              <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-fase-gold rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Events & Conferences</h3>
+                      <p className="text-fase-black">Join upcoming FASE events, conferences, and networking opportunities</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    size="medium"
+                    className="flex-shrink-0"
+                    onClick={() => alert('Events coming soon')}
+                  >
+                    View Events
+                  </Button>
+                </div>
+              </div>
+
+              {/* Directory */}
+              <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Member Directory</h3>
+                      <p className="text-fase-black">Connect and network with FASE members across Europe</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    size="medium"
+                    className="flex-shrink-0"
+                    onClick={() => router.push('/directory')}
+                  >
+                    Browse Members
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Set up membership for non-approved users */
+            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-fase-gold to-fase-orange rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Set Up Membership</h3>
+                    <p className="text-fase-black">Complete your FASE membership application to access all member benefits</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="medium"
+                  className="flex-shrink-0"
+                  onClick={() => router.push('/member-portal/apply')}
+                >
+                  Get Started
+                </Button>
+              </div>
             </div>
-            <div 
-              className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors cursor-pointer"
-              onClick={() => router.push('/knowledge-base-webinars')}
-            >
-              <h3 className="font-medium text-fase-navy mb-2">Knowledge Hub</h3>
-              <p className="text-sm text-fase-black">Browse industry insights and educational resources</p>
-            </div>
-            <div className="p-4 border border-fase-light-gold rounded-lg hover:border-fase-navy transition-colors">
-              <h3 className="font-medium text-fase-navy mb-2">Member Directory</h3>
-              <p className="text-sm text-fase-black">Connect with other FASE members and partners</p>
-            </div>
-          </div>
+          )}
         </div>
-      )}
-
-      {/* Knowledge Base and Webinars - Separate container for all members */}
-      <div className="bg-white rounded-lg shadow-sm border border-fase-light-gold p-6">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-fase-navy bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-fase-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-3">Knowledge Base & Webinars</h2>
-          <p className="text-fase-black mb-6">
-            Access our comprehensive knowledge base, educational resources, and exclusive webinar content designed for insurance professionals
-          </p>
-          <Button 
-            href="/knowledge-base-webinars"
-            variant="primary" 
-            size="medium"
-          >
-            Explore Knowledge Base
-          </Button>
-        </div>
-      </div>
-
+      </UtilityPage>
+      
       {/* Link to Existing Subscription Modal */}
       <Modal 
         isOpen={showLinkModal} 
-        onClose={() => {
-          setShowLinkModal(false);
-          setSearchQuery('');
-          setSearchResults([]);
-        }} 
+        onClose={() => setShowLinkModal(false)} 
         title="My Company is Already a Member"
         maxWidth="lg"
       >
         <div className="space-y-6">
           <p className="text-fase-black">
-            Search for your company&apos;s existing FASE membership to join their subscription.
+            If your company already has a FASE membership, please contact our support team to be added to your organization's account.
           </p>
 
-          <div>
-            <label className="block text-sm font-medium text-fase-navy mb-2">
-              Search Organizations
-            </label>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Enter organization name or location..."
-              className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-            />
-          </div>
-
-          {isSearching ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto"></div>
-              <p className="text-fase-black mt-2">Searching...</p>
-            </div>
-          ) : searchResults.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-medium text-fase-navy mb-3">Search Results</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {searchResults.map((org) => (
-                  <div 
-                    key={org.id}
-                    className="p-3 border border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
-                    onClick={() => handleLinkToOrganization(org.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium text-fase-navy">{org.name}</h4>
-                        <p className="text-sm text-fase-black">{org.type} • {org.location}</p>
-                      </div>
-                      <svg className="w-5 h-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                ))}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 className="text-sm font-medium text-blue-800">Contact Support</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we'll help you get connected to your organization's membership.
+                </p>
               </div>
             </div>
-          ) : searchQuery && !isSearching ? (
-            <div className="text-center py-8 text-fase-black">
-              <p>No organizations found matching &quot;{searchQuery}&quot;</p>
-              <p className="text-sm mt-2">Try a different search term or create a new subscription.</p>
-            </div>
-          ) : null}
+          </div>
 
           <div className="pt-4 border-t border-fase-light-gold">
             <p className="text-xs text-fase-black">
-              Can&apos;t find your organization? You may need to <button 
+              Don't have a company membership yet? <button 
                 onClick={() => {
                   setShowLinkModal(false);
                   router.push('/member-portal/apply');
                 }}
                 className="text-fase-navy hover:underline"
               >
-                create a new subscription
-              </button> or <a href="mailto:support@fase.org" className="text-fase-navy hover:underline">contact support</a>.
+                Start a new membership application
+              </button>.
             </p>
           </div>
         </div>
       </Modal>
 
+      {/* Subscription Management Modal */}
+      <Modal 
+        isOpen={showSubscriptionModal} 
+        onClose={() => setShowSubscriptionModal(false)} 
+        title={memberApplications.some(app => app.status === 'approved') ? "Manage Subscription" : "Account Settings"}
+        maxWidth="lg"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+              memberApplications.some(app => app.status === 'approved') 
+                ? 'bg-fase-light-blue' 
+                : 'bg-gray-400'
+            }`}>
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
+              {memberApplications[0]?.organizationName || userProfile?.personalName || 'Your Account'}
+            </h3>
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              {memberApplications.some(app => app.status === 'approved') ? (
+                <>
+                  <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                  <span className="text-sm text-fase-black">Active Membership</span>
+                </>
+              ) : memberApplications.length > 0 ? (
+                <>
+                  <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  <span className="text-sm text-fase-black">Application Pending</span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-block w-2 h-2 bg-gray-400 rounded-full"></span>
+                  <span className="text-sm text-fase-black">No Membership</span>
+                </>
+              )}
+            </div>
+          </div>
 
-    </div>
+          {memberApplications.some(app => app.status === 'approved') ? (
+            <>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-fase-navy mb-3">Membership Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Plan:</span>
+                    <span className="font-medium">FASE Annual Membership</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Status:</span>
+                    <span className="text-green-600 font-medium">Active</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Billing:</span>
+                    <span className="font-medium">Annual</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Next renewal:</span>
+                    <span className="font-medium">
+                      {new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <button 
+                  className="w-full flex items-center justify-center px-4 py-2 border border-fase-navy text-fase-navy bg-white hover:bg-fase-navy hover:text-white transition-colors rounded-md"
+                  onClick={() => alert('Invoice download coming soon')}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download Invoices
+                </button>
+
+                <button 
+                  className="w-full flex items-center justify-center px-4 py-2 border border-fase-navy text-fase-navy bg-white hover:bg-fase-navy hover:text-white transition-colors rounded-md"
+                  onClick={() => alert('Payment method update coming soon')}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Update Payment Method
+                </button>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-medium text-yellow-800">Need Help?</h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        For subscription changes or billing inquiries, contact our support team at{' '}
+                        <a href="mailto:billing@fasemga.com" className="underline">billing@fasemga.com</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-fase-navy mb-3">Account Information</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Email:</span>
+                    <span className="font-medium">{user.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-fase-black">Account Status:</span>
+                    <span className="font-medium">
+                      {memberApplications.length > 0 ? 'Application Pending' : 'Setup Required'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h4 className="text-sm font-medium text-blue-800">
+                      {memberApplications.length > 0 ? 'Application Under Review' : 'Get Started'}
+                    </h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      {memberApplications.length > 0 
+                        ? 'Your membership application is being reviewed. You\'ll receive an email once approved.'
+                        : 'Complete your membership application to access all FASE member benefits and resources.'
+                      }
+                    </p>
+                    {memberApplications.length === 0 && (
+                      <button 
+                        className="mt-3 inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
+                        onClick={() => {
+                          setShowSubscriptionModal(false);
+                          router.push('/member-portal/apply');
+                        }}
+                      >
+                        Start Application
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+    </>
   );
 }

@@ -25,7 +25,7 @@ export default function CommitteesPage() {
         />
 
         {/* Governance Structure */}
-        <ContentHero id="governance" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="governance" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Governance Structure</h2>
@@ -78,7 +78,7 @@ export default function CommitteesPage() {
         </ContentHero>
 
         {/* Committee Members */}
-        <ContentHero id="leadership" fullHeight={true} className="bg-fase-light-blue py-20">
+        <ContentHero id="leadership" fullHeight={false} className="bg-fase-light-blue py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Committee Leadership</h2>
@@ -118,7 +118,7 @@ export default function CommitteesPage() {
         </ContentHero>
 
         {/* Get Involved */}
-        <ContentHero id="get-involved" fullHeight={true} className="bg-fase-cream py-20">
+        <ContentHero id="get-involved" fullHeight={false} className="bg-fase-cream py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Get Involved</h2>

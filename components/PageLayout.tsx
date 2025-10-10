@@ -15,13 +15,15 @@ interface PageLayoutProps {
   currentPage?: string;
   sections?: NavigationSection[];
   showSideNav?: boolean;
+  hideNavigation?: boolean;
 }
 
 export default function PageLayout({ 
   children, 
   currentPage, 
   sections = [],
-  showSideNav = true 
+  showSideNav = true,
+  hideNavigation = false
 }: PageLayoutProps) {
   const [headerLoaded, setHeaderLoaded] = useState(false);
   const [showNavPanel, setShowNavPanel] = useState(false);
@@ -30,7 +32,7 @@ export default function PageLayout({
     <div className={`min-h-screen bg-fase-light-blue font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <Header currentPage={currentPage} onLoad={() => setHeaderLoaded(true)} />
       
-      {showSideNav && sections.length > 0 && (
+      {!hideNavigation && showSideNav && sections.length > 0 && (
         <>
           {/* Side Navigation */}
           <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white border-r border-fase-light-gold z-40`}>
@@ -96,7 +98,7 @@ export default function PageLayout({
       )}
       
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${showSideNav && showNavPanel ? 'md:ml-80' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ${!hideNavigation && showSideNav && showNavPanel ? 'md:ml-80' : 'ml-0'}`}>
         {children}
         
         <Footer />

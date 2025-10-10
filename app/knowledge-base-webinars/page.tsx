@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import PageLayout from '../../components/PageLayout';
 import TitleHero from '../../components/TitleHero';
 import Button from '../../components/Button';
+import Modal from '../../components/Modal';
 import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo, updateComment, deleteComment } from '../../lib/knowledge-base';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdmin } from '../../hooks/useAdmin';
+import { getMemberApplicationsByUserId } from '../../lib/firestore';
 import type { Video, Comment } from '../../lib/knowledge-base';
 
 // Mock data - in production this would come from your database
@@ -66,8 +69,10 @@ const mockVideos = [
 const categories = ['All', 'Regulatory', 'Technology', 'Market Analysis', 'Webinars', 'Training'];
 
 export default function KnowledgeBaseWebinarsPage() {
-  const { user } = useAuth();
+  const authContext = useAuth();
+  const { user, loading: authLoading } = authContext || { user: null, loading: true };
   const { isAdmin } = useAdmin();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [videos, setVideos] = useState<Video[]>([]);
@@ -76,6 +81,10 @@ export default function KnowledgeBaseWebinarsPage() {
   const [videoComments, setVideoComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [memberApplications, setMemberApplications] = useState([]);
   const [showAddVideo, setShowAddVideo] = useState(false);
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -93,9 +102,41 @@ export default function KnowledgeBaseWebinarsPage() {
     { name: 'Video Library', id: 'video-library' }
   ];
 
+  // Check user access
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (authLoading) return;
+      
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const applications = await getMemberApplicationsByUserId(user.uid);
+        const hasApprovedMembership = applications.some(app => app.status === 'approved');
+        setMemberApplications(applications);
+        setHasAccess(hasApprovedMembership);
+        
+        if (!hasApprovedMembership) {
+          setShowAccessModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking access:', error);
+        setShowAccessModal(true);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    checkAccess();
+  }, [user, authLoading, router]);
+
   // Load videos on component mount
   useEffect(() => {
     const loadVideos = async () => {
+      if (!hasAccess) return;
+      
       try {
         const videosData = await getVideos();
         setVideos(videosData);
@@ -108,7 +149,7 @@ export default function KnowledgeBaseWebinarsPage() {
     };
 
     loadVideos();
-  }, []);
+  }, [hasAccess]);
 
   // Filter videos based on category and search query
   useEffect(() => {
@@ -374,8 +415,23 @@ export default function KnowledgeBaseWebinarsPage() {
 
 
 
+  // Show loading while checking access
+  if (authLoading || checkingAccess) {
+    return (
+      <PageLayout currentPage="knowledge-base-webinars">
+        <div className="text-center py-20">
+          <div className="animate-pulse">
+            <div className="h-8 bg-fase-cream rounded w-1/3 mx-auto mb-4"></div>
+            <div className="h-4 bg-fase-cream rounded w-1/2 mx-auto"></div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
-    <PageLayout currentPage="knowledge-base-webinars" sections={sections} hideNavigation={true}>
+    <>
+      <PageLayout currentPage="knowledge-base-webinars" sections={sections} hideNavigation={true}>
       <main className="flex-1 bg-fase-cream min-h-[calc(100vh-5.5rem)] flex flex-col">
         {/* Main Console */}
         <div className="flex flex-col overflow-hidden m-6">
@@ -821,6 +877,71 @@ export default function KnowledgeBaseWebinarsPage() {
           </div>
         )}
       </main>
-    </PageLayout>
+      </PageLayout>
+
+      {/* Access Denied Modal */}
+      <Modal 
+        isOpen={showAccessModal} 
+        onClose={() => {}} 
+        title="Knowledge Base Access"
+        maxWidth="lg"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-fase-orange rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-2">
+              Active Membership Required
+            </h3>
+            <p className="text-fase-black mb-4">
+              The Knowledge Base is exclusively available to approved FASE members.
+            </p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h4 className="text-sm font-medium text-blue-800 mb-2">
+                  {memberApplications.length > 0 ? 'Application Under Review' : 'Get Started Today'}
+                </h4>
+                <p className="text-sm text-blue-700">
+                  {memberApplications.length > 0 
+                    ? 'Your membership application is being reviewed. Once approved, you\'ll have full access to our knowledge base with industry insights, regulatory updates, and educational resources.'
+                    : 'Join FASE to access our comprehensive knowledge base with exclusive content, industry insights, and professional development resources.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="outline" 
+              size="medium"
+              className="flex-1"
+              onClick={() => router.push('/member-portal')}
+            >
+              Return to Member Portal
+            </Button>
+            {memberApplications.length === 0 && (
+              <Button 
+                variant="primary" 
+                size="medium"
+                className="flex-1"
+                onClick={() => router.push('/member-portal/apply')}
+              >
+                Apply for Membership
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
