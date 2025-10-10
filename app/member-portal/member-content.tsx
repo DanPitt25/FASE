@@ -3,6 +3,7 @@
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Button from "../../components/Button";
 import EmailVerification from "../../components/EmailVerification";
 import Modal from "../../components/Modal";
@@ -88,12 +89,13 @@ export default function MemberContent() {
       title="Manage subscription"
     >
       {memberApplications.length > 0 ? (
-        <div className="w-20 h-20 bg-white/10 rounded-lg p-2">
+        <div className="w-20 h-20 bg-white/10 rounded-lg p-2 relative">
           {memberApplications[0]?.logoURL ? (
-            <img
+            <Image
               src={memberApplications[0].logoURL}
               alt={`${memberApplications[0].organizationName} logo`}
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain"
             />
           ) : (
             <div className="w-full h-full bg-white/20 rounded flex items-center justify-center">
@@ -302,7 +304,7 @@ export default function MemberContent() {
       >
         <div className="space-y-6">
           <p className="text-fase-black">
-            If your company already has a FASE membership, please contact our support team to be added to your organization's account.
+            If your company already has a FASE membership, please contact our support team to be added to your organization&apos;s account.
           </p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -313,7 +315,7 @@ export default function MemberContent() {
               <div>
                 <h3 className="text-sm font-medium text-blue-800">Contact Support</h3>
                 <p className="text-sm text-blue-700 mt-1">
-                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we'll help you get connected to your organization's membership.
+                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we&apos;ll help you get connected to your organization&apos;s membership.
                 </p>
               </div>
             </div>
@@ -321,7 +323,7 @@ export default function MemberContent() {
 
           <div className="pt-4 border-t border-fase-light-gold">
             <p className="text-xs text-fase-black">
-              Don't have a company membership yet? <button 
+              Don&apos;t have a company membership yet? <button 
                 onClick={() => {
                   setShowLinkModal(false);
                   router.push('/member-portal/apply');
@@ -470,7 +472,7 @@ export default function MemberContent() {
                     </h4>
                     <p className="text-sm text-blue-700 mt-1">
                       {memberApplications.length > 0 
-                        ? 'Your membership application is being reviewed. You\'ll receive an email once approved.'
+                        ? 'Your membership application is being reviewed. You&apos;ll receive an email once approved.'
                         : 'Complete your membership application to access all FASE member benefits and resources.'
                       }
                     </p>
