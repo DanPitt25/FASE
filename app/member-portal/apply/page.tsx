@@ -1766,7 +1766,7 @@ export default function MembershipApplication() {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div 
                 className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                 onClick={() => {
@@ -1818,64 +1818,6 @@ export default function MembershipApplication() {
                   <h4 className="font-medium text-fase-navy mb-2">Pay with Card</h4>
                   <p className="text-sm text-fase-black">
                     Secure payment via Stripe
-                  </p>
-                  {isRedirectingToPayment && (
-                    <div className="mt-3 text-xs text-blue-600">
-                      Redirecting to payment...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div 
-                className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
-                onClick={() => {
-                  setIsRedirectingToPayment(true);
-                  // Handle PayPal checkout
-                  const handlePayPalCheckout = async () => {
-                    try {
-                      // First, submit the application to create the member document
-                      await submitApplicationSilently();
-                      
-                      // Then create the PayPal order
-                      const response = await fetch('/api/create-paypal-order', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          organizationName: newOrgData.organizationName,
-                          organizationType: newOrgData.organizationType,
-                          membershipType: newOrgData.membershipType,
-                          grossWrittenPremiums: newOrgData.grossWrittenPremiums,
-                          userEmail: user?.email,
-                          userId: user?.uid
-                        })
-                      });
-                      
-                      if (!response.ok) {
-                        throw new Error('Failed to create PayPal order');
-                      }
-                      
-                      const { approval_url } = await response.json();
-                      window.location.href = approval_url;
-                    } catch (error) {
-                      console.error('Error:', error);
-                      alert('Failed to redirect to PayPal. Please try again.');
-                      setIsRedirectingToPayment(false);
-                    }
-                  };
-                  
-                  handlePayPalCheckout();
-                }}
-              >
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.478 2.446.929 1.496.781 3.519-.404 5.537v.006c-.706 1.235-1.711 2.22-2.927 2.864.745.123 1.35.309 1.795.551.984.537 1.496 1.409 1.496 2.563 0 1.478-.553 2.789-1.584 3.777-.98.938-2.34 1.411-3.942 1.411H7.076z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-medium text-fase-navy mb-2">Pay with PayPal</h4>
-                  <p className="text-sm text-fase-black">
-                    Secure payment via PayPal
                   </p>
                   {isRedirectingToPayment && (
                     <div className="mt-3 text-xs text-blue-600">
