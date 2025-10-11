@@ -72,7 +72,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
 
 
 export async function POST(request: NextRequest) {
-  console.log('=== STRIPE WEBHOOK RECEIVED ===');
+  console.log('=== STRIPE WEBHOOK RECEIVED - Updated Secret ===');
   console.log('Request headers:', Object.fromEntries(request.headers.entries()));
   
   await initializeServices();
