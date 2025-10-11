@@ -9,7 +9,7 @@ import EmailVerification from "../../components/EmailVerification";
 import Modal from "../../components/Modal";
 import OrganizationLogo from "../../components/OrganizationLogo";
 import UtilityPage from "../../components/UtilityPage";
-import { getUserProfile, UserProfile, getMemberApplicationsByUserId, MemberApplication, updateMemberApplicationLogo } from "../../lib/firestore";
+import { getUserProfile, UserProfile, getMemberApplicationsByUserId, MemberApplication } from "../../lib/firestore";
 import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 
 export default function MemberContent() {
@@ -17,7 +17,7 @@ export default function MemberContent() {
   const { user, loading } = authContext || { user: null, loading: true };
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [memberApplications, setMemberApplications] = useState<MemberApplication[]>([]);
+  const [memberData, setMemberData] = useState<MemberApplication | null>(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [showLogoUploadModal, setShowLogoUploadModal] = useState(false);
@@ -44,7 +44,7 @@ export default function MemberContent() {
           getMemberApplicationsByUserId(user.uid)
         ]);
         setUserProfile(profile);
-        setMemberApplications(applications);
+        setMemberData(applications.length > 0 ? applications[0] : null);
       }
     };
     
@@ -70,16 +70,29 @@ export default function MemberContent() {
       // Validate the file
       validateLogoFile(logoFile);
 
-      // Upload to Firebase Storage
+      // Upload to Firebase Storage - this will save to graphics/logos/[uid]-logo.[ext]
       const uploadResult = await uploadMemberLogo(logoFile, user.uid);
 
-      // Update Firestore with new logo URL
-      await updateMemberApplicationLogo(user.uid, uploadResult.downloadURL);
+      // Update Firestore member document with new logo URL
+      const { updateDoc, doc, collection, query, where, getDocs } = await import('firebase/firestore');
+      const { db } = await import('../../lib/firebase');
+      
+      const membersRef = collection(db, 'members');
+      const q = query(membersRef, where('uid', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const memberDoc = querySnapshot.docs[0];
+        await updateDoc(memberDoc.ref, {
+          logoURL: uploadResult.downloadURL,
+          updatedAt: new Date()
+        });
 
-      // Update local state
-      setMemberApplications(prev => prev.map(app => 
-        ({ ...app, logoURL: uploadResult.downloadURL })
-      ));
+        // Update local state
+        if (memberData) {
+          setMemberData({ ...memberData, logoURL: uploadResult.downloadURL });
+        }
+      }
 
       // Reset form and close modal
       setLogoFile(null);
@@ -144,19 +157,19 @@ export default function MemberContent() {
         onClick={() => setShowSubscriptionModal(true)}
         title="Manage subscription"
       >
-        {memberApplications.length > 0 ? (
+        {memberData ? (
           <div className="w-20 h-20 bg-white/10 rounded-lg p-2 relative">
-            {memberApplications[0]?.logoURL ? (
+            {memberData.logoURL ? (
               <Image
-                src={memberApplications[0].logoURL}
-                alt={`${memberApplications[0].organizationName} logo`}
+                src={memberData.logoURL}
+                alt={`${memberData.organizationName} logo`}
                 fill
                 className="object-contain"
               />
             ) : (
               <div className="w-full h-full bg-white/20 rounded flex items-center justify-center">
                 <span className="text-white font-semibold text-2xl">
-                  {(memberApplications[0]?.organizationName || 'O').charAt(0)}
+                  {(memberData.organizationName || 'O').charAt(0)}
                 </span>
               </div>
             )}
@@ -171,7 +184,7 @@ export default function MemberContent() {
       </div>
       
       {/* Logo Edit Button */}
-      {memberApplications.length > 0 && (
+      {memberData && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -193,12 +206,12 @@ export default function MemberContent() {
     <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
       <div className="text-sm text-white/70 mb-1">Status</div>
       <div className="text-lg font-semibold text-white">
-        {memberApplications.some(app => app.status === 'approved') ? (
+        {memberData?.status === 'approved' ? (
           <div className="flex items-center space-x-2">
             <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
             <span>Active Member</span>
           </div>
-        ) : memberApplications.length > 0 ? (
+        ) : memberData ? (
           <div className="flex items-center space-x-2">
             <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
             <span>Application Pending</span>
@@ -217,7 +230,7 @@ export default function MemberContent() {
     <>
       <UtilityPage
         title={userProfile?.personalName ? `Welcome, ${userProfile.personalName}` : "Member Portal"}
-        subtitle={memberApplications[0]?.organizationName || user.email || undefined}
+        subtitle={memberData?.organizationName || user.email || undefined}
         logoElement={logoElement}
         statusBadge={statusBadge}
         currentPage="member-portal"
@@ -226,7 +239,7 @@ export default function MemberContent() {
         {/* Alerts Section */}
         <div className="space-y-4 mb-8">
           {/* Incomplete Setup Alert */}
-          {memberApplications.length === 0 && (
+          {!memberData && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-orange-400 mt-0.5 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +256,7 @@ export default function MemberContent() {
           )}
 
           {/* Member News/Alerts */}
-          {memberApplications.some(app => app.status === 'approved') && (
+          {memberData?.status === 'approved' && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,7 +275,7 @@ export default function MemberContent() {
 
         {/* Main Actions - Horizontal Cards */}
         <div className="space-y-4 mb-8">
-          {memberApplications.some(app => app.status === 'approved') ? (
+          {memberData?.status === 'approved' ? (
             <>
               {/* Knowledge Base */}
               <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
@@ -414,13 +427,13 @@ export default function MemberContent() {
       <Modal 
         isOpen={showSubscriptionModal} 
         onClose={() => setShowSubscriptionModal(false)} 
-        title={memberApplications.some(app => app.status === 'approved') ? "Manage Subscription" : "Account Settings"}
+        title={memberData?.status === 'approved' ? "Manage Subscription" : "Account Settings"}
         maxWidth="lg"
       >
         <div className="space-y-6">
           <div className="text-center">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              memberApplications.some(app => app.status === 'approved') 
+              memberData?.status === 'approved' 
                 ? 'bg-fase-light-blue' 
                 : 'bg-gray-400'
             }`}>
@@ -429,15 +442,15 @@ export default function MemberContent() {
               </svg>
             </div>
             <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
-              {memberApplications[0]?.organizationName || userProfile?.personalName || 'Your Account'}
+              {memberData?.organizationName || userProfile?.personalName || 'Your Account'}
             </h3>
             <div className="flex items-center justify-center space-x-2 mb-4">
-              {memberApplications.some(app => app.status === 'approved') ? (
+              {memberData?.status === 'approved' ? (
                 <>
                   <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
                   <span className="text-sm text-fase-black">Active Membership</span>
                 </>
-              ) : memberApplications.length > 0 ? (
+              ) : memberData ? (
                 <>
                   <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
                   <span className="text-sm text-fase-black">Application Pending</span>
@@ -451,7 +464,7 @@ export default function MemberContent() {
             </div>
           </div>
 
-          {memberApplications.some(app => app.status === 'approved') ? (
+          {memberData?.status === 'approved' ? (
             <>
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-fase-navy mb-3">Membership Details</h4>
@@ -528,7 +541,7 @@ export default function MemberContent() {
                   <div className="flex justify-between">
                     <span className="text-fase-black">Account Status:</span>
                     <span className="font-medium">
-                      {memberApplications.length > 0 ? 'Application Pending' : 'Setup Required'}
+                      {memberData ? 'Application Pending' : 'Setup Required'}
                     </span>
                   </div>
                 </div>
@@ -541,15 +554,15 @@ export default function MemberContent() {
                   </svg>
                   <div>
                     <h4 className="text-sm font-medium text-blue-800">
-                      {memberApplications.length > 0 ? 'Application Under Review' : 'Get Started'}
+                      {memberData ? 'Application Under Review' : 'Get Started'}
                     </h4>
                     <p className="text-sm text-blue-700 mt-1">
-                      {memberApplications.length > 0 
+                      {memberData 
                         ? 'Your membership application is being reviewed. You&apos;ll receive an email once approved.'
                         : 'Complete your membership application to access all FASE member benefits and resources.'
                       }
                     </p>
-                    {memberApplications.length === 0 && (
+                    {!memberData && (
                       <button 
                         className="mt-3 inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
                         onClick={() => {
@@ -591,9 +604,9 @@ export default function MemberContent() {
                   alt="Logo preview" 
                   className="w-full h-full object-contain rounded-lg"
                 />
-              ) : memberApplications[0]?.logoURL ? (
+              ) : memberData?.logoURL ? (
                 <Image
-                  src={memberApplications[0].logoURL}
+                  src={memberData.logoURL}
                   alt="Current logo"
                   fill
                   className="object-contain rounded-lg"
@@ -605,7 +618,7 @@ export default function MemberContent() {
               )}
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              Upload a new logo for {memberApplications[0]?.organizationName}
+              Upload a new logo for {memberData?.organizationName}
             </p>
           </div>
 
