@@ -629,3 +629,33 @@ export const updateMemberApplicationPaymentStatus = async (
     throw error;
   }
 };
+
+/**
+ * Update member application logo URL
+ * @param userId - The user ID
+ * @param logoURL - The new logo URL from Firebase Storage
+ */
+export const updateMemberApplicationLogo = async (
+  userId: string,
+  logoURL: string
+): Promise<void> => {
+  try {
+    const membersRef = collection(db, 'members');
+    const q = query(membersRef, where('uid', '==', userId));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      await updateDoc(doc.ref, {
+        logoURL,
+        updatedAt: new Date()
+      });
+      console.log('Logo URL updated for member:', userId);
+    } else {
+      console.log('No member found with uid:', userId);
+    }
+  } catch (error) {
+    console.error('Error updating logo URL:', error);
+    throw error;
+  }
+};

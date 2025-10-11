@@ -9,7 +9,8 @@ import EmailVerification from "../../components/EmailVerification";
 import Modal from "../../components/Modal";
 import OrganizationLogo from "../../components/OrganizationLogo";
 import UtilityPage from "../../components/UtilityPage";
-import { getUserProfile, UserProfile, getMemberApplicationsByUserId, MemberApplication } from "../../lib/firestore";
+import { getUserProfile, UserProfile, getMemberApplicationsByUserId, MemberApplication, updateMemberApplicationLogo } from "../../lib/firestore";
+import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 
 export default function MemberContent() {
   const authContext = useAuth();
@@ -19,6 +20,10 @@ export default function MemberContent() {
   const [memberApplications, setMemberApplications] = useState<MemberApplication[]>([]);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [showLogoUploadModal, setShowLogoUploadModal] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoUploadError, setLogoUploadError] = useState<string>('');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
   const router = useRouter();
 
@@ -52,6 +57,56 @@ export default function MemberContent() {
     setShowLinkModal(false);
   };
 
+  const handleLogoUpload = async () => {
+    if (!logoFile || !user?.uid) {
+      setLogoUploadError('Please select a file');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    setLogoUploadError('');
+
+    try {
+      // Validate the file
+      validateLogoFile(logoFile);
+
+      // Upload to Firebase Storage
+      const uploadResult = await uploadMemberLogo(logoFile, user.uid);
+
+      // Update Firestore with new logo URL
+      await updateMemberApplicationLogo(user.uid, uploadResult.downloadURL);
+
+      // Update local state
+      setMemberApplications(prev => prev.map(app => 
+        ({ ...app, logoURL: uploadResult.downloadURL })
+      ));
+
+      // Reset form and close modal
+      setLogoFile(null);
+      setShowLogoUploadModal(false);
+      alert('Logo updated successfully!');
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      setLogoUploadError(error.message || 'Failed to upload logo');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        validateLogoFile(file);
+        setLogoFile(file);
+        setLogoUploadError('');
+      } catch (error: any) {
+        setLogoUploadError(error.message);
+        setLogoFile(null);
+      }
+    }
+  };
+
 
   if (loading) {
     return (
@@ -83,34 +138,52 @@ export default function MemberContent() {
 
   // Create logo element for UtilityPage
   const logoElement = (
-    <div 
-      className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-      onClick={() => setShowSubscriptionModal(true)}
-      title="Manage subscription"
-    >
-      {memberApplications.length > 0 ? (
-        <div className="w-20 h-20 bg-white/10 rounded-lg p-2 relative">
-          {memberApplications[0]?.logoURL ? (
-            <Image
-              src={memberApplications[0].logoURL}
-              alt={`${memberApplications[0].organizationName} logo`}
-              fill
-              className="object-contain"
-            />
-          ) : (
-            <div className="w-full h-full bg-white/20 rounded flex items-center justify-center">
-              <span className="text-white font-semibold text-2xl">
-                {(memberApplications[0]?.organizationName || 'O').charAt(0)}
-              </span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="w-20 h-20 bg-white/10 rounded-lg flex items-center justify-center">
-          <span className="text-white font-semibold text-2xl">
-            {userProfile?.personalName?.charAt(0) || user.email?.charAt(0) || 'M'}
-          </span>
-        </div>
+    <div className="relative group">
+      <div 
+        className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => setShowSubscriptionModal(true)}
+        title="Manage subscription"
+      >
+        {memberApplications.length > 0 ? (
+          <div className="w-20 h-20 bg-white/10 rounded-lg p-2 relative">
+            {memberApplications[0]?.logoURL ? (
+              <Image
+                src={memberApplications[0].logoURL}
+                alt={`${memberApplications[0].organizationName} logo`}
+                fill
+                className="object-contain"
+              />
+            ) : (
+              <div className="w-full h-full bg-white/20 rounded flex items-center justify-center">
+                <span className="text-white font-semibold text-2xl">
+                  {(memberApplications[0]?.organizationName || 'O').charAt(0)}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-20 h-20 bg-white/10 rounded-lg flex items-center justify-center">
+            <span className="text-white font-semibold text-2xl">
+              {userProfile?.personalName?.charAt(0) || user.email?.charAt(0) || 'M'}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {/* Logo Edit Button */}
+      {memberApplications.length > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowLogoUploadModal(true);
+          }}
+          className="absolute -bottom-1 -right-1 w-6 h-6 bg-fase-navy hover:bg-fase-dark-blue text-white rounded-full flex items-center justify-center shadow-lg transition-colors group-hover:scale-110 transition-transform"
+          title="Update logo"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </button>
       )}
     </div>
   );
@@ -495,6 +568,98 @@ export default function MemberContent() {
               </div>
             </>
           )}
+        </div>
+      </Modal>
+
+      {/* Logo Upload Modal */}
+      <Modal 
+        isOpen={showLogoUploadModal} 
+        onClose={() => {
+          setShowLogoUploadModal(false);
+          setLogoFile(null);
+          setLogoUploadError('');
+        }} 
+        title="Update Organization Logo"
+        maxWidth="md"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+              {logoFile ? (
+                <img 
+                  src={URL.createObjectURL(logoFile)} 
+                  alt="Logo preview" 
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              ) : memberApplications[0]?.logoURL ? (
+                <Image
+                  src={memberApplications[0].logoURL}
+                  alt="Current logo"
+                  fill
+                  className="object-contain rounded-lg"
+                />
+              ) : (
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Upload a new logo for {memberApplications[0]?.organizationName}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Choose Logo File
+            </label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+              onChange={handleFileSelect}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-fase-light-blue file:text-white hover:file:bg-fase-navy transition-colors"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Supported formats: PNG, JPG, SVG, WebP (max 5MB)
+            </p>
+          </div>
+
+          {logoUploadError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-700">{logoUploadError}</p>
+            </div>
+          )}
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={() => {
+                setShowLogoUploadModal(false);
+                setLogoFile(null);
+                setLogoUploadError('');
+              }}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors rounded-md"
+              disabled={isUploadingLogo}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleLogoUpload}
+              disabled={!logoFile || isUploadingLogo}
+              className="flex-1 px-4 py-2 bg-fase-navy text-white hover:bg-fase-dark-blue transition-colors rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {isUploadingLogo ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Uploading...
+                </>
+              ) : (
+                'Update Logo'
+              )}
+            </button>
+          </div>
         </div>
       </Modal>
     </>
