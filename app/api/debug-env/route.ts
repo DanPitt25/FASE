@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     vercel: process.env.VERCEL,
     all_env_keys: Object.keys(process.env).filter(key => 
       key.includes('STRIPE') || 
-      key.includes('PAYPAL') || 
       key.includes('FIREBASE') || 
       key.includes('AUTH')
     )

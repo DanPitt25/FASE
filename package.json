@@ -7,8 +7,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@paypal/paypal-js": "^9.0.1",
-    "@paypal/react-paypal-js": "^8.9.2",
     "@stripe/stripe-js": "^7.9.0",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
