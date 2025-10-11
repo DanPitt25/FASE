@@ -72,8 +72,11 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
 
 
 export async function POST(request: NextRequest) {
+  console.log('=== STRIPE WEBHOOK RECEIVED ===');
+  console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+  
   await initializeServices();
-  console.log('Webhook received!');
+  console.log('Services initialized, processing webhook...');
   
   const body = await request.text();
   const headersList = headers();
@@ -150,6 +153,6 @@ export async function POST(request: NextRequest) {
       console.log(`Unhandled event type ${event.type}`);
   }
 
-  console.log('Webhook processing complete');
-  return NextResponse.json({ received: true });
+  console.log('=== WEBHOOK PROCESSING COMPLETE ===');
+  return NextResponse.json({ received: true, timestamp: new Date().toISOString() });
 }
