@@ -437,7 +437,7 @@ export default function Page() {
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-white mb-6">Ready to Shape the Future?</h2>
           <p className="text-fase-light-blue text-base sm:text-lg mb-8 leading-relaxed max-w-3xl mx-auto">
-            Join our growing community of forward-thinking MGAs and industry partners building the future of European insurance distribution. Connect with Europe's leading MGA community through sponsorship opportunities and membership.
+            Join our growing community of forward-thinking MGAs and industry partners building the future of European insurance distribution. Connect with Europe&apos;s leading MGA community through sponsorship opportunities and membership.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/join" className="inline-flex items-center px-8 py-4 bg-white text-fase-navy font-semibold rounded-md hover:bg-fase-light-blue transition-colors">

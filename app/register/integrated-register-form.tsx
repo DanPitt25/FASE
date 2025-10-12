@@ -547,7 +547,7 @@ export default function IntegratedRegisterForm() {
             Account created successfully! To continue with your membership application, please verify your email address.
           </p>
           <p className="text-sm text-fase-black mb-6">
-            We'll send a verification email to: <strong>{email}</strong>
+            We&apos;ll send a verification email to: <strong>{email}</strong>
           </p>
         </div>
 
@@ -594,7 +594,7 @@ export default function IntegratedRegisterForm() {
         )}
         
         <p className="text-xs text-fase-black">
-          Check your spam folder if you don't see the verification email.
+          Check your spam folder if you don&apos;t see the verification email.
         </p>
       </div>
     );

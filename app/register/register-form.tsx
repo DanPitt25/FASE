@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { createAccountWithVerification } from "../../lib/auth";
+import { createAccountWithoutVerification } from "../../lib/auth";
 import Button from "../../components/Button";
 import { handleAuthError } from "../../lib/auth-errors";
 
@@ -57,7 +57,7 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      await createAccountWithVerification(email, password, personalName.trim(), organisation.trim() || undefined);
+      await createAccountWithoutVerification(email, password, personalName.trim(), organisation.trim() || undefined);
       setEmailSent(true);
     } catch (error: any) {
       setError(handleAuthError(error));

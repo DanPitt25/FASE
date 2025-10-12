@@ -32,7 +32,7 @@ export default function SponsorsPage() {
                 <div>
                   <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Strategic Partnership Opportunities</h2>
                   <p className="text-lg text-fase-black leading-relaxed mb-6">
-                    Partner with FASE to connect with Europe's leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.
+                    Partner with FASE to connect with Europe&apos;s leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.
                   </p>
                   <p className="text-lg text-fase-black leading-relaxed">
                     From conference sponsorship to thought leadership platforms, we offer tailored partnership packages that align with your business objectives and market reach goals.
@@ -74,7 +74,7 @@ export default function SponsorsPage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Partnership Benefits</h2>
               <p className="text-xl text-fase-black max-w-3xl mx-auto">
-                Connect with Europe's most influential MGA community through strategic partnership opportunities.
+                Connect with Europe&apos;s most influential MGA community through strategic partnership opportunities.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -86,7 +86,7 @@ export default function SponsorsPage() {
                 </div>
                 <h3 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Network Access</h3>
                 <p className="text-fase-black leading-relaxed">
-                  Direct access to C-level executives from Europe's leading MGAs and capacity providers through exclusive networking events.
+                  Direct access to C-level executives from Europe&apos;s leading MGAs and capacity providers through exclusive networking events.
                 </p>
               </div>
               <div className="bg-white p-8 shadow-lg hover:shadow-xl transition-all duration-300 text-center group">
@@ -120,7 +120,7 @@ export default function SponsorsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-noto-serif font-bold text-white mb-6">Ready to Partner?</h2>
             <p className="text-xl text-fase-light-blue mb-8 max-w-3xl mx-auto">
-              Contact us to discuss partnership opportunities and learn how FASE can help you connect with Europe's MGA community.
+              Contact us to discuss partnership opportunities and learn how FASE can help you connect with Europe&apos;s MGA community.
             </p>
             <Button href="/contact" variant="secondary" size="large">
               Contact Us Today
