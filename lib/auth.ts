@@ -13,7 +13,6 @@ import {
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
-import { createUserProfile, getUserProfile, updateUserProfile, UserProfile } from './firestore';
 
 export interface AuthUser {
   uid: string;
@@ -23,57 +22,63 @@ export interface AuthUser {
   twoFactorEnabled?: boolean;
 }
 
-// Create account and send verification email
-export const createAccountWithVerification = async (email: string, password: string, personalName: string, organisation?: string): Promise<void> => {
-  // Create the account first
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+// Create account WITHOUT sending verification email automatically
+export const createAccountWithoutVerification = async (email: string, password: string, personalName: string, organisation?: string): Promise<void> => {
+  try {
+    // Create the account first
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
   
-  // Create display name
-  const displayName = organisation 
-    ? `${personalName} (${organisation})`
-    : personalName;
-  
-  // Update Firebase Auth profile
-  await updateProfile(user, {
-    displayName: displayName
-  });
+    // Create display name
+    const displayName = organisation && organisation.trim()
+      ? `${personalName} (${organisation})`
+      : personalName;
+    
+    // Update Firebase Auth profile
+    await updateProfile(user, {
+      displayName: displayName
+    });
 
-  // Create Firestore user profile (emailVerified will be false initially)
-  await createUserProfile(user.uid, email, displayName, personalName, organisation);
-  
-  // Send verification email with custom redirect
-  const actionCodeSettings = {
-    url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
-    handleCodeInApp: false,
-  };
-  
-  await sendEmailVerification(user, actionCodeSettings);
+    // DON'T send verification email automatically - user will click to send it
+    // DON'T create Firestore user profile - we're only using Firebase Auth now
+  } catch (error: any) {
+    console.error('Error creating account:', error);
+    
+    // Provide more specific error messages
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('An account with this email already exists. Please use a different email or try signing in.');
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Please enter a valid email address.');
+    } else if (error.code === 'auth/weak-password') {
+      throw new Error('Password is too weak. Please choose a stronger password.');
+    } else if (error.code === 'auth/operation-not-allowed') {
+      throw new Error('Email/password accounts are not enabled. Please contact support.');
+    } else {
+      throw new Error(error.message || 'Failed to create account. Please try again.');
+    }
+  }
 };
 
 
-// Sign in existing user
+// Sign in existing user - simplified to only use Firebase Auth data
 export const signIn = async (email: string, password: string): Promise<AuthUser> => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Check if email is verified
-    if (!user.emailVerified) {
-      // Sign out immediately if email not verified
-      await firebaseSignOut(auth);
-      throw new Error('Please verify your email address before signing in. Check your inbox for a verification email.');
-    }
-    
-    // Get user profile from Firestore
-    const userProfile = await getUserProfile(user.uid);
+    // TODO: Re-enable email verification check in production
+    // For now, allow unverified emails for development/preview
+    // if (!user.emailVerified) {
+    //   await firebaseSignOut(auth);
+    //   throw new Error('Please verify your email address before signing in. Check your inbox for a verification email.');
+    // }
     
     return {
       uid: user.uid,
       email: user.email,
-      displayName: userProfile?.displayName || user.displayName,
+      displayName: user.displayName,
       emailVerified: user.emailVerified,
-      twoFactorEnabled: userProfile?.twoFactorEnabled || false
+      twoFactorEnabled: false // Default to false since we don't store this in Firestore anymore
     };
   } catch (error: any) {
     throw new Error(error.message);
@@ -89,19 +94,16 @@ export const signOut = async (): Promise<void> => {
   }
 };
 
-// Auth state observer
+// Auth state observer - simplified to only use Firebase Auth data
 export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => {
-  return onAuthStateChanged(auth, async (user: User | null) => {
+  return onAuthStateChanged(auth, (user: User | null) => {
     if (user) {
-      // Get user profile from Firestore
-      const userProfile = await getUserProfile(user.uid);
-      
       callback({
         uid: user.uid,
         email: user.email,
-        displayName: userProfile?.displayName || user.displayName,
-        emailVerified: user.emailVerified, // Always use Firebase Auth as source of truth
-        twoFactorEnabled: userProfile?.twoFactorEnabled || false
+        displayName: user.displayName,
+        emailVerified: user.emailVerified,
+        twoFactorEnabled: false // Default to false since we don't store this in Firestore anymore
       });
     } else {
       callback(null);
@@ -117,7 +119,7 @@ export const sendVerificationEmail = async (): Promise<void> => {
   
   try {
     const actionCodeSettings = {
-      url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/login?verified=true`,
+      url: `${typeof window !== 'undefined' ? window.location.origin : 'https://fase-site.vercel.app'}/register?verified=true`,
       handleCodeInApp: false,
     };
     

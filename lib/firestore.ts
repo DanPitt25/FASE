@@ -10,7 +10,7 @@ import {
   getDocs,
   DocumentData 
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 
 export interface UserProfile {
   uid: string;
@@ -171,6 +171,10 @@ export interface MemberApplication {
   
   // Terms agreement
   termsAgreed: boolean;
+  
+  // Additional fields
+  hasOtherAssociations?: boolean;
+  otherAssociations?: string[];
 }
 
 // Create user profile in Firestore
@@ -187,7 +191,7 @@ export const createUserProfile = async (
     email,
     displayName,
     personalName,
-    organisation,
+    ...(organisation && { organisation }),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     emailVerified: false,
@@ -463,6 +467,139 @@ export const createMemberApplication = async (
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       ...applicationData
+    };
+    
+    await setDoc(applicationRef, memberApplication);
+    console.log('Member application created with ID:', applicationId);
+    return applicationId;
+  } catch (error) {
+    console.error('Error creating member application:', error);
+    throw error;
+  }
+};
+
+// Simplified version for integrated registration flow
+export const createMemberApplicationSimple = async (
+  membershipData: {
+    membershipType: 'individual' | 'corporate';
+    organizationName: string;
+    organizationType?: string;
+    primaryContact: {
+      name: string;
+      email: string;
+      phone: string;
+      jobTitle?: string;
+    };
+    registeredAddress: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state?: string;
+      postalCode?: string;
+      country: string;
+    };
+    portfolio?: {
+      grossWrittenPremiums?: string;
+      portfolioMix?: {[key: string]: number};
+    };
+    hasOtherAssociations?: boolean;
+    otherAssociations?: string[];
+    logoUrl?: string;
+  }
+): Promise<string> => {
+  // This will be called after createAccountWithVerification, so we need to get the current user
+  const currentUser = auth.currentUser;
+  
+  if (!currentUser) {
+    throw new Error('No authenticated user found');
+  }
+  
+  try {
+    const applicationId = doc(collection(db, 'members')).id;
+    const applicationRef = doc(db, 'members', applicationId);
+    
+    // Convert to full MemberApplication format
+    const memberApplication: MemberApplication = {
+      id: applicationId,
+      uid: currentUser.uid,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      
+      // Basic information
+      membershipType: membershipData.membershipType,
+      organizationName: membershipData.organizationName,
+      organizationType: (membershipData.organizationType as 'MGA' | 'carrier' | 'provider') || 'MGA',
+      ...(membershipData.logoUrl && { logoURL: membershipData.logoUrl }),
+      
+      // Privacy agreements (default to true for integrated flow)
+      privacyAgreed: true,
+      dataProcessingAgreed: true,
+      
+      // Primary contact
+      primaryContact: {
+        name: membershipData.primaryContact.name,
+        email: membershipData.primaryContact.email,
+        phone: membershipData.primaryContact.phone,
+        role: membershipData.primaryContact.jobTitle || 'Contact'
+      },
+      
+      // Organization details (simplified for integrated flow)
+      organizationDetails: {
+        registeredNumber: '', // Not collected in simplified flow
+        vatNumber: '',
+        websiteUrl: ''
+      },
+      
+      // Addresses
+      registeredAddress: {
+        line1: membershipData.registeredAddress.line1,
+        line2: membershipData.registeredAddress.line2 || '',
+        city: membershipData.registeredAddress.city,
+        county: membershipData.registeredAddress.state || '',
+        postcode: membershipData.registeredAddress.postalCode || '',
+        country: membershipData.registeredAddress.country
+      },
+      
+      // For simplicity, use same address for invoicing (can be different in full flow)
+      invoicingAddress: {
+        line1: membershipData.registeredAddress.line1,
+        line2: membershipData.registeredAddress.line2 || '',
+        city: membershipData.registeredAddress.city,
+        county: membershipData.registeredAddress.state || '',
+        postcode: membershipData.registeredAddress.postalCode || '',
+        country: membershipData.registeredAddress.country,
+        sameAsRegistered: true
+      },
+      
+      // Portfolio information (for MGAs)
+      ...(membershipData.portfolio && {
+        portfolio: {
+          grossWrittenPremiums: membershipData.portfolio.grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
+          portfolioMix: membershipData.portfolio.portfolioMix || {}
+        }
+      }),
+      
+      // Required but not collected in simplified flow
+      regulatory: {
+        fcarNumber: '',
+        authorizedActivities: [],
+        regulatoryBody: ''
+      },
+      
+      // Simplified - use primary contact as senior leadership
+      seniorLeadership: [{
+        name: membershipData.primaryContact.name,
+        role: membershipData.primaryContact.jobTitle || 'Contact',
+        email: membershipData.primaryContact.email
+      }],
+      
+      // Terms agreed (default to true for integrated flow)
+      termsAgreed: true,
+      
+      // Additional fields
+      hasOtherAssociations: membershipData.hasOtherAssociations || false,
+      otherAssociations: membershipData.otherAssociations || []
     };
     
     await setDoc(applicationRef, memberApplication);

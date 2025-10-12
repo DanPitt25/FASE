@@ -35,6 +35,7 @@ export default function LoginForm() {
       await signIn(email, password);
       router.push('/member-portal');
     } catch (error: any) {
+      console.error('Login error:', error);
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
       

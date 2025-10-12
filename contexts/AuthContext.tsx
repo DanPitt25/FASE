@@ -16,7 +16,10 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    return { user: null, loading: true };
+    return { 
+      user: null, 
+      loading: true
+    };
   }
   return context;
 };
@@ -30,8 +33,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChange((authUser) => {
+      setUser(authUser);
       setLoading(false);
     });
 

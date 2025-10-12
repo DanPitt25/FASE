@@ -11,6 +11,8 @@ interface CTASectionProps {
   background?: 'navy' | 'white' | 'paper';
   size?: 'compact' | 'standard' | 'large';
   id?: string;
+  image?: string;
+  imageAlt?: string;
 }
 
 export default function CTASection({ 
@@ -19,7 +21,9 @@ export default function CTASection({
   buttons, 
   background = 'navy',
   size = 'standard',
-  id
+  id,
+  image,
+  imageAlt = ""
 }: CTASectionProps) {
   const sizeClasses = {
     compact: {
@@ -75,25 +79,64 @@ export default function CTASection({
   };
 
   return (
-    <section id={id} className={`min-h-screen flex items-center ${backgroundClasses[background].section} ${sizeClasses[size].section}`}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 text-center">
-        <h2 className={`${sizeClasses[size].title} font-noto-serif font-bold ${backgroundClasses[background].title} mb-6 sm:mb-8`}>
-          {title}
-        </h2>
-        <p className={`${sizeClasses[size].description} ${backgroundClasses[background].description} mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4`}>
-          {description}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {buttons.map((button, index) => (
-            <a 
-              key={index}
-              href={button.href} 
-              className={getButtonClasses(button.variant)}
-            >
-              {button.text}
-            </a>
-          ))}
-        </div>
+    <section id={id} className={`min-h-[50vh] flex items-center ${backgroundClasses[background].section} ${sizeClasses[size].section}`}>
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+        {image ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Image */}
+            <div className="relative">
+              <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden shadow-xl">
+                <img 
+                  src={image} 
+                  alt={imageAlt} 
+                  className="w-full h-96 object-cover rounded-lg"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/20 to-transparent rounded-lg"></div>
+              </div>
+            </div>
+            
+            {/* Right side - Content */}
+            <div className="text-left">
+              <h2 className={`${sizeClasses[size].title} font-noto-serif font-bold ${backgroundClasses[background].title} mb-6 sm:mb-8`}>
+                {title}
+              </h2>
+              <p className={`${sizeClasses[size].description} ${backgroundClasses[background].description} mb-8 sm:mb-12 leading-relaxed`}>
+                {description}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                {buttons.map((button, index) => (
+                  <a 
+                    key={index}
+                    href={button.href} 
+                    className={getButtonClasses(button.variant)}
+                  >
+                    {button.text}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center">
+            <h2 className={`${sizeClasses[size].title} font-noto-serif font-bold ${backgroundClasses[background].title} mb-6 sm:mb-8`}>
+              {title}
+            </h2>
+            <p className={`${sizeClasses[size].description} ${backgroundClasses[background].description} mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4`}>
+              {description}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {buttons.map((button, index) => (
+                <a 
+                  key={index}
+                  href={button.href} 
+                  className={getButtonClasses(button.variant)}
+                >
+                  {button.text}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

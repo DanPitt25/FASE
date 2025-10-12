@@ -66,8 +66,15 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               {/* Top Row - Search and Language - Hidden on Mobile */}
               <div className="hidden md:flex items-center justify-end space-x-6 py-1">
                 {user && (
-                  <div className="text-sm text-fase-black">
-                    {t('logged_in_as')} {user.displayName || user.email?.split("@")[0]}
+                  <div className="flex items-center space-x-3">
+                    <div className="text-sm text-fase-black">
+                      {t('logged_in_as')} {user.displayName || user.email?.split("@")[0]}
+                    </div>
+                    {!adminLoading && isAdmin && locale === 'en' && (
+                      <a href="/admin-portal" className="text-xs text-fase-navy hover:text-fase-gold transition-colors duration-200 font-medium border border-fase-navy hover:border-fase-gold px-2 py-1 rounded">
+                        Admin
+                      </a>
+                    )}
                   </div>
                 )}
                 
@@ -114,49 +121,65 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               {/* Desktop Navigation Menu */}
               <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
                 <div className="flex items-center space-x-6">
+                  {/* About FASE */}
+                  <a href="/about" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'about' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  }`}>About FASE</a>
+
+                  {/* Networking Dropdown */}
                   <div className="relative group">
-                    <a href="/about" className={`px-4 py-2 text-sm font-medium flex items-center whitespace-nowrap ${
-                      currentPage === 'about' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                    }`}>
-                      {t('about_us')}
+                    <span className="px-4 py-3 text-sm font-medium flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white group-hover:font-semibold">
+                      Networking
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                    </a>
-                    <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg border border-fase-light-gold  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    </span>
+                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-2">
-                        <a href="/what-is-an-mga" className="block px-4 py-2 text-sm text-fase-black hover:bg-fase-cream">What is an MGA?</a>
-                        <a href="/about/who-we-are" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Who We Are</a>
-                        <a href="/about/advisory-board" className="block px-4 py-2 text-sm text-fase-black hover:bg-fase-cream">Advisory Board</a>
-                        <a href="/about/membership-directory" className="block px-4 py-2 text-sm text-fase-black hover:bg-fase-cream">Membership Directory</a>
-                        <a href="/about/affiliates" className="block px-4 py-2 text-sm text-fase-black hover:bg-fase-cream">Affiliates & Associates</a>
-                        <a href="/about/sponsors" className="block px-4 py-2 text-sm text-fase-black hover:bg-fase-cream">Sponsors</a>
+                        <a href="/events" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Events</a>
+                        <a href="/about/membership-directory" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'membership-directory' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Member Directory</a>
                       </div>
                     </div>
                   </div>
 
-                  <a href="/join" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                    currentPage === 'join' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                  }`}>{t('join_us')}</a>
-                  <a href="/sponsorship" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                    currentPage === 'sponsorship' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                  }`}>{t('sponsorship')}</a>
-                  <a href="/events" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                    currentPage === 'events' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                  }`}>{t('events')}</a>
-                  <a href="/news" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                    currentPage === 'news' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                  }`}>{t('news')}</a>
-                  <a href="/member-portal" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                    currentPage === 'member-portal' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
+                  {/* Development Dropdown */}
+                  <div className="relative group">
+                    <span className="px-4 py-3 text-sm font-medium flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white group-hover:font-semibold">
+                      Development
+                      <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="py-2">
+                        <a href="/news" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'news' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>News</a>
+                        <a href="/knowledge" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'knowledge' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Knowledge Base</a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Member Portal */}
+                  <a href="/member-portal" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'member-portal' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
                   }`}>{t('member_portal')}</a>
-                  {!adminLoading && isAdmin && locale === 'en' && (
-                    <a href="/admin-portal" className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                      currentPage === 'admin-portal' ? 'text-fase-navy' : 'text-fase-black hover:text-fase-navy'
-                    }`}>Admin Portal</a>
-                  )}
+                  
+                  {/* Sponsors */}
+                  <a href="/sponsors" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'sponsors' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  }`}>Sponsors</a>
+                  
+                  {/* Contact */}
+                  <a href="/contact" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'contact' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  }`}>Contact</a>
                 </div>
                 {loading ? (
                   <div className="w-20 h-8 bg-fase-cream animate-pulse rounded"></div>
@@ -202,29 +225,30 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               </select>
             </div>
 
-            <a href="/about" className={`block px-3 py-2 text-base font-medium  ${
-              currentPage === 'about' || currentPage === 'who-we-are' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('about_us')}</a>
-            <a href="/join" className={`block px-3 py-2 text-base font-medium  ${
-              currentPage === 'join' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('join_us')}</a>
-            <a href="/sponsorship" className={`block px-3 py-2 text-base font-medium  ${
-              currentPage === 'sponsorship' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('sponsorship')}</a>
-            <a href="/events" className={`block px-3 py-2 text-base font-medium  ${
+            <a href="/about" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'about' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            }`}>About FASE</a>
+            <a href="/events" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('events')}</a>
-            <a href="/news" className={`block px-3 py-2 text-base font-medium  ${
+            }`}>Events</a>
+            <a href="/about/membership-directory" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'membership-directory' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            }`}>Member Directory</a>
+            <a href="/news" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'news' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('news')}</a>
-            <a href="/member-portal" className={`block px-3 py-2 text-base font-medium  ${
+            }`}>News</a>
+            <a href="/knowledge" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'knowledge' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            }`}>Knowledge Base</a>
+            <a href="/member-portal" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>{t('member_portal')}</a>
-            {!adminLoading && isAdmin && locale === 'en' && (
-              <a href="/admin-portal" className={`block px-3 py-2 text-base font-medium  ${
-                currentPage === 'admin-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Admin Portal</a>
-            )}
+            <a href="/sponsors" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'sponsors' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            }`}>Sponsors</a>
+            <a href="/contact" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'contact' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            }`}>Contact</a>
             {loading ? (
               <div className="w-full h-10 bg-fase-cream animate-pulse rounded mt-2"></div>
             ) : user ? (

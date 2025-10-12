@@ -37,7 +37,7 @@ export default function JoinPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* MGA Membership */}
               <a 
-                href="/member-portal"
+                href="/register"
                 className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
               >
                 {/* Image Header */}
@@ -87,7 +87,7 @@ export default function JoinPage() {
 
               {/* Market Practitioner */}
               <a 
-                href="/member-portal"
+                href="/register"
                 className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
               >
                 {/* Image Header */}
@@ -137,7 +137,7 @@ export default function JoinPage() {
 
               {/* Supplier */}
               <a 
-                href="/member-portal"
+                href="/register"
                 className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
               >
                 {/* Image Header */}

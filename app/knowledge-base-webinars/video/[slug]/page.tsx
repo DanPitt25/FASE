@@ -219,7 +219,7 @@ export default function VideoPage() {
                   variant="primary" 
                   size="medium"
                   className="flex-1"
-                  onClick={() => router.push('/member-portal/apply')}
+                  onClick={() => router.push('/register')}
                 >
                   Apply for Membership
                 </Button>
@@ -414,7 +414,7 @@ export default function VideoPage() {
                 variant="primary" 
                 size="medium"
                 className="flex-1"
-                onClick={() => router.push('/member-portal/apply')}
+                onClick={() => router.push('/register')}
               >
                 Apply for Membership
               </Button>

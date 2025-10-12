@@ -1,0 +1,42 @@
+Content reorganisation. When I say "remove" a page, I mean suppress it such that it's not visible in the header.
+
+1. Remove the many separate About Us pages. Let's consolidate them ALL into "About FASE", and let's use the "About Us" page as it is for that. We will add the relevant content of the other pages in due course.
+2. Second section on the header: Networking. Dropdown between Events (current events page) and Member Directory (page).
+3. Third section on the header: Development. Dropdown between News and Knowledge base. (By the way, the title of the header of a dropdown should not be clickable in itself).
+4. Next section member portal, fine as it is.
+5. Next section "Sponsors", let's import the old Sponsorship page but we will work on this.
+6. Contact. I think we have a page for this already but if not, no worries.
+
+Now some content notes:
+
+ Ditch all the future tense and the conditional. That “we will launch” line is not
+good.
+ Instead, build up the members page behind the scenes, under about us, as
+noted. Focus energies on getting early members and sponsors, launch with their
+names or, second choice, supress pages until you can.
+Home page
+ Restructure content to lead with networking, professional development. The
+lobbying angle comes last, if at all. This is your schema for the whole site, stick
+with it.
+ All pages/sections should follow the same order. Don’t add random stuff without
+showing how it fits in to the schema, eg capacity transparency.
+ Be clear on the goal here. It’s to join FASE. The RV serves the org, not the other
+way around. Ditch as a discreet button.
+o Nothing should distract from “join now” – no competing “learn more”, RV
+buttons etc. When you have a “join now” button, that’s should be it.
+
+ You’ll probably have the meeting scheduled by launch, but if not – date and location to
+be announced. (Not determined)
+ Not loving this “following the success of line” re the other associations. I think we
+are way too beholden to them already. And that’s just confusing to prospective
+members in markets without associations. Ditch this dependency. Make the
+associations want to reference you instead. Cite them as members, post their
+endorsements – show the approval rather than cravenly beg for it.
+ Be clear about your audience for this site. I think the sponsorship opps should be
+relegated to a sep tab, not mixed up with the pitch to members.
+ Again, reorder to lead with network etc. Stick to the same order throughout.
+ Ditto on killing all the future tense, MGAs needed for launch stuff – that’s really
+not good. Build the proper content now, supress until ready.
+ “Our growing community” and “ready to shape the future” are really good lines.
+Consider moving up, inc to the home page. (Could see kicking off with the first,
+making a big fuss re the second on a “single join” us page.)

@@ -279,13 +279,20 @@ export default function Page() {
       </ContentHero>
 
       {/* Core Services Section */}
-      <section id="services" className="relative py-8 bg-fase-navy min-h-[calc(100vh-5.5rem)] flex flex-col">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
+      <section id="services" className="relative min-h-[50vh] py-20" style={{
+        backgroundImage: 'url("/corporate-building-bg.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-fase-navy/80"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-white">What FASE Offers</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 flex-1 border-2 border-fase-gold rounded-lg shadow-xl overflow-hidden max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border-2 border-fase-gold rounded-lg shadow-xl overflow-hidden max-w-5xl mx-auto min-h-[500px]">
             {/* Left Side - Image */}
             <div className="relative order-2 lg:order-1">
               {/* Default image when nothing is selected */}
@@ -376,81 +383,73 @@ export default function Page() {
       <ContentHero 
         id="conference" 
         fullHeight={false}
-        className="bg-fase-light-blue py-20"
+        className="bg-fase-cream min-h-[50vh] py-20"
       >
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-4">FASE European Conference</h2>
-            <p className="text-base sm:text-lg md:text-xl text-fase-black max-w-2xl mx-auto px-4">
-              The premier pan-European gathering for MGAs, capacity providers, and service providers. Date and location to be determined.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-4 sm:space-y-6">
-              <h3 className="text-2xl sm:text-3xl font-noto-serif font-bold text-fase-navy mb-4 sm:mb-6">Building the European MGA Community</h3>
-              <p className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
-                Following the success of national MGA associations like the MGAA, FASE will host annual conferences to unite the European MGA community. Our events focus on meaningful connections, business development, and industry advocacy.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Content */}
+            <div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-6">FASE European Conference</h2>
+              <p className="text-fase-black text-base sm:text-lg mb-8 leading-relaxed">
+                The premier pan-European gathering for MGAs, capacity providers, and service providers. Our annual conference brings together industry leaders to foster meaningful connections, share market insights, and drive innovation across European insurance markets.
               </p>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-black"><strong>Format:</strong> Networking-focused conference</p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-black"><strong>Focus:</strong> Business connections and market insights</p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-black"><strong>Audience:</strong> European MGAs and market participants</p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-fase-navy"></div>
-                  <p className="text-fase-black"><strong>Goal:</strong> Unite the European MGA community</p>
-                </div>
+              <h3 className="text-xl sm:text-2xl font-noto-serif font-bold text-fase-navy mb-4">Building the European MGA Community</h3>
+              <p className="text-fase-black text-base sm:text-lg leading-relaxed mb-8">
+                Date and location to be announced. Join us for networking-focused sessions designed to unite the European MGA community and create lasting business relationships.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a href="/events" className="inline-flex items-center px-6 py-3 bg-fase-navy text-white font-medium rounded-md hover:bg-fase-black transition-colors">
+                  Learn More About Events
+                </a>
+                <a href="/join" className="inline-flex items-center px-6 py-3 border-2 border-fase-navy text-fase-navy font-medium rounded-md hover:bg-fase-navy hover:text-white transition-colors">
+                  Join FASE Today
+                </a>
               </div>
             </div>
-            <div className="bg-white p-6 sm:p-8 lg:p-10  shadow-xl border border-fase-light-gold">
-              <h4 className="text-xl sm:text-2xl font-noto-serif font-semibold text-fase-navy mb-4 sm:mb-6">Sponsorship Opportunities</h4>
-              <p className="text-fase-black text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
-                Partner with FASE to reach the European MGA community. Sponsorship packages available for our inaugural conference.
-              </p>
-              <div className="bg-fase-light-blue p-4 sm:p-6  mb-4 sm:mb-6">
-                <h4 className="font-semibold text-fase-navy mb-3">Why Sponsor FASE:</h4>
-                <ul className="text-fase-black text-sm space-y-2">
-                  <li>• Access to pan-European MGA market</li>
-                  <li>• Brand visibility across multiple countries</li>
-                  <li>• Direct engagement with decision makers</li>
-                  <li>• Support for industry development</li>
-                </ul>
+            
+            {/* Right side - Image */}
+            <div className="relative">
+              <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden shadow-xl">
+                <img 
+                  src="/conference.jpg" 
+                  alt="FASE European Conference networking event" 
+                  className="w-full h-96 object-cover rounded-lg"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/20 to-transparent rounded-lg"></div>
               </div>
-              <Button 
-                href="#" 
-                variant="primary" 
-                size="large" 
-                className="w-full text-center"
-              >
-                Explore Sponsorship
-              </Button>
             </div>
           </div>
         </div>
       </ContentHero>
 
-      <CTASection
-        id="cta"
-        title="Join FASE"
-        description="MGAs, capacity providers, and service providers are invited to register their interest in FASE membership. The federation will be officially launched when a quorum of fifty (50) MGAs have registered their interest. No membership dues will be payable before this point."
-        buttons={[
-          {
-            text: "Register Interest",
-            href: "#",
-            variant: "primary"
-          }
-        ]}
-        background="navy"
-        size="standard"
-      />
+      {/* Sponsorship Section */}
+      <section 
+        className="relative min-h-[75vh] flex items-center" 
+        style={{
+          backgroundImage: 'url("/corporate-towers-bg.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-fase-navy/75"></div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-white mb-6">Ready to Shape the Future?</h2>
+          <p className="text-fase-light-blue text-base sm:text-lg mb-8 leading-relaxed max-w-3xl mx-auto">
+            Join our growing community of forward-thinking MGAs and industry partners building the future of European insurance distribution. Connect with Europe's leading MGA community through sponsorship opportunities and membership.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/join" className="inline-flex items-center px-8 py-4 bg-white text-fase-navy font-semibold rounded-md hover:bg-fase-light-blue transition-colors">
+              Join FASE
+            </a>
+            <a href="/sponsors" className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-md hover:bg-white hover:text-fase-navy transition-colors">
+              Explore Partnerships
+            </a>
+          </div>
+        </div>
+      </section>
+
 
       <Footer />
       </div>
