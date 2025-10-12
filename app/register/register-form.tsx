@@ -89,7 +89,7 @@ export default function RegisterForm() {
         </div>
         
         <p className="text-xs text-fase-black text-center">
-          Check your spam folder if you don&apos;t see the email.
+          Check your spam folder if you don't see the email.
         </p>
       </div>
     );

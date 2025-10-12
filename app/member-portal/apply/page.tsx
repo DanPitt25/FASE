@@ -663,6 +663,144 @@ export default function MembershipApplication() {
     }
   };
 
+  // Silent application submission for invoice flows
+  const submitApplicationForInvoice = async () => {
+    if (!user?.uid) {
+      throw new Error('User not authenticated');
+    }
+    const rawApplicationData = {
+      status: 'invoice_sent' as const,
+      
+      // Basic information
+      membershipType: newOrgData.membershipType,
+      organizationName: newOrgData.organizationName,
+      organizationType: newOrgData.organizationType,
+      logoURL: newOrgData.logoURL,
+      
+      // Privacy agreements
+      privacyAgreed: true,
+      dataProcessingAgreed: true,
+      
+      // Primary contact
+      primaryContact: {
+        name: newOrgData.primaryContactName,
+        email: newOrgData.primaryContactEmail,
+        phone: newOrgData.primaryContactPhone,
+        role: newOrgData.primaryContactRole,
+      },
+      
+      // Organization details
+      organizationDetails: {
+        tradingName: newOrgData.tradingName,
+        registeredNumber: newOrgData.registeredNumber,
+        vatNumber: newOrgData.vatNumber,
+        websiteUrl: newOrgData.websiteUrl,
+      },
+      
+      // Regulatory information
+      regulatory: {
+        fcarNumber: newOrgData.fcarNumber,
+        authorizedActivities: newOrgData.authorizedActivities,
+        regulatoryBody: newOrgData.regulatoryBody,
+      },
+      
+      // Registered address
+      registeredAddress: {
+        line1: newOrgData.registeredAddress.line1,
+        line2: newOrgData.registeredAddress.line2,
+        city: newOrgData.registeredAddress.city,
+        county: newOrgData.registeredAddress.county,
+        postcode: newOrgData.registeredAddress.postcode,
+        country: newOrgData.registeredAddress.country,
+      },
+      
+      // Key contacts (if any)
+      keyContacts: newOrgData.keyContacts.length > 0 ? newOrgData.keyContacts : undefined,
+      
+      // Invoicing details (required for invoices)
+      invoicingAddress: newOrgData.invoicingAddress.line1 ? {
+        line1: newOrgData.invoicingAddress.line1,
+        line2: newOrgData.invoicingAddress.line2,
+        city: newOrgData.invoicingAddress.city,
+        county: newOrgData.invoicingAddress.county,
+        postcode: newOrgData.invoicingAddress.postcode,
+        country: newOrgData.invoicingAddress.country,
+        sameAsRegistered: newOrgData.invoicingAddress.sameAsRegistered,
+      } : undefined,
+      
+      invoicingContact: {
+        name: newOrgData.invoicingContact.name,
+        email: newOrgData.invoicingContact.email,
+        phone: newOrgData.invoicingContact.phone,
+        role: newOrgData.invoicingContact.role,
+      },
+      
+      // Business information
+      distributionStrategy: newOrgData.distributionChannels.length > 0 ? {
+        channels: newOrgData.distributionChannels,
+        brokerNetwork: newOrgData.brokerNetwork,
+      } : undefined,
+      
+      // Portfolio information
+      portfolio: newOrgData.grossWrittenPremiums || Object.keys(newOrgData.portfolioMix).length > 0 ? {
+        grossWrittenPremiums: newOrgData.grossWrittenPremiums,
+        portfolioMix: newOrgData.portfolioMix,
+      } : undefined,
+      
+      productLines: newOrgData.productLines.length > 0 || newOrgData.targetMarkets.length > 0 ? {
+        lines: newOrgData.productLines,
+        targetMarkets: newOrgData.targetMarkets,
+      } : undefined,
+      
+      claimsModel: newOrgData.claimsHandling || newOrgData.claimsPartners.length > 0 ? {
+        handling: newOrgData.claimsHandling,
+        partners: newOrgData.claimsPartners,
+      } : undefined,
+      
+      // Additional information
+      generalInformation: newOrgData.businessPlan || newOrgData.marketingStrategy ? {
+        businessPlan: newOrgData.businessPlan,
+        marketingStrategy: newOrgData.marketingStrategy,
+      } : undefined,
+      
+      demographics: newOrgData.employeeCount || newOrgData.yearEstablished || newOrgData.ownershipStructure ? {
+        employeeCount: newOrgData.employeeCount,
+        yearEstablished: newOrgData.yearEstablished,
+        ownership: newOrgData.ownershipStructure,
+      } : undefined,
+
+      // Carrier-specific information
+      carrierDetails: newOrgData.organizationType === 'carrier' ? {
+        carrierType: newOrgData.carrierType,
+        licenseNumber: newOrgData.licenseNumber,
+        linesOfBusiness: newOrgData.linesOfBusiness,
+        capitalBase: newOrgData.capitalBase,
+      } : undefined,
+
+      // Service provider information
+      serviceDetails: newOrgData.organizationType === 'provider' ? {
+        serviceCategories: newOrgData.serviceCategories,
+        serviceDescription: newOrgData.serviceDescription,
+        targetClients: newOrgData.targetClients,
+        certifications: newOrgData.certifications,
+      } : undefined,
+      
+      // Terms agreement
+      termsAgreed: true, // Must be true to reach this point
+      
+      // Other associations data
+      hasOtherAssociations: newOrgData.hasOtherAssociations,
+      otherAssociationMemberships: newOrgData.otherAssociationMemberships,
+    };
+
+    // Clean the data to remove undefined values
+    const applicationData = cleanObject(rawApplicationData);
+    
+    // Submit silently without UI changes
+    const applicationId = await createMemberApplication(user.uid, applicationData);
+    return applicationId;
+  };
+
   // Silent application submission for payment flows
   const submitApplicationSilently = async () => {
     if (!user?.uid) {
@@ -929,7 +1067,7 @@ export default function MembershipApplication() {
                 Organization Logo (Optional)
               </label>
               <p className="text-xs text-fase-black mb-3">
-                Upload your organization&apos;s logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
+                Upload your organization's logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
               </p>
               
               <div className="flex items-center space-x-4">
@@ -995,7 +1133,7 @@ export default function MembershipApplication() {
             
             <div className="space-y-4">
               <ValidatedCheckbox
-                label="I agree to FASE&apos;s privacy policy and terms of service"
+                label="I agree to FASE's privacy policy and terms of service"
                 fieldKey="privacyAgreed"
                 checked={newOrgData.privacyAgreed}
                 onChange={(checked) => setNewOrgData({ ...newOrgData, privacyAgreed: checked })}
@@ -1441,7 +1579,7 @@ export default function MembershipApplication() {
           <div className="space-y-6">
             <div>
               <p className="text-fase-black mb-4">
-                Provide details about your organization&apos;s portfolio mix and gross written premiums.
+                Provide details about your organization's portfolio mix and gross written premiums.
               </p>
             </div>
             
@@ -1549,7 +1687,7 @@ export default function MembershipApplication() {
               markFieldTouched={markFieldTouched}
               options={[
                 { value: '', label: 'Select carrier type...' },
-                { value: 'lloyds-syndicate', label: "Lloyd&apos;s Syndicate" },
+                { value: 'lloyds-syndicate', label: "Lloyd's Syndicate" },
                 { value: 'european-insurer', label: 'European Insurer' },
                 { value: 'reinsurer', label: 'Reinsurer' },
                 { value: 'captive', label: 'Captive Insurance Company' },
@@ -1830,7 +1968,55 @@ export default function MembershipApplication() {
               <div 
                 className="p-6 border-2 border-fase-light-gold rounded-lg hover:border-fase-navy cursor-pointer transition-colors"
                 onClick={() => {
-                  alert('Invoice payment option selected. Your application will be submitted and an invoice will be sent to your billing contact.');
+                  setIsRedirectingToPayment(true);
+                  // Handle invoice creation
+                  const handleInvoiceCreation = async () => {
+                    try {
+                      // First, submit the application to create the member document
+                      await submitApplicationForInvoice();
+                      
+                      // Then create the invoice
+                      const response = await fetch('/api/create-invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          organizationName: newOrgData.organizationName,
+                          organizationType: newOrgData.organizationType,
+                          membershipType: newOrgData.membershipType,
+                          grossWrittenPremiums: newOrgData.grossWrittenPremiums,
+                          hasOtherAssociations: newOrgData.hasOtherAssociations,
+                          invoicingContact: newOrgData.invoicingContact,
+                          invoicingAddress: newOrgData.invoicingAddress,
+                          userId: user?.uid
+                        })
+                      });
+                      
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to create invoice');
+                      }
+                      
+                      const invoiceData = await response.json();
+                      
+                      // Show success message
+                      alert(`Invoice created successfully! 
+                      
+Invoice has been sent to: ${invoiceData.customerEmail}
+Amount: €${invoiceData.amount}
+Due in 30 days
+
+Your application has been submitted and will be processed once payment is received.`);
+                      
+                      // Redirect to member portal
+                      router.push('/member-portal?invoice_sent=true');
+                    } catch (error) {
+                      console.error('Error:', error);
+                      alert(`Failed to create invoice: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+                      setIsRedirectingToPayment(false);
+                    }
+                  };
+                  
+                  handleInvoiceCreation();
                 }}
               >
                 <div className="text-center">
@@ -1843,6 +2029,11 @@ export default function MembershipApplication() {
                   <p className="text-sm text-fase-black">
                     Receive an invoice and pay later
                   </p>
+                  {isRedirectingToPayment && (
+                    <div className="mt-3 text-xs text-blue-600">
+                      Creating invoice...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1949,14 +2140,14 @@ export default function MembershipApplication() {
                   <p className="text-blue-800 font-medium mb-1">Next Steps</p>
                   <p className="text-blue-700">
                     After submitting your application, our team will review it within 2-3 business days. 
-                    You&apos;ll receive an email confirmation once your membership is approved.
+                    You'll receive an email confirmation once your membership is approved.
                   </p>
                 </div>
               </div>
             </div>
             
             <ValidatedCheckbox
-              label={<>I agree to FASE&apos;s <a href="#" className="text-fase-navy hover:underline">Terms of Service</a> and confirm that all information provided is accurate and complete.</>}
+              label={<>I agree to FASE's <a href="#" className="text-fase-navy hover:underline">Terms of Service</a> and confirm that all information provided is accurate and complete.</>}
               fieldKey="termsAgreed"
               checked={termsAgreed}
               onChange={setTermsAgreed}
@@ -1998,7 +2189,7 @@ export default function MembershipApplication() {
               </div>
               
               <p className="text-xs text-fase-black mt-3 text-center">
-                Applications submitted without payment will be reviewed and you&apos;ll receive payment instructions via email.
+                Applications submitted without payment will be reviewed and you'll receive payment instructions via email.
               </p>
             </div>
           </div>

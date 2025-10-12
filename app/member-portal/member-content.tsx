@@ -211,6 +211,11 @@ export default function MemberContent() {
             <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
             <span>Active Member</span>
           </div>
+        ) : memberData?.status === 'invoice_sent' ? (
+          <div className="flex items-center space-x-2">
+            <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
+            <span>Invoice Sent</span>
+          </div>
         ) : memberData ? (
           <div className="flex items-center space-x-2">
             <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
@@ -249,6 +254,23 @@ export default function MemberContent() {
                   <h3 className="text-sm font-medium text-orange-800 mb-2">Membership Setup Incomplete</h3>
                   <p className="text-sm text-orange-700">
                     Complete your membership setup to access all FASE member benefits and resources.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoice Sent Alert */}
+          {memberData?.status === 'invoice_sent' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">Invoice Sent</h3>
+                  <p className="text-sm text-blue-700">
+                    Your invoice has been sent to your billing contact. Once payment is received, your membership will be activated automatically.
                   </p>
                 </div>
               </div>
@@ -390,7 +412,7 @@ export default function MemberContent() {
       >
         <div className="space-y-6">
           <p className="text-fase-black">
-            If your company already has a FASE membership, please contact our support team to be added to your organization&apos;s account.
+            If your company already has a FASE membership, please contact our support team to be added to your organization's account.
           </p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -401,7 +423,7 @@ export default function MemberContent() {
               <div>
                 <h3 className="text-sm font-medium text-blue-800">Contact Support</h3>
                 <p className="text-sm text-blue-700 mt-1">
-                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we&apos;ll help you get connected to your organization&apos;s membership.
+                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we'll help you get connected to your organization's membership.
                 </p>
               </div>
             </div>
@@ -409,7 +431,7 @@ export default function MemberContent() {
 
           <div className="pt-4 border-t border-fase-light-gold">
             <p className="text-xs text-fase-black">
-              Don&apos;t have a company membership yet? <button 
+              Don't have a company membership yet? <button 
                 onClick={() => {
                   setShowLinkModal(false);
                   router.push('/member-portal/apply');
@@ -449,6 +471,11 @@ export default function MemberContent() {
                 <>
                   <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
                   <span className="text-sm text-fase-black">Active Membership</span>
+                </>
+              ) : memberData?.status === 'invoice_sent' ? (
+                <>
+                  <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
+                  <span className="text-sm text-fase-black">Invoice Sent</span>
                 </>
               ) : memberData ? (
                 <>
@@ -558,7 +585,7 @@ export default function MemberContent() {
                     </h4>
                     <p className="text-sm text-blue-700 mt-1">
                       {memberData 
-                        ? 'Your membership application is being reviewed. You&apos;ll receive an email once approved.'
+                        ? 'Your membership application is being reviewed. You'll receive an email once approved.'
                         : 'Complete your membership application to access all FASE member benefits and resources.'
                       }
                     </p>

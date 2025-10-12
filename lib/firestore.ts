@@ -49,7 +49,7 @@ export interface Subscriber {
 export interface MemberApplication {
   id: string;
   uid: string; // Link to user document
-  status: 'pending' | 'approved' | 'rejected' | 'paid';
+  status: 'pending' | 'approved' | 'rejected' | 'paid' | 'invoice_sent';
   createdAt: any;
   updatedAt: any;
   

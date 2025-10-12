@@ -121,12 +121,16 @@ export async function POST(request: NextRequest) {
 
     case 'invoice.payment_succeeded':
       const invoice = event.data.object as Stripe.Invoice;
-      console.log('Subscription payment successful:', invoice.id);
+      console.log('Invoice payment successful:', invoice.id);
+      console.log('Invoice metadata:', invoice.metadata);
       
-      // For subscription payments, get session metadata from subscription
+      // Check if this is a subscription invoice or standalone invoice
       const invoiceAny = invoice as any;
       const subscriptionId = typeof invoiceAny.subscription === 'string' ? invoiceAny.subscription : invoiceAny.subscription?.id;
+      
       if (subscriptionId) {
+        // Handle subscription invoice payments
+        console.log('Processing subscription invoice payment');
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         if (subscription.metadata?.user_id) {
           try {
@@ -140,6 +144,44 @@ export async function POST(request: NextRequest) {
           } catch (error) {
             console.error('Failed to update member application:', error);
           }
+        }
+      } else if (invoice.metadata?.user_id) {
+        // Handle standalone invoice payments (our new invoice system)
+        console.log('Processing standalone invoice payment for user:', invoice.metadata.user_id);
+        try {
+          await updateMemberStatus(
+            invoice.metadata.user_id,
+            'paid',
+            'stripe_invoice',
+            invoice.id || ''
+          );
+          console.log('Member application updated for invoice user:', invoice.metadata.user_id);
+        } catch (error) {
+          console.error('Failed to update member application:', error);
+        }
+      } else {
+        console.log('No user_id found in invoice metadata or subscription');
+      }
+      break;
+
+    case 'invoice.paid':
+      // Also handle invoice.paid events (duplicate of invoice.payment_succeeded for safety)
+      const paidInvoice = event.data.object as Stripe.Invoice;
+      console.log('Invoice paid event:', paidInvoice.id);
+      
+      // Only process if no subscription (standalone invoice)
+      if (!paidInvoice.subscription && paidInvoice.metadata?.user_id) {
+        console.log('Processing standalone invoice paid event for user:', paidInvoice.metadata.user_id);
+        try {
+          await updateMemberStatus(
+            paidInvoice.metadata.user_id,
+            'paid',
+            'stripe_invoice',
+            paidInvoice.id || ''
+          );
+          console.log('Member application updated via invoice.paid for user:', paidInvoice.metadata.user_id);
+        } catch (error) {
+          console.error('Failed to update member application via invoice.paid:', error);
         }
       }
       break;

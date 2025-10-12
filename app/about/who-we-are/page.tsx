@@ -139,7 +139,7 @@ export default function WhoWeArePage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">Leadership Team</h2>
               <p className="text-xl text-fase-black max-w-3xl mx-auto">
-                Industry veterans and visionaries driving FASE&apos;s mission across European markets.
+                Industry veterans and visionaries driving FASE's mission across European markets.
               </p>
             </div>
 

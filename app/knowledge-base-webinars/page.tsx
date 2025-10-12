@@ -912,7 +912,7 @@ export default function KnowledgeBaseWebinarsPage() {
                 </h4>
                 <p className="text-sm text-blue-700">
                   {memberApplications.length > 0 
-                    ? 'Your membership application is being reviewed. Once approved, you&apos;ll have full access to our knowledge base with industry insights, regulatory updates, and educational resources.'
+                    ? 'Your membership application is being reviewed. Once approved, you'll have full access to our knowledge base with industry insights, regulatory updates, and educational resources.'
                     : 'Join FASE to access our comprehensive knowledge base with exclusive content, industry insights, and professional development resources.'
                   }
                 </p>
