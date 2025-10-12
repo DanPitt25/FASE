@@ -1067,7 +1067,7 @@ export default function MembershipApplication() {
                 Organization Logo (Optional)
               </label>
               <p className="text-xs text-fase-black mb-3">
-                Upload your organization's logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
+                Upload your organization&#39;s logo. Supported formats: PNG, JPG, SVG, WebP (max 5MB)
               </p>
               
               <div className="flex items-center space-x-4">
@@ -1579,7 +1579,7 @@ export default function MembershipApplication() {
           <div className="space-y-6">
             <div>
               <p className="text-fase-black mb-4">
-                Provide details about your organization's portfolio mix and gross written premiums.
+                Provide details about your organization&#39;s portfolio mix and gross written premiums.
               </p>
             </div>
             
@@ -1975,8 +1975,8 @@ export default function MembershipApplication() {
                       // First, submit the application to create the member document
                       await submitApplicationForInvoice();
                       
-                      // Then create the invoice
-                      const response = await fetch('/api/create-invoice', {
+                      // Then send the invoice
+                      const response = await fetch('/api/send-invoice', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1993,25 +1993,25 @@ export default function MembershipApplication() {
                       
                       if (!response.ok) {
                         const errorData = await response.json();
-                        throw new Error(errorData.error || 'Failed to create invoice');
+                        throw new Error(errorData.error || 'Failed to send invoice');
                       }
                       
                       const invoiceData = await response.json();
                       
                       // Show success message
-                      alert(`Invoice created successfully! 
+                      alert(`Invoice sent successfully! 
                       
-Invoice has been sent to: ${invoiceData.customerEmail}
+Invoice has been sent to: ${newOrgData.invoicingContact.email}
 Amount: €${invoiceData.amount}
-Due in 30 days
+Due Date: ${invoiceData.dueDate}
 
-Your application has been submitted and will be processed once payment is received.`);
+Your application has been submitted and will be processed once payment is received via bank transfer.`);
                       
                       // Redirect to member portal
                       router.push('/member-portal?invoice_sent=true');
                     } catch (error) {
                       console.error('Error:', error);
-                      alert(`Failed to create invoice: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+                      alert(`Failed to send invoice: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
                       setIsRedirectingToPayment(false);
                     }
                   };
@@ -2140,14 +2140,14 @@ Your application has been submitted and will be processed once payment is receiv
                   <p className="text-blue-800 font-medium mb-1">Next Steps</p>
                   <p className="text-blue-700">
                     After submitting your application, our team will review it within 2-3 business days. 
-                    You'll receive an email confirmation once your membership is approved.
+                    You&#39;ll receive an email confirmation once your membership is approved.
                   </p>
                 </div>
               </div>
             </div>
             
             <ValidatedCheckbox
-              label={<>I agree to FASE's <a href="#" className="text-fase-navy hover:underline">Terms of Service</a> and confirm that all information provided is accurate and complete.</>}
+              label={<>I agree to FASE&#39;s <a href="#" className="text-fase-navy hover:underline">Terms of Service</a> and confirm that all information provided is accurate and complete.</>}
               fieldKey="termsAgreed"
               checked={termsAgreed}
               onChange={setTermsAgreed}
@@ -2189,7 +2189,7 @@ Your application has been submitted and will be processed once payment is receiv
               </div>
               
               <p className="text-xs text-fase-black mt-3 text-center">
-                Applications submitted without payment will be reviewed and you'll receive payment instructions via email.
+                Applications submitted without payment will be reviewed and you&#39;ll receive payment instructions via email.
               </p>
             </div>
           </div>

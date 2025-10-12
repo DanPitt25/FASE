@@ -156,7 +156,7 @@ export default function VideoPage() {
           <main className="flex-1 bg-fase-cream py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h1 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Video Not Found</h1>
-              <p className="text-fase-black mb-8">The video you're looking for doesn't exist or has been removed.</p>
+              <p className="text-fase-black mb-8">The video you&#39;re looking for doesn&#39;t exist or has been removed.</p>
               <Button href="/knowledge-base-webinars" variant="primary">
                 ← Back to Knowledge Base
               </Button>
@@ -197,8 +197,8 @@ export default function VideoPage() {
                   </h4>
                   <p className="text-sm text-blue-700">
                     {memberApplications.length > 0 
-                      ? 'Your membership application is being reviewed. Once approved, you'll have full access to all knowledge base content.'
-                      : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
+                      ? "Your membership application is being reviewed. Once approved, you&#39;ll have full access to all knowledge base content."
+                      : "Join FASE to access exclusive video content, industry insights, and professional development resources."
                     }
                   </p>
                 </div>
@@ -392,8 +392,8 @@ export default function VideoPage() {
                 </h4>
                 <p className="text-sm text-blue-700">
                   {memberApplications.length > 0 
-                    ? 'Your membership application is being reviewed. Once approved, you'll have full access to all knowledge base content.'
-                    : 'Join FASE to access exclusive video content, industry insights, and professional development resources.'
+                    ? "Your membership application is being reviewed. Once approved, you&#39;ll have full access to all knowledge base content."
+                    : "Join FASE to access exclusive video content, industry insights, and professional development resources."
                   }
                 </p>
               </div>

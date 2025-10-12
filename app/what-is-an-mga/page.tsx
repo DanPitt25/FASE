@@ -40,7 +40,7 @@ export default function WhatIsAnMGAPage() {
                     It does not maintain a large balance sheet to pay claims; instead it contracts with 
                     insurance companies that serve as capacity providers to the MGA. An insurance company 
                     grants a binding authority to an MGA, enabling it to underwrite a specified class of 
-                    insurance on the insurance company's behalf.
+                    insurance on the insurance company&#39;s behalf.
                   </p>
                 </div>
 

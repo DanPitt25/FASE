@@ -412,7 +412,7 @@ export default function MemberContent() {
       >
         <div className="space-y-6">
           <p className="text-fase-black">
-            If your company already has a FASE membership, please contact our support team to be added to your organization's account.
+            If your company already has a FASE membership, please contact our support team to be added to your organization&#39;s account.
           </p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -423,7 +423,7 @@ export default function MemberContent() {
               <div>
                 <h3 className="text-sm font-medium text-blue-800">Contact Support</h3>
                 <p className="text-sm text-blue-700 mt-1">
-                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we'll help you get connected to your organization's membership.
+                  Email <a href="mailto:info@fasemga.com" className="underline">info@fasemga.com</a> with your company name and we&#39;ll help you get connected to your organization&#39;s membership.
                 </p>
               </div>
             </div>
@@ -431,7 +431,7 @@ export default function MemberContent() {
 
           <div className="pt-4 border-t border-fase-light-gold">
             <p className="text-xs text-fase-black">
-              Don't have a company membership yet? <button 
+              Don&#39;t have a company membership yet? <button 
                 onClick={() => {
                   setShowLinkModal(false);
                   router.push('/member-portal/apply');
@@ -585,8 +585,8 @@ export default function MemberContent() {
                     </h4>
                     <p className="text-sm text-blue-700 mt-1">
                       {memberData 
-                        ? 'Your membership application is being reviewed. You'll receive an email once approved.'
-                        : 'Complete your membership application to access all FASE member benefits and resources.'
+                        ? "Your membership application is being reviewed. You&#39;ll receive an email once approved."
+                        : "Complete your membership application to access all FASE member benefits and resources."
                       }
                     </p>
                     {!memberData && (
