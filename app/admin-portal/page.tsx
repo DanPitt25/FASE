@@ -10,6 +10,37 @@ import type { Video, Comment } from '../../lib/knowledge-base';
 import { getAllMemberApplications, updateMemberApplicationStatus, MemberApplication } from '../../lib/firestore';
 import Button from '../../components/Button';
 
+// Pricing calculation function (copied from application form)
+const calculateMembershipFee = (application: MemberApplication): number => {
+  let baseFee = 0;
+  
+  if (application.membershipType === 'individual') {
+    baseFee = 500;
+  } else if (application.organizationType === 'MGA' && application.portfolio?.grossWrittenPremiums) {
+    switch (application.portfolio.grossWrittenPremiums) {
+      case '<10m': baseFee = 900; break;
+      case '10-20m': baseFee = 1500; break;
+      case '20-50m': baseFee = 2000; break;
+      case '50-100m': baseFee = 2800; break;
+      case '100-500m': baseFee = 4200; break;
+      case '500m+': baseFee = 6400; break;
+      default: baseFee = 900;
+    }
+  } else {
+    // Default corporate fee for carriers and providers
+    baseFee = 900;
+  }
+  
+  // Apply association member discount if applicable
+  // Note: This field might not be in the existing interface, we'll handle gracefully
+  const hasOtherAssociations = (application as any).hasOtherAssociations;
+  if (hasOtherAssociations && application.membershipType === 'corporate') {
+    baseFee = Math.round(baseFee * 0.8); // 20% discount
+  }
+  
+  return baseFee;
+};
+
 export default function AdminPortalPage() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -82,6 +113,11 @@ export default function AdminPortalPage() {
   const pendingApplications = memberApplications.filter(app => app.status === 'pending');
   const approvedApplications = memberApplications.filter(app => app.status === 'approved');
   const rejectedApplications = memberApplications.filter(app => app.status === 'rejected');
+  const invoiceSentApplications = memberApplications.filter(app => app.status === 'invoice_sent');
+  
+  // Calculate total expected revenue from pending and invoice_sent applications
+  const totalExpectedRevenue = [...pendingApplications, ...invoiceSentApplications]
+    .reduce((total, app) => total + calculateMembershipFee(app), 0);
 
   if (authLoading || adminLoading) {
     return (
@@ -166,29 +202,50 @@ export default function AdminPortalPage() {
           ) : (
             <>
               {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Member Applications</h3>
-                    <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length}</p>
-                    <p className="text-fase-black text-sm">Pending review</p>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Member Applications</h3>
+                      <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length + invoiceSentApplications.length}</p>
+                      <p className="text-fase-black text-sm">Pending review & payment</p>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Active Members</h3>
+                      <p className="text-3xl font-bold text-green-600 mb-2">{approvedApplications.length}</p>
+                      <p className="text-fase-black text-sm">Approved members</p>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Expected Revenue</h3>
+                      <p className="text-3xl font-bold text-blue-600 mb-2">€{totalExpectedRevenue.toLocaleString()}</p>
+                      <p className="text-fase-black text-sm">From pending applications</p>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Pending Comments</h3>
+                      <p className="text-3xl font-bold text-red-600 mb-2">{pendingComments.length}</p>
+                      <p className="text-fase-black text-sm">Awaiting moderation</p>
+                    </div>
                   </div>
                   
+                  {/* Revenue Breakdown */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Active Members</h3>
-                    <p className="text-3xl font-bold text-green-600 mb-2">{approvedApplications.length}</p>
-                    <p className="text-fase-black text-sm">Approved members</p>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Videos</h3>
-                    <p className="text-3xl font-bold text-fase-navy mb-2">{videos.length}</p>
-                    <p className="text-fase-black text-sm">Published videos</p>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Pending Comments</h3>
-                    <p className="text-3xl font-bold text-red-600 mb-2">{pendingComments.length}</p>
-                    <p className="text-fase-black text-sm">Awaiting moderation</p>
+                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Revenue Breakdown</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-orange-50 rounded-lg">
+                        <p className="text-2xl font-bold text-orange-600">€{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-orange-800">Pending Review ({pendingApplications.length})</p>
+                      </div>
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <p className="text-2xl font-bold text-blue-600">€{invoiceSentApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-blue-800">Invoices Sent ({invoiceSentApplications.length})</p>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">€{approvedApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-green-800">Approved Members ({approvedApplications.length})</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -199,7 +256,7 @@ export default function AdminPortalPage() {
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
                     <div className="p-6 border-b border-fase-light-gold">
                       <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Applications</h3>
-                      <p className="text-fase-black text-sm mt-1">Review and approve member applications</p>
+                      <p className="text-fase-black text-sm mt-1">Review and approve member applications • Expected revenue: €{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
                     </div>
                     <div className="divide-y divide-fase-light-gold">
                       {pendingApplications.length === 0 ? (
@@ -217,7 +274,7 @@ export default function AdminPortalPage() {
                                     {application.organizationType}
                                   </span>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                                   <div>
                                     <p className="text-sm text-fase-black"><strong>Contact:</strong> {application.primaryContact.name}</p>
                                     <p className="text-sm text-fase-black"><strong>Email:</strong> {application.primaryContact.email}</p>
@@ -227,6 +284,13 @@ export default function AdminPortalPage() {
                                     <p className="text-sm text-fase-black"><strong>Country:</strong> {application.registeredAddress.country}</p>
                                     <p className="text-sm text-fase-black"><strong>City:</strong> {application.registeredAddress.city}</p>
                                     <p className="text-sm text-fase-black"><strong>Applied:</strong> {new Date(application.createdAt.seconds * 1000).toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Membership:</strong> {application.membershipType === 'individual' ? 'Individual' : `${application.organizationType} Corporate`}</p>
+                                    {application.portfolio?.grossWrittenPremiums && (
+                                      <p className="text-sm text-fase-black"><strong>GWP:</strong> {application.portfolio.grossWrittenPremiums}</p>
+                                    )}
+                                    <p className="text-sm font-semibold text-green-600"><strong>Expected Fee: €{calculateMembershipFee(application)}</strong></p>
                                   </div>
                                 </div>
                                 {application.portfolio?.portfolioMix && (
@@ -263,11 +327,73 @@ export default function AdminPortalPage() {
                     </div>
                   </div>
 
+                  {/* Invoice Sent Applications */}
+                  {invoiceSentApplications.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
+                      <div className="p-6 border-b border-fase-light-gold">
+                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Invoices Sent</h3>
+                        <p className="text-fase-black text-sm mt-1">Awaiting payment • Expected revenue: €{invoiceSentApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                      </div>
+                      <div className="divide-y divide-fase-light-gold">
+                        {invoiceSentApplications.map(application => (
+                          <div key={application.id} className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-2">
+                                  <span className="font-medium text-fase-navy text-lg">{application.organizationName}</span>
+                                  <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    Invoice Sent
+                                  </span>
+                                  <span className="ml-2 px-2 py-1 bg-fase-cream text-fase-navy text-xs rounded-full">
+                                    {application.organizationType}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {application.primaryContact.name}</p>
+                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {application.primaryContact.email}</p>
+                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {application.primaryContact.phone}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {application.registeredAddress.country}</p>
+                                    <p className="text-sm text-fase-black"><strong>City:</strong> {application.registeredAddress.city}</p>
+                                    <p className="text-sm text-fase-black"><strong>Invoice Sent:</strong> {new Date(application.updatedAt.seconds * 1000).toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-fase-black"><strong>Membership:</strong> {application.membershipType === 'individual' ? 'Individual' : `${application.organizationType} Corporate`}</p>
+                                    {application.portfolio?.grossWrittenPremiums && (
+                                      <p className="text-sm text-fase-black"><strong>GWP:</strong> {application.portfolio.grossWrittenPremiums}</p>
+                                    )}
+                                    <p className="text-sm font-semibold text-blue-600"><strong>Expected Payment: €{calculateMembershipFee(application)}</strong></p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="ml-4 flex space-x-2">
+                                <Button
+                                  onClick={() => handleMemberApplicationStatus(application.id, 'approved')}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                >
+                                  Mark as Paid
+                                </Button>
+                                <Button
+                                  onClick={() => handleMemberApplicationStatus(application.id, 'rejected')}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                >
+                                  Reject
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Approved Members */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
                     <div className="p-6 border-b border-fase-light-gold">
                       <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Approved Members</h3>
-                      <p className="text-fase-black text-sm mt-1">Currently active members</p>
+                      <p className="text-fase-black text-sm mt-1">Currently active members • Total revenue: €{approvedApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-fase-light-gold">
@@ -277,6 +403,7 @@ export default function AdminPortalPage() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Type</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Country</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Contact</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Fee Paid</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Approved</th>
                           </tr>
                         </thead>
@@ -296,6 +423,9 @@ export default function AdminPortalPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
                                 {application.primaryContact.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                                €{calculateMembershipFee(application)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
                                 {new Date(application.updatedAt.seconds * 1000).toLocaleDateString()}

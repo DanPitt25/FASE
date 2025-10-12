@@ -673,7 +673,7 @@ export default function MembershipApplication() {
       
       // Basic information
       membershipType: newOrgData.membershipType,
-      organizationName: newOrgData.organizationName,
+      organizationName: newOrgData.organizationName || `${newOrgData.primaryContactName} (Individual)`,
       organizationType: newOrgData.organizationType,
       logoURL: newOrgData.logoURL,
       
@@ -718,22 +718,39 @@ export default function MembershipApplication() {
       keyContacts: newOrgData.keyContacts.length > 0 ? newOrgData.keyContacts : undefined,
       
       // Invoicing details (required for invoices)
-      invoicingAddress: newOrgData.invoicingAddress.line1 ? {
-        line1: newOrgData.invoicingAddress.line1,
-        line2: newOrgData.invoicingAddress.line2,
-        city: newOrgData.invoicingAddress.city,
-        county: newOrgData.invoicingAddress.county,
-        postcode: newOrgData.invoicingAddress.postcode,
-        country: newOrgData.invoicingAddress.country,
-        sameAsRegistered: newOrgData.invoicingAddress.sameAsRegistered,
-      } : undefined,
+      invoicingAddress: newOrgData.membershipType === 'individual' 
+        ? {
+            line1: newOrgData.registeredAddress.line1,
+            line2: newOrgData.registeredAddress.line2,
+            city: newOrgData.registeredAddress.city,
+            county: newOrgData.registeredAddress.county,
+            postcode: newOrgData.registeredAddress.postcode,
+            country: newOrgData.registeredAddress.country,
+            sameAsRegistered: true,
+          }
+        : newOrgData.invoicingAddress.line1 ? {
+            line1: newOrgData.invoicingAddress.line1,
+            line2: newOrgData.invoicingAddress.line2,
+            city: newOrgData.invoicingAddress.city,
+            county: newOrgData.invoicingAddress.county,
+            postcode: newOrgData.invoicingAddress.postcode,
+            country: newOrgData.invoicingAddress.country,
+            sameAsRegistered: newOrgData.invoicingAddress.sameAsRegistered,
+          } : undefined,
       
-      invoicingContact: {
-        name: newOrgData.invoicingContact.name,
-        email: newOrgData.invoicingContact.email,
-        phone: newOrgData.invoicingContact.phone,
-        role: newOrgData.invoicingContact.role,
-      },
+      invoicingContact: newOrgData.membershipType === 'individual'
+        ? {
+            name: newOrgData.primaryContactName,
+            email: newOrgData.primaryContactEmail,
+            phone: newOrgData.primaryContactPhone,
+            role: newOrgData.primaryContactRole,
+          }
+        : {
+            name: newOrgData.invoicingContact.name,
+            email: newOrgData.invoicingContact.email,
+            phone: newOrgData.invoicingContact.phone,
+            role: newOrgData.invoicingContact.role,
+          },
       
       // Business information
       distributionStrategy: newOrgData.distributionChannels.length > 0 ? {
@@ -1920,7 +1937,7 @@ export default function MembershipApplication() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                          organizationName: newOrgData.organizationName,
+                          organizationName: newOrgData.organizationName || `${newOrgData.primaryContactName} (Individual)`,
                           organizationType: newOrgData.organizationType,
                           membershipType: newOrgData.membershipType,
                           grossWrittenPremiums: newOrgData.grossWrittenPremiums,
@@ -1980,13 +1997,30 @@ export default function MembershipApplication() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                          organizationName: newOrgData.organizationName,
+                          organizationName: newOrgData.organizationName || `${newOrgData.primaryContactName} (Individual)`,
                           organizationType: newOrgData.organizationType,
                           membershipType: newOrgData.membershipType,
                           grossWrittenPremiums: newOrgData.grossWrittenPremiums,
                           hasOtherAssociations: newOrgData.hasOtherAssociations,
-                          invoicingContact: newOrgData.invoicingContact,
-                          invoicingAddress: newOrgData.invoicingAddress,
+                          invoicingContact: newOrgData.membershipType === 'individual' 
+                            ? {
+                                name: newOrgData.primaryContactName,
+                                email: newOrgData.primaryContactEmail,
+                                phone: newOrgData.primaryContactPhone,
+                                role: newOrgData.primaryContactRole
+                              }
+                            : newOrgData.invoicingContact,
+                          invoicingAddress: newOrgData.membershipType === 'individual'
+                            ? {
+                                line1: newOrgData.registeredAddress.line1,
+                                line2: newOrgData.registeredAddress.line2,
+                                city: newOrgData.registeredAddress.city,
+                                county: newOrgData.registeredAddress.county,
+                                postcode: newOrgData.registeredAddress.postcode,
+                                country: newOrgData.registeredAddress.country,
+                                sameAsRegistered: true
+                              }
+                            : newOrgData.invoicingAddress,
                           userId: user?.uid
                         })
                       });
@@ -1999,9 +2033,13 @@ export default function MembershipApplication() {
                       const invoiceData = await response.json();
                       
                       // Show success message
+                      const invoiceEmail = newOrgData.membershipType === 'individual' 
+                        ? newOrgData.primaryContactEmail 
+                        : newOrgData.invoicingContact.email;
+                      
                       alert(`Invoice sent successfully! 
                       
-Invoice has been sent to: ${newOrgData.invoicingContact.email}
+Invoice has been sent to: ${invoiceEmail}
 Amount: €${invoiceData.amount}
 Due Date: ${invoiceData.dueDate}
 
