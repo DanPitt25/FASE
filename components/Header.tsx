@@ -122,13 +122,13 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
                 <div className="flex items-center space-x-6">
                   {/* About FASE */}
-                  <a href="/about" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    currentPage === 'about' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  <a href="/about" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'about' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>About FASE</a>
 
                   {/* Networking Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm font-medium flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white group-hover:font-semibold">
+                    <span className="px-4 py-3 text-sm flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
                       Networking
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -148,7 +148,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
 
                   {/* Development Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm font-medium flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white group-hover:font-semibold">
+                    <span className="px-4 py-3 text-sm flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
                       Development
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -167,18 +167,18 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
 
                   {/* Member Portal */}
-                  <a href="/member-portal" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    currentPage === 'member-portal' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  <a href="/member-portal" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'member-portal' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>{t('member_portal')}</a>
                   
                   {/* Sponsors */}
-                  <a href="/sponsors" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    currentPage === 'sponsors' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  <a href="/sponsors" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'sponsors' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Sponsors</a>
                   
                   {/* Contact */}
-                  <a href="/contact" className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    currentPage === 'contact' ? 'text-white bg-fase-gold font-semibold' : 'text-fase-black hover:text-white hover:bg-fase-gold hover:font-semibold'
+                  <a href="/contact" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                    currentPage === 'contact' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Contact</a>
                 </div>
                 {loading ? (

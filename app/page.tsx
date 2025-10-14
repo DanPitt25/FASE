@@ -6,6 +6,7 @@ import ContentHero from '../components/ContentHero';
 import Button from '../components/Button';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -14,6 +15,14 @@ export default function Page() {
   const [currentServiceIndex, setCurrentServiceIndex] = useState(-1);
   const [currentStandardIndex, setCurrentStandardIndex] = useState(-1);
   const [currentImpactIndex, setCurrentImpactIndex] = useState(-1); // No card selected initially
+  
+  // Scroll animation hooks
+  const { elementRef: whoWeAreRef, isVisible: whoWeAreVisible } = useScrollAnimation();
+  const { elementRef: impactRef, isVisible: impactVisible } = useScrollAnimation();
+  const { elementRef: standardsRef, isVisible: standardsVisible } = useScrollAnimation();
+  const { elementRef: ribbon1Ref, isVisible: ribbon1Visible } = useScrollAnimation();
+  const { elementRef: ribbon2Ref, isVisible: ribbon2Visible } = useScrollAnimation();
+  const { elementRef: ribbon3Ref, isVisible: ribbon3Visible } = useScrollAnimation();
   
   const cities = [
     { name: 'Amsterdam', image: '/amsterdam.jpg' },
@@ -292,7 +301,7 @@ export default function Page() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-5.5rem)]">
           {/* Left Content */}
           <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-bold text-fase-navy mb-4 lg:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-bold text-fase-gold mb-4 lg:mb-6 leading-tight">
               Connecting Europe&apos;s insurance innovators
             </h1>
             <p className="text-lg sm:text-xl text-fase-black mb-8 font-lato leading-relaxed">
@@ -312,27 +321,37 @@ export default function Page() {
       </ContentHero>
 
       {/* Blue ribbon separator */}
-      <div className="relative h-12">
-        <div className="absolute right-0 w-3/5 h-12 bg-fase-navy"></div>
+      <div ref={ribbon1Ref} className="relative h-12">
+        <div className={`absolute right-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+          ribbon1Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
+        }`}></div>
       </div>
 
       {/* Who We Are Section */}
-      <section id="services" className="bg-white py-40 relative">
+      <section ref={whoWeAreRef} id="services" className="bg-white py-40 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left side - Image */}
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop" 
-                alt="Insurance professionals collaborating"
-                className="w-full h-80 object-cover"
-              />
-              <div className="absolute inset-0 bg-fase-navy/10"></div>
+            <div className={`relative group transition-all duration-700 ${
+              whoWeAreVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
+            }`}>
+              <div className="transform transition-all duration-700 hover:scale-105">
+                <img 
+                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop" 
+                  alt="Insurance professionals collaborating"
+                  className="w-full h-80 object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
+                />
+                <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
+              </div>
             </div>
             
             {/* Right side - Content */}
-            <div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-6">A Community of Insurance Professionals</h2>
+            <div className={`transition-all duration-700 delay-200 ${
+              whoWeAreVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
+            }`}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-6">
+                A Community of Insurance Professionals
+              </h2>
               <p className="text-fase-black text-base sm:text-lg leading-relaxed">
                 FASE brings together organizations and individuals who are shaping the future of delegated underwriting. Our members share a focus on collaboration, responsible growth, and consistent professional standards. Through shared insight, practical resources, and an active network, we help the delegated underwriting community work more effectively.
               </p>
@@ -340,26 +359,22 @@ export default function Page() {
           </div>
         </div>
         
-        {/* Section transition wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg 
-            className="w-full h-20 text-fase-cream" 
-            viewBox="0 0 1200 120" 
-            preserveAspectRatio="none"
-          >
-            <path 
-              d="M0,0 C400,80 800,20 1200,60 L1200,120 L0,120 Z" 
-              fill="currentColor"
-            />
-          </svg>
-        </div>
       </section>
 
+      {/* Blue ribbon separator */}
+      <div ref={ribbon2Ref} className="relative h-12">
+        <div className={`absolute left-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+          ribbon2Visible ? 'scroll-visible-left' : 'scroll-hidden-left'
+        }`}></div>
+      </div>
+
       {/* Our Impact Section */}
-      <section id="conference" className="bg-fase-cream py-20 pb-32">
+      <section ref={impactRef} id="conference" className="bg-white py-20 pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-8">Our Impact</h2>
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-8 transition-all duration-700 ${
+              impactVisible ? 'scroll-visible' : 'scroll-hidden'
+            }`}>Our Impact</h2>
           </div>
           
           {/* Impact Cards */}
@@ -369,19 +384,24 @@ export default function Page() {
               return (
               <div
                 key={index}
-                className="cursor-pointer group transition-all duration-300 overflow-hidden"
+                className={`cursor-pointer group transition-all duration-500 overflow-hidden transform hover:scale-105 hover:-translate-y-2 ${
+                  impactVisible ? 'scroll-visible' : 'scroll-hidden'
+                }`}
+                style={{ 
+                  transitionDelay: impactVisible ? `${index * 200}ms` : '0ms'
+                }}
                 onClick={(e) => {
                   e.preventDefault();
                   setCurrentImpactIndex(currentImpactIndex === index ? -1 : index);
                 }}
               >
-                <div className="relative h-96 overflow-hidden border border-gray-200 shadow-lg">
+                <div className="relative h-96 overflow-hidden border border-gray-200 shadow-lg rounded-lg">
                   <img 
                     src={impact.image} 
                     alt={impact.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-fase-navy/20"></div>
+                  <div className="absolute inset-0 bg-fase-navy/20 transition-all duration-300 group-hover:bg-fase-navy/10"></div>
                   
                   {/* Title overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
@@ -417,33 +437,30 @@ export default function Page() {
       </section>
 
       {/* Blue ribbon separator */}
-      <div className="relative h-0 z-10">
-        <div className="absolute left-0 w-3/5 h-12 bg-fase-navy -translate-y-12"></div>
+      <div ref={ribbon3Ref} className="relative h-12">
+        <div className={`absolute right-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+          ribbon3Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
+        }`}></div>
       </div>
 
       {/* Vetting & Standards Section */}
-      <section 
-        className="relative py-20 pt-26 -mt-6" 
-        style={{
-          background: `
-            linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
-            url("/regulatory.jpg")
-          `,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
+      <section ref={standardsRef} className="bg-white py-40 relative overflow-hidden">
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy mb-3">Vetting & Standards</h2>
-            <p className="text-fase-black text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
+            <h2 className={`text-xl sm:text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy mb-3 transition-all duration-700 ${
+              standardsVisible ? 'scroll-visible' : 'scroll-hidden'
+            }`}>Vetting & Standards</h2>
+            <p className={`text-fase-black text-base sm:text-lg max-w-3xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${
+              standardsVisible ? 'scroll-visible' : 'scroll-hidden'
+            }`}>
               To uphold the professionalism of the FASE community, we have established a membership protocol:
             </p>
           </div>
           
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white/95 backdrop-blur-sm shadow-2xl border border-fase-light-gold overflow-hidden">
+            <div className={`bg-white/95 backdrop-blur-sm shadow-2xl border border-fase-light-gold overflow-hidden rounded-lg transform transition-all duration-700 hover:shadow-3xl delay-400 ${
+              standardsVisible ? 'scroll-visible' : 'scroll-hidden'
+            }`}>
               <div className="bg-gradient-to-r from-fase-navy to-fase-navy/90 p-4">
                 <h3 className="text-white text-lg font-bold text-center">Our Review Process</h3>
               </div>

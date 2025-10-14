@@ -1,12 +1,38 @@
-import { auth, signOut } from 'app/auth';
+'use client';
 
-export default async function ProtectedPage() {
-  let session = await auth();
+import { useAuth } from '../../contexts/AuthContext';
+import { signOut } from '../../lib/auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function ProtectedPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-black">
+        <div className="w-screen h-screen flex justify-center items-center text-white">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to login
+  }
 
   return (
     <div className="flex h-screen bg-black">
       <div className="w-screen h-screen flex flex-col space-y-5 justify-center items-center text-white">
-        You are logged in as {session?.user?.email}
+        You are logged in as {user.email}
         <SignOut />
       </div>
     </div>
@@ -14,14 +40,23 @@ export default async function ProtectedPage() {
 }
 
 function SignOut() {
+  const router = useRouter();
+  
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
-    <form
-      action={async () => {
-        'use server';
-        await signOut();
-      }}
+    <button 
+      onClick={handleSignOut}
+      className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
     >
-      <button type="submit">Sign out</button>
-    </form>
+      Sign out
+    </button>
   );
 }

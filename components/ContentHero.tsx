@@ -62,18 +62,18 @@ export default function ContentHero({
           style={{
             background: reverseLayout 
               ? `linear-gradient(to left, 
-                  #f8f8f8 0%, 
-                  #f8f8f8 40%, 
-                  rgba(248, 248, 248, 0.8) 50%, 
-                  rgba(248, 248, 248, 0.4) 60%, 
-                  rgba(248, 248, 248, 0.1) 70%, 
+                  #ffffff 0%, 
+                  #ffffff 40%, 
+                  rgba(255, 255, 255, 0.8) 50%, 
+                  rgba(255, 255, 255, 0.4) 60%, 
+                  rgba(255, 255, 255, 0.1) 70%, 
                   transparent 80%)`
               : `linear-gradient(to right, 
-                  #f8f8f8 0%, 
-                  #f8f8f8 40%, 
-                  rgba(248, 248, 248, 0.8) 50%, 
-                  rgba(248, 248, 248, 0.4) 60%, 
-                  rgba(248, 248, 248, 0.1) 70%, 
+                  #ffffff 0%, 
+                  #ffffff 40%, 
+                  rgba(255, 255, 255, 0.8) 50%, 
+                  rgba(255, 255, 255, 0.4) 60%, 
+                  rgba(255, 255, 255, 0.1) 70%, 
                   transparent 80%)`
           }}
         ></div>
