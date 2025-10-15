@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '../../../../components/PageLayout';
 import Button from '../../../../components/Button';
 import Modal from '../../../../components/Modal';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { getMemberApplicationsByUserId } from '../../../../lib/firestore';
+import { useUnifiedAuth } from '../../../../contexts/UnifiedAuthContext';
+import { UnifiedMember } from '../../../../lib/unified-member';
 
 const mockVideos = [
   {
@@ -62,8 +62,7 @@ const mockVideos = [
 ];
 
 export default function VideoPage() {
-  const authContext = useAuth();
-  const { user, loading: authLoading } = authContext || { user: null, loading: true };
+  const { user, member, loading: authLoading, hasMemberAccess } = useUnifiedAuth();
   const router = useRouter();
   const params = useParams();
   const [video, setVideo] = useState<any>(null);
@@ -85,12 +84,14 @@ export default function VideoPage() {
       }
 
       try {
-        const applications = await getMemberApplicationsByUserId(user.uid);
-        const hasApprovedMembership = applications.some(app => app.status === 'approved');
-        setMemberApplications(applications);
-        setHasAccess(hasApprovedMembership);
+        // Use unified auth access control
+        setHasAccess(hasMemberAccess);
+        // Check if user has a pending application (member.status === 'pending')
+        if (member && member.status === 'pending') {
+          setMemberApplications([member]); // Show as application under review
+        }
         
-        if (!hasApprovedMembership) {
+        if (!hasMemberAccess) {
           setShowAccessModal(true);
         }
       } catch (error) {

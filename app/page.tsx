@@ -25,13 +25,13 @@ export default function Page() {
   const { elementRef: ribbon3Ref, isVisible: ribbon3Visible } = useScrollAnimation();
   
   const cities = [
-    { name: 'Amsterdam', image: '/amsterdam.jpg' },
-    { name: 'Hamburg', image: '/hamburg.jpg' },
-    { name: 'London', image: '/london.jpg' },
-    { name: 'Madrid', image: '/madrid.jpg' },
-    { name: 'Paris', image: '/paris.jpg' },
-    { name: 'Rome', image: '/rome.jpg' },
-    { name: 'Vienna', image: '/vienna.jpg' }
+    { name: 'Business Meeting 1', image: '/AdobeStock_1406443128.jpeg' },
+    { name: 'Business Meeting 2', image: '/AdobeStock_1606166593.jpeg' },
+    { name: 'Business Meeting 3', image: '/AdobeStock_172545168.jpeg' },
+    { name: 'Business Meeting 4', image: '/AdobeStock_217797984.jpeg' },
+    { name: 'Business Meeting 5', image: '/AdobeStock_374018940.jpeg' },
+    { name: 'Business Meeting 6', image: '/AdobeStock_481244965.jpeg' },
+    { name: 'Business Meeting 7', image: '/AdobeStock_999103753.jpeg' }
   ];
 
   const services = [
@@ -292,16 +292,37 @@ export default function Page() {
         <Header currentPage="home" />
 
       {/* Hero Section */}
-      <ContentHero 
-        id="hero"
-        backgroundImages={cities}
-        currentImageIndex={currentImageIndex}
-        fullHeight={true}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-5.5rem)]">
-          {/* Left Content */}
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-bold text-fase-gold mb-4 lg:mb-6 leading-tight">
+      <section id="hero" className="relative min-h-[calc(100vh-5.5rem)] flex items-center overflow-hidden">
+        {/* Background Images */}
+        <div className="hidden md:block absolute top-0 right-0 w-3/5 xl:w-2/3 2xl:w-3/4 h-full">
+          {cities.map((city, index) => (
+            <div
+              key={city.name}
+              className={`absolute inset-0 transition-opacity duration-[8000ms] ease-in-out ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <img
+                src={city.image}
+                alt={city.name}
+                className="w-full h-full object-cover"
+                style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
+              />
+            </div>
+          ))}
+          {/* Simple gradient overlay */}
+          <div 
+            className="absolute inset-0" 
+            style={{
+              background: `linear-gradient(to left, transparent 0%, transparent 40%, rgba(255,255,255,0.8) 70%, #ffffff 85%)`
+            }}
+          />
+        </div>
+        
+        {/* Content */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
+          <div className="max-w-lg xl:max-w-xl 2xl:max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-tight">
               Connecting Europe&apos;s insurance innovators
             </h1>
             <p className="text-lg sm:text-xl text-fase-black mb-8 font-lato leading-relaxed">
@@ -316,9 +337,8 @@ export default function Page() {
               </Button>
             </div>
           </div>
-          <div></div>
         </div>
-      </ContentHero>
+      </section>
 
       {/* Blue ribbon separator */}
       <div ref={ribbon1Ref} className="relative h-12">
@@ -328,8 +348,8 @@ export default function Page() {
       </div>
 
       {/* Who We Are Section */}
-      <section ref={whoWeAreRef} id="services" className="bg-white py-40 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={whoWeAreRef} id="services" className="bg-white py-24 lg:py-32 2xl:py-40 relative overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left side - Image */}
             <div className={`relative group transition-all duration-700 ${
@@ -339,7 +359,7 @@ export default function Page() {
                 <img 
                   src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop" 
                   alt="Insurance professionals collaborating"
-                  className="w-full h-80 object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
+                  className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
               </div>
@@ -349,7 +369,7 @@ export default function Page() {
             <div className={`transition-all duration-700 delay-200 ${
               whoWeAreVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
             }`}>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-6">
                 A Community of Insurance Professionals
               </h2>
               <p className="text-fase-black text-base sm:text-lg leading-relaxed">
@@ -369,10 +389,10 @@ export default function Page() {
       </div>
 
       {/* Our Impact Section */}
-      <section ref={impactRef} id="conference" className="bg-white py-20 pb-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={impactRef} id="conference" className="bg-white py-24 lg:py-32 2xl:py-40 overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-12">
-            <h2 className={`text-2xl sm:text-3xl md:text-4xl font-noto-serif font-bold text-fase-navy mb-8 transition-all duration-700 ${
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-8 transition-all duration-700 ${
               impactVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>Our Impact</h2>
           </div>
@@ -395,7 +415,7 @@ export default function Page() {
                   setCurrentImpactIndex(currentImpactIndex === index ? -1 : index);
                 }}
               >
-                <div className="relative h-96 overflow-hidden border border-gray-200 shadow-lg rounded-lg">
+                <div className="relative h-80 lg:h-96 2xl:h-[450px] overflow-hidden border border-gray-200 shadow-lg rounded-lg">
                   <img 
                     src={impact.image} 
                     alt={impact.title}
@@ -405,7 +425,7 @@ export default function Page() {
                   
                   {/* Title overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                    <h4 className="text-white font-noto-serif font-bold text-lg">{impact.title}</h4>
+                    <h4 className="text-white font-noto-serif font-medium text-lg">{impact.title}</h4>
                   </div>
                 </div>
                 
@@ -444,10 +464,10 @@ export default function Page() {
       </div>
 
       {/* Vetting & Standards Section */}
-      <section ref={standardsRef} className="bg-white py-40 relative overflow-hidden">
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section ref={standardsRef} className="bg-white py-24 lg:py-32 2xl:py-40 relative overflow-hidden">
+        <div className="relative z-20 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-8">
-            <h2 className={`text-xl sm:text-2xl md:text-3xl font-noto-serif font-bold text-fase-navy mb-3 transition-all duration-700 ${
+            <h2 className={`text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-fase-navy mb-3 transition-all duration-700 ${
               standardsVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>Vetting & Standards</h2>
             <p className={`text-fase-black text-base sm:text-lg max-w-3xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${
@@ -462,7 +482,7 @@ export default function Page() {
               standardsVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>
               <div className="bg-gradient-to-r from-fase-navy to-fase-navy/90 p-4">
-                <h3 className="text-white text-lg font-bold text-center">Our Review Process</h3>
+                <h3 className="text-white text-lg font-medium text-center">Our Review Process</h3>
               </div>
               <div className="divide-y divide-fase-cream">
                 {standards.map((standard, index) => (
@@ -482,7 +502,7 @@ export default function Page() {
                         }`}>
                           {index + 1}
                         </div>
-                        <h4 className={`font-bold transition-all duration-300 ${
+                        <h4 className={`font-medium transition-all duration-300 ${
                           currentStandardIndex === index 
                             ? 'text-fase-navy text-lg' 
                             : 'text-fase-black group-hover:text-fase-navy'
@@ -535,9 +555,9 @@ export default function Page() {
       >
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-fase-navy/75"></div>
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-bold text-white mb-4">Why Join FASE</h2>
-          <h3 className="text-lg sm:text-xl font-noto-serif font-bold text-fase-light-blue mb-6">A Practical Network for a Complex Market</h3>
+        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center py-20 max-w-6xl mx-auto">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">Why Join FASE</h2>
+          <h3 className="text-lg sm:text-xl font-noto-serif font-medium text-fase-light-blue mb-6">A Practical Network for a Complex Market</h3>
           <p className="text-fase-light-blue text-sm sm:text-base mb-6 leading-relaxed max-w-3xl mx-auto">
             Whether you&apos;re an MGA, insurer, broker, or service partner, FASE helps you stay connected to the people, information, and perspectives shaping delegated underwriting in Europe.
           </p>

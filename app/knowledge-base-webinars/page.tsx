@@ -7,9 +7,8 @@ import TitleHero from '../../components/TitleHero';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo, updateComment, deleteComment } from '../../lib/knowledge-base';
-import { useAuth } from '../../contexts/AuthContext';
-import { useAdmin } from '../../hooks/useAdmin';
-import { getMemberApplicationsByUserId } from '../../lib/firestore';
+import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
+import { UnifiedMember } from '../../lib/unified-member';
 import type { Video, Comment } from '../../lib/knowledge-base';
 
 // Mock data - in production this would come from your database
@@ -69,9 +68,7 @@ const mockVideos = [
 const categories = ['All', 'Regulatory', 'Technology', 'Market Analysis', 'Webinars', 'Training'];
 
 export default function KnowledgeBaseWebinarsPage() {
-  const authContext = useAuth();
-  const { user, loading: authLoading } = authContext || { user: null, loading: true };
-  const { isAdmin } = useAdmin();
+  const { user, member, loading: authLoading, isAdmin, hasMemberAccess } = useUnifiedAuth();
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,12 +110,14 @@ export default function KnowledgeBaseWebinarsPage() {
       }
 
       try {
-        const applications = await getMemberApplicationsByUserId(user.uid);
-        const hasApprovedMembership = applications.some(app => app.status === 'approved');
-        setMemberApplications(applications);
-        setHasAccess(hasApprovedMembership);
+        // Use unified auth access control
+        setHasAccess(hasMemberAccess);
+        // Check if user has a pending application (member.status === 'pending')
+        if (member && member.status === 'pending') {
+          setMemberApplications([member]); // Show as application under review
+        }
         
-        if (!hasApprovedMembership) {
+        if (!hasMemberAccess) {
           setShowAccessModal(true);
         }
       } catch (error) {

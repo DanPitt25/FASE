@@ -1,5 +1,5 @@
 import './globals.css';
-import { AuthProvider } from '../contexts/AuthContext';
+import { UnifiedAuthProvider } from '../contexts/UnifiedAuthContext';
 import { LocaleProvider } from '../contexts/LocaleContext';
 import DynamicIntlProvider from '../components/DynamicIntlProvider';
 
@@ -36,9 +36,9 @@ export default async function RootLayout({
       <body>
         <LocaleProvider>
           <DynamicIntlProvider allMessages={allMessages}>
-            <AuthProvider>
+            <UnifiedAuthProvider>
               {children}
-            </AuthProvider>
+            </UnifiedAuthProvider>
           </DynamicIntlProvider>
         </LocaleProvider>
       </body>

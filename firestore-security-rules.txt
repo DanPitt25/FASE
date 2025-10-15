@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Accounts Collection
+    match /accounts/{userId} {
+      // Users can read/write their own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Members can read other approved members (for directory)
+      allow read: if request.auth != null && 
+        (request.auth.token.admin == true || 
+         get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.status in ['approved', 'admin']);
+    }
+    
+    // Admin access to all accounts
+    match /accounts/{userId} {
+      allow read, write: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // Messages Collection (unchanged)
+    match /messages/{messageId} {
+      allow read, write: if request.auth != null && request.auth.token.admin == true;
+      allow read: if request.auth != null;
+    }
+    
+    // User Messages Collection (unchanged)
+    match /userMessages/{userMessageId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Alerts Collection (unchanged)
+    match /alerts/{alertId} {
+      allow read, write: if request.auth != null && request.auth.token.admin == true;
+      allow read: if request.auth != null;
+    }
+    
+    // User Alerts Collection (unchanged)
+    match /userAlerts/{userAlertId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Legacy collections (keep for backward compatibility during migration)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    match /members/{memberId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow read: if request.auth != null && 
+        (request.auth.token.admin == true || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.access == 'admin');
+      allow read: if request.auth != null && resource.data.status == 'approved';
+    }
+    
+    // Knowledge Base Collections (unchanged)
+    match /videos/{videoId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    match /comments/{commentId} {
+      allow read: if resource.data.status == 'approved';
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || request.auth.token.admin == true);
+    }
+  }
+}

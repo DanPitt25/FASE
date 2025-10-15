@@ -26,15 +26,16 @@ export default function ContentHero({
 }: ContentHeroProps) {
   const heightClass = fullHeight 
     ? 'min-h-[calc(100vh-5.5rem)] flex items-center' 
-    : 'py-20';
+    : 'py-20 lg:py-24 2xl:py-32';
 
   return (
     <section id={id} className={`relative ${heightClass} overflow-hidden ${className}`}>
-      {/* Background Images - Desktop Only */}
+      {/* Background Images Container - Desktop Only */}
       {backgroundImages.length > 0 && (
-        <div className={`hidden md:block absolute top-0 w-3/5 h-full ${
-          reverseLayout ? 'left-0' : 'right-0'
+        <div className={`hidden md:block absolute top-0 h-full ${
+          reverseLayout ? 'left-0 w-3/5' : 'right-0 w-3/5'
         }`}>
+          {/* Images */}
           {backgroundImages.map((city, index) => (
             <div
               key={city.name}
@@ -52,34 +53,28 @@ export default function ContentHero({
               />
             </div>
           ))}
+          
+          {/* Gradient Overlay - Inside the same container */}
+          <div 
+            className="absolute inset-0 pointer-events-none" 
+            style={{
+              background: reverseLayout 
+                ? `linear-gradient(to right, 
+                    transparent 0%, 
+                    transparent 50%, 
+                    rgba(255, 255, 255, 0.7) 70%, 
+                    #ffffff 85%)`
+                : `linear-gradient(to left, 
+                    transparent 0%, 
+                    transparent 50%, 
+                    rgba(255, 255, 255, 0.7) 70%, 
+                    #ffffff 85%)`
+            }}
+          ></div>
         </div>
       )}
 
-      {/* Smooth Gradient Overlay */}
-      {backgroundImages.length > 0 && (
-        <div 
-          className="absolute inset-0" 
-          style={{
-            background: reverseLayout 
-              ? `linear-gradient(to left, 
-                  #ffffff 0%, 
-                  #ffffff 40%, 
-                  rgba(255, 255, 255, 0.8) 50%, 
-                  rgba(255, 255, 255, 0.4) 60%, 
-                  rgba(255, 255, 255, 0.1) 70%, 
-                  transparent 80%)`
-              : `linear-gradient(to right, 
-                  #ffffff 0%, 
-                  #ffffff 40%, 
-                  rgba(255, 255, 255, 0.8) 50%, 
-                  rgba(255, 255, 255, 0.4) 60%, 
-                  rgba(255, 255, 255, 0.1) 70%, 
-                  transparent 80%)`
-          }}
-        ></div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
         {children}
       </div>
     </section>

@@ -14,7 +14,7 @@ export default function Footer() {
             <ul className="space-y-2 text-fase-cream">
               <li><a href="/join" className="hover:text-fase-navy transition duration-200">Join FASE</a></li>
               <li><a href="/directory" className="hover:text-fase-navy transition duration-200">Member Directory</a></li>
-              <li><a href="/about/membership-directory" className="hover:text-fase-navy transition duration-200">Membership Types</a></li>
+              <li><a href="/about/membership-directory" className="hover:text-fase-navy transition duration-200">Directory Info</a></li>
             </ul>
           </div>
           <div>

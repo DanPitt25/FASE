@@ -47,16 +47,15 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
   try {
     await initializeServices();
     const db = admin.firestore();
-    const membersRef = db.collection('members');
-    const snapshot = await membersRef.where('uid', '==', userId).limit(1).get();
+    const accountRef = db.collection('accounts').doc(userId);
+    const doc = await accountRef.get();
     
-    if (snapshot.empty) {
-      console.log('No member found with uid:', userId);
+    if (!doc.exists) {
+      console.log('No account found with uid:', userId);
       return;
     }
     
-    const doc = snapshot.docs[0];
-    await doc.ref.update({
+    await accountRef.update({
       status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
       paymentStatus: paymentStatus,
       paymentMethod: paymentMethod,

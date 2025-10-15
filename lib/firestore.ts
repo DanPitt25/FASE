@@ -549,3 +549,504 @@ export const updateMemberApplicationPaymentStatus = async (
   }
 };
 
+// ==========================================
+// ALERTS SYSTEM
+// ==========================================
+
+export interface Alert {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  targetAudience: 'all' | 'members' | 'admins' | 'specific';
+  targetUsers?: string[]; // Array of user IDs if targetAudience is 'specific'
+  isActive: boolean;
+  createdAt: any;
+  updatedAt: any;
+  createdBy: string; // Admin user ID
+  expiresAt?: any; // Optional expiration date
+  actionRequired: boolean;
+  actionUrl?: string; // Optional URL for action button
+  actionText?: string; // Text for action button
+}
+
+export interface UserAlert {
+  id: string;
+  alertId: string;
+  userId: string;
+  isRead: boolean;
+  isDismissed: boolean;
+  readAt?: any;
+  dismissedAt?: any;
+  createdAt: any;
+}
+
+// Create a new alert (admin only)
+export const createAlert = async (alertData: Omit<Alert, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  try {
+    const alertsRef = collection(db, 'alerts');
+    const alertDoc = doc(alertsRef);
+    
+    const alert: Alert = {
+      ...alertData,
+      id: alertDoc.id,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    await setDoc(alertDoc, alert);
+    
+    // If targeting all users or members, create user alert records for existing users
+    if (alertData.targetAudience === 'all' || alertData.targetAudience === 'members') {
+      await createUserAlertsForAudience(alertDoc.id, alertData.targetAudience);
+    } else if (alertData.targetAudience === 'specific' && alertData.targetUsers) {
+      await createUserAlertsForUsers(alertDoc.id, alertData.targetUsers);
+    }
+    
+    return alertDoc.id;
+  } catch (error) {
+    console.error('Error creating alert:', error);
+    throw error;
+  }
+};
+
+// Create user alert records for a specific audience
+const createUserAlertsForAudience = async (alertId: string, audience: 'all' | 'members' | 'admins') => {
+  try {
+    const usersRef = collection(db, 'users');
+    let usersQuery;
+    
+    if (audience === 'admins') {
+      usersQuery = query(usersRef, where('access', '==', 'admin'));
+    } else if (audience === 'members') {
+      // Get users who have approved member applications
+      const applicationsRef = collection(db, 'members');
+      const approvedAppsQuery = query(applicationsRef, where('status', '==', 'approved'));
+      const approvedApps = await getDocs(approvedAppsQuery);
+      const memberUids = approvedApps.docs.map(doc => doc.data().uid);
+      
+      if (memberUids.length > 0) {
+        usersQuery = query(usersRef, where('uid', 'in', memberUids));
+      } else {
+        return; // No approved members
+      }
+    } else {
+      // All users
+      usersQuery = query(usersRef);
+    }
+    
+    const users = await getDocs(usersQuery);
+    
+    const userAlertPromises = users.docs.map(userDoc => {
+      const userAlertRef = doc(collection(db, 'userAlerts'));
+      const userAlert: UserAlert = {
+        id: userAlertRef.id,
+        alertId,
+        userId: userDoc.data().uid,
+        isRead: false,
+        isDismissed: false,
+        createdAt: serverTimestamp()
+      };
+      return setDoc(userAlertRef, userAlert);
+    });
+    
+    await Promise.all(userAlertPromises);
+  } catch (error) {
+    console.error('Error creating user alerts for audience:', error);
+    throw error;
+  }
+};
+
+// Create user alert records for specific users
+const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
+  try {
+    const userAlertPromises = userIds.map(userId => {
+      const userAlertRef = doc(collection(db, 'userAlerts'));
+      const userAlert: UserAlert = {
+        id: userAlertRef.id,
+        alertId,
+        userId,
+        isRead: false,
+        isDismissed: false,
+        createdAt: serverTimestamp()
+      };
+      return setDoc(userAlertRef, userAlert);
+    });
+    
+    await Promise.all(userAlertPromises);
+  } catch (error) {
+    console.error('Error creating user alerts for specific users:', error);
+    throw error;
+  }
+};
+
+// Get alerts for a specific user
+export const getUserAlerts = async (userId: string): Promise<(Alert & UserAlert)[]> => {
+  try {
+    const userAlertsRef = collection(db, 'userAlerts');
+    const userAlertsQuery = query(
+      userAlertsRef, 
+      where('userId', '==', userId),
+      where('isDismissed', '==', false)
+    );
+    
+    const userAlerts = await getDocs(userAlertsQuery);
+    
+    const alertsWithDetails = await Promise.all(
+      userAlerts.docs.map(async (userAlertDoc) => {
+        const userAlert = userAlertDoc.data() as UserAlert;
+        const alertDoc = await getDoc(doc(db, 'alerts', userAlert.alertId));
+        
+        if (alertDoc.exists()) {
+          const alert = alertDoc.data() as Alert;
+          // Only return active alerts that haven't expired
+          if (alert.isActive && (!alert.expiresAt || alert.expiresAt.toDate() > new Date())) {
+            return { ...alert, ...userAlert };
+          }
+        }
+        return null;
+      })
+    );
+    
+    return alertsWithDetails.filter(alert => alert !== null) as (Alert & UserAlert)[];
+  } catch (error) {
+    console.error('Error getting user alerts:', error);
+    throw error;
+  }
+};
+
+// Mark alert as read
+export const markAlertAsRead = async (userAlertId: string): Promise<void> => {
+  try {
+    const userAlertRef = doc(db, 'userAlerts', userAlertId);
+    await updateDoc(userAlertRef, {
+      isRead: true,
+      readAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error marking alert as read:', error);
+    throw error;
+  }
+};
+
+// Dismiss alert
+export const dismissAlert = async (userAlertId: string): Promise<void> => {
+  try {
+    const userAlertRef = doc(db, 'userAlerts', userAlertId);
+    await updateDoc(userAlertRef, {
+      isDismissed: true,
+      dismissedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error dismissing alert:', error);
+    throw error;
+  }
+};
+
+// Get all alerts for admin management
+export const getAllAlerts = async (): Promise<Alert[]> => {
+  try {
+    const alertsRef = collection(db, 'alerts');
+    const alertsSnapshot = await getDocs(alertsRef);
+    
+    return alertsSnapshot.docs.map(doc => doc.data() as Alert);
+  } catch (error) {
+    console.error('Error getting all alerts:', error);
+    throw error;
+  }
+};
+
+// Update alert
+export const updateAlert = async (alertId: string, updates: Partial<Alert>): Promise<void> => {
+  try {
+    const alertRef = doc(db, 'alerts', alertId);
+    await updateDoc(alertRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating alert:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// MESSAGING SYSTEM
+// ==========================================
+
+export interface Message {
+  id: string;
+  subject: string;
+  content: string;
+  senderId: string;
+  senderName: string;
+  senderEmail: string;
+  recipientId?: string; // For direct messages
+  recipientType: 'user' | 'all_members' | 'all_admins' | 'all_users';
+  messageType: 'direct' | 'announcement' | 'system';
+  priority: 'low' | 'medium' | 'high';
+  isRead: boolean;
+  createdAt: any;
+  updatedAt: any;
+  parentMessageId?: string; // For reply threads
+  attachments?: string[]; // URLs to attachments
+}
+
+export interface MessageThread {
+  id: string;
+  participants: string[]; // Array of user IDs
+  lastMessage: string;
+  lastMessageAt: any;
+  createdAt: any;
+  updatedAt: any;
+  subject: string;
+  isActive: boolean;
+}
+
+export interface UserMessage {
+  id: string;
+  messageId: string;
+  userId: string;
+  isRead: boolean;
+  readAt?: any;
+  isDeleted: boolean;
+  deletedAt?: any;
+  createdAt: any;
+}
+
+// Send a message
+export const sendMessage = async (messageData: Omit<Message, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  try {
+    const messagesRef = collection(db, 'messages');
+    const messageDoc = doc(messagesRef);
+    
+    const message: Message = {
+      ...messageData,
+      id: messageDoc.id,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    await setDoc(messageDoc, message);
+    
+    // Create user message records based on recipient type
+    await createUserMessagesForRecipients(messageDoc.id, messageData.recipientType, messageData.recipientId);
+    
+    return messageDoc.id;
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
+};
+
+// Create user message records for recipients
+const createUserMessagesForRecipients = async (messageId: string, recipientType: string, recipientId?: string) => {
+  try {
+    let recipientIds: string[] = [];
+    
+    if (recipientType === 'user' && recipientId) {
+      recipientIds = [recipientId];
+    } else if (recipientType === 'all_members') {
+      // Get all approved members
+      const applicationsRef = collection(db, 'members');
+      const approvedAppsQuery = query(applicationsRef, where('status', '==', 'approved'));
+      const approvedApps = await getDocs(approvedAppsQuery);
+      const memberUids = approvedApps.docs.map(doc => doc.data().uid);
+      
+      // Also include admins (they have member portal access)
+      const usersRef = collection(db, 'users');
+      const adminsQuery = query(usersRef, where('access', '==', 'admin'));
+      const admins = await getDocs(adminsQuery);
+      const adminUids = admins.docs.map(doc => doc.data().uid);
+      
+      // Combine and deduplicate
+      recipientIds = Array.from(new Set([...memberUids, ...adminUids]));
+    } else if (recipientType === 'all_admins') {
+      // Get all admin users
+      const usersRef = collection(db, 'users');
+      const adminsQuery = query(usersRef, where('access', '==', 'admin'));
+      const admins = await getDocs(adminsQuery);
+      recipientIds = admins.docs.map(doc => doc.data().uid);
+    } else if (recipientType === 'all_users') {
+      // Get all users
+      const usersRef = collection(db, 'users');
+      const users = await getDocs(usersRef);
+      recipientIds = users.docs.map(doc => doc.data().uid);
+    }
+    
+    const userMessagePromises = recipientIds.map(userId => {
+      const userMessageRef = doc(collection(db, 'userMessages'));
+      const userMessage: UserMessage = {
+        id: userMessageRef.id,
+        messageId,
+        userId,
+        isRead: false,
+        isDeleted: false,
+        createdAt: serverTimestamp()
+      };
+      return setDoc(userMessageRef, userMessage);
+    });
+    
+    await Promise.all(userMessagePromises);
+  } catch (error) {
+    console.error('Error creating user messages for recipients:', error);
+    throw error;
+  }
+};
+
+// Get messages for a specific user
+export const getUserMessages = async (userId: string): Promise<(Message & UserMessage)[]> => {
+  try {
+    const userMessagesRef = collection(db, 'userMessages');
+    const userMessagesQuery = query(
+      userMessagesRef,
+      where('userId', '==', userId),
+      where('isDeleted', '==', false)
+    );
+    
+    const userMessages = await getDocs(userMessagesQuery);
+    
+    const messagesWithDetails = await Promise.all(
+      userMessages.docs.map(async (userMessageDoc) => {
+        const userMessage = userMessageDoc.data() as UserMessage;
+        const messageDoc = await getDoc(doc(db, 'messages', userMessage.messageId));
+        
+        if (messageDoc.exists()) {
+          const message = messageDoc.data() as Message;
+          return { 
+            ...message, 
+            ...userMessage,
+            userMessageId: userMessage.id  // Keep track of userMessage ID for updates
+          };
+        }
+        return null;
+      })
+    );
+    
+    return messagesWithDetails.filter(message => message !== null) as (Message & UserMessage)[];
+  } catch (error) {
+    console.error('Error getting user messages:', error);
+    throw error;
+  }
+};
+
+// Mark message as read
+export const markMessageAsRead = async (userMessageId: string): Promise<void> => {
+  try {
+    const userMessageRef = doc(db, 'userMessages', userMessageId);
+    await updateDoc(userMessageRef, {
+      isRead: true,
+      readAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    throw error;
+  }
+};
+
+// Delete message for user
+export const deleteMessageForUser = async (userMessageId: string): Promise<void> => {
+  try {
+    const userMessageRef = doc(db, 'userMessages', userMessageId);
+    await updateDoc(userMessageRef, {
+      isDeleted: true,
+      deletedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error deleting message for user:', error);
+    throw error;
+  }
+};
+
+// Get sent messages for a user
+export const getSentMessages = async (userId: string): Promise<Message[]> => {
+  try {
+    const messagesRef = collection(db, 'messages');
+    const sentMessagesQuery = query(messagesRef, where('senderId', '==', userId));
+    const sentMessages = await getDocs(sentMessagesQuery);
+    
+    return sentMessages.docs.map(doc => doc.data() as Message);
+  } catch (error) {
+    console.error('Error getting sent messages:', error);
+    throw error;
+  }
+};
+
+// ==========================================
+// MEMBER FILTERING FUNCTIONS
+// ==========================================
+
+// Get members by organization type
+export const getMembersByOrganizationType = async (organizationType: 'MGA' | 'carrier' | 'provider'): Promise<MemberApplication[]> => {
+  try {
+    const membersRef = collection(db, 'members');
+    const membersQuery = query(
+      membersRef, 
+      where('status', '==', 'approved'),
+      where('organizationType', '==', organizationType)
+    );
+    const members = await getDocs(membersQuery);
+    
+    return members.docs.map(doc => doc.data() as MemberApplication);
+  } catch (error) {
+    console.error('Error getting members by organization type:', error);
+    throw error;
+  }
+};
+
+// Search members by organization name
+export const searchMembersByOrganizationName = async (searchTerm: string): Promise<MemberApplication[]> => {
+  try {
+    const membersRef = collection(db, 'members');
+    const membersQuery = query(membersRef, where('status', '==', 'approved'));
+    const members = await getDocs(membersQuery);
+    
+    // Filter by organization name on client side (Firestore doesn't support case-insensitive search)
+    const filteredMembers = members.docs
+      .map(doc => doc.data() as MemberApplication)
+      .filter(member => 
+        member.organizationName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    
+    return filteredMembers;
+  } catch (error) {
+    console.error('Error searching members by organization name:', error);
+    throw error;
+  }
+};
+
+// Get user IDs for members matching criteria
+export const getUserIdsForMemberCriteria = async (criteria: {
+  organizationType?: 'MGA' | 'carrier' | 'provider';
+  organizationNames?: string[];
+}): Promise<string[]> => {
+  try {
+    let members: MemberApplication[] = [];
+    
+    if (criteria.organizationType) {
+      members = await getMembersByOrganizationType(criteria.organizationType);
+    } else {
+      // Get all approved members
+      const membersRef = collection(db, 'members');
+      const membersQuery = query(membersRef, where('status', '==', 'approved'));
+      const allMembers = await getDocs(membersQuery);
+      members = allMembers.docs.map(doc => doc.data() as MemberApplication);
+    }
+    
+    // Filter by organization names if provided
+    if (criteria.organizationNames && criteria.organizationNames.length > 0) {
+      members = members.filter(member => 
+        criteria.organizationNames!.includes(member.organizationName)
+      );
+    }
+    
+    return members.map(member => member.uid);
+  } catch (error) {
+    console.error('Error getting user IDs for member criteria:', error);
+    throw error;
+  }
+};
+

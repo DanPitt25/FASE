@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Button from './Button';
-import { useAuth } from '../contexts/AuthContext';
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { signOut } from '../lib/auth';
 import { useTranslations } from 'next-intl';
-import { useAdmin } from '../hooks/useAdmin';
+import { useUnifiedAdmin } from '../hooks/useUnifiedAdmin';
 
 interface HeaderProps {
   currentPage?: string;
@@ -18,11 +18,10 @@ interface HeaderProps {
 export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, member, loading, isAdmin, hasMemberAccess } = useUnifiedAuth();
   const { locale, setLocale } = useLocale();
   const router = useRouter();
   const t = useTranslations('Header');
-  const { isAdmin, loading: adminLoading } = useAdmin();
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -42,18 +41,18 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
     <>
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white shadow-lg border-b border-fase-light-gold">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex justify-between">
             {/* Left Side - Logo */}
-            <div className="flex items-center py-3">
+            <div className="flex items-center py-2">
               <div className="flex-shrink-0 flex items-center">
                 <a href="/" className="relative">
                   <Image 
-                    src="/fase-logo-rgb.png" 
+                    src="/FASE-Logo-Lockup-RGB.png" 
                     alt="FASE Logo" 
-                    width={200}
-                    height={64}
-                    className="h-16 w-auto object-contain"
+                    width={280}
+                    height={60}
+                    className="h-15 w-auto object-contain"
                     priority
                     onLoad={handleImageLoad}
                   />
@@ -70,7 +69,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     <div className="text-sm text-fase-black">
                       {t('logged_in_as')} {user.displayName || user.email?.split("@")[0]}
                     </div>
-                    {!adminLoading && isAdmin && locale === 'en' && (
+                    {isAdmin && locale === 'en' && (
                       <a href="/admin-portal" className="text-xs text-fase-navy hover:text-fase-gold transition-colors duration-200 font-medium border border-fase-navy hover:border-fase-gold px-2 py-1 rounded">
                         Admin
                       </a>
@@ -122,13 +121,13 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
                 <div className="flex items-center space-x-6">
                   {/* About FASE */}
-                  <a href="/about" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                  <a href="/about" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'about' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>About FASE</a>
 
                   {/* Networking Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
+                    <span className="px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
                       Networking
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -139,8 +138,8 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                         <a href="/events" className={`block px-4 py-2 text-sm ${
                           currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>Events</a>
-                        <a href="/about/membership-directory" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'membership-directory' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        <a href="/directory" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'directory' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>Member Directory</a>
                       </div>
                     </div>
@@ -148,7 +147,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
 
                   {/* Development Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
+                    <span className="px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
                       Development
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -167,17 +166,17 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
 
                   {/* Member Portal */}
-                  <a href="/member-portal" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                  <a href="/member-portal" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'member-portal' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>{t('member_portal')}</a>
                   
                   {/* Sponsors */}
-                  <a href="/sponsors" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                  <a href="/sponsors" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'sponsors' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Sponsors</a>
                   
                   {/* Contact */}
-                  <a href="/contact" className={`px-4 py-3 text-sm whitespace-nowrap transition-all duration-200 ${
+                  <a href="/contact" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'contact' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Contact</a>
                 </div>
@@ -186,7 +185,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 ) : user ? (
                   <button
                     onClick={handleSignOut}
-                    className="px-3 py-2 text-sm font-medium text-fase-black hover:text-fase-navy"
+                    className="px-3 py-2 text-sm xl:text-base 2xl:text-lg font-medium text-fase-black hover:text-fase-navy"
                   >
                     {t('sign_out')}
                   </button>
@@ -231,8 +230,8 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <a href="/events" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>Events</a>
-            <a href="/about/membership-directory" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'membership-directory' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+            <a href="/directory" className={`block px-3 py-2 text-base font-medium ${
+              currentPage === 'directory' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>Member Directory</a>
             <a href="/news" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'news' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
