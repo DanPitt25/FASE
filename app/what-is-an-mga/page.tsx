@@ -4,15 +4,8 @@ import PageLayout from '../../components/PageLayout';
 import TitleHero from '../../components/TitleHero';
 import ContentHero from '../../components/ContentHero';
 
-export default function WhatIsAnMGAPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Business Model', id: 'business-model' },
-    { name: 'Innovation', id: 'innovation' }
-  ];
-
-  return (
-    <PageLayout currentPage="what-is-an-mga" sections={sections}>
+export default function WhatIsAnMGAPage() {  return (
+    <PageLayout currentPage="what-is-an-mga">
       <main className="flex-1">
         <TitleHero 
           id="hero"

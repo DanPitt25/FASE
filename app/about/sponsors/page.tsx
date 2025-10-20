@@ -6,17 +6,8 @@ import TitleHero from '../../../components/TitleHero';
 import ContentHero from '../../../components/ContentHero';
 import Button from '../../../components/Button';
 
-export default function SponsorsPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Sponsorship Levels', id: 'sponsorship-levels' },
-    { name: 'Founding Supporters', id: 'founding-supporters' },
-    { name: 'Why Sponsor', id: 'why-sponsor' },
-    { name: 'Become a Sponsor', id: 'become-sponsor' }
-  ];
-
-  return (
-    <PageLayout currentPage="about" sections={sections}>
+export default function SponsorsPage() {  return (
+    <PageLayout currentPage="about">
       <main className="flex-1">
         <TitleHero 
           id="hero"

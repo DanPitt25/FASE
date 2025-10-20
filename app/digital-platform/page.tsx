@@ -5,14 +5,8 @@ import TitleHero from '../../components/TitleHero';
 import ContentHero from '../../components/ContentHero';
 import Button from '../../components/Button';
 
-export default function DigitalPlatformPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Coming Soon', id: 'coming-soon' }
-  ];
-
-  return (
-    <PageLayout currentPage="digital-platform" sections={sections}>
+export default function DigitalPlatformPage() {  return (
+    <PageLayout currentPage="digital-platform">
       <main className="flex-1">
         <TitleHero
           id="hero"

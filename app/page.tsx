@@ -10,7 +10,6 @@ import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showNavPanel, setShowNavPanel] = useState(false);
   const [currentSection, setCurrentSection] = useState('hero');
   const [currentServiceIndex, setCurrentServiceIndex] = useState(-1);
   const [currentStandardIndex, setCurrentStandardIndex] = useState(-1);
@@ -210,85 +209,8 @@ export default function Page() {
 
   return (
     <div className="flex min-h-screen bg-white font-lato">
-      {/* Collapsible Navigation Sidebar */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${showNavPanel ? 'w-80' : 'w-0'} overflow-hidden bg-white shadow-2xl z-40`}>
-        <div className="w-80 h-full">
-          <div className="p-6">
-            {/* Panel Header */}
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-noto-serif font-bold text-fase-navy">Navigation</h2>
-              <button
-                onClick={() => setShowNavPanel(false)}
-                className="p-2 hover:bg-fase-cream transition-colors"
-              >
-                <svg className="w-5 h-5 text-fase-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Navigation Items */}
-            <nav className="space-y-3">
-              {sections.map((section, index) => (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    if (section.id === 'hero') {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
-                      const element = document.getElementById(section.id);
-                      if (element) {
-                        const headerHeight = 80; // Approximate header height
-                        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-                        window.scrollTo({
-                          top: elementPosition - headerHeight,
-                          behavior: 'smooth'
-                        });
-                      }
-                    }
-                  }}
-                  className={`w-full flex items-center space-x-3 p-3 transition-all duration-200 group  mx-2 ${
-                    currentSection === section.id 
-                      ? 'bg-fase-navy text-white shadow-lg' 
-                      : 'hover:bg-fase-cream hover:shadow-md'
-                  }`}
-                >
-                  <div className={`flex items-center justify-center w-6 h-6 text-xs font-bold transition-colors rounded-full ${
-                    currentSection === section.id 
-                      ? 'bg-white text-fase-navy' 
-                      : 'bg-fase-black text-white group-hover:bg-fase-navy'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <span className={`text-base font-medium transition-colors ${
-                    currentSection === section.id 
-                      ? 'text-white' 
-                      : 'text-fase-black group-hover:text-fase-navy'
-                  }`}>
-                    {section.name}
-                  </span>
-                </button>
-              ))}
-            </nav>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content Container */}
-      <div className={`flex-1 relative transition-all duration-300 ${showNavPanel ? 'md:ml-80' : 'ml-0'}`}>
-        {/* Menu Toggle Tab - Hidden on mobile, shown on desktop */}
-        <button
-          onClick={() => setShowNavPanel(!showNavPanel)}
-          className="hidden md:flex fixed top-1/2 left-0 transform -translate-y-1/2 z-50 bg-white/95 backdrop-blur-sm pl-2 pr-4 py-8 shadow-xl  hover:bg-white hover:shadow-2xl transition-all duration-200 flex-col items-center space-y-2"
-        >
-          <div className="flex flex-col space-y-1">
-            <div className="w-1.5 h-1.5 bg-fase-black "></div>
-            <div className="w-1.5 h-1.5 bg-fase-navy "></div>
-            <div className="w-1.5 h-1.5 bg-fase-black "></div>
-          </div>
-          <span className="text-xs font-medium text-fase-black transform rotate-90 whitespace-nowrap">NAV</span>
-        </button>
-
+      <div className="flex-1 relative">
         <Header currentPage="home" />
 
       {/* Hero Section */}
@@ -342,9 +264,9 @@ export default function Page() {
 
       {/* Blue ribbon separator */}
       <div ref={ribbon1Ref} className="relative h-12">
-        <div className={`absolute right-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+        <div className={`absolute right-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
           ribbon1Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
-        }`}></div>
+        }`} style={{ width: '61.8%' }}></div>
       </div>
 
       {/* Who We Are Section */}
@@ -383,9 +305,9 @@ export default function Page() {
 
       {/* Blue ribbon separator */}
       <div ref={ribbon2Ref} className="relative h-12">
-        <div className={`absolute left-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+        <div className={`absolute left-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
           ribbon2Visible ? 'scroll-visible-left' : 'scroll-hidden-left'
-        }`}></div>
+        }`} style={{ width: '61.8%' }}></div>
       </div>
 
       {/* Our Impact Section */}
@@ -458,9 +380,9 @@ export default function Page() {
 
       {/* Blue ribbon separator */}
       <div ref={ribbon3Ref} className="relative h-12">
-        <div className={`absolute right-0 w-3/5 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+        <div className={`absolute right-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
           ribbon3Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
-        }`}></div>
+        }`} style={{ width: '61.8%' }}></div>
       </div>
 
       {/* Vetting & Standards Section */}

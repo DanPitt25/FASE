@@ -1,0 +1,118 @@
+FASE Signup Process Documentation
+========================================
+
+CURRENT SIGNUP SYSTEM OVERVIEW:
+The FASE signup system uses a unified account and membership registration process that combines authentication and membership application in a single form.
+
+MAIN ENTRY POINT:
+- URL: /register
+- Component: app/register/page.tsx
+- Layout: Custom card-based design with FASE branding
+
+FORM COMPONENTS:
+1. app/register/integrated-register-form.tsx (MAIN FORM - currently in use)
+2. app/register/register-form.tsx (simpler version - appears unused)
+
+STEP-BY-STEP PROCESS (IntegratedRegisterForm):
+
+STEP 1: Account Information
+- Personal Name (required)
+- Email (required) 
+- Password (required - must have 8+ chars, capital letter, special character)
+- Confirm Password (required)
+- Real-time password validation with visual requirements checklist
+
+STEP 2: Membership Information  
+- Membership Type Selection:
+  * Individual Membership (for individual professionals)
+  * Corporate Membership (for organizations)
+- If Corporate:
+  * Organization Name (required)
+  * Organization Type (MGA, Insurance Carrier, Service Provider)
+- Primary Contact Information:
+  * Contact Name (required)
+  * Job Title (optional)
+  * Email (required) 
+  * Phone (required)
+
+STEP 3: Additional Details
+- Address Information:
+  * Address Line 1 (required)
+  * Address Line 2 (optional)
+  * City (required)
+  * State/Province (optional)
+  * Postal Code (optional)
+  * Country (required - dropdown with EU countries + US + Other)
+  * Custom Country field if "Other" selected
+- Portfolio Information (for MGAs only):
+  * Gross Written Premiums (required for MGAs - dropdown ranges)
+  * Portfolio Mix (optional - percentage breakdown by insurance lines)
+- Additional Questions:
+  * Member of other European MGA associations? (Yes/No)
+  * If Yes: Select from list (ASASE, AIMGA, BAUA, MGAA, NVGA)
+- Logo Upload (optional - PNG/JPG/SVG, max 5MB)
+
+STEP 4: Email Verification (Intermediate Step)
+- Account creation triggers email verification requirement
+- User must verify email before proceeding to membership application
+- Shows verification UI with:
+  * Send verification email button
+  * "I've verified my email" check button
+  * Resend option
+
+STEP 5: Payment
+- Membership Summary display
+- Fee Calculation:
+  * Individual: €500
+  * Corporate MGA: €900-€6400 based on premium volume
+  * Corporate Other: €900
+  * 20% discount for members of other associations
+- Stripe integration for payment processing
+- Redirects to Stripe Checkout
+
+BACKEND INTEGRATION:
+- Authentication: lib/auth.js
+  * createAccountWithoutVerification()
+  * sendVerificationEmail()
+  * checkEmailVerification()
+- Membership: lib/firestore.js
+  * createMemberApplicationSimple()
+- Storage: lib/storage.js
+  * uploadMemberLogo()
+- Payment: /api/create-checkout-session
+- Error Handling: lib/auth-errors.js
+
+VALIDATION SYSTEM:
+- Real-time field validation with "touched" state tracking
+- Step-by-step validation prevents progression with missing fields
+- Password strength requirements with visual feedback
+- File validation for logo uploads
+- Form state management across multiple steps
+
+PROGRESS TRACKING:
+- 4-step progress indicator at top
+- Navigation buttons (Back/Next/Continue)
+- Loading states and error handling
+- Form persistence during process
+
+UI/UX FEATURES:
+- Responsive design (mobile-friendly)
+- Professional insurance industry styling
+- Clear step progression
+- Real-time validation feedback
+- Loading spinners and disabled states
+- Error messages and success confirmations
+
+COMPLETION FLOW:
+1. Account created with unverified email
+2. Email verification required
+3. Membership application created after verification
+4. Payment processing via Stripe
+5. Redirect to login or success page
+
+CURRENT STYLING:
+- Light blue background (bg-fase-light-blue)
+- White card with rounded corners and shadow
+- FASE branding header with logo
+- Navy blue primary colors
+- Professional form styling with FASE color scheme

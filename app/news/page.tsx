@@ -59,25 +59,6 @@ export default function NewsPage() {
       image: '/AdobeStock_217797984.jpeg',
       imageAlt: 'Digital news platform',
       imagePosition: 'left' as const
-    },
-    {
-      type: 'cta' as const,
-      title: 'Stay Informed',
-      subtitle: 'Get the Latest European MGA News',
-      description: 'Join FASE to access exclusive news, market insights, and industry updates that keep you ahead of the curve in European insurance markets.',
-      backgroundImage: '/corporate-towers-bg.png',
-      buttons: [
-        {
-          text: 'Join FASE',
-          href: '/join',
-          variant: 'primary' as const
-        },
-        {
-          text: 'Contact Us',
-          href: '/contact',
-          variant: 'secondary' as const
-        }
-      ]
     }
   ];
 

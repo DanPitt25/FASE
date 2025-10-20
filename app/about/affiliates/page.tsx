@@ -5,17 +5,8 @@ import TitleHero from '../../../components/TitleHero';
 import ContentHero from '../../../components/ContentHero';
 import Button from '../../../components/Button';
 
-export default function AffiliatesPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Partnership Framework', id: 'framework' },
-    { name: 'Key Relationships', id: 'relationships' },
-    { name: 'Benefits', id: 'benefits' },
-    { name: 'Partner with Us', id: 'cta' }
-  ];
-
-  return (
-    <PageLayout currentPage="about" sections={sections}>
+export default function AffiliatesPage() {  return (
+    <PageLayout currentPage="about">
       <main className="flex-1">
         <TitleHero 
           id="hero"

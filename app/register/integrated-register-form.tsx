@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { createAccountWithoutVerification, sendVerificationEmail, checkEmailVerification } from "../../lib/auth";
-import { createMemberApplicationSimple } from "../../lib/firestore";
+import { createAccountWithoutVerification, sendVerificationCode, verifyCode } from "../../lib/auth";
 import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 import Button from "../../components/Button";
 import { handleAuthError } from "../../lib/auth-errors";
@@ -170,7 +169,6 @@ export default function IntegratedRegisterForm() {
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
-  const [memberApplicationId, setMemberApplicationId] = useState<string | null>(null);
   const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
@@ -178,13 +176,14 @@ export default function IntegratedRegisterForm() {
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
 
   // Check for verification redirect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('verified') === 'true' && showEmailVerification) {
       // User came back from clicking verification link
-      handleCheckVerification();
+      handleVerifyCode();
     }
   }, [showEmailVerification]);
 
@@ -244,7 +243,7 @@ export default function IntegratedRegisterForm() {
     'Property', 'Casualty', 'Motor', 'Marine', 'Aviation', 'Cyber', 'D&O', 'E&O', 'Other'
   ];
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setAttemptedNext(true);
     
     if (step === 1) {
@@ -282,9 +281,24 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      setError("");
-      setStep(2);
-      setAttemptedNext(false);
+      // Create account and trigger email verification
+      try {
+        setLoading(true);
+        const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
+        await createAccountWithoutVerification(email, password, personalName, orgForAuth);
+        
+        // Show email verification step
+        setShowEmailVerification(true);
+        setEmailVerificationSent(true); // Email is automatically sent during account creation
+        setError("");
+        setAttemptedNext(false);
+        setLoading(false);
+        return;
+      } catch (error: any) {
+        setLoading(false);
+        setError(handleAuthError(error));
+        return;
+      }
     } else if (step === 2) {
       // Validate membership basic fields
       const orgName = membershipType === 'individual' ? personalName : organizationName;
@@ -373,12 +387,17 @@ export default function IntegratedRegisterForm() {
   };
 
   const handlePayment = async () => {
-    if (processingPayment || !memberApplicationId) return;
+    if (processingPayment) return;
     
     setProcessingPayment(true);
     setPaymentError("");
 
     try {
+      const { auth } = await import('@/lib/firebase');
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user');
+      }
+      
       // Create Stripe checkout session
       const orgName = membershipType === 'individual' ? personalName : organizationName;
       const response = await fetch('/api/create-checkout-session', {
@@ -392,7 +411,7 @@ export default function IntegratedRegisterForm() {
           membershipType,
           grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? grossWrittenPremiums : undefined,
           userEmail: email,
-          userId: memberApplicationId
+          userId: auth.currentUser.uid
         }),
       });
 
@@ -427,57 +446,7 @@ export default function IntegratedRegisterForm() {
     setError("");
 
     try {
-      // Step 1: Create Firebase auth account (without sending verification email)
-      const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
-      await createAccountWithoutVerification(email, password, personalName, orgForAuth);
-      
-      // Show email verification step instead of proceeding directly
-      setShowEmailVerification(true);
-      return; // Don't proceed to create membership application yet
-      
-    } catch (error: any) {
-      setError(handleAuthError(error));
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSendVerificationEmail = async () => {
-    try {
-      await sendVerificationEmail();
-      setEmailVerificationSent(true);
-      setError("");
-    } catch (error: any) {
-      setError(error.message || "Failed to send verification email");
-    }
-  };
-
-  const handleCheckVerification = async () => {
-    setIsCheckingVerification(true);
-    try {
-      const isVerified = await checkEmailVerification();
-      if (isVerified) {
-        setIsEmailVerified(true);
-        setShowEmailVerification(false);
-        
-        // Now proceed with creating the membership application
-        await continueWithMembershipApplication();
-      } else {
-        setError("Email not verified yet. Please check your email and click the verification link.");
-      }
-    } catch (error: any) {
-      setError(error.message || "Failed to check verification status");
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
-
-  const continueWithMembershipApplication = async () => {
-    try {
-      setLoading(true);
-      
-      // Step 2: Create membership application
+      // Create membership application
       const orgName = membershipType === 'individual' ? personalName : organizationName;
       let logoUrl = '';
       
@@ -491,7 +460,17 @@ export default function IntegratedRegisterForm() {
         }
       }
       
-      const membershipData = {
+      // Update the account document with membership information
+      const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db, auth } = await import('@/lib/firebase');
+      
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user');
+      }
+      
+      const accountRef = doc(db, 'accounts', auth.currentUser.uid);
+      await updateDoc(accountRef, {
+        status: 'pending_payment',
         membershipType,
         organizationName: orgName,
         organizationType: membershipType === 'individual' ? 'individual' : organizationType,
@@ -515,14 +494,65 @@ export default function IntegratedRegisterForm() {
             portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
           }
         }),
-        hasOtherAssociations: hasOtherAssociations ?? undefined,
-        otherAssociations: hasOtherAssociations ? otherAssociations : undefined,
-        logoUrl: logoUrl || undefined
-      };
+        hasOtherAssociations: hasOtherAssociations ?? false,
+        otherAssociations: hasOtherAssociations ? otherAssociations : [],
+        logoUrl: logoUrl || null,
+        updatedAt: serverTimestamp()
+      });
       
-      const applicationId = await createMemberApplicationSimple(membershipData);
-      setMemberApplicationId(applicationId);
       setStep(4); // Go to payment step
+      
+    } catch (error: any) {
+      setError(handleAuthError(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendVerificationCode = async () => {
+    try {
+      await sendVerificationCode(email);
+      setEmailVerificationSent(true);
+      setError("");
+    } catch (error: any) {
+      setError(error.message || "Failed to send verification code");
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      setError("Please enter the verification code");
+      return;
+    }
+
+    setIsCheckingVerification(true);
+    try {
+      const isVerified = await verifyCode(email, verificationCode.trim());
+      if (isVerified) {
+        setIsEmailVerified(true);
+        setShowEmailVerification(false);
+        
+        // Now proceed with creating the membership application
+        await continueWithMembershipApplication();
+      } else {
+        setError("Invalid verification code");
+      }
+    } catch (error: any) {
+      setError(error.message || "Failed to verify code");
+    } finally {
+      setIsCheckingVerification(false);
+    }
+  };
+
+  const continueWithMembershipApplication = async () => {
+    try {
+      setLoading(true);
+      
+      // Continue to step 2 after email verification
+      setShowEmailVerification(false);
+      setStep(2);
+      setError("");
+      setAttemptedNext(false);
       
     } catch (error: any) {
       setError(handleAuthError(error));
@@ -544,58 +574,58 @@ export default function IntegratedRegisterForm() {
         <div>
           <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Verify Your Email</h2>
           <p className="text-fase-black mb-6">
-            Account created successfully! To continue with your membership application, please verify your email address.
-          </p>
-          <p className="text-sm text-fase-black mb-6">
-            We&apos;ll send a verification email to: <strong>{email}</strong>
+            We&apos;ve sent a 6-digit code to: <strong>{email}</strong>
           </p>
         </div>
 
-        {!emailVerificationSent ? (
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="verification-code" className="block text-sm font-medium text-fase-navy mb-2">
+              Verification Code
+            </label>
+            <input
+              id="verification-code"
+              type="text"
+              value={verificationCode}
+              onChange={(e) => {
+                // Only allow numbers and limit to 6 digits
+                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                setVerificationCode(value);
+              }}
+              placeholder="Enter 6-digit code"
+              className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              maxLength={6}
+            />
+          </div>
+          
           <Button 
             variant="primary" 
             size="large" 
             className="w-full"
-            onClick={handleSendVerificationEmail}
+            onClick={handleVerifyCode}
+            disabled={isCheckingVerification || verificationCode.length !== 6}
           >
-            Send Verification Email
+            {isCheckingVerification ? "Verifying..." : "Verify Code"}
           </Button>
-        ) : (
-          <div className="space-y-4">
-            <div className="bg-fase-light-blue rounded-lg p-4">
-              <p className="text-fase-black">
-                ✅ Verification email sent! Check your inbox and click the verification link.
-              </p>
-            </div>
-            
-            <Button 
-              variant="primary" 
-              size="large" 
-              className="w-full"
-              onClick={handleCheckVerification}
-              disabled={isCheckingVerification}
-            >
-              {isCheckingVerification ? "Checking..." : "I've Verified My Email"}
-            </Button>
-            
-            <Button 
-              variant="secondary" 
-              size="medium" 
-              className="w-full"
-              onClick={handleSendVerificationEmail}
-            >
-              Resend Verification Email
-            </Button>
-          </div>
-        )}
+          
+          <Button 
+            variant="secondary" 
+            size="medium" 
+            className="w-full"
+            onClick={handleSendVerificationCode}
+          >
+            Resend Code
+          </Button>
+          
+          <p className="text-xs text-fase-black text-center">
+            Code expires in 5 minutes
+          </p>
+        </div>
 
         {error && (
           <div className="text-red-600 text-sm">{error}</div>
         )}
         
-        <p className="text-xs text-fase-black">
-          Check your spam folder if you don&apos;t see the verification email.
-        </p>
       </div>
     );
   }
@@ -1308,7 +1338,7 @@ export default function IntegratedRegisterForm() {
               onClick={async () => {
                 setAttemptedNext(true);
                 
-                // Validate fields before creating account
+                // Validate fields before creating membership application
                 if (!addressLine1.trim() || !city.trim() || !country) {
                   setError("Address information is required");
                   return;
@@ -1334,13 +1364,8 @@ export default function IntegratedRegisterForm() {
                   return;
                 }
 
-                try {
-                  await handleSubmit();
-                  setStep(4);
-                  setAttemptedNext(false);
-                } catch (error) {
-                  // Error is already handled in handleSubmit
-                }
+                await handleSubmit();
+                setAttemptedNext(false);
               }}
               disabled={loading}
             >

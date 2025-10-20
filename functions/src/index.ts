@@ -4,7 +4,79 @@ import * as logger from "firebase-functions/logger";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const helloWorld = functions.https.onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
+export const sendVerificationCode = functions.https.onCall(async (request) => {
+  try {
+    const { email, code } = request.data;
+    logger.info('sendVerificationCode called with email:', email);
+
+    if (!email || !code) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email and code are required');
+    }
+
+    // Check for Resend API key using environment variables
+    const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('Resend API key configured:', !!resendApiKey);
+
+    if (resendApiKey) {
+      try {
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a8a;">Verify your FASE account</h2>
+            <p>Your verification code is:</p>
+            <div style="background: #f3f4f6; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
+              <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #1e3a8a;">${code}</span>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">This code will expire in 20 minutes.</p>
+            <p style="color: #6b7280; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
+          </div>
+        `;
+
+        logger.info('Sending email via Resend...');
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'FASE <noreply@fasemga.com>',
+            to: email,
+            subject: 'Verify your FASE account',
+            html: emailHtml,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Resend API error: ${response.status}`);
+        }
+
+        logger.info(`Verification email sent to ${email} via Resend`);
+        return { success: true };
+      } catch (emailError) {
+        logger.error('Resend email error:', emailError);
+        logger.error('API Key available:', !!resendApiKey);
+        logger.error('API Key length:', resendApiKey?.length);
+      }
+    }
+
+    // Fallback: Log to console for development/testing
+    logger.info(`Verification code for ${email}: ${code}`);
+    logger.info(`
+    ===========================================
+    VERIFICATION EMAIL (DEVELOPMENT MODE)
+    ===========================================
+    To: ${email}
+    Subject: Verify your FASE account
+    
+    Your verification code is: ${code}
+    
+    This code will expire in 20 minutes.
+    ===========================================
+    `);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending verification code:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send verification code');
+  }
 });

@@ -1,193 +1,124 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import PageLayout from '../../components/PageLayout';
-import TitleHero from '../../components/TitleHero';
-import ContentHero from '../../components/ContentHero';
+import ContentPageLayout from '../../components/ContentPageLayout';
 
 export default function JoinPage() {
-  
   const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Membership Types', id: 'membership-types' }
+    {
+      type: 'split' as const,
+      title: 'Membership Applications',
+      content: [
+        'FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium.',
+        'Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.'
+      ],
+      image: '/AdobeStock_172545168.jpeg',
+      imageAlt: 'European business meeting',
+      imagePosition: 'right' as const
+    },
+    {
+      type: 'accordion' as const,
+      title: 'FASE Member Benefits',
+      subtitle: 'Discover the comprehensive advantages of joining Europe\'s premier MGA federation.',
+      items: [
+        {
+          title: 'Pan-European Representation',
+          content: 'Join a unified voice advocating for MGAs and delegated underwriting across Europe.'
+        },
+        {
+          title: 'Networking & Collaboration',
+          content: 'Connect with MGA leaders, insurers, reinsurers, and service providers throughout Europe and beyond.'
+        },
+        {
+          title: 'Annual MGA Rendezvous',
+          content: 'Exclusive access to our flagship event — bringing together MGA professionals, market influencers, and partners from around the world.'
+        },
+        {
+          title: 'Educational & Insight Sessions',
+          content: 'Participate in workshops, webinars, and panels on regulatory trends, innovation, and best practices.'
+        },
+        {
+          title: 'Industry Intelligence',
+          content: 'Receive regular updates on European MGA market developments, opportunities, and challenges.'
+        },
+        {
+          title: 'Community Growth',
+          content: 'Be part of one of the fastest-growing MGA associations globally, building influence and visibility.'
+        },
+        {
+          title: 'Access to Resources',
+          content: 'Members-only content including reports, benchmarking studies, and policy briefings.'
+        },
+        {
+          title: 'LinkedIn Community Access',
+          content: 'Stay connected with peers through our growing online professional network.'
+        },
+        {
+          title: 'Recognition & Credibility',
+          content: 'Strengthen your market reputation as part of a respected, forward-looking MGA association.'
+        },
+        {
+          title: 'Opportunities for Collaboration',
+          content: 'Shape the future of delegated underwriting through working groups and cross-border initiatives.'
+        }
+      ]
+    },
+    {
+      type: 'cards' as const,
+      title: 'Membership Categories',
+      subtitle: 'Three distinct membership types to serve the European MGA ecosystem.',
+      cards: [
+        {
+          title: 'MGA Member',
+          description: 'Full membership for Managing General Agents operating in Europe. Includes voting rights, committee participation, and full access to resources.',
+          image: '/AdobeStock_172545168.jpeg',
+          imageAlt: 'MGA business meeting'
+        },
+        {
+          title: 'Market Practitioner',
+          description: 'For capacity providers, insurers, and reinsurers working with MGAs. Access to market intelligence, networking, and industry insights.',
+          image: '/AdobeStock_374018940.jpeg',
+          imageAlt: 'Market analysis and data'
+        },
+        {
+          title: 'Supplier',
+          description: 'For service providers supporting the MGA ecosystem. Business development access, sponsorship opportunities, and market visibility.',
+          image: '/AdobeStock_481244965.jpeg',
+          imageAlt: 'Service provider collaboration'
+        }
+      ]
+    },
+    {
+      type: 'split' as const,
+      title: 'Application Process',
+      content: [
+        'To begin your application, complete our membership form with your organisation details and business information.',
+        'Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives.'
+      ],
+      image: '/AdobeStock_481244965.jpeg',
+      imageAlt: 'Application process',
+      imagePosition: 'left' as const,
+      buttons: [
+        {
+          text: 'Apply Now',
+          href: '/register',
+          variant: 'primary' as const
+        },
+        {
+          text: 'Contact Us',
+          href: '/contact',
+          variant: 'secondary' as const
+        }
+      ]
+    }
   ];
 
   return (
-    <PageLayout currentPage="join" sections={sections}>
-      <main className="flex-1">
-        <TitleHero 
-          id="hero"
-          title="Join FASE"
-          useDefaultSubtitle={true}
-          backgroundImage="/vienna.jpg"
-          fullHeight={true}
-        />
-
-        {/* Membership Types */}
-        <ContentHero id="membership-types" fullHeight={false} className="bg-fase-cream py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-4">Choose Your Membership</h2>
-              <p className="text-lg text-fase-black max-w-2xl mx-auto">
-                FASE offers three distinct membership categories to serve MGAs, market practitioners, and service providers across Europe.
-              </p>
-            </div>
-
-            {/* Membership Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* MGA Membership */}
-              <a 
-                href="/register"
-                className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
-              >
-                {/* Image Header */}
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src="/london.jpg" 
-                    alt="MGA Member" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/60 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4">
-                    <h3 className="text-2xl font-noto-serif font-bold text-white">MGA Member</h3>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-fase-black mb-6 leading-relaxed">
-                    Full membership for Managing General Agents operating in Europe.
-                  </p>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Voting rights</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Committee participation</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Full access to resources</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Conference benefits</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-fase-navy">Join as MGA Member</span>
-                    <svg className="w-5 h-5 text-fase-navy group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </a>
-
-              {/* Market Practitioner */}
-              <a 
-                href="/register"
-                className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
-              >
-                {/* Image Header */}
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src="/market.jpg" 
-                    alt="Market Practitioner" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/60 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4">
-                    <h3 className="text-2xl font-noto-serif font-bold text-white">Market Practitioner</h3>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-fase-black mb-6 leading-relaxed">
-                    For capacity providers, insurers, and reinsurers working with MGAs.
-                  </p>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Market intelligence access</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Networking opportunities</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Event participation</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Industry insights</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-fase-navy">Join as Market Practitioner</span>
-                    <svg className="w-5 h-5 text-fase-navy group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </a>
-
-              {/* Supplier */}
-              <a 
-                href="/register"
-                className="group bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-fase-light-gold hover:border-fase-navy overflow-hidden cursor-pointer"
-              >
-                {/* Image Header */}
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src="/regulatory.jpg" 
-                    alt="Supplier" 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/60 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4">
-                    <h3 className="text-2xl font-noto-serif font-bold text-white">Supplier</h3>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-fase-black mb-6 leading-relaxed">
-                    For service providers supporting the MGA ecosystem.
-                  </p>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Business development access</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Sponsorship opportunities</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Market visibility</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                      <span className="text-sm text-fase-black">Industry connection</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-fase-navy">Join as Supplier</span>
-                    <svg className="w-5 h-5 text-fase-navy group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </ContentHero>
-      </main>
-    </PageLayout>
+    <ContentPageLayout
+      title="Join FASE"
+      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImageAlt="Join FASE membership"
+      sections={sections}
+      currentPage="join"
+    />
   );
 }

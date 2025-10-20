@@ -35,7 +35,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-fase-gold mt-8 pt-8 text-center text-fase-cream">
-          <p>&copy; 2024 FASE - Federation of European MGAs. All rights reserved.</p>
+          <p>&copy; 2025 FASE B.V. All rights reserved.</p>
         </div>
       </div>
     </footer>

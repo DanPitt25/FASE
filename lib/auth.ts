@@ -10,7 +10,9 @@ import {
   signInWithEmailLink,
   updatePassword,
   reload,
-  User
+  User,
+  applyActionCode,
+  checkActionCode
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -39,7 +41,9 @@ export const createAccountWithoutVerification = async (email: string, password: 
       displayName: displayName
     });
 
-    // DON'T send verification email automatically - user will click to send it
+    // Send verification code email automatically
+    await sendVerificationCode(email);
+
     // DON'T create Firestore user profile - we're only using Firebase Auth now
   } catch (error: any) {
     console.error('Error creating account:', error);
@@ -166,5 +170,90 @@ export const checkEmailVerification = async (): Promise<boolean> => {
   } catch (error: any) {
     console.error('Error checking email verification:', error);
     return false;
+  }
+};
+
+// Generate and send verification code
+export const sendVerificationCode = async (email: string): Promise<void> => {
+  try {
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store code in Firestore with expiration (5 minutes)
+    const { doc, setDoc } = await import('firebase/firestore');
+    const { db } = await import('./firebase');
+    
+    const expiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
+    
+    await setDoc(doc(db, 'verification_codes', email), {
+      code,
+      email,
+      expiresAt,
+      createdAt: new Date(),
+      used: false
+    });
+    
+    // Send email via Firebase function
+    const { httpsCallable } = await import('firebase/functions');
+    const { functions } = await import('./firebase');
+    
+    const sendEmailFunction = httpsCallable(functions, 'sendVerificationCode');
+    const result = await sendEmailFunction({ email, code });
+    
+    if (!result.data || !result.data.success) {
+      throw new Error('Failed to send verification email');
+    }
+  } catch (error: any) {
+    console.error('Error sending verification code:', error);
+    console.error('Error details:', error.message, error.code);
+    throw new Error('Failed to send verification code');
+  }
+};
+
+// Verify the code
+export const verifyCode = async (email: string, code: string): Promise<boolean> => {
+  try {
+    const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('./firebase');
+    
+    const docRef = doc(db, 'verification_codes', email);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      throw new Error('Invalid verification code');
+    }
+    
+    const data = docSnap.data();
+    
+    // Check if code matches
+    if (data.code !== code) {
+      throw new Error('Invalid verification code');
+    }
+    
+    // Check if code is expired
+    if (new Date() > data.expiresAt.toDate()) {
+      throw new Error('Verification code has expired');
+    }
+    
+    // Check if code was already used
+    if (data.used) {
+      throw new Error('Verification code has already been used');
+    }
+    
+    // Delete the verification code after successful use
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(docRef);
+    
+    // Mark Firebase Auth user as verified
+    if (auth.currentUser) {
+      // We'll manually mark them as verified in our system
+      // since we can't directly update Firebase Auth emailVerified
+      return true;
+    }
+    
+    return true;
+  } catch (error: any) {
+    console.error('Error verifying code:', error);
+    throw new Error(error.message || 'Failed to verify code');
   }
 };

@@ -5,14 +5,8 @@ import TitleHero from '../../components/TitleHero';
 import ContentHero from '../../components/ContentHero';
 import Button from '../../components/Button';
 
-export default function CapacityTransparencyPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Coming Soon', id: 'coming-soon' }
-  ];
-
-  return (
-    <PageLayout currentPage="capacity-transparency" sections={sections}>
+export default function CapacityTransparencyPage() {  return (
+    <PageLayout currentPage="capacity-transparency">
       <main className="flex-1">
         <TitleHero
           id="hero"

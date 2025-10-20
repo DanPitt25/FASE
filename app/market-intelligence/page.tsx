@@ -5,14 +5,8 @@ import TitleHero from '../../components/TitleHero';
 import ContentHero from '../../components/ContentHero';
 import Button from '../../components/Button';
 
-export default function MarketIntelligencePage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Coming Soon', id: 'coming-soon' }
-  ];
-
-  return (
-    <PageLayout currentPage="market-intelligence" sections={sections}>
+export default function MarketIntelligencePage() {  return (
+    <PageLayout currentPage="market-intelligence">
       <main className="flex-1">
         <TitleHero
           id="hero"

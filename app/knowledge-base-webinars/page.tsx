@@ -93,13 +93,7 @@ export default function KnowledgeBaseWebinarsPage() {
     tags: '',
     author: '',
     duration: ''
-  });
-
-  const sections = [
-    { name: 'Video Library', id: 'video-library' }
-  ];
-
-  // Check user access
+  });  // Check user access
   useEffect(() => {
     const checkAccess = async () => {
       if (authLoading) return;
@@ -430,7 +424,7 @@ export default function KnowledgeBaseWebinarsPage() {
 
   return (
     <>
-      <PageLayout currentPage="knowledge-base-webinars" sections={sections} hideNavigation={true}>
+      <PageLayout currentPage="knowledge-base-webinars">
       <main className="flex-1 bg-fase-cream min-h-[calc(100vh-5.5rem)] flex flex-col">
         {/* Main Console */}
         <div className="flex flex-col overflow-hidden m-6">

@@ -4,7 +4,7 @@ import LoginForm from './login-form';
 
 export default function Login() {
   return (
-    <div className="flex min-h-screen w-screen items-center justify-center bg-fase-light-blue">
+    <div className="flex min-h-screen w-screen items-center justify-center bg-fase-navy">
       <div className="z-10 w-full max-w-md overflow-hidden rounded-lg border border-fase-light-gold shadow-xl">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16">
           <div className="flex items-center space-x-3 mb-4">

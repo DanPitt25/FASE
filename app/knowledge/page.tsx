@@ -61,25 +61,6 @@ export default function KnowledgePage() {
       imageAlt: 'Digital learning platform',
       imagePosition: 'left' as const
     },
-    {
-      type: 'cta' as const,
-      title: 'Enhance Your Expertise',
-      subtitle: 'Access Expert Knowledge and Resources',
-      description: 'Join FASE to access our comprehensive knowledge platform and advance your professional development in European MGA markets.',
-      backgroundImage: '/corporate-towers-bg.png',
-      buttons: [
-        {
-          text: 'Join FASE',
-          href: '/join',
-          variant: 'primary' as const
-        },
-        {
-          text: 'Contact Us',
-          href: '/contact',
-          variant: 'secondary' as const
-        }
-      ]
-    }
   ];
 
   return (

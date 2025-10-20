@@ -5,16 +5,8 @@ import TitleHero from '../../../components/TitleHero';
 import ContentHero from '../../../components/ContentHero';
 import Button from '../../../components/Button';
 
-export default function CommitteesPage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Governance', id: 'governance' },
-    { name: 'Leadership', id: 'leadership' },
-    { name: 'Get Involved', id: 'get-involved' }
-  ];
-
-  return (
-    <PageLayout currentPage="about" sections={sections}>
+export default function CommitteesPage() {  return (
+    <PageLayout currentPage="about">
       <main className="flex-1">
         <TitleHero 
           id="hero"

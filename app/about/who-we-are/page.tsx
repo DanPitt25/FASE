@@ -6,18 +6,8 @@ import TitleHero from '../../../components/TitleHero';
 import ContentHero from '../../../components/ContentHero';
 import Button from '../../../components/Button';
 
-export default function WhoWeArePage() {
-  const sections = [
-    { name: 'Overview', id: 'hero' },
-    { name: 'Our Mission', id: 'mission' },
-    { name: 'Core Values', id: 'values' },
-    { name: 'Leadership Team', id: 'leadership' },
-    { name: 'Growing Community', id: 'community' },
-    { name: 'Join Us', id: 'join' }
-  ];
-
-  return (
-    <PageLayout currentPage="about" sections={sections}>
+export default function WhoWeArePage() {  return (
+    <PageLayout currentPage="about">
       {/* Main Content */}
       <main className="flex-1">
         <TitleHero 

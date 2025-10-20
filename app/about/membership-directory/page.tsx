@@ -60,25 +60,6 @@ export default function MembershipDirectoryPage() {
       imageAlt: 'European business network',
       imagePosition: 'left' as const
     },
-    {
-      type: 'cta' as const,
-      title: 'Access the Directory',
-      subtitle: 'Connect with Europe\'s Leading Insurance Professionals',
-      description: 'Join FASE to access our comprehensive member directory and start building valuable business relationships across European markets.',
-      backgroundImage: '/corporate-towers-bg.png',
-      buttons: [
-        {
-          text: 'View Directory',
-          href: '/directory',
-          variant: 'primary' as const
-        },
-        {
-          text: 'Join FASE',
-          href: '/join',
-          variant: 'secondary' as const
-        }
-      ]
-    }
   ];
 
   return (

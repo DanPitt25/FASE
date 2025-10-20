@@ -120,10 +120,25 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               {/* Desktop Navigation Menu */}
               <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
                 <div className="flex items-center space-x-6">
-                  {/* About FASE */}
-                  <a href="/about" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
-                    currentPage === 'about' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
-                  }`}>About FASE</a>
+                  {/* About FASE Dropdown */}
+                  <div className="relative group">
+                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                      currentPage === 'about' || currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
+                    }`}>
+                      About FASE
+                      <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <a href="/about" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
+                        currentPage === 'about' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
+                      }`}>Our Mission</a>
+                      <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
+                        currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
+                      }`}>Our People</a>
+                    </div>
+                  </div>
 
                   {/* Networking Dropdown */}
                   <div className="relative group">
@@ -224,9 +239,15 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               </select>
             </div>
 
-            <a href="/about" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'about' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>About FASE</a>
+            <div className="space-y-1">
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">About FASE</div>
+              <a href="/about" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'about' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Our Mission</a>
+              <a href="/about/people" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'people' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Our People</a>
+            </div>
             <a href="/events" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>Events</a>

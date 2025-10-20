@@ -6,65 +6,59 @@ export default function AboutPage() {
   const sections = [
     {
       type: 'split' as const,
-      title: 'Who We Are',
+      title: 'A Voice for Europe\'s Insurance Innovators',
       content: [
-        'FASE is the premier organization representing Managing General Agents (MGAs) across Europe. We serve as a unified voice for the MGA community, providing networking opportunities, professional development, and market intelligence to our members.',
-        'Our mission is to elevate awareness of the critical role that MGAs play in the insurance value chain while creating a forum for MGAs, capacity providers, and service providers to connect and do business together.'
+        'FASE launched as a pan-European federation to serve the needs of Europe\'s managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers.',
+        'We share best practices in a rapidly growing sector of the market, offering a wide array of informational and educational services for MGAs through webinars, bulletins and our monthly digital magazine, The Entrepreneurial Underwriter.'
       ],
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
-      imageAlt: 'Professional business meeting',
+      image: '/AdobeStock_1606166593.jpeg',
+      imageAlt: 'European insurance innovators',
       imagePosition: 'right' as const
     },
     {
       type: 'split' as const,
-      title: 'Our Mission',
+      title: 'Our Mission & Market Impact',
       content: [
-        'FASE exists to elevate the profile and influence of Managing General Agents across Europe. Through strategic networking, professional development, and market intelligence, we strengthen the entire MGA ecosystem.',
-        'We drive sustainable growth across European insurance markets by fostering collaboration, innovation, and excellence within our professional community.'
+        'FASE represents the interests of MGAs doing business across Europe, including the European Economic Area, the United Kingdom, Switzerland, eastern European countries not currently within the EEA, and Turkey. Our mission is to provide a forum for MGAs to expand relationships with capacity providers, distributors, investors, and service providers.',
+        'More than 600 MGAs currently do business in Europe, transacting at least €18 billion in annual premium and growing at double digit rates. In recent years, many large MGAs have attracted substantial private equity investments, drawn by their fee-based revenue model, advanced risk pricing capabilities, and strong growth potential in underserved insurance markets.'
       ],
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop',
-      imageAlt: 'European business district',
+      image: '/AdobeStock_374018940.jpeg',
+      imageAlt: 'European market growth and investment',
       imagePosition: 'left' as const
     },
     {
-      type: 'cards' as const,
-      title: 'Our Core Values',
-      subtitle: 'The principles that guide everything we do as we build the future of European MGA collaboration.',
-      cards: [
-        {
-          title: 'Professional Excellence',
-          description: 'Setting the highest standards for professional conduct, market practices, and service delivery throughout our community.',
-          icon: (
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-          )
-        },
-        {
-          title: 'Innovation & Growth',
-          description: 'Championing forward-thinking approaches to insurance distribution and embracing digital transformation across the MGA landscape.',
-          icon: (
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          )
-        },
-        {
-          title: 'Community & Collaboration',
-          description: 'Building bridges between MGAs, insurers, and service providers to create a stronger, more connected European insurance ecosystem.',
-          icon: (
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          )
-        }
-      ]
+      type: 'quote' as const,
+      quote: 'As our members look to grow their business, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.',
+      author: 'Dario Spata',
+      title: 'President, ASASE'
+    },
+    {
+      type: 'split' as const,
+      title: 'Leadership & Governance',
+      content: [
+        'FASE is managed by an executive team guided by an advisory board comprising representatives of MGAs and national MGA associations, alongside representatives of major capacity providers.',
+        'Our advisory board includes leaders from established associations like the MGAA (UK), ASASE (Spain), and industry executives from across Europe, ensuring diverse perspectives and expertise guide our strategic direction.'
+      ],
+      image: '/AdobeStock_172545168.jpeg',
+      imageAlt: 'Business leadership meeting',
+      imagePosition: 'left' as const
+    },
+    {
+      type: 'split' as const,
+      title: 'Building Connections Across Europe',
+      content: [
+        'MGAs bring product innovation and a very high standard of customer service to the markets they serve. But they depend on close relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – to sustain their business.',
+        'FASE offers opportunities for MGAs from across Europe to broaden their relationships with capacity providers and distributors through a series of events, including the pan-European MGA Rendezvous.'
+      ],
+      image: '/AdobeStock_481244965.jpeg',
+      imageAlt: 'Professional networking event',
+      imagePosition: 'right' as const
     },
     {
       type: 'cta' as const,
       title: 'Ready to Join FASE?',
       subtitle: 'Be Part of Europe\'s Leading MGA Community',
-      description: 'Join the growing community of forward-thinking MGAs and industry partners building the future of European insurance distribution.',
+      description: 'Applications for FASE membership are open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium. Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.',
       backgroundImage: '/corporate-towers-bg.png',
       buttons: [
         {
@@ -84,8 +78,8 @@ export default function AboutPage() {
   return (
     <ContentPageLayout
       title="About FASE"
-      bannerImage="/AdobeStock_1406443128.jpeg"
-      bannerImageAlt="Professional business meeting"
+      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImageAlt="Modern European cityscape"
       sections={sections}
       currentPage="about"
     />
