@@ -20,7 +20,7 @@ export default function SponsorshipPage() {  return (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-6">Coming Soon</h2>
             <p className="text-lg text-fase-black mb-8">
-              Sponsorship opportunities will be available when FASE officially launches.
+              Sponsorship opportunities are available for European MGA industry leaders.
             </p>
             <Button href="/" variant="primary" size="large">
               Back to Home

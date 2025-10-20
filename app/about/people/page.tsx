@@ -7,7 +7,6 @@ export default function PeoplePage() {
     {
       type: 'people' as const,
       title: 'Executive Team',
-      subtitle: 'Leading FASE\'s mission to unite and strengthen the European MGA community',
       people: [
         {
           name: 'William Pitt',

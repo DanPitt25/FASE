@@ -54,8 +54,8 @@ export default function KnowledgePage() {
       type: 'split' as const,
       title: 'Professional Development Platform',
       content: [
-        'Our knowledge platform will feature interactive learning modules, expert-led webinars, and collaborative forums where MGA professionals can share insights and solutions.',
-        'Members will have access to exclusive research, case studies, and professional development opportunities designed specifically for the European delegated underwriting market.'
+        'We are developing interactive learning modules, expert-led webinars, and collaborative forums where MGA professionals can share insights and solutions.',
+        'Members have access to exclusive research, case studies, and professional development opportunities designed specifically for the European delegated underwriting market.'
       ],
       image: '/AdobeStock_481244965.jpeg',
       imageAlt: 'Digital learning platform',

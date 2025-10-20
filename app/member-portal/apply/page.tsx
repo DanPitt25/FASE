@@ -1150,7 +1150,7 @@ export default function MembershipApplication() {
             
             <div className="space-y-4">
               <ValidatedCheckbox
-                label="I agree to FASE's privacy policy and terms of service"
+                label="I agree to the FASE privacy policy and terms of service"
                 fieldKey="privacyAgreed"
                 checked={newOrgData.privacyAgreed}
                 onChange={(checked) => setNewOrgData({ ...newOrgData, privacyAgreed: checked })}

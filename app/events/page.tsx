@@ -8,7 +8,7 @@ export default function EventsPage() {
       type: 'split' as const,
       title: 'Pan-European MGA Rendezvous',
       content: [
-        'FASE will offer opportunities for MGAs from across Europe to broaden their relationships with capacity providers and distributors through a series of events, including the flagship pan-European MGA Rendezvous.',
+        'Our annual conference brings together MGAs, capacity providers and selected service providers to grow business within and across Europe. We are planning a comprehensive program that sets the standard for European MGA events.',
         'Our events are designed to foster the collaboration that MGAs depend on, recognizing that strong relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – are essential to sustain and grow their business.'
       ],
       image: '/AdobeStock_172545168.jpeg',

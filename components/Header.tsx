@@ -123,7 +123,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   {/* About FASE Dropdown */}
                   <div className="relative group">
                     <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
-                      currentPage === 'about' || currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
+                      currentPage === 'about' || currentPage === 'people' || currentPage === 'leadership' || currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
                     }`}>
                       About FASE
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,18 +131,23 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       </svg>
                     </span>
                     <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <a href="/about" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
-                        currentPage === 'about' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>Our Mission</a>
+                      <a href="/about/leadership" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
+                        currentPage === 'leadership' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
+                      }`}>Leadership</a>
                       <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>Our People</a>
+                      }`}>Management</a>
+                      <a href="/about/news" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
+                        currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
+                      }`}>News</a>
                     </div>
                   </div>
 
                   {/* Networking Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
+                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                      currentPage === 'events' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
+                    }`}>
                       Networking
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -153,29 +158,31 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                         <a href="/events" className={`block px-4 py-2 text-sm ${
                           currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>Events</a>
-                        <a href="/directory" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'directory' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Member Directory</a>
+                        <a href="/networking/rendezvous" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Rendezvous</a>
                       </div>
                     </div>
                   </div>
 
-                  {/* Development Dropdown */}
+                  {/* Knowledge Dropdown */}
                   <div className="relative group">
-                    <span className="px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap text-fase-black cursor-pointer transition-all duration-200 group-hover:bg-fase-gold group-hover:text-white">
-                      Development
+                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                      currentPage === 'knowledge' || currentPage === 'entrepreneurial-underwriter' || currentPage === 'webinars' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
+                    }`}>
+                      Knowledge
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </span>
                     <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-2">
-                        <a href="/news" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'news' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>News</a>
-                        <a href="/knowledge" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'knowledge' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Knowledge Base</a>
+                        <a href="/knowledge/entrepreneurial-underwriter" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Entrepreneurial Underwriter</a>
+                        <a href="/knowledge/webinars" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Webinar Series</a>
                       </div>
                     </div>
                   </div>
@@ -241,25 +248,36 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
 
             <div className="space-y-1">
               <div className="px-3 py-2 text-sm font-semibold text-fase-navy">About FASE</div>
-              <a href="/about" className={`block pl-6 pr-3 py-2 text-base font-medium ${
-                currentPage === 'about' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Our Mission</a>
+              <a href="/about/leadership" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'leadership' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Leadership</a>
               <a href="/about/people" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'people' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Our People</a>
+              }`}>Management</a>
+              <a href="/about/news" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'news' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>News</a>
             </div>
-            <a href="/events" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>Events</a>
-            <a href="/directory" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'directory' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>Member Directory</a>
-            <a href="/news" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'news' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>News</a>
-            <a href="/knowledge" className={`block px-3 py-2 text-base font-medium ${
-              currentPage === 'knowledge' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>Knowledge Base</a>
+            
+            <div className="space-y-1">
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">Networking</div>
+              <a href="/events" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Events</a>
+              <a href="/networking/rendezvous" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Rendezvous</a>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">Knowledge</div>
+              <a href="/knowledge/entrepreneurial-underwriter" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Entrepreneurial Underwriter</a>
+              <a href="/knowledge/webinars" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Webinar Series</a>
+            </div>
             <a href="/member-portal" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>{t('member_portal')}</a>
