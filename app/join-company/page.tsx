@@ -40,7 +40,7 @@ export default function JoinCompanyPage() {
         
         const querySnapshot = await getDocs(companyQuery);
         const results = querySnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .map(doc => ({ id: doc.id, ...doc.data() } as any))
           .filter(company => 
             company.organizationName?.toLowerCase().includes(companySearch.toLowerCase())
           );
