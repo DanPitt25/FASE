@@ -18,7 +18,6 @@ export default function NewsPage() {
     {
       type: 'cards' as const,
       title: 'News Categories',
-      subtitle: 'Comprehensive coverage of topics that matter to the European MGA community.',
       cards: [
         {
           title: 'Market Updates',

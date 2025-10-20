@@ -18,7 +18,6 @@ export default function JoinPage() {
     {
       type: 'accordion' as const,
       title: 'FASE Member Benefits',
-      subtitle: 'Discover the comprehensive advantages of joining Europe\'s premier MGA federation.',
       items: [
         {
           title: 'Pan-European Representation',

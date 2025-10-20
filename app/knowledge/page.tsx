@@ -18,7 +18,6 @@ export default function KnowledgePage() {
     {
       type: 'cards' as const,
       title: 'Knowledge Resources',
-      subtitle: 'Comprehensive learning and development resources designed for European MGA professionals.',
       cards: [
         {
           title: 'Regulatory Guidance',
