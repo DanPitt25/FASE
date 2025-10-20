@@ -200,7 +200,7 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
     const sendEmailFunction = httpsCallable(functions, 'sendVerificationCode');
     const result = await sendEmailFunction({ email, code });
     
-    if (!result.data || !result.data.success) {
+    if (!result.data || !(result.data as any).success) {
       throw new Error('Failed to send verification email');
     }
   } catch (error: any) {
