@@ -244,9 +244,21 @@ export const verifyCode = async (email: string, code: string): Promise<boolean> 
     const { deleteDoc } = await import('firebase/firestore');
     await deleteDoc(docRef);
     
-    // Mark Firebase Auth user as verified
+    // Create basic accounts document now that email is verified
     if (auth.currentUser) {
-      // We'll manually mark them as verified in our system
+      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
+      
+      const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
+      await setDoc(accountRef, {
+        email: auth.currentUser.email,
+        displayName: auth.currentUser.displayName,
+        status: 'email_verified',
+        emailVerified: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
       // since we can't directly update Firebase Auth emailVerified
       return true;
     }

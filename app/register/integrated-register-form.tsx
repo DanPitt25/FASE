@@ -471,6 +471,7 @@ export default function IntegratedRegisterForm() {
       const accountRef = doc(db, 'accounts', auth.currentUser.uid);
       await updateDoc(accountRef, {
         status: 'pending_payment',
+        displayName: auth.currentUser.displayName,
         membershipType,
         organizationName: orgName,
         organizationType: membershipType === 'individual' ? 'individual' : organizationType,

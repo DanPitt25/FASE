@@ -24,12 +24,20 @@ export default function Login() {
           <Suspense fallback={<div className="animate-pulse h-64 bg-fase-cream rounded"></div>}>
             <LoginForm />
           </Suspense>
-          <p className="text-center text-sm text-fase-black mt-6">
-            {"New member? "}
-            <Link href="/register" className="font-semibold text-fase-navy hover:underline">
-              Sign up
-            </Link>
-          </p>
+          <div className="text-center text-sm text-fase-black mt-6 space-y-2">
+            <p>
+              {"New member? "}
+              <Link href="/register" className="font-semibold text-fase-navy hover:underline">
+                Sign up
+              </Link>
+            </p>
+            <p>
+              {"Company member? "}
+              <Link href="/join-company" className="font-semibold text-fase-gold hover:underline">
+                Join existing membership
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
