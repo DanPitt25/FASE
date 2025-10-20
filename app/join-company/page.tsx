@@ -147,7 +147,7 @@ export default function JoinCompanyPage() {
                   Join Company Membership
                 </h1>
                 <p className="text-fase-black">
-                  Request access to your organization's existing FASE membership
+                  Request access to your organization&apos;s existing FASE membership
                 </p>
               </div>
 
