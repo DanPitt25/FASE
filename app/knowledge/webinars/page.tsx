@@ -18,7 +18,6 @@ export default function WebinarsPage() {
     {
       type: 'cards' as const,
       title: 'Upcoming Webinars',
-      subtitle: 'Professional development opportunities for FASE members',
       cards: [
         {
           title: 'European Regulatory Update',
@@ -43,7 +42,6 @@ export default function WebinarsPage() {
     {
       type: 'accordion' as const,
       title: 'Webinar Information',
-      subtitle: 'Everything you need to know about our webinar series',
       items: [
         {
           title: 'Who can attend?',

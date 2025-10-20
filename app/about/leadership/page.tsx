@@ -18,7 +18,6 @@ export default function LeadershipPage() {
     {
       type: 'people' as const,
       title: 'Advisory Board Members',
-      subtitle: 'Industry leaders shaping the future of European delegated underwriting',
       people: [
         {
           name: 'Advisory Board Member',

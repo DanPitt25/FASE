@@ -18,7 +18,6 @@ export default function NewsPage() {
     {
       type: 'cards' as const,
       title: 'Latest Updates',
-      subtitle: 'Recent news and announcements from FASE',
       cards: [
         {
           title: 'FASE Foundation',

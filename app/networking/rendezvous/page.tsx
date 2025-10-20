@@ -18,7 +18,6 @@ export default function RendezvousPage() {
     {
       type: 'cards' as const,
       title: 'Event Features',
-      subtitle: 'What to expect at the FASE Rendezvous',
       cards: [
         {
           title: 'Capacity Matching',

@@ -18,7 +18,6 @@ export default function EntrepreneurialUnderwriterPage() {
     {
       type: 'cards' as const,
       title: 'Featured Content',
-      subtitle: 'Resources for entrepreneurial underwriting professionals',
       cards: [
         {
           title: 'Market Analysis',
