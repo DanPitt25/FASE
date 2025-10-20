@@ -120,8 +120,24 @@ const createUserMessagesForRecipientsUnified = async (
     } else if (recipientType === 'all_users') {
       // Get all unified members (regardless of status)
       const accountsRef = collection(db, 'accounts');
-      const allMembers = await getDocs(accountsRef);
-      recipientIds = allMembers.docs.map(doc => doc.id);
+      const allAccounts = await getDocs(accountsRef);
+      
+      recipientIds = [];
+      
+      for (const accountDoc of allAccounts.docs) {
+        const accountData = accountDoc.data();
+        
+        if (accountData.membershipType === 'corporate') {
+          // For corporate accounts, get all members from subcollection
+          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+          const membersSnapshot = await getDocs(membersRef);
+          const memberIds = membersSnapshot.docs.map(memberDoc => memberDoc.data().firebaseUid).filter(Boolean);
+          recipientIds.push(...memberIds);
+        } else {
+          // For individual accounts, use the account ID directly
+          recipientIds.push(accountDoc.id);
+        }
+      }
     }
     
     const userMessagePromises = recipientIds.map(userId => {
@@ -188,8 +204,24 @@ const createUserAlertsForAudienceUnified = async (alertId: string, audience: 'al
     } else {
       // All users
       const accountsRef = collection(db, 'accounts');
-      const allMembers = await getDocs(accountsRef);
-      recipientIds = allMembers.docs.map(doc => doc.id);
+      const allAccounts = await getDocs(accountsRef);
+      
+      recipientIds = [];
+      
+      for (const accountDoc of allAccounts.docs) {
+        const accountData = accountDoc.data();
+        
+        if (accountData.membershipType === 'corporate') {
+          // For corporate accounts, get all members from subcollection
+          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+          const membersSnapshot = await getDocs(membersRef);
+          const memberIds = membersSnapshot.docs.map(memberDoc => memberDoc.data().firebaseUid).filter(Boolean);
+          recipientIds.push(...memberIds);
+        } else {
+          // For individual accounts, use the account ID directly
+          recipientIds.push(accountDoc.id);
+        }
+      }
     }
     
     const userAlertPromises = recipientIds.map(userId => {

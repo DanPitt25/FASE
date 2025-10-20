@@ -34,7 +34,7 @@ export default function JoinCompanyPage() {
         const companyQuery = query(
           accountsRef,
           where('membershipType', '==', 'corporate'),
-          where('status', '==', 'active'),
+          where('status', 'in', ['approved', 'active']),
           limit(10)
         );
         
@@ -77,20 +77,19 @@ export default function JoinCompanyPage() {
     setError('');
 
     try {
-      // Create a membership request for admin approval
+      // Create a joining request in the organization's join_requests subcollection
       const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase');
       
-      const requestId = `${selectedCompany.id}_${Date.now()}`;
+      const requestId = `${Date.now()}_${email.replace(/[@.]/g, '_')}`;
       
-      await setDoc(doc(db, 'membership_requests', requestId), {
+      // Add request to organization's join_requests subcollection
+      const joinRequestRef = doc(db, 'accounts', selectedCompany.id, 'join_requests', requestId);
+      await setDoc(joinRequestRef, {
         email,
-        companyName: selectedCompany.organizationName,
-        companyId: selectedCompany.id,
-        companyAdminEmail: selectedCompany.primaryContact?.email,
         requestedAt: serverTimestamp(),
         status: 'pending',
-        type: 'company_linking'
+        requestorName: email.split('@')[0] // fallback name from email
       });
       
       setSuccess(true);

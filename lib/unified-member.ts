@@ -193,12 +193,55 @@ export const createUnifiedMember = async (
 // Get unified member record
 export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | null> => {
   try {
+    // First check if they have an individual account
     const memberRef = doc(db, 'accounts', uid);
     const memberSnap = await getDoc(memberRef);
     
     if (memberSnap.exists()) {
-      return memberSnap.data() as UnifiedMember;
+      const data = memberSnap.data();
+      // If it's an individual membership or old data, return as-is
+      if (data.membershipType === 'individual' || !data.membershipType) {
+        return { id: uid, ...data } as UnifiedMember;
+      }
     }
+    
+    // If not found as individual, search in organization members subcollections
+    const accountsRef = collection(db, 'accounts');
+    const orgQuery = query(accountsRef, where('membershipType', '==', 'corporate'));
+    const orgSnapshot = await getDocs(orgQuery);
+    
+    for (const orgDoc of orgSnapshot.docs) {
+      const memberRef = doc(db, 'accounts', orgDoc.id, 'members', uid);
+      const memberSnap = await getDoc(memberRef);
+      
+      if (memberSnap.exists()) {
+        const memberData = memberSnap.data();
+        const orgData = orgDoc.data();
+        
+        // Combine member data with organization context
+        return {
+          id: uid,
+          email: memberData.email,
+          displayName: memberData.displayName,
+          personalName: memberData.name,
+          organisation: orgData.organizationName,
+          status: orgData.status || 'approved',
+          membershipType: 'corporate',
+          organizationName: orgData.organizationName,
+          organizationType: orgData.organizationType,
+          primaryContact: orgData.primaryContact,
+          registeredAddress: orgData.registeredAddress,
+          portfolio: orgData.portfolio,
+          // Member-specific data
+          memberRole: memberData.role,
+          memberJoinedAt: memberData.joinedAt,
+          // Organization data
+          createdAt: orgData.createdAt,
+          updatedAt: orgData.updatedAt
+        } as UnifiedMember;
+      }
+    }
+    
     return null;
   } catch (error) {
     console.error('Error getting unified member:', error);

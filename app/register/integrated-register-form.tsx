@@ -452,7 +452,9 @@ export default function IntegratedRegisterForm() {
       
       if (logoFile) {
         try {
-          const uploadResult = await uploadMemberLogo(logoFile, orgName);
+          // Create clean identifier for logo filename
+          const cleanOrgName = orgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
           logoUrl = uploadResult.downloadURL;
         } catch (uploadError) {
           console.warn('Logo upload failed, continuing without logo:', uploadError);
@@ -460,46 +462,99 @@ export default function IntegratedRegisterForm() {
         }
       }
       
-      // Update the account document with membership information
-      const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+      // Create account with new structure
+      const { doc, setDoc, updateDoc, serverTimestamp } = await import('firebase/firestore');
       const { db, auth } = await import('@/lib/firebase');
       
       if (!auth.currentUser) {
         throw new Error('No authenticated user');
       }
       
-      const accountRef = doc(db, 'accounts', auth.currentUser.uid);
-      await updateDoc(accountRef, {
-        status: 'pending_payment',
-        displayName: auth.currentUser.displayName,
-        membershipType,
-        organizationName: orgName,
-        organizationType: membershipType === 'individual' ? 'individual' : organizationType,
-        primaryContact: {
-          name: primaryContactName,
-          email: primaryContactEmail,
-          phone: primaryContactPhone,
-          jobTitle: primaryContactJobTitle
-        },
-        registeredAddress: {
-          line1: addressLine1,
-          line2: addressLine2,
-          city,
-          state,
-          postalCode,
-          country: country === 'OTHER' ? customCountry : country
-        },
-        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
-          portfolio: {
-            grossWrittenPremiums,
-            portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
-          }
-        }),
-        hasOtherAssociations: hasOtherAssociations ?? false,
-        otherAssociations: hasOtherAssociations ? otherAssociations : [],
-        logoUrl: logoUrl || null,
-        updatedAt: serverTimestamp()
-      });
+      if (membershipType === 'individual') {
+        // Individual membership: update existing basic account
+        const accountRef = doc(db, 'accounts', auth.currentUser.uid);
+        await updateDoc(accountRef, {
+          status: 'pending_payment',
+          displayName: auth.currentUser.displayName,
+          membershipType: 'individual',
+          organizationName: personalName, // For individuals, organization name is their personal name
+          personalName,
+          primaryContact: {
+            name: primaryContactName,
+            email: primaryContactEmail,
+            phone: primaryContactPhone,
+            jobTitle: primaryContactJobTitle
+          },
+          registeredAddress: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city,
+            state,
+            postalCode,
+            country: country === 'OTHER' ? customCountry : country
+          },
+          hasOtherAssociations: hasOtherAssociations ?? false,
+          otherAssociations: hasOtherAssociations ? otherAssociations : [],
+          logoUrl: logoUrl || null,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        // Corporate membership: create organization + add user to members
+        const orgId = `org_${organizationName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+        
+        // Create organizational account
+        const orgAccountRef = doc(db, 'accounts', orgId);
+        await setDoc(orgAccountRef, {
+          membershipType: 'corporate',
+          organizationName,
+          organizationType,
+          status: 'pending_payment',
+          primaryContact: {
+            name: primaryContactName,
+            email: primaryContactEmail,
+            phone: primaryContactPhone,
+            jobTitle: primaryContactJobTitle
+          },
+          registeredAddress: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city,
+            state,
+            postalCode,
+            country: country === 'OTHER' ? customCountry : country
+          },
+          ...(organizationType === 'MGA' && {
+            portfolio: {
+              grossWrittenPremiums,
+              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
+            }
+          }),
+          hasOtherAssociations: hasOtherAssociations ?? false,
+          otherAssociations: hasOtherAssociations ? otherAssociations : [],
+          logoUrl: logoUrl || null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        
+        // Add user to organization members
+        const memberRef = doc(db, 'accounts', orgId, 'members', auth.currentUser.uid);
+        await setDoc(memberRef, {
+          name: personalName,
+          email: auth.currentUser.email,
+          displayName: auth.currentUser.displayName,
+          firebaseUid: auth.currentUser.uid,
+          role: 'admin', // First member is admin
+          joinedAt: serverTimestamp()
+        });
+        
+        // Update the basic account to point to organization (for payment processing)
+        const basicAccountRef = doc(db, 'accounts', auth.currentUser.uid);
+        await updateDoc(basicAccountRef, {
+          organizationId: orgId,
+          redirectToOrg: true,
+          status: 'pending_payment'
+        });
+      }
       
       setStep(4); // Go to payment step
       
