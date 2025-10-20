@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -9,51 +9,85 @@ import Button from '../../components/Button';
 export default function JoinCompanyPage() {
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [companySearch, setCompanySearch] = useState('');
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const searchCompanies = async () => {
+      if (companySearch.length < 2) {
+        setCompanies([]);
+        setShowDropdown(false);
+        return;
+      }
+
+      try {
+        const { collection, query, where, getDocs, limit } = await import('firebase/firestore');
+        const { db } = await import('@/lib/firebase');
+        
+        const accountsRef = collection(db, 'accounts');
+        const companyQuery = query(
+          accountsRef,
+          where('membershipType', '==', 'corporate'),
+          where('status', '==', 'active'),
+          limit(10)
+        );
+        
+        const querySnapshot = await getDocs(companyQuery);
+        const results = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(company => 
+            company.organizationName?.toLowerCase().includes(companySearch.toLowerCase())
+          );
+        
+        setCompanies(results);
+        setShowDropdown(true);
+        
+      } catch (error) {
+        console.error('Error searching companies:', error);
+      }
+    };
+
+    const debounceTimer = setTimeout(searchCompanies, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [companySearch]);
+
+  const handleCompanySelect = (company: any) => {
+    setSelectedCompany(company);
+    setCompanyName(company.organizationName);
+    setCompanySearch(company.organizationName);
+    setShowDropdown(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
+
+    if (!selectedCompany) {
+      setError('Please select a company from the dropdown');
+      return;
+    }
 
     setLoading(true);
     setError('');
 
     try {
-      const { collection, query, where, getDocs } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase');
-      
-      // Check if company exists and has active membership
-      const accountsRef = collection(db, 'accounts');
-      const companyQuery = query(
-        accountsRef,
-        where('organizationName', '==', companyName),
-        where('membershipType', '==', 'corporate'),
-        where('status', '==', 'active')
-      );
-      
-      const querySnapshot = await getDocs(companyQuery);
-      
-      if (querySnapshot.empty) {
-        throw new Error('Company not found or does not have an active FASE membership');
-      }
-      
-      // Check if user email domain matches company domain (optional validation)
-      const emailDomain = email.split('@')[1];
-      const companyDoc = querySnapshot.docs[0];
-      const companyData = companyDoc.data();
-      
       // Create a membership request for admin approval
       const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const requestId = `${companyDoc.id}_${Date.now()}`;
+      const { db } = await import('@/lib/firebase');
+      
+      const requestId = `${selectedCompany.id}_${Date.now()}`;
       
       await setDoc(doc(db, 'membership_requests', requestId), {
         email,
-        companyName,
-        companyId: companyDoc.id,
-        companyAdminEmail: companyData.primaryContact?.email,
+        companyName: selectedCompany.organizationName,
+        companyId: selectedCompany.id,
+        companyAdminEmail: selectedCompany.primaryContact?.email,
         requestedAt: serverTimestamp(),
         status: 'pending',
         type: 'company_linking'
@@ -134,19 +168,49 @@ export default function JoinCompanyPage() {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="companyName" className="block text-sm font-medium text-fase-black mb-2">
+                <div className="relative">
+                  <label htmlFor="companySearch" className="block text-sm font-medium text-fase-black mb-2">
                     Company Name
                   </label>
                   <input
                     type="text"
-                    id="companyName"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
+                    id="companySearch"
+                    value={companySearch}
+                    onChange={(e) => {
+                      setCompanySearch(e.target.value);
+                      setSelectedCompany(null);
+                      setCompanyName('');
+                    }}
+                    onFocus={() => companySearch.length >= 2 && setShowDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                     required
                     className="w-full px-3 py-2 border border-fase-light-gold focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                    placeholder="Your Company Name"
+                    placeholder="Start typing your company name..."
                   />
+                  
+                  {showDropdown && companies.length > 0 && (
+                    <div className="absolute z-10 w-full bg-white border border-fase-light-gold mt-1 max-h-60 overflow-y-auto shadow-lg">
+                      {companies.map((company) => (
+                        <button
+                          key={company.id}
+                          type="button"
+                          onClick={() => handleCompanySelect(company)}
+                          className="w-full text-left px-3 py-2 hover:bg-fase-cream border-b border-fase-light-gold last:border-b-0"
+                        >
+                          <div className="font-medium text-fase-navy">{company.organizationName}</div>
+                          {company.registeredAddress?.country && (
+                            <div className="text-sm text-fase-black">{company.registeredAddress.country}</div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {showDropdown && companySearch.length >= 2 && companies.length === 0 && (
+                    <div className="absolute z-10 w-full bg-white border border-fase-light-gold mt-1 px-3 py-2 text-fase-black text-sm">
+                      No companies found. Make sure your company has an active FASE membership.
+                    </div>
+                  )}
                 </div>
 
                 {error && (
