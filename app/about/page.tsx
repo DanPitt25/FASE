@@ -57,6 +57,7 @@ export default function AboutPage() {
     {
       type: 'cta' as const,
       title: 'Ready to Join FASE?',
+      subtitle: undefined,
       description: 'Applications for FASE membership are open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium. Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.',
       backgroundImage: '/corporate-towers-bg.png',
       buttons: [
