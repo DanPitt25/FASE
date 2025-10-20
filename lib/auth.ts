@@ -259,9 +259,6 @@ export const verifyCode = async (email: string, code: string): Promise<boolean> 
         updatedAt: serverTimestamp()
       });
     }
-      // since we can't directly update Firebase Auth emailVerified
-      return true;
-    }
     
     return true;
   } catch (error: any) {

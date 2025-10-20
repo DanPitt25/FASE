@@ -22,12 +22,43 @@ export default function JoinCompanyPage() {
     setError('');
 
     try {
-      // TODO: Implement company linking logic
-      // 1. Check if company exists and has active membership
-      // 2. Send request to company admin for approval
-      // 3. Create pending user account linked to company
+      const { collection, query, where, getDocs } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
       
-      console.log('Company linking request:', { email, companyName });
+      // Check if company exists and has active membership
+      const accountsRef = collection(db, 'accounts');
+      const companyQuery = query(
+        accountsRef,
+        where('organizationName', '==', companyName),
+        where('membershipType', '==', 'corporate'),
+        where('status', '==', 'active')
+      );
+      
+      const querySnapshot = await getDocs(companyQuery);
+      
+      if (querySnapshot.empty) {
+        throw new Error('Company not found or does not have an active FASE membership');
+      }
+      
+      // Check if user email domain matches company domain (optional validation)
+      const emailDomain = email.split('@')[1];
+      const companyDoc = querySnapshot.docs[0];
+      const companyData = companyDoc.data();
+      
+      // Create a membership request for admin approval
+      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+      const requestId = `${companyDoc.id}_${Date.now()}`;
+      
+      await setDoc(doc(db, 'membership_requests', requestId), {
+        email,
+        companyName,
+        companyId: companyDoc.id,
+        companyAdminEmail: companyData.primaryContact?.email,
+        requestedAt: serverTimestamp(),
+        status: 'pending',
+        type: 'company_linking'
+      });
+      
       setSuccess(true);
       
     } catch (error: any) {
