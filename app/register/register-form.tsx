@@ -160,7 +160,7 @@ export default function RegisterForm() {
         
         {/* Password Requirements */}
         {showPasswordReqs && (
-          <div className="mt-2 p-3 bg-fase-light-blue rounded-md border border-fase-light-gold">
+          <div className="mt-2">
             <p className="text-xs font-medium text-fase-black mb-2">Password must include:</p>
             {(() => {
               const { requirements } = validatePassword(password);

@@ -35,7 +35,7 @@ interface CardsSection {
 interface CTASection {
   type: 'cta';
   title: string;
-  subtitle: string;
+  subtitle?: string;
   description: string;
   backgroundImage: string;
   buttons: Array<{
@@ -324,28 +324,32 @@ export default function ContentPageLayout({
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* Dark overlay for text readability */}
-            <div className="absolute inset-0 bg-fase-navy/75"></div>
-            <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center py-20 max-w-6xl mx-auto">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">{section.title}</h2>
-              <h3 className="text-lg sm:text-xl font-noto-serif font-medium text-fase-light-blue mb-6">{section.subtitle}</h3>
-              <p className="text-fase-light-blue text-sm sm:text-base mb-6 leading-relaxed max-w-3xl mx-auto">
-                {section.description}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {section.buttons.map((button, buttonIndex) => (
-                  <a 
-                    key={buttonIndex}
-                    href={button.href} 
-                    className={`inline-flex items-center px-8 py-4 font-semibold transition-colors ${
-                      button.variant === 'primary' 
-                        ? 'bg-white text-fase-navy hover:bg-fase-light-blue' 
-                        : 'border-2 border-white text-white hover:bg-white hover:text-fase-navy'
-                    }`}
-                  >
-                    {button.text}
-                  </a>
-                ))}
+            {/* Dark overlay for depth */}
+            <div className="absolute inset-0 bg-fase-navy/50"></div>
+            <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 flex justify-center py-20">
+              <div className="bg-white px-8 py-12 text-center max-w-4xl shadow-2xl">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-fase-navy mb-4">{section.title}</h2>
+                {section.subtitle && (
+                  <h3 className="text-lg sm:text-xl font-noto-serif font-medium text-fase-black mb-6">{section.subtitle}</h3>
+                )}
+                <p className="text-fase-black text-sm sm:text-base mb-6 leading-relaxed">
+                  {section.description}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  {section.buttons.map((button, buttonIndex) => (
+                    <a 
+                      key={buttonIndex}
+                      href={button.href} 
+                      className={`inline-flex items-center px-8 py-4 font-semibold transition-colors ${
+                        button.variant === 'primary' 
+                          ? 'bg-fase-navy text-white hover:bg-fase-blue' 
+                          : 'border-2 border-fase-navy text-fase-navy hover:bg-fase-navy hover:text-white'
+                      }`}
+                    >
+                      {button.text}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
