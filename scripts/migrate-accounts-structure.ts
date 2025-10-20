@@ -59,7 +59,7 @@ export async function migrateAccountsStructure() {
     const batch = writeBatch(db);
     
     // Migrate corporate organizations
-    for (const [orgName, members] of corporateGroups) {
+    corporateGroups.forEach((members, orgName) => {
       // Use the first member's account as the template for organizational data
       const primaryMember = members[0];
       const orgId = `org_${orgName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
@@ -106,7 +106,7 @@ export async function migrateAccountsStructure() {
         const oldAccountRef = doc(db, 'accounts', member.id);
         batch.delete(oldAccountRef);
       });
-    }
+    });
     
     // Migrate individual accounts (restructure but keep as main accounts)
     individualAccounts.forEach(account => {
