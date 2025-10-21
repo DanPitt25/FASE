@@ -212,8 +212,8 @@ export const sendInvoiceEmail = functions.https.onCall({
       throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
     }
 
-    // Check for Resend API key
-    const resendApiKey = process.env.RESEND_API_KEY;
+    // Check for Resend API key - use Firebase Functions config
+    const resendApiKey = functions.config().resend?.api_key || process.env.RESEND_API_KEY;
 
     if (resendApiKey) {
       try {
