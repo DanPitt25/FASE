@@ -570,7 +570,7 @@ export default function AdminPortalPage() {
                                   <div className="mb-3">
                                     <p className="text-sm font-medium text-fase-navy mb-1">Portfolio Mix:</p>
                                     <div className="flex flex-wrap gap-2">
-                                      {Object.entries(member.portfolio.portfolioMix).map(([line, percentage]) => (
+                                      {Object.entries(member.portfolio.portfolioMix || {}).map(([line, percentage]) => (
                                         <span key={line} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
                                           {line}: {percentage}%
                                         </span>
