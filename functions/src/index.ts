@@ -130,3 +130,70 @@ export const sendVerificationCode = functions.https.onCall({
     throw new functions.https.HttpsError('internal', 'Failed to send verification code');
   }
 });
+
+export const sendInvoiceEmail = functions.https.onCall({
+  enforceAppCheck: false,
+}, async (request) => {
+  try {
+    const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
+    logger.info('sendInvoiceEmail called for:', email);
+
+    if (!email || !invoiceHTML || !invoiceNumber) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
+    }
+
+    // Check for Resend API key
+    const resendApiKey = process.env.RESEND_API_KEY;
+
+    if (resendApiKey) {
+      try {
+        logger.info('Sending invoice email via Resend...');
+        
+        const emailPayload: any = {
+          from: 'FASE <invoices@fasemga.com>',
+          to: email,
+          subject: `FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`,
+          html: invoiceHTML,
+        };
+        
+        // Add PDF attachment if provided
+        if (pdfAttachment && pdfFilename) {
+          emailPayload.attachments = [{
+            filename: pdfFilename,
+            content: pdfAttachment,
+            type: 'application/pdf',
+            disposition: 'attachment'
+          }];
+        }
+        
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailPayload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Resend API error: ${response.status}`);
+        }
+
+        logger.info(`Invoice email sent to ${email} via Resend`);
+        return { success: true };
+      } catch (emailError) {
+        logger.error('Resend invoice email error:', emailError);
+      }
+    }
+
+    // Fallback: Log to console for development
+    logger.info(`Invoice email for ${email}:`);
+    logger.info(`Subject: FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`);
+    logger.info(`Organization: ${organizationName}`);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending invoice email:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send invoice email');
+  }
+});

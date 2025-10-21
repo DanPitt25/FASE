@@ -618,6 +618,51 @@ export default function IntegratedRegisterForm() {
       // Create the account with 'pending_invoice' status
       await createAccountAndMembership('pending_invoice');
       
+      // Generate and send invoice
+      try {
+        const { auth } = await import('@/lib/firebase');
+        if (auth.currentUser) {
+          const response = await fetch('/api/generate-invoice', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: auth.currentUser.uid,
+              userEmail: email,
+              membershipData: {
+                membershipType,
+                organizationName: membershipType === 'corporate' ? organizationName : personalName,
+                organizationType: membershipType === 'corporate' ? organizationType : 'individual',
+                grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? grossWrittenPremiums : undefined,
+                primaryContact: {
+                  name: primaryContactName,
+                  email: primaryContactEmail,
+                  phone: primaryContactPhone,
+                  jobTitle: primaryContactJobTitle
+                },
+                registeredAddress: {
+                  line1: addressLine1,
+                  line2: addressLine2,
+                  city,
+                  state,
+                  postalCode,
+                  country: country === 'OTHER' ? customCountry : country
+                },
+                hasOtherAssociations
+              }
+            }),
+          });
+          
+          if (!response.ok) {
+            console.warn('Failed to generate invoice:', response.statusText);
+          }
+        }
+      } catch (invoiceError) {
+        console.warn('Failed to generate/send invoice:', invoiceError);
+        // Don't block the registration process if invoice fails
+      }
+      
       // Go directly to success (email already verified)
       setRegistrationComplete(true);
       

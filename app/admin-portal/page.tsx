@@ -111,7 +111,7 @@ export default function AdminPortalPage() {
       const [videosData, commentsData, pendingMembers, approvedMembers, alertsData, messagesData] = await Promise.all([
         getVideos(), // Get all published videos
         user?.uid ? getPendingComments(user.uid) : [],
-        getMembersByStatus('pending'), // Get pending members
+        getMembersByStatus('pending_invoice'), // Get pending invoice members
         getMembersByStatus('approved'), // Get approved members  
         user?.uid ? getUserAlerts(user.uid) : [],
         user?.uid ? getUserMessages(user.uid) : []
@@ -421,7 +421,7 @@ export default function AdminPortalPage() {
     }
   };
 
-  const pendingApplications = memberApplications.filter(member => member.status === 'pending');
+  const pendingApplications = memberApplications.filter(member => member.status === 'pending_invoice');
   const approvedApplications = memberApplications.filter(member => member.status === 'approved');
   // Note: invoice_sent status doesn't exist in UnifiedMember, mapping to pending for now
   const invoiceSentApplications: UnifiedMember[] = [];
@@ -465,9 +465,9 @@ export default function AdminPortalPage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Member Applications</h3>
-                      <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length + invoiceSentApplications.length}</p>
-                      <p className="text-fase-black text-sm">Pending review & payment</p>
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Pending Invoice Payments</h3>
+                      <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length}</p>
+                      <p className="text-fase-black text-sm">Awaiting payment confirmation</p>
                     </div>
                     
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
@@ -528,13 +528,13 @@ export default function AdminPortalPage() {
                   {/* Pending Applications */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
                     <div className="p-6 border-b border-fase-light-gold">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Applications</h3>
-                      <p className="text-fase-black text-sm mt-1">Review and approve member applications • Expected revenue: €{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Invoice Payments</h3>
+                      <p className="text-fase-black text-sm mt-1">Confirm bank transfer payments for invoice members • Expected revenue: €{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
                     </div>
                     <div className="divide-y divide-fase-light-gold">
                       {pendingApplications.length === 0 ? (
                         <div className="p-8 text-center">
-                          <p className="text-fase-black">No pending applications to review</p>
+                          <p className="text-fase-black">No pending invoice payments to confirm</p>
                         </div>
                       ) : (
                         pendingApplications.map(member => (
@@ -584,7 +584,7 @@ export default function AdminPortalPage() {
                                   onClick={() => handleMemberApplicationStatus(member.id, 'approved')}
                                   className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
                                 >
-                                  Approve
+                                  Confirm Payment
                                 </button>
                                 <button
                                   onClick={() => handleMemberApplicationStatus(member.id, 'rejected')}
