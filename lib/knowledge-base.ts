@@ -71,12 +71,12 @@ export interface WebinarRegistration {
 
 export const isAdmin = async (uid: string): Promise<boolean> => {
   try {
-    const userRef = doc(db, 'users', uid);
+    const userRef = doc(db, 'accounts', uid);
     const userSnap = await getDoc(userRef);
     
     if (userSnap.exists()) {
       const user = userSnap.data();
-      return user.access === 'admin';
+      return user.status === 'admin';
     }
     return false;
   } catch (error) {
