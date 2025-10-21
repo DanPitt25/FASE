@@ -142,14 +142,27 @@ export default function AdminPortalPage() {
 
   const handleMemberApplicationStatus = async (memberId: string, newStatus: 'approved' | 'rejected') => {
     try {
+      console.log('Updating member status for:', memberId, 'to:', newStatus);
+      
+      // Validate memberId
+      if (!memberId || typeof memberId !== 'string') {
+        console.error('Invalid memberId:', memberId);
+        alert('Invalid member ID');
+        return;
+      }
+      
       // Map rejected to guest status for UnifiedMember
       const status: UnifiedMember['status'] = newStatus === 'rejected' ? 'guest' : 'approved';
       await updateMemberStatus(memberId, status);
       setMemberApplications(prev => 
         prev.map(member => member.id === memberId ? { ...member, status } : member)
       );
+      
+      // Reload data after successful update
+      await loadData();
     } catch (error) {
       console.error('Error updating member status:', error);
+      console.error('MemberId was:', memberId);
       alert('Error updating member status. Please try again.');
     }
   };

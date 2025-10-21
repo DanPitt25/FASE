@@ -276,7 +276,10 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
     const q = query(membersRef, where('status', '==', status));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => doc.data() as UnifiedMember);
+    return querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    } as UnifiedMember));
   } catch (error) {
     console.error('Error getting members by status:', error);
     return [];
@@ -300,8 +303,14 @@ export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => 
       getDocs(adminQuery)
     ]);
     
-    const approved = approvedSnapshot.docs.map(doc => doc.data() as UnifiedMember);
-    const admins = adminSnapshot.docs.map(doc => doc.data() as UnifiedMember);
+    const approved = approvedSnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    } as UnifiedMember));
+    const admins = adminSnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    } as UnifiedMember));
     
     return [...approved, ...admins];
   } catch (error) {
@@ -337,7 +346,10 @@ export const searchMembersByOrganizationName = async (searchTerm: string): Promi
     
     // Filter by organization name on client side (Firestore doesn't support case-insensitive search)
     const filteredMembers = querySnapshot.docs
-      .map(doc => doc.data() as UnifiedMember)
+      .map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      } as UnifiedMember))
       .filter(member => 
         member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
