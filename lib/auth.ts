@@ -215,3 +215,33 @@ export const verifyCode = async (email: string, code: string): Promise<boolean> 
     throw new Error(error.message || 'Failed to verify code');
   }
 };
+
+// Set admin claim for a user
+export const setAdminClaim = async (targetUserId: string): Promise<void> => {
+  try {
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const functions = getFunctions();
+    const setAdminClaimFunction = httpsCallable(functions, 'setAdminClaim');
+    
+    const result = await setAdminClaimFunction({ targetUserId });
+    console.log('Admin claim set:', result.data);
+  } catch (error: any) {
+    console.error('Error setting admin claim:', error);
+    throw new Error(error.message || 'Failed to set admin claim');
+  }
+};
+
+// Remove admin claim for a user
+export const removeAdminClaim = async (targetUserId: string): Promise<void> => {
+  try {
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const functions = getFunctions();
+    const removeAdminClaimFunction = httpsCallable(functions, 'removeAdminClaim');
+    
+    const result = await removeAdminClaimFunction({ targetUserId });
+    console.log('Admin claim removed:', result.data);
+  } catch (error: any) {
+    console.error('Error removing admin claim:', error);
+    throw new Error(error.message || 'Failed to remove admin claim');
+  }
+};

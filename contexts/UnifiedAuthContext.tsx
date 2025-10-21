@@ -5,6 +5,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { UnifiedMember, getUnifiedMember, createUnifiedMember } from '../lib/unified-member';
 import { checkAdminClaim, checkMemberClaim } from '../lib/admin-claims';
+import { setAdminClaim } from '../lib/auth';
 
 interface UnifiedAuthContextType {
   user: User | null; // Firebase Auth user
@@ -64,6 +65,19 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         checkAdminClaim(),
         checkMemberClaim()
       ]);
+      
+      // Bootstrap: If user has admin status in database but no custom claim, set the claim
+      if (memberData.status === 'admin' && !adminClaim) {
+        try {
+          console.log('Bootstrapping admin claim for user:', firebaseUser.uid);
+          await setAdminClaim(firebaseUser.uid);
+          console.log('Admin claim set successfully');
+          // Reload the user to get the new claims
+          await firebaseUser.reload();
+        } catch (error) {
+          console.error('Failed to bootstrap admin claim:', error);
+        }
+      }
       
       setIsAdmin(adminClaim || memberData.status === 'admin');
       setHasMemberAccess(memberClaim || ['approved', 'admin'].includes(memberData.status));

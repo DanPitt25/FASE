@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
@@ -128,6 +129,70 @@ export const sendVerificationCode = functions.https.onCall({
   } catch (error) {
     logger.error('Error sending verification code:', error);
     throw new functions.https.HttpsError('internal', 'Failed to send verification code');
+  }
+});
+
+export const setAdminClaim = functions.https.onCall({
+  enforceAppCheck: false,
+}, async (request) => {
+  try {
+    const { targetUserId } = request.data;
+    
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    // Check if the caller is already an admin (either through claims or database)
+    const callerUid = request.auth.uid;
+    let isCallerAdmin = false;
+
+    // First check custom claims
+    if (request.auth.token.admin === true) {
+      isCallerAdmin = true;
+    } else {
+      // Fallback: check database (this is safe because we're checking the caller's own document)
+      const db = admin.firestore();
+      const callerDoc = await db.collection('accounts').doc(callerUid).get();
+      if (callerDoc.exists && callerDoc.data()?.status === 'admin') {
+        isCallerAdmin = true;
+        // Set the claim for the caller too while we're at it
+        await admin.auth().setCustomUserClaims(callerUid, { admin: true });
+        logger.info(`Set admin claim for caller: ${callerUid}`);
+      }
+    }
+
+    if (!isCallerAdmin) {
+      throw new functions.https.HttpsError('permission-denied', 'Only admins can set admin claims');
+    }
+
+    // Set admin claim for target user
+    await admin.auth().setCustomUserClaims(targetUserId, { admin: true });
+    logger.info(`Admin claim set for user: ${targetUserId} by admin: ${callerUid}`);
+
+    return { success: true, message: `Admin claim set for user ${targetUserId}` };
+  } catch (error) {
+    logger.error('Error setting admin claim:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to set admin claim');
+  }
+});
+
+export const removeAdminClaim = functions.https.onCall({
+  enforceAppCheck: false,
+}, async (request) => {
+  try {
+    const { targetUserId } = request.data;
+    
+    if (!request.auth || !request.auth.token.admin) {
+      throw new functions.https.HttpsError('permission-denied', 'Only admins can remove admin claims');
+    }
+
+    await admin.auth().setCustomUserClaims(targetUserId, { admin: false });
+    logger.info(`Admin claim removed for user: ${targetUserId}`);
+
+    return { success: true, message: `Admin claim removed for user ${targetUserId}` };
+  } catch (error) {
+    logger.error('Error removing admin claim:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to remove admin claim');
   }
 });
 
