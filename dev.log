@@ -1,0 +1,815 @@
+
+> dev
+> next dev --turbo
+
+  ▲ Next.js 14.2.30 (turbo)
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · turbo
+
+ ✓ Starting...
+ ✓ Compiled in 114ms
+ ✓ Ready in 747ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1335ms
+IntlError: ENVIRONMENT_FALLBACK: There is no `timeZone` configured, this can lead to markup mismatches caused by environment differences. Consider adding a global default: https://next-intl.dev/docs/configuration#time-zone
+    at useTranslationsImpl (/Users/danielpitt/Documents/FASE-site/.next/server/chunks/ssr/node_modules_b4d4e5._.js:14243:17)
+    at useTranslations (/Users/danielpitt/Documents/FASE-site/.next/server/chunks/ssr/node_modules_b4d4e5._.js:14282:12)
+    at /Users/danielpitt/Documents/FASE-site/.next/server/chunks/ssr/node_modules_548bb7._.js:3137:20
+    at Header (/Users/danielpitt/Documents/FASE-site/.next/server/chunks/ssr/_9d6dfb._.js:607:237)
+    at au (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42336
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:42822)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:46505)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at aj (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aj (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:53793)
+    at aC (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:52874)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:50095)
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:45321)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ac (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11400)
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:14707)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ab (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+    at /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+    at ac (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11400)
+    at aw (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:14707)
+    at a_ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776) {
+  code: 'ENVIRONMENT_FALLBACK',
+  originalMessage: 'There is no `timeZone` configured, this can lead to markup mismatches caused by environment differences. Consider adding a global default: https://next-intl.dev/docs/configuration#time-zone'
+}
+ GET / 200 in 1464ms
+ ✓ Compiled /_not-found/page in 346ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 662ms
+ ✓ Compiled /login in 105ms
+ GET /login 200 in 153ms
+ ✓ Compiled /register in 133ms
+ ⚠ ./app/register/integrated-register-form.tsx:487:28
+Module not found: Can't resolve './firebase'
+[0m [90m 485 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 486 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 487 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 488 |[39m       [0m
+[0m [90m 489 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 490 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:487:28
+Module not found: Can't resolve './firebase'
+[0m [90m 485 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 486 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 487 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 488 |[39m       [0m
+[0m [90m 489 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 490 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 42ms
+ ✓ Compiled in 52ms
+ ✓ Compiled /register in 35ms
+ ⚠ ./app/register/integrated-register-form.tsx:496:28
+Module not found: Can't resolve './firebase'
+[0m [90m 494 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 495 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 496 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 497 |[39m       [0m
+[0m [90m 498 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 499 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:496:28
+Module not found: Can't resolve './firebase'
+[0m [90m 494 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 495 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 496 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 497 |[39m       [0m
+[0m [90m 498 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 499 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /register 200 in 165ms
+ ⚠ ./app/register/integrated-register-form.tsx:496:28
+Module not found: Can't resolve './firebase'
+[0m [90m 494 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 495 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 496 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 497 |[39m       [0m
+[0m [90m 498 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 499 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled /_not-found/page in 78ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 177ms
+ ⚠ ./app/register/integrated-register-form.tsx:496:28
+Module not found: Can't resolve './firebase'
+[0m [90m 494 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 495 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 496 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 497 |[39m       [0m
+[0m [90m 498 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 499 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled /icon.png in 135ms
+ ⚠ ./app/register/integrated-register-form.tsx:496:28
+Module not found: Can't resolve './firebase'
+[0m [90m 494 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 495 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 496 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 497 |[39m       [0m
+[0m [90m 498 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 499 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /icon.png?icon.396adeb6.png 200 in 200ms
+ ✓ Compiled in 40ms
+ ✓ Compiled /register in 35ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /register 200 in 163ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled /_not-found/page in 74ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 160ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /icon.png?icon.396adeb6.png 200 in 80ms
+ ✓ Compiled in 36ms
+ ✓ Compiled /register in 27ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /register 200 in 147ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled /_not-found/page in 49ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 183ms
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⚠ ./app/register/integrated-register-form.tsx:499:28
+Module not found: Can't resolve './firebase'
+[0m [90m 497 |[39m       [90m// Use setDoc with merge to update the existing document (same as step 2)[39m[0m
+[0m [90m 498 |[39m       [36mconst[39m { doc[33m:[39m firestoreDoc[33m,[39m setDoc[33m,[39m serverTimestamp } [33m=[39m [36mawait[39m [36mimport[39m([32m'firebase/firestore'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 499 |[39m       [36mconst[39m { db } [33m=[39m [36mawait[39m [36mimport[39m([32m'./firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 500 |[39m       [0m
+[0m [90m 501 |[39m       [36mconst[39m accountRef [33m=[39m firestoreDoc(db[33m,[39m [32m'accounts'[39m[33m,[39m auth[33m.[39mcurrentUser[33m.[39muid)[33m;[39m[0m
+[0m [90m 502 |[39m       [0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /icon.png?icon.396adeb6.png 200 in 52ms
+ ✓ Compiled in 104ms
+ ✓ Compiled /register in 15ms
+ GET /register 200 in 194ms
+ ✓ Compiled /_not-found/page in 11ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 30ms
+ GET /icon.png?icon.396adeb6.png 200 in 53ms
+ ✓ Compiled /register in 7ms
+ ✓ Compiled in 61ms
+ ✓ Compiled /register in 15ms
+ GET /register 200 in 142ms
+ ✓ Compiled /_not-found/page in 7ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 28ms
+ GET /icon.png?icon.396adeb6.png 200 in 33ms
+ ✓ Compiled in 0ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 100ms
+ ✓ Compiled /_not-found/page in 12ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 49ms
+ GET /icon.png?icon.396adeb6.png 200 in 28ms
+ ✓ Compiled in 48ms
+ ✓ Compiled /register in 9ms
+ GET /register 200 in 101ms
+ ✓ Compiled /_not-found/page in 7ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 22ms
+ GET /icon.png?icon.396adeb6.png 200 in 20ms
+ ✓ Compiled /api/upload-logo in 68ms
+Logo upload error: GaxiosError: {
+  "error": {
+    "code": 404,
+    "message": "The specified bucket does not exist.",
+    "errors": [
+      {
+        "message": "The specified bucket does not exist.",
+        "domain": "global",
+        "reason": "notFound"
+      }
+    ]
+  }
+}
+
+    at Gaxios._request (/Users/danielpitt/Documents/FASE-site/node_modules/gaxios/build/src/gaxios.js:142:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async JWT.requestAsync (/Users/danielpitt/Documents/FASE-site/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
+    at async Upload.makeRequest (/Users/danielpitt/Documents/FASE-site/node_modules/@google-cloud/storage/build/cjs/src/resumable-upload.js:769:21)
+    at async uri.retries (/Users/danielpitt/Documents/FASE-site/node_modules/@google-cloud/storage/build/cjs/src/resumable-upload.js:435:29)
+    at async Upload.createURIAsync (/Users/danielpitt/Documents/FASE-site/node_modules/@google-cloud/storage/build/cjs/src/resumable-upload.js:432:21) {
+  config: {
+    method: 'POST',
+    url: 'https://storage.googleapis.com/upload/storage/v1/b/undefined.appspot.com/o?name=graphics%2Flogos%2Ffase_mga-logo.png&uploadType=resumable',
+    params: {
+      name: 'graphics/logos/fase_mga-logo.png',
+      uploadType: 'resumable'
+    },
+    data: {},
+    headers: {
+      'User-Agent': 'gcloud-node-storage/7.17.2 google-api-nodejs-client/9.15.1',
+      'x-goog-api-client': 'gl-node/24.4.0 gccl/7.17.2-CJS gccl-invocation-id/848a7379-5770-4e92-8507-960cce4c114e',
+      'X-Upload-Content-Type': 'image/png',
+      Authorization: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+      'Content-Type': 'application/json'
+    },
+    validateStatus: [Function (anonymous)],
+    paramsSerializer: [Function: paramsSerializer],
+    body: '{}',
+    responseType: 'unknown',
+    errorRedactor: [Function: defaultErrorRedactor]
+  },
+  response: {
+    config: {
+      method: 'POST',
+      url: 'https://storage.googleapis.com/upload/storage/v1/b/undefined.appspot.com/o?name=graphics%2Flogos%2Ffase_mga-logo.png&uploadType=resumable',
+      params: [Object],
+      data: {},
+      headers: [Object],
+      validateStatus: [Function (anonymous)],
+      paramsSerializer: [Function: paramsSerializer],
+      body: '{}',
+      responseType: 'unknown',
+      errorRedactor: [Function: defaultErrorRedactor]
+    },
+    data: '{\n' +
+      '  "error": {\n' +
+      '    "code": 404,\n' +
+      '    "message": "The specified bucket does not exist.",\n' +
+      '    "errors": [\n' +
+      '      {\n' +
+      '        "message": "The specified bucket does not exist.",\n' +
+      '        "domain": "global",\n' +
+      '        "reason": "notFound"\n' +
+      '      }\n' +
+      '    ]\n' +
+      '  }\n' +
+      '}\n',
+    headers: {
+      'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+      'cache-control': 'no-cache, no-store, max-age=0, must-revalidate',
+      'content-length': '247',
+      'content-type': 'text/html; charset=UTF-8',
+      date: 'Tue, 21 Oct 2025 13:48:03 GMT',
+      expires: 'Mon, 01 Jan 1990 00:00:00 GMT',
+      pragma: 'no-cache',
+      server: 'UploadServer',
+      vary: 'Origin, X-Origin',
+      'x-guploader-uploadid': 'AAwnv3J_D-p8y7K05LMbd9wvOYHhWdkdJrzifCDRgZXoFlQb5hEpGRodUNhqN-R4qb6TnL2djjpmnQfQxC18VCg-FomQjL0Fh72LAA7qN58YgC8'
+    },
+    status: 404,
+    statusText: 'Not Found',
+    request: {
+      responseURL: 'https://storage.googleapis.com/upload/storage/v1/b/undefined.appspot.com/o?name=graphics%2Flogos%2Ffase_mga-logo.png&uploadType=resumable'
+    }
+  },
+  error: undefined,
+  status: 404,
+  Symbol(gaxios-gaxios-error): '6.7.1'
+}
+ POST /api/upload-logo 500 in 749ms
+ ✓ Compiled /register in 8ms
+ GET /register 200 in 151ms
+ ✓ Compiled /_not-found/page in 19ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 42ms
+ GET /icon.png?icon.396adeb6.png 200 in 89ms
+ ✓ Compiled in 36ms
+ ✓ Compiled /register in 11ms
+ GET /register 200 in 106ms
+ ✓ Compiled /_not-found/page in 13ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 44ms
+ GET /icon.png?icon.396adeb6.png 200 in 78ms
+ ✓ Compiled in 3ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 158ms
+ ✓ Compiled /_not-found/page in 10ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 32ms
+ GET /icon.png?icon.396adeb6.png 200 in 36ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 94ms
+ ✓ Compiled /_not-found/page in 6ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 22ms
+ GET /icon.png?icon.396adeb6.png 200 in 23ms
+ ✓ Compiled /register in 7ms
+ GET /register 200 in 93ms
+ ✓ Compiled /_not-found/page in 17ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 32ms
+ GET /icon.png?icon.396adeb6.png 200 in 38ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 99ms
+ ✓ Compiled /_not-found/page in 14ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 29ms
+ GET /icon.png?icon.396adeb6.png 200 in 30ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 88ms
+ ✓ Compiled /_not-found/page in 20ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 36ms
+ GET /icon.png?icon.396adeb6.png 200 in 51ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 88ms
+ ✓ Compiled /_not-found/page in 18ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 38ms
+ GET /icon.png?icon.396adeb6.png 200 in 44ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 92ms
+ ✓ Compiled /_not-found/page in 6ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 34ms
+ GET /icon.png?icon.396adeb6.png 200 in 21ms
+ ✓ Compiled in 77ms
+ ✓ Compiled /register in 21ms
+ GET /register 200 in 158ms
+ ✓ Compiled /_not-found/page in 37ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 111ms
+ GET /icon.png?icon.396adeb6.png 200 in 100ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 97ms
+ ✓ Compiled /_not-found/page in 31ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 50ms
+ GET /icon.png?icon.396adeb6.png 200 in 42ms
+ ✓ Compiled /register in 5ms
+ GET /register 200 in 87ms
+ ✓ Compiled /_not-found/page in 7ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 22ms
+ GET /icon.png?icon.396adeb6.png 200 in 50ms
+ ✓ Compiled /register in 6ms
+ GET /register 500 in 98ms
+ ⨯ app/register/integrated-register-form.tsx (184:7) @ IntegratedRegisterForm
+ ⨯ ReferenceError: showEmailVerification is not defined
+    at IntegratedRegisterForm (./app/register/integrated-register-form.tsx:184:7)
+digest: "1067057864"
+[0m [90m 182 |[39m       handleVerifyCode()[33m;[39m[0m
+[0m [90m 183 |[39m     }[0m
+[0m[31m[1m>[22m[39m[90m 184 |[39m   }[33m,[39m [showEmailVerification])[33m;[39m[0m
+[0m [90m     |[39m       [31m[1m^[22m[39m[0m
+[0m [90m 185 |[39m[0m
+[0m [90m 186 |[39m   [36mconst[39m markFieldTouched [33m=[39m (fieldKey[33m:[39m string) [33m=>[39m {[0m
+[0m [90m 187 |[39m     setTouchedFields(prev [33m=>[39m ({ [33m...[39mprev[33m,[39m [fieldKey][33m:[39m [36mtrue[39m }))[33m;[39m[0m
+ ✓ Compiled /_not-found/page in 18ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 33ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /register in 18ms
+ GET /register 200 in 150ms
+ ✓ Compiled /_not-found/page in 24ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 46ms
+ GET /icon.png?icon.396adeb6.png 200 in 50ms
+ ✓ Compiled in 95ms
+ ✓ Compiled /register in 38ms
+ GET /register 200 in 138ms
+ ✓ Compiled /_not-found/page in 40ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 69ms
+ GET /icon.png?icon.396adeb6.png 200 in 81ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 96ms
+ ✓ Compiled /_not-found/page in 20ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 57ms
+ GET /icon.png?icon.396adeb6.png 200 in 67ms
+ ✓ Compiled /register in 8ms
+ GET /register 200 in 95ms
+ ✓ Compiled /_not-found/page in 25ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 48ms
+ GET /icon.png?icon.396adeb6.png 200 in 79ms
+ ✓ Compiled /register in 10ms
+ GET /register 200 in 117ms
+ ✓ Compiled /_not-found/page in 8ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 31ms
+ GET /icon.png?icon.396adeb6.png 200 in 29ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 96ms
+ ✓ Compiled /_not-found/page in 11ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 31ms
+ GET /icon.png?icon.396adeb6.png 200 in 59ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 64ms
+ ✓ Compiled /register in 16ms
+ GET /register 200 in 159ms
+ ✓ Compiled /_not-found/page in 22ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 53ms
+ GET /icon.png?icon.396adeb6.png 200 in 49ms
+ ✓ Compiled /api/create-checkout-session in 161ms
+=== Stripe Checkout Session Debug - Environment Check ===
+- STRIPE_SECRET_KEY exists: true
+- STRIPE_SECRET_KEY value length: 107
+- NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY exists: true
+- FIREBASE_SERVICE_ACCOUNT_KEY exists: true
+- Total env vars: 90
+- Stripe instance created: true
+Request data received: {
+  organizationName: 'FASE MGA',
+  organizationType: 'MGA',
+  membershipType: 'corporate',
+  userId: 'QOqXs8U18Df1gkCTRpnSw51yYNb2'
+}
+Creating checkout session with: {
+  organizationName: 'FASE MGA',
+  organizationType: 'MGA',
+  grossWrittenPremiums: '50-100m',
+  priceInCents: 280000,
+  userEmail: 'fitxhau@gmail.com',
+  userId: 'QOqXs8U18Df1gkCTRpnSw51yYNb2'
+}
+ POST /api/create-checkout-session 200 in 759ms
+ ✓ Compiled /member-portal in 269ms
+ GET /member-portal?session_id=cs_test_a1lZrKamm2iqTc2PajS2kchGFZda8t5JYtmHU65gIF7nB9wWGzR67zIw4j&success=true 200 in 313ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 52ms
+ ✓ Compiled /member-portal in 8ms
+ ✓ Compiled /member-portal in 8ms
+ ✓ Compiled /member-portal in 5ms
+ ✓ Compiled in 46ms
+ ✓ Compiled / in 45ms
+ ✓ Compiled /register in 46ms
+ ✓ Compiled in 78ms
+ ✓ Compiled /register in 32ms
+ GET /register 200 in 159ms
+ ✓ Compiled /_not-found/page in 6ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 25ms
+ GET /icon.png?icon.396adeb6.png 200 in 33ms
+ ✓ Compiled in 97ms
+ ✓ Compiled /register in 14ms
+ GET /register 200 in 148ms
+ ✓ Compiled /_not-found/page in 18ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 43ms
+ GET /icon.png?icon.396adeb6.png 200 in 34ms
+ ✓ Compiled in 59ms
+ ✓ Compiled /register in 19ms
+ GET /register 200 in 134ms
+ ⨯ Internal error: TypeError [ERR_INVALID_STATE]: Invalid state: ReadableStream is already closed
+    at ReadableByteStreamController.enqueue (node:internal/webstreams/readablestream:1183:13)
+    at eV (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210964)
+    at eJ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210262)
+    at Timeout._onTimeout (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:200019)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+digest: "2377437016"
+ ✓ Compiled /_not-found/page in 10ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 38ms
+ GET /icon.png?icon.396adeb6.png 200 in 72ms
+ ✓ Compiled in 5ms
+ ✓ Compiled in 8ms
+ ✓ Compiled in 82ms
+ ✓ Compiled /register in 17ms
+ GET /register 200 in 133ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 51ms
+ GET /icon.png?icon.396adeb6.png 200 in 47ms
+ ✓ Compiled /register in 16ms
+ GET /register 200 in 156ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 76ms
+ GET /icon.png?icon.396adeb6.png 200 in 89ms
+ GET /register 200 in 112ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 125ms
+ GET /register 200 in 60ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 76ms
+ GET /icon.png?icon.396adeb6.png 200 in 23ms
+ GET /register 200 in 47ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 29ms
+ GET /icon.png?icon.396adeb6.png 200 in 99ms
+ GET /register 200 in 43ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 27ms
+ GET /icon.png?icon.396adeb6.png 200 in 39ms
+ ✓ Compiled in 101ms
+ ✓ Compiled /register in 7ms
+ GET /register 200 in 150ms
+ ⨯ Internal error: TypeError [ERR_INVALID_STATE]: Invalid state: ReadableStream is already closed
+    at ReadableByteStreamController.enqueue (node:internal/webstreams/readablestream:1183:13)
+    at eV (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210964)
+    at eJ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210262)
+    at Timeout._onTimeout (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:200019)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+digest: "2377437016"
+ ✓ Compiled /_not-found/page in 8ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 28ms
+ GET /icon.png?icon.396adeb6.png 200 in 113ms
+ ✓ Compiled in 39ms
+ ✓ Compiled /register in 11ms
+ GET /register 200 in 104ms
+ ✓ Compiled /_not-found/page in 15ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 32ms
+ GET /icon.png?icon.396adeb6.png 200 in 43ms
+ ✓ Compiled in 158ms
+ ⨯ ModuleBuildError: ./app/register/integrated-register-form.tsx:420:15
+Ecmascript file had an error
+[0m [90m 418 |[39m       }[0m
+[0m [90m 419 |[39m       [0m
+[0m[31m[1m>[22m[39m[90m 420 |[39m       [36mconst[39m { auth } [33m=[39m [36mawait[39m [36mimport[39m([32m'@/lib/firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 421 |[39m       [0m
+[0m [90m 422 |[39m       [36mif[39m ([33m![39mauth[33m.[39mcurrentUser) {[0m
+[0m [90m 423 |[39m         [36mthrow[39m [36mnew[39m [33mError[39m([32m'No authenticated user'[39m)[33m;[39m[0m
+
+the name `auth` is defined multiple times
+
+
+    at processIssues (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:229:15)
+    at handleRouteType (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:386:17)
+    at async Object.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/hot-reloader-turbopack.js:651:17)
+    at async DevBundlerService.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/dev-bundler-service.js:18:20)
+    at async DevServer.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:551:9)
+    at async Object.ensure (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:169:17)
+    at async DevRouteMatcherManager.matchAll (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/future/route-matcher-managers/dev-route-matcher-manager.js:96:13)
+    at async DevRouteMatcherManager.match (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/future/route-matcher-managers/default-route-matcher-manager.js:155:26)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/next-server.js:228:31)
+    at async DevServer.handleRequestImpl (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/start-server.js:141:13)
+ ⨯ ModuleBuildError: ./app/register/integrated-register-form.tsx:420:15
+Ecmascript file had an error
+[0m [90m 418 |[39m       }[0m
+[0m [90m 419 |[39m       [0m
+[0m[31m[1m>[22m[39m[90m 420 |[39m       [36mconst[39m { auth } [33m=[39m [36mawait[39m [36mimport[39m([32m'@/lib/firebase'[39m)[33m;[39m[0m
+[0m [90m     |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 421 |[39m       [0m
+[0m [90m 422 |[39m       [36mif[39m ([33m![39mauth[33m.[39mcurrentUser) {[0m
+[0m [90m 423 |[39m         [36mthrow[39m [36mnew[39m [33mError[39m([32m'No authenticated user'[39m)[33m;[39m[0m
+
+the name `auth` is defined multiple times
+
+
+    at processIssues (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:229:15)
+    at handleRouteType (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:386:17)
+    at async Object.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/hot-reloader-turbopack.js:651:17)
+    at async DevBundlerService.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/dev-bundler-service.js:18:20)
+    at async DevServer.ensurePage (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:551:9)
+    at async Object.ensure (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:169:17)
+    at async DevRouteMatcherManager.matchAll (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/future/route-matcher-managers/dev-route-matcher-manager.js:96:13)
+    at async DevRouteMatcherManager.match (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/future/route-matcher-managers/default-route-matcher-manager.js:155:26)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/next-server.js:228:31)
+    at async DevServer.handleRequestImpl (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/base-server.js:818:17)
+    at async /Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:179:21)
+    at async handleRequest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:359:24)
+    at async requestHandlerImpl (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/router-server.js:383:13)
+    at async Server.requestListener (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/lib/start-server.js:141:13)
+ ✓ Compiled /_error in 337ms
+ GET /register 500 in 485ms
+ ✓ Compiled /_not-found/page in 17ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 49ms
+ ✓ Compiled in 59ms
+ ✓ Compiled /register in 58ms
+ GET /register 200 in 185ms
+ ✓ Compiled /_not-found/page in 11ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 27ms
+ GET /icon.png?icon.396adeb6.png 200 in 52ms
+ ✓ Compiled /register in 6ms
+ GET /register 200 in 138ms
+ ✓ Compiled /_not-found/page in 7ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 22ms
+ GET /icon.png?icon.396adeb6.png 200 in 27ms
+ ✓ Compiled /register in 23ms
+ GET /register 200 in 175ms
+ ⨯ Internal error: TypeError [ERR_INVALID_STATE]: Invalid state: ReadableStream is already closed
+    at ReadableByteStreamController.enqueue (node:internal/webstreams/readablestream:1183:13)
+    at eV (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210964)
+    at eJ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210262)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Timeout._onTimeout (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:217971)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+digest: "1545979801"
+ ⨯ Internal error: TypeError [ERR_INVALID_STATE]: Invalid state: ReadableStream is already closed
+    at ReadableByteStreamController.enqueue (node:internal/webstreams/readablestream:1183:13)
+    at eV (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210964)
+    at eJ (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:210262)
+    at Timeout._onTimeout (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:200019)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+digest: "2377437016"
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 98ms
+ GET /icon.png?icon.396adeb6.png 200 in 27ms
+ ✓ Compiled /register in 6ms
+ ✓ Compiled in 20ms
+ ✓ Compiled /register in 24ms
+ GET /register 200 in 49ms
+ ✓ Compiled /_not-found/page in 11ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 29ms
+ GET /icon.png?icon.396adeb6.png 200 in 160ms
+ ✓ Compiled in 125ms
+ ✓ Compiled in 126ms
+ ✓ Compiled in 95ms
+ ✓ Compiled in 81ms
+ ✓ Compiled in 42ms
+ ✓ Compiled in 290ms
+ ✓ Compiled in 2ms
+ ✓ Compiled in 40ms
+ ✓ Compiled in 40ms
+ ✓ Compiled in 2ms
+ ✓ Compiled in 45ms
+ ✓ Compiled in 105ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 48ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 44ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 44ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 44ms
+ ✓ Compiled in 0ms
+ ✓ Compiled in 38ms
+ ✓ Compiled in 45ms
+ ✓ Compiled in 38ms
+ ✓ Compiled in 418ms
+ ✓ Compiled in 46ms
+ ✓ Compiled in 429ms

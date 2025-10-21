@@ -24,44 +24,6 @@ export interface AuthUser {
   twoFactorEnabled?: boolean;
 }
 
-// Create account WITHOUT sending verification email automatically
-export const createAccountWithoutVerification = async (email: string, password: string, personalName: string, organisation?: string): Promise<void> => {
-  try {
-    // Create the account first
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-  
-    // Create display name
-    const displayName = organisation && organisation.trim()
-      ? `${personalName} (${organisation})`
-      : personalName;
-    
-    // Update Firebase Auth profile
-    await updateProfile(user, {
-      displayName: displayName
-    });
-
-    // Send verification code email automatically
-    await sendVerificationCode(email);
-
-    // DON'T create Firestore user profile - we're only using Firebase Auth now
-  } catch (error: any) {
-    console.error('Error creating account:', error);
-    
-    // Provide more specific error messages
-    if (error.code === 'auth/email-already-in-use') {
-      throw new Error('An account with this email already exists. Please use a different email or try signing in.');
-    } else if (error.code === 'auth/invalid-email') {
-      throw new Error('Please enter a valid email address.');
-    } else if (error.code === 'auth/weak-password') {
-      throw new Error('Password is too weak. Please choose a stronger password.');
-    } else if (error.code === 'auth/operation-not-allowed') {
-      throw new Error('Email/password accounts are not enabled. Please contact support.');
-    } else {
-      throw new Error(error.message || 'Failed to create account. Please try again.');
-    }
-  }
-};
 
 
 // Sign in existing user - simplified to only use Firebase Auth data
@@ -173,13 +135,13 @@ export const checkEmailVerification = async (): Promise<boolean> => {
   }
 };
 
-// Generate and send verification code
+// Generate and send verification code (works without authentication)
 export const sendVerificationCode = async (email: string): Promise<void> => {
   try {
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store code in Firestore with expiration (5 minutes)
+    // Store code in Firestore with expiration (20 minutes)
     const { doc, setDoc } = await import('firebase/firestore');
     const { db } = await import('./firebase');
     
@@ -193,7 +155,7 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
       used: false
     });
     
-    // Send email via Firebase function
+    // Send email via Firebase function (unauthenticated call)
     const { httpsCallable } = await import('firebase/functions');
     const { functions } = await import('./firebase');
     
@@ -210,10 +172,10 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
   }
 };
 
-// Verify the code
+// Verify the code (works without authentication)
 export const verifyCode = async (email: string, code: string): Promise<boolean> => {
   try {
-    const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+    const { doc, getDoc } = await import('firebase/firestore');
     const { db } = await import('./firebase');
     
     const docRef = doc(db, 'verification_codes', email);
@@ -244,21 +206,8 @@ export const verifyCode = async (email: string, code: string): Promise<boolean> 
     const { deleteDoc } = await import('firebase/firestore');
     await deleteDoc(docRef);
     
-    // Create basic accounts document now that email is verified
-    if (auth.currentUser) {
-      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('./firebase');
-      
-      const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
-      await setDoc(accountRef, {
-        email: auth.currentUser.email,
-        displayName: auth.currentUser.displayName,
-        status: 'email_verified',
-        emailVerified: true,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-    }
+    // Don't create any accounts here - just verify the code
+    // Account creation happens later during payment/invoice selection
     
     return true;
   } catch (error: any) {

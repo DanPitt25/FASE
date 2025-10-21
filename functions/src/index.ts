@@ -4,13 +4,63 @@ import * as logger from "firebase-functions/logger";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const sendVerificationCode = functions.https.onCall(async (request) => {
+// Rate limiting storage
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (now > value.resetTime) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 60000); // Clean up every minute
+
+function checkRateLimit(email: string): boolean {
+  const now = Date.now();
+  const key = email.toLowerCase();
+  const limit = rateLimitStore.get(key);
+  
+  if (!limit || now > limit.resetTime) {
+    // Reset or create new limit
+    rateLimitStore.set(key, { count: 1, resetTime: now + 60000 }); // 1 minute window
+    return true;
+  }
+  
+  if (limit.count >= 3) { // Max 3 codes per minute per email
+    return false;
+  }
+  
+  limit.count++;
+  return true;
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export const sendVerificationCode = functions.https.onCall({
+  enforceAppCheck: false, // Allow unauthenticated calls
+}, async (request) => {
   try {
     const { email, code } = request.data;
     logger.info('sendVerificationCode called with email:', email);
 
     if (!email || !code) {
       throw new functions.https.HttpsError('invalid-argument', 'Email and code are required');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+    }
+
+    // Check rate limit
+    if (!checkRateLimit(email)) {
+      logger.warn(`Rate limit exceeded for email: ${email}`);
+      throw new functions.https.HttpsError('resource-exhausted', 'Too many verification attempts. Please wait before trying again.');
     }
 
     // Check for Resend API key using environment variables

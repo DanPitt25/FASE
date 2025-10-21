@@ -49,13 +49,12 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       let memberData = await getUnifiedMember(firebaseUser.uid);
       
       // If no unified member exists, create one with basic data
+      // BUT don't overwrite existing accounts that might have been created during registration
       if (!memberData) {
-        memberData = await createUnifiedMember(
-          firebaseUser.uid,
-          firebaseUser.email || '',
-          firebaseUser.displayName || '',
-          firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User'
-        );
+        console.log('No unified member found for user:', firebaseUser.uid);
+        console.log('This might be expected if user is in the middle of registration process');
+        // Don't create a basic profile - let the registration process handle account creation
+        return;
       }
       
       setMember(memberData);

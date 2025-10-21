@@ -54,6 +54,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
     
     if (doc.exists) {
       const accountData = doc.data();
+      console.log('Found account for user:', userId, 'with membershipType:', accountData?.membershipType);
       
       if (accountData?.membershipType === 'individual') {
         // Individual account - update directly
@@ -66,6 +67,18 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
         });
         
         console.log('Individual account status updated successfully for user:', userId);
+        return;
+      } else if (accountData?.membershipType === 'corporate') {
+        // Corporate account - update directly
+        await accountRef.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Corporate account status updated successfully for user:', userId);
         return;
       } else if (accountData?.redirectToOrg && accountData?.organizationId) {
         // This is a redirect account - update the organization instead
@@ -147,19 +160,20 @@ export async function POST(request: NextRequest) {
       // Update the member application status
       if (session.metadata?.user_id) {
         try {
-          console.log('Attempting to update member for user:', session.metadata.user_id);
+          console.log('=== WEBHOOK: Attempting to update member for user:', session.metadata.user_id, '===');
           await updateMemberStatus(
             session.metadata.user_id,
             'paid',
             'stripe',
             session.id
           );
-          console.log('Member application updated for user:', session.metadata.user_id);
+          console.log('=== WEBHOOK: Member application updated successfully for user:', session.metadata.user_id, '===');
         } catch (error) {
-          console.error('Failed to update member application:', error);
+          console.error('=== WEBHOOK: Failed to update member application:', error, '===');
         }
       } else {
-        console.log('No user_id found in session metadata');
+        console.log('=== WEBHOOK: No user_id found in session metadata ===');
+        console.log('Session metadata:', session.metadata);
       }
       break;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { createAccountWithoutVerification, sendVerificationCode, verifyCode } from "../../lib/auth";
+import { sendVerificationCode, verifyCode } from "../../lib/auth";
 import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 import Button from "../../components/Button";
 import { handleAuthError } from "../../lib/auth-errors";
@@ -172,20 +172,14 @@ export default function IntegratedRegisterForm() {
   const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'invoice'>('stripe');
+  
+  // Email verification state for after account creation
   const [showEmailVerification, setShowEmailVerification] = useState(false);
-  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState<'stripe' | 'invoice' | null>(null);
 
-  // Check for verification redirect
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('verified') === 'true' && showEmailVerification) {
-      // User came back from clicking verification link
-      handleVerifyCode();
-    }
-  }, [showEmailVerification]);
 
   const markFieldTouched = (fieldKey: string) => {
     setTouchedFields(prev => ({ ...prev, [fieldKey]: true }));
@@ -281,23 +275,20 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      // Create account and trigger email verification
+      // Just send verification code without creating any accounts
       try {
         setLoading(true);
-        const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
-        await createAccountWithoutVerification(email, password, personalName, orgForAuth);
         
-        // Show email verification step
+        // Send verification code (no account creation yet)
+        await sendVerificationCode(email);
+        
         setShowEmailVerification(true);
-        setEmailVerificationSent(true); // Email is automatically sent during account creation
         setError("");
         setAttemptedNext(false);
-        setLoading(false);
-        return;
       } catch (error: any) {
+        setError(error.message || "Failed to send verification code");
+      } finally {
         setLoading(false);
-        setError(handleAuthError(error));
-        return;
       }
     } else if (step === 2) {
       // Validate membership basic fields
@@ -386,12 +377,164 @@ export default function IntegratedRegisterForm() {
     return baseFee;
   };
 
-  const handlePayment = async () => {
-    if (processingPayment) return;
-    
-    setProcessingPayment(true);
-    setPaymentError("");
+  const createAccountAndMembership = async (status: 'pending_payment' | 'pending_invoice') => {
+    setLoading(true);
+    setError("");
 
+    try {
+      // Create Firebase Auth account directly (email already verified)
+      const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+      const { auth } = await import('@/lib/firebase');
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Create display name
+      const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
+      const displayName = orgForAuth && orgForAuth.trim()
+        ? `${personalName} (${orgForAuth})`
+        : personalName;
+      
+      await updateProfile(user, { displayName });
+      
+      // Mark email as verified in Firebase Auth since they completed verification in Step 1
+      // This needs to be done server-side via admin SDK
+      try {
+        const response = await fetch('/api/auth/verify-user-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ uid: user.uid }),
+        });
+        if (!response.ok) {
+          console.warn('Failed to verify user email via admin SDK');
+        }
+      } catch (error) {
+        console.warn('Failed to call verify-user-email API:', error);
+      }
+      
+      // Create membership application
+      const orgName = membershipType === 'individual' ? personalName : organizationName;
+      let logoUrl = '';
+      
+      if (logoFile) {
+        try {
+          // Create clean identifier for logo filename
+          const cleanOrgName = orgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          
+          // Use direct Firebase Storage upload
+          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
+          logoUrl = uploadResult.downloadURL;
+        } catch (uploadError) {
+          console.warn('Logo upload failed, continuing without logo:', uploadError);
+          // Continue without logo - this is not a blocking error
+        }
+      }
+      
+      if (!user) {
+        throw new Error('No authenticated user');
+      }
+      
+      // Create complete Firestore document
+      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const accountRef = firestoreDoc(db, 'accounts', user.uid);
+      
+      const dataToWrite = {
+        email: user.email,
+        displayName: user.displayName,
+        status,
+        emailVerified: true, // Email was verified in Step 1
+        membershipType,
+        personalName,
+        organizationName: membershipType === 'corporate' ? organizationName : personalName,
+        ...(membershipType === 'corporate' && { organizationType }),
+        primaryContact: {
+          name: primaryContactName,
+          email: primaryContactEmail,
+          phone: primaryContactPhone,
+          jobTitle: primaryContactJobTitle
+        },
+        registeredAddress: {
+          line1: addressLine1,
+          line2: addressLine2,
+          city,
+          state,
+          postalCode,
+          country: country === 'OTHER' ? customCountry : country
+        },
+        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
+          portfolio: {
+            grossWrittenPremiums,
+            portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
+          }
+        }),
+        hasOtherAssociations: hasOtherAssociations ?? false,
+        otherAssociations: hasOtherAssociations ? otherAssociations : [],
+        logoUrl: logoUrl || null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      
+      try {
+        await setDoc(accountRef, dataToWrite);
+      } catch (firestoreError: any) {
+        console.error('Firestore write failed:', firestoreError);
+        throw firestoreError;
+      }
+      
+    } catch (error: any) {
+      // Check for network/connection errors that might be caused by ad blockers
+      if (error.message?.includes('ERR_BLOCKED_BY_CLIENT') || 
+          error.message?.includes('network') || 
+          error.code === 'unavailable') {
+        setError("Connection blocked. Please disable any ad blockers or try using a different browser.");
+      } else {
+        setError(handleAuthError(error));
+      }
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      setError("Please enter the verification code");
+      return;
+    }
+
+    setIsCheckingVerification(true);
+    try {
+      const isVerified = await verifyCode(email, verificationCode.trim());
+      
+      if (isVerified) {
+        setShowEmailVerification(false);
+        
+        // If this is after Step 1, continue to Step 2
+        if (!pendingPaymentAction) {
+          setStep(2);
+        } else {
+          // This is after payment - continue with the pending payment action
+          if (pendingPaymentAction === 'stripe') {
+            await continueWithStripePayment();
+          } else if (pendingPaymentAction === 'invoice') {
+            setRegistrationComplete(true);
+          }
+        }
+      } else {
+        setError("Invalid verification code");
+      }
+    } catch (error: any) {
+      setError(error.message || "Failed to verify code");
+    } finally {
+      setIsCheckingVerification(false);
+    }
+  };
+
+  const continueWithStripePayment = async () => {
     try {
       const { auth } = await import('@/lib/firebase');
       if (!auth.currentUser) {
@@ -429,10 +572,58 @@ export default function IntegratedRegisterForm() {
       } else {
         throw new Error('No checkout URL received');
       }
-
     } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentError(error.message || 'Failed to start payment process');
+    }
+  };
+
+  const handleSendVerificationCode = async () => {
+    try {
+      await sendVerificationCode(email);
+      setError("");
+    } catch (error: any) {
+      setError(error.message || "Failed to send verification code");
+    }
+  };
+
+  const handlePayment = async () => {
+    if (processingPayment) return;
+    
+    setProcessingPayment(true);
+    setPaymentError("");
+
+    try {
+      // Create the account and membership record
+      await createAccountAndMembership('pending_payment');
+      
+      // Go directly to Stripe payment (email already verified)
+      await continueWithStripePayment();
+      
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      setPaymentError(error.message || 'Failed to start payment process');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleInvoiceRequest = async () => {
+    if (processingPayment) return;
+    
+    setProcessingPayment(true);
+    setPaymentError("");
+
+    try {
+      // Create the account with 'pending_invoice' status
+      await createAccountAndMembership('pending_invoice');
+      
+      // Go directly to success (email already verified)
+      setRegistrationComplete(true);
+      
+    } catch (error: any) {
+      console.error('Invoice request error:', error);
+      setPaymentError(error.message || 'Failed to process invoice request');
     } finally {
       setProcessingPayment(false);
     }
@@ -454,6 +645,8 @@ export default function IntegratedRegisterForm() {
         try {
           // Create clean identifier for logo filename
           const cleanOrgName = orgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          
+          // Use direct Firebase Storage upload
           const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
           logoUrl = uploadResult.downloadURL;
         } catch (uploadError) {
@@ -462,98 +655,59 @@ export default function IntegratedRegisterForm() {
         }
       }
       
-      // Create account with new structure
-      const { doc, setDoc, updateDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db, auth } = await import('@/lib/firebase');
+      const { auth } = await import('@/lib/firebase');
       
       if (!auth.currentUser) {
         throw new Error('No authenticated user');
       }
       
-      if (membershipType === 'individual') {
-        // Individual membership: update existing basic account
-        const accountRef = doc(db, 'accounts', auth.currentUser.uid);
-        await updateDoc(accountRef, {
-          status: 'pending_payment',
-          displayName: auth.currentUser.displayName,
-          membershipType: 'individual',
-          organizationName: personalName, // For individuals, organization name is their personal name
-          personalName,
-          primaryContact: {
-            name: primaryContactName,
-            email: primaryContactEmail,
-            phone: primaryContactPhone,
-            jobTitle: primaryContactJobTitle
-          },
-          registeredAddress: {
-            line1: addressLine1,
-            line2: addressLine2,
-            city,
-            state,
-            postalCode,
-            country: country === 'OTHER' ? customCountry : country
-          },
-          hasOtherAssociations: hasOtherAssociations ?? false,
-          otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: logoUrl || null,
-          updatedAt: serverTimestamp()
-        });
-      } else {
-        // Corporate membership: create organization + add user to members
-        const orgId = `org_${organizationName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
-        
-        // Create organizational account
-        const orgAccountRef = doc(db, 'accounts', orgId);
-        await setDoc(orgAccountRef, {
-          membershipType: 'corporate',
-          organizationName,
-          organizationType,
-          status: 'pending_payment',
-          primaryContact: {
-            name: primaryContactName,
-            email: primaryContactEmail,
-            phone: primaryContactPhone,
-            jobTitle: primaryContactJobTitle
-          },
-          registeredAddress: {
-            line1: addressLine1,
-            line2: addressLine2,
-            city,
-            state,
-            postalCode,
-            country: country === 'OTHER' ? customCountry : country
-          },
-          ...(organizationType === 'MGA' && {
-            portfolio: {
-              grossWrittenPremiums,
-              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
-            }
-          }),
-          hasOtherAssociations: hasOtherAssociations ?? false,
-          otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: logoUrl || null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        
-        // Add user to organization members
-        const memberRef = doc(db, 'accounts', orgId, 'members', auth.currentUser.uid);
-        await setDoc(memberRef, {
-          name: personalName,
-          email: auth.currentUser.email,
-          displayName: auth.currentUser.displayName,
-          firebaseUid: auth.currentUser.uid,
-          role: 'admin', // First member is admin
-          joinedAt: serverTimestamp()
-        });
-        
-        // Update the basic account to point to organization (for payment processing)
-        const basicAccountRef = doc(db, 'accounts', auth.currentUser.uid);
-        await updateDoc(basicAccountRef, {
-          organizationId: orgId,
-          redirectToOrg: true,
-          status: 'pending_payment'
-        });
+      // Use setDoc with merge to update the existing document (same as step 2)
+      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
+      
+      const dataToWrite = {
+        // Keep existing fields and add new ones
+        email: auth.currentUser.email,
+        displayName: auth.currentUser.displayName,
+        status: 'pending_payment',
+        emailVerified: true,
+        membershipType,
+        personalName,
+        organizationName: membershipType === 'corporate' ? organizationName : personalName,
+        ...(membershipType === 'corporate' && { organizationType }),
+        primaryContact: {
+          name: primaryContactName,
+          email: primaryContactEmail,
+          phone: primaryContactPhone,
+          jobTitle: primaryContactJobTitle
+        },
+        registeredAddress: {
+          line1: addressLine1,
+          line2: addressLine2,
+          city,
+          state,
+          postalCode,
+          country: country === 'OTHER' ? customCountry : country
+        },
+        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
+          portfolio: {
+            grossWrittenPremiums,
+            portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
+          }
+        }),
+        hasOtherAssociations: hasOtherAssociations ?? false,
+        otherAssociations: hasOtherAssociations ? otherAssociations : [],
+        logoUrl: logoUrl || null,
+        updatedAt: serverTimestamp()
+      };
+      
+      try {
+        await setDoc(accountRef, dataToWrite, { merge: true });
+      } catch (firestoreError: any) {
+        console.error('Firestore write failed:', firestoreError);
+        throw firestoreError;
       }
       
       setStep(4); // Go to payment step
@@ -565,57 +719,7 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const handleSendVerificationCode = async () => {
-    try {
-      await sendVerificationCode(email);
-      setEmailVerificationSent(true);
-      setError("");
-    } catch (error: any) {
-      setError(error.message || "Failed to send verification code");
-    }
-  };
 
-  const handleVerifyCode = async () => {
-    if (!verificationCode.trim()) {
-      setError("Please enter the verification code");
-      return;
-    }
-
-    setIsCheckingVerification(true);
-    try {
-      const isVerified = await verifyCode(email, verificationCode.trim());
-      if (isVerified) {
-        setIsEmailVerified(true);
-        setShowEmailVerification(false);
-        
-        // Now proceed with creating the membership application
-        await continueWithMembershipApplication();
-      } else {
-        setError("Invalid verification code");
-      }
-    } catch (error: any) {
-      setError(error.message || "Failed to verify code");
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
-
-  const continueWithMembershipApplication = async () => {
-    try {
-      setLoading(true);
-      
-      // Continue to step 2 after email verification
-      setShowEmailVerification(false);
-      setStep(2);
-      setError("");
-      setAttemptedNext(false);
-      
-    } catch (error: any) {
-      setError(handleAuthError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Email verification screen
   if (showEmailVerification) {
@@ -674,7 +778,7 @@ export default function IntegratedRegisterForm() {
           </Button>
           
           <p className="text-xs text-fase-black text-center">
-            Code expires in 5 minutes
+            Code expires in 20 minutes
           </p>
         </div>
 
@@ -697,7 +801,7 @@ export default function IntegratedRegisterForm() {
         <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Registration Complete!</h2>
         <p className="text-fase-black mb-6">
           Your account has been created and your membership application submitted. 
-          Please check your email to verify your account, then sign in to access your member portal.
+          You can now sign in to access your member portal.
         </p>
         
         <div className="space-y-3">
@@ -710,10 +814,6 @@ export default function IntegratedRegisterForm() {
             Continue to Sign In
           </Button>
         </div>
-        
-        <p className="text-xs text-fase-black text-center mt-4">
-          Check your spam folder if you do not see the verification email.
-        </p>
       </div>
     );
   }
@@ -1259,17 +1359,17 @@ export default function IntegratedRegisterForm() {
           </div>
 
           {/* Membership Summary */}
-          <div className="bg-fase-light-blue rounded-lg p-6 space-y-4">
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Membership Summary</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-fase-black font-medium">Organization:</span>
+                <span className="text-fase-navy font-medium">Organization:</span>
                 <p className="text-fase-black">{membershipType === 'individual' ? personalName : organizationName}</p>
               </div>
               
               <div>
-                <span className="text-fase-black font-medium">Membership Type:</span>
+                <span className="text-fase-navy font-medium">Membership Type:</span>
                 <p className="text-fase-black">
                   {membershipType === 'individual' 
                     ? 'Individual' 
@@ -1279,18 +1379,18 @@ export default function IntegratedRegisterForm() {
               </div>
               
               <div>
-                <span className="text-fase-black font-medium">Contact Email:</span>
+                <span className="text-fase-navy font-medium">Contact Email:</span>
                 <p className="text-fase-black">{primaryContactEmail}</p>
               </div>
               
               <div>
-                <span className="text-fase-black font-medium">Country:</span>
+                <span className="text-fase-navy font-medium">Country:</span>
                 <p className="text-fase-black">{country === 'OTHER' ? customCountry : country}</p>
               </div>
               
               {membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums && (
                 <div className="md:col-span-2">
-                  <span className="text-fase-black font-medium">Gross Written Premiums:</span>
+                  <span className="text-fase-navy font-medium">Gross Written Premiums:</span>
                   <p className="text-fase-black">{grossWrittenPremiums}</p>
                 </div>
               )}
@@ -1330,13 +1430,62 @@ export default function IntegratedRegisterForm() {
             </p>
           </div>
 
+          {/* Payment Method Selection */}
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Payment Method</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                  paymentMethod === 'stripe' 
+                    ? 'border-fase-navy bg-fase-light-blue' 
+                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
+                }`}
+                onClick={() => setPaymentMethod('stripe')}
+              >
+                <div className="flex items-center mb-2">
+                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                    paymentMethod === 'stripe' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'stripe' && (
+                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                    )}
+                  </div>
+                  <span className="font-medium text-fase-navy">Pay Online</span>
+                </div>
+                <p className="text-sm text-fase-black ml-7">Secure payment via Stripe (Credit/Debit Card)</p>
+              </div>
+              
+              <div 
+                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                  paymentMethod === 'invoice' 
+                    ? 'border-fase-navy bg-fase-light-blue' 
+                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
+                }`}
+                onClick={() => setPaymentMethod('invoice')}
+              >
+                <div className="flex items-center mb-2">
+                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                    paymentMethod === 'invoice' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
+                  }`}>
+                    {paymentMethod === 'invoice' && (
+                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                    )}
+                  </div>
+                  <span className="font-medium text-fase-navy">Request Invoice</span>
+                </div>
+                <p className="text-sm text-fase-black ml-7">Pay later via bank transfer</p>
+              </div>
+            </div>
+          </div>
+
           {/* Payment Button */}
           <div className="text-center">
             <Button
               type="button"
               variant="primary"
               size="large"
-              onClick={handlePayment}
+              onClick={paymentMethod === 'stripe' ? handlePayment : handleInvoiceRequest}
               disabled={processingPayment}
               className="w-full"
             >
@@ -1348,13 +1497,18 @@ export default function IntegratedRegisterForm() {
                   </svg>
                   Processing...
                 </>
-              ) : (
+              ) : paymentMethod === 'stripe' ? (
                 "Complete Payment"
+              ) : (
+                "Request Invoice"
               )}
             </Button>
             
             <p className="text-xs text-fase-black mt-3">
-              Secure payment powered by Stripe. You&apos;ll be redirected to complete your payment.
+              {paymentMethod === 'stripe' 
+                ? "Secure payment powered by Stripe. You'll be redirected to complete your payment."
+                : "An invoice will be sent to your email address for payment via bank transfer."
+              }
             </p>
           </div>
         </div>
@@ -1391,10 +1545,10 @@ export default function IntegratedRegisterForm() {
             <Button 
               type="button"
               variant="primary" 
-              onClick={async () => {
+              onClick={() => {
                 setAttemptedNext(true);
                 
-                // Validate fields before creating membership application
+                // Validate fields before going to payment step
                 if (!addressLine1.trim() || !city.trim() || !country) {
                   setError("Address information is required");
                   return;
@@ -1420,12 +1574,13 @@ export default function IntegratedRegisterForm() {
                   return;
                 }
 
-                await handleSubmit();
+                // All validated, go to payment step
+                setError("");
+                setStep(4);
                 setAttemptedNext(false);
               }}
-              disabled={loading}
             >
-              {loading ? "Processing..." : "Continue"}
+              Continue
             </Button>
           ) : null}
         </div>

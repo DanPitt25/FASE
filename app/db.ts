@@ -16,21 +16,4 @@ export async function getUser(email: string) {
   }
 }
 
-export async function createUser(email: string, password: string) {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    // Store additional user data in Firestore
-    await setDoc(doc(db, 'users', email), {
-      email: email,
-      uid: user.uid,
-      createdAt: new Date().toISOString()
-    });
-    
-    return { success: true, uid: user.uid };
-  } catch (error) {
-    console.error('Error creating user:', error);
-    throw error;
-  }
-}
+// Account creation function removed - accounts are only created after payment via createAccountAndMembership
