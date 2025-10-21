@@ -2,6 +2,11 @@ import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
+// Initialize Firebase Admin
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 

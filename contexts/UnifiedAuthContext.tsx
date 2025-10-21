@@ -66,6 +66,13 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         checkMemberClaim()
       ]);
       
+      // Debug: Log the actual token claims
+      if (firebaseUser) {
+        const idTokenResult = await firebaseUser.getIdTokenResult();
+        console.log('Token claims:', idTokenResult.claims);
+        console.log('Admin claim from token:', idTokenResult.claims.admin);
+      }
+      
       // Bootstrap: If user has admin status in database but no custom claim, set the claim
       if (memberData.status === 'admin' && !adminClaim) {
         try {
