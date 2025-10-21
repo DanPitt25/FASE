@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
     const invoiceHTML = generateInvoiceHTML(membershipData, invoiceNumber, totalAmount);
 
     // Generate PDF using Puppeteer
-    let pdfBuffer: Buffer | null = null;
+    let pdfBuffer: Uint8Array | null = null;
     try {
       const browser = await puppeteer.launch({
         headless: true,
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
       
       // Add PDF attachment if generated successfully
       if (pdfBuffer) {
-        emailData.pdfAttachment = pdfBuffer.toString('base64');
+        emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
       }
       
