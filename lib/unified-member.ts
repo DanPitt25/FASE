@@ -17,7 +17,7 @@ export interface UnifiedMember {
   id: string; // Same as Firebase Auth uid
   email: string; // Synced from Firebase Auth
   displayName: string; // Synced from Firebase Auth
-  status: 'guest' | 'pending' | 'approved' | 'admin';
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice';
   
   // Core profile data (always present)
   personalName: string;
@@ -172,7 +172,7 @@ export const createUnifiedMember = async (
   displayName: string,
   personalName: string,
   organisation?: string,
-  status: 'guest' | 'pending' | 'approved' | 'admin' = 'guest'
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' = 'guest'
 ): Promise<UnifiedMember> => {
   const memberRef = doc(db, 'accounts', uid);
   const memberData: UnifiedMember = {
