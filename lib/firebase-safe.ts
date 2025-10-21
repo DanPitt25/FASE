@@ -143,7 +143,7 @@ export async function onAuthStateChangeSafe(callback: (user: any) => void) {
   
   if (isBlocked) {
     // Use localStorage polling for auth state when Firebase is blocked
-    let lastUser = null;
+    let lastUser: any = null;
     
     const checkAuthState = () => {
       const uid = localStorage.getItem('fase_user_uid');
