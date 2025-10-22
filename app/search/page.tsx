@@ -7,35 +7,30 @@ import SearchContent from './search-content';
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header currentPage="search" />
-      <main className="flex-1 bg-gray-50">
-        {/* Hero Section */}
-        <div className="bg-fase-navy text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">Search</h1>
-              <p className="text-xl text-blue-100">
-                Search the FASE website
-              </p>
-              <nav className="flex justify-center mt-4" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-2 text-blue-200">
-                  <li><a href="/" className="hover:text-white">Home</a></li>
-                  <li><span className="mx-2">/</span></li>
-                  <li className="text-white">Search</li>
-                </ol>
-              </nav>
-            </div>
+      <section className="relative h-[33vh] flex items-center overflow-hidden">
+        <img
+          src="/images/building.jpg"
+          alt="Search"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+        />
+        <div className="absolute inset-0 bg-fase-navy/40"></div>
+        <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          <div className="w-1/4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-white leading-tight">
+              Search
+            </h1>
           </div>
         </div>
-
-        {/* Content wrapped in Suspense */}
+      </section>
+      <main className="flex-1 bg-white">
         <Suspense fallback={
           <div className="py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading search...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto"></div>
               </div>
             </div>
           </div>
@@ -44,6 +39,6 @@ export default function SearchPage() {
         </Suspense>
       </main>
       <Footer />
-    </div>
+    </>
   );
 }
