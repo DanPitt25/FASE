@@ -842,3 +842,632 @@ digest: "2377437016"
  ✓ Compiled in 194ms
  ✓ Compiled in 55ms
  ✓ Compiled in 48ms
+[Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+[Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+[Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+[Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+[Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+ ⨯ unhandledRejection: [Error: creating new process
+
+Caused by:
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of Project::server_changed failed
+- Execution of AppEndpointOutput::server_assets failed
+- Execution of AppEndpoint::output failed
+- Execution of get_app_client_references_chunks failed
+- Execution of <BrowserChunkingContext as ChunkingContext>::chunk_group failed
+- Execution of graph_node_to_referenced_nodes_with_available_chunk_items failed
+- Execution of graph_node_to_referenced_nodes failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1372
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/danielpitt/Documents/FASE-site/.next/transform.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1369:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+      at Module._load (node:internal/modules/cjs/loader:1179:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:152:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v24.4.0] {
+  code: 'GenericFailure'
+}
+Error: ENOENT: no such file or directory, open '/Users/danielpitt/Documents/FASE-site/.next/server/middleware/middleware-manifest.json'
+    at async open (node:internal/fs/promises:640:25)
+    at async readFile (node:internal/fs/promises:1277:14)
+    at async readPartialManifest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack/manifest-loader.js:28:23)
+    at async TurbopackManifestLoader.loadMiddlewareManifest (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack/manifest-loader.js:237:155)
+    at async processMiddleware (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:590:13)
+    at async handleEntrypoints (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/turbopack-utils.js:600:9)
+    at async handleEntrypointsSubscription (/Users/danielpitt/Documents/FASE-site/node_modules/next/dist/server/dev/hot-reloader-turbopack.js:358:13) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/danielpitt/Documents/FASE-site/.next/server/middleware/middleware-manifest.json'
+}
+[?25h

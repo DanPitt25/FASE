@@ -18,6 +18,7 @@ interface HeaderProps {
 export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, member, loading, isAdmin, hasMemberAccess } = useUnifiedAuth();
   const { locale, setLocale } = useLocale();
   const router = useRouter();
@@ -34,6 +35,20 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
     }
   };
 
@@ -80,12 +95,20 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 <div className="relative">
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleSearchKeyPress}
                     placeholder={t('search_placeholder')}
-                    className="bg-fase-cream text-fase-black px-4 py-1 pr-10  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
+                    className="bg-fase-cream text-fase-black px-4 py-1 pr-10 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
                   />
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <button
+                    onClick={handleSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-navy hover:text-fase-gold cursor-pointer"
+                  >
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -227,12 +250,20 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <div className="relative mb-4">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
                 placeholder={t('search_placeholder')}
-                className="w-full bg-fase-cream text-fase-black px-4 py-2 pr-10  text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
+                className="w-full bg-fase-cream text-fase-black px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
               />
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <button
+                onClick={handleSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-navy hover:text-fase-gold cursor-pointer"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
             </div>
             
             <div className="mb-4">
