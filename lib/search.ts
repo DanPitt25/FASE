@@ -261,7 +261,7 @@ const searchablePages: SearchableContent[] = [
   }
 ];
 
-// Fuse.js configuration for fuzzy search
+// Fuse.js configuration for stricter search
 const fuseOptions = {
   keys: [
     { name: 'title', weight: 0.4 },
@@ -269,12 +269,14 @@ const fuseOptions = {
     { name: 'content', weight: 0.2 },
     { name: 'keywords', weight: 0.1 }
   ],
-  threshold: 0.3, // Lower = more strict, higher = more fuzzy
+  threshold: 0.1, // Much more strict - only close matches
   includeScore: true,
   includeMatches: true,
-  minMatchCharLength: 2,
+  minMatchCharLength: 3, // Require at least 3 characters to match
   shouldSort: true,
-  findAllMatches: true
+  findAllMatches: false, // Only find best matches
+  ignoreLocation: true, // Don't care about position in text
+  distance: 100 // Limit how far apart characters can be
 };
 
 // Initialize Fuse instance
