@@ -10,11 +10,6 @@ let stripe: Stripe | null = null;
 const initializeStripe = () => {
   if (!stripe) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    console.log('Stripe key check:', {
-      exists: !!stripeKey,
-      length: stripeKey?.length,
-      prefix: stripeKey?.substring(0, 8)
-    });
     
     if (!stripeKey) {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
@@ -23,7 +18,6 @@ const initializeStripe = () => {
     stripe = new Stripe(stripeKey, {
       apiVersion: '2025-08-27.basil',
     });
-    console.log('Stripe initialized successfully');
   }
   return stripe;
 };
@@ -42,25 +36,11 @@ const getPriceForPremiumBracket = (bracket: string): number => {
 };
 
 export async function POST(request: NextRequest) {
-  console.log('=== Stripe Checkout Session Debug - Environment Check ===');
-  console.log('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-  console.log('- STRIPE_SECRET_KEY value length:', process.env.STRIPE_SECRET_KEY?.length);
-  console.log('- NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY exists:', !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-  console.log('- FIREBASE_SERVICE_ACCOUNT_KEY exists:', !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-  console.log('- Total env vars:', Object.keys(process.env).length);
-  
   try {
     // Initialize Stripe at runtime
     const stripeInstance = initializeStripe();
-    console.log('- Stripe instance created:', !!stripeInstance);
     
     const requestData = await request.json();
-    console.log('Request data received:', {
-      organizationName: requestData.organizationName,
-      organizationType: requestData.organizationType,
-      membershipType: requestData.membershipType,
-      userId: requestData.userId
-    });
     
     const { 
       organizationName, 
@@ -108,14 +88,6 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
-    console.log('Creating checkout session with:', {
-      organizationName,
-      organizationType,
-      grossWrittenPremiums,
-      priceInCents,
-      userEmail,
-      userId
-    });
 
     // Create Stripe checkout session
     const session = await stripeInstance.checkout.sessions.create({
@@ -157,36 +129,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id, url: session.url });
 
   } catch (error: any) {
-    console.error('=== Stripe Checkout Session Error ===');
     console.error('Error creating checkout session:', error);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Error type:', error.type);
-    console.error('Error code:', error.code);
-    
-    // Check if this is an environment variable issue
-    if (error.message?.includes('STRIPE_SECRET_KEY')) {
-      return NextResponse.json(
-        { 
-          error: 'Payment processing not available - missing configuration',
-          details: error.message,
-          debug: {
-            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-            allStripeKeys: Object.keys(process.env).filter(k => k.includes('STRIPE')),
-            nodeEnv: process.env.NODE_ENV,
-            isVercel: !!process.env.VERCEL
-          }
-        },
-        { status: 503 }
-      );
-    }
     
     return NextResponse.json(
       { 
         error: 'Failed to create checkout session',
-        details: error.message || 'Unknown error',
-        type: error.type || 'unknown',
-        code: error.code || 'unknown'
+        details: error.message || 'Unknown error'
       },
       { status: 500 }
     );
