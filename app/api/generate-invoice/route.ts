@@ -220,12 +220,10 @@ export async function POST(request: NextRequest) {
 
     // Send invoice via email (using Firebase Functions)
     try {
-      const { getFunctions, httpsCallable } = await import('firebase/functions');
-      const { getApp } = await import('firebase/app');
+      const { httpsCallable } = await import('firebase/functions');
+      const { functions } = await import('../../lib/firebase');
       
-      const app = getApp();
-      const functionsInstance = getFunctions(app);
-      const sendInvoiceEmail = httpsCallable(functionsInstance, 'sendInvoiceEmail');
+      const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
       
       const emailData: any = { 
         email: userEmail, 
