@@ -8,10 +8,22 @@ let stripe: Stripe | null = null;
 
 // Initialize Stripe at runtime
 const initializeStripe = () => {
-  if (!stripe && process.env.STRIPE_SECRET_KEY) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  if (!stripe) {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    console.log('Stripe key check:', {
+      exists: !!stripeKey,
+      length: stripeKey?.length,
+      prefix: stripeKey?.substring(0, 8)
+    });
+    
+    if (!stripeKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+    
+    stripe = new Stripe(stripeKey, {
       apiVersion: '2025-08-27.basil',
     });
+    console.log('Stripe initialized successfully');
   }
   return stripe;
 };
@@ -41,27 +53,6 @@ export async function POST(request: NextRequest) {
     // Initialize Stripe at runtime
     const stripeInstance = initializeStripe();
     console.log('- Stripe instance created:', !!stripeInstance);
-    
-    // Check if Stripe is available
-    if (!stripeInstance) {
-      console.error('Stripe initialization failed - returning 503');
-      console.error('Environment check:');
-      console.error('- STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-      console.error('- All env keys:', Object.keys(process.env).filter(k => k.includes('STRIPE')));
-      return NextResponse.json(
-        { 
-          error: 'Payment processing not available',
-          debug: {
-            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-            keyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 10),
-            allStripeKeys: Object.keys(process.env).filter(k => k.includes('STRIPE')),
-            nodeEnv: process.env.NODE_ENV,
-            isVercel: !!process.env.VERCEL
-          }
-        },
-        { status: 503 }
-      );
-    }
     
     const requestData = await request.json();
     console.log('Request data received:', {
@@ -172,6 +163,23 @@ export async function POST(request: NextRequest) {
     console.error('Error stack:', error.stack);
     console.error('Error type:', error.type);
     console.error('Error code:', error.code);
+    
+    // Check if this is an environment variable issue
+    if (error.message?.includes('STRIPE_SECRET_KEY')) {
+      return NextResponse.json(
+        { 
+          error: 'Payment processing not available - missing configuration',
+          details: error.message,
+          debug: {
+            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+            allStripeKeys: Object.keys(process.env).filter(k => k.includes('STRIPE')),
+            nodeEnv: process.env.NODE_ENV,
+            isVercel: !!process.env.VERCEL
+          }
+        },
+        { status: 503 }
+      );
+    }
     
     return NextResponse.json(
       { 
