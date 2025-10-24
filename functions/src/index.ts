@@ -220,7 +220,7 @@ export const sendInvoiceEmail = functions.https.onCall({
         logger.info('Sending invoice email via Resend...');
         
         const emailPayload: any = {
-          from: 'FASE <invoices@fasemga.com>',
+          from: 'FASE <noreply@fasemga.com>',
           to: email,
           subject: `FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`,
           html: invoiceHTML,
