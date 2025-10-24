@@ -8,16 +8,48 @@ import {
   query,
   where,
   getDocs,
-  DocumentData 
+  DocumentData,
+  orderBy 
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
+
+// Join request interface for company membership requests
+export interface JoinRequest {
+  id: string;
+  email: string;
+  fullName: string;
+  jobTitle?: string;
+  message?: string;
+  requestedAt: any; // Firestore timestamp
+  status: 'pending' | 'approved' | 'rejected';
+  companyId: string;
+  companyName: string;
+  // Admin processing fields
+  processedAt?: any;
+  processedBy?: string; // Admin user ID
+  adminNotes?: string;
+}
+
+// Corporate member interface for subcollection members (NEW - for company-first structure)
+export interface CompanyMember {
+  id: string; // Firebase Auth uid
+  email: string;
+  personalName: string;
+  jobTitle?: string;
+  isPrimaryContact: boolean;
+  joinedAt: any; // Firestore timestamp
+  addedBy?: string; // Admin who added them
+  // Keep basic profile info
+  createdAt: any;
+  updatedAt: any;
+}
 
 // Unified member interface that replaces both UserProfile and MemberApplication
 export interface UnifiedMember {
   id: string; // Same as Firebase Auth uid
   email: string; // Synced from Firebase Auth
   displayName: string; // Synced from Firebase Auth
-  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice';
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment';
   
   // Core profile data (always present)
   personalName: string;
@@ -30,6 +62,10 @@ export interface UnifiedMember {
   organizationName?: string;
   organizationType?: 'MGA' | 'carrier' | 'provider';
   logoURL?: string;
+  
+  // NEW: Company-first structure support
+  isCompanyAccount?: boolean; // True if this is a company record (not individual person)
+  primaryContactMemberId?: string; // Points to the primary contact in members subcollection
   
   // Privacy agreements
   privacyAgreed?: boolean;
@@ -172,7 +208,7 @@ export const createUnifiedMember = async (
   displayName: string,
   personalName: string,
   organisation?: string,
-  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' = 'guest'
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' = 'guest'
 ): Promise<UnifiedMember> => {
   const memberRef = doc(db, 'accounts', uid);
   const memberData: UnifiedMember = {
@@ -286,6 +322,7 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
   }
 };
 
+
 // Get all approved members for directory
 export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]> => {
   return getMembersByStatus('approved');
@@ -387,5 +424,214 @@ export const getUserIdsForMemberCriteria = async (criteria: {
   } catch (error) {
     console.error('Error getting user IDs for member criteria:', error);
     return [];
+  }
+};
+
+// === COMPANY-FIRST STRUCTURE FUNCTIONS (NEW) ===
+
+// Create a company account with the registrant as a member
+export const createCompanyWithMember = async (
+  companyData: Partial<UnifiedMember>,
+  memberData: Omit<CompanyMember, 'createdAt' | 'updatedAt' | 'joinedAt'>
+): Promise<{ companyId: string; memberId: string }> => {
+  try {
+    // Generate a unique company ID
+    const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Create the company account
+    const companyRef = doc(db, 'accounts', companyId);
+    const companyRecord: UnifiedMember = {
+      id: companyId,
+      email: memberData.email, // Use primary contact email for company
+      displayName: companyData.organizationName || 'Company Account',
+      status: 'pending',
+      personalName: '', // Empty for company accounts
+      isCompanyAccount: true,
+      primaryContactMemberId: memberData.id,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      ...companyData
+    };
+    
+    await setDoc(companyRef, companyRecord);
+    
+    // Add the member to the company's members subcollection
+    const memberRef = doc(db, 'accounts', companyId, 'members', memberData.id);
+    const memberRecord: CompanyMember = {
+      ...memberData,
+      joinedAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    await setDoc(memberRef, memberRecord);
+    
+    return { companyId, memberId: memberData.id };
+  } catch (error) {
+    console.error('Error creating company with member:', error);
+    throw error;
+  }
+};
+
+// Get company members
+export const getCompanyMembers = async (companyId: string): Promise<CompanyMember[]> => {
+  try {
+    const membersRef = collection(db, 'accounts', companyId, 'members');
+    const querySnapshot = await getDocs(membersRef);
+    
+    return querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    })) as CompanyMember[];
+  } catch (error) {
+    console.error('Error getting company members:', error);
+    return [];
+  }
+};
+
+// Check if a UnifiedMember uses the new company-first structure
+export const isCompanyFirstStructure = (member: UnifiedMember): boolean => {
+  return member.isCompanyAccount === true;
+};
+
+// === JOIN REQUEST MANAGEMENT ===
+
+// Get all join requests for a specific company
+export const getJoinRequestsForCompany = async (companyId: string): Promise<JoinRequest[]> => {
+  try {
+    const joinRequestsRef = collection(db, 'accounts', companyId, 'join_requests');
+    const q = query(joinRequestsRef, orderBy('requestedAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as JoinRequest[];
+  } catch (error) {
+    console.error('Error getting join requests for company:', error);
+    return [];
+  }
+};
+
+// Get all pending join requests across all companies (for admin)
+export const getAllPendingJoinRequests = async (): Promise<(JoinRequest & { companyData?: UnifiedMember })[]> => {
+  try {
+    const approvedMembers = await getMembersByStatus('approved');
+    const allRequests: (JoinRequest & { companyData?: UnifiedMember })[] = [];
+    
+    for (const company of approvedMembers) {
+      if (company.membershipType === 'corporate') {
+        const requests = await getJoinRequestsForCompany(company.id);
+        const pendingRequests = requests
+          .filter(req => req.status === 'pending')
+          .map(req => ({ ...req, companyData: company }));
+        allRequests.push(...pendingRequests);
+      }
+    }
+    
+    return allRequests.sort((a, b) => b.requestedAt?.toDate?.() - a.requestedAt?.toDate?.());
+  } catch (error) {
+    console.error('Error getting all pending join requests:', error);
+    return [];
+  }
+};
+
+// Approve a join request and create user account
+export const approveJoinRequest = async (
+  companyId: string, 
+  requestId: string, 
+  adminUserId: string,
+  adminNotes?: string
+): Promise<void> => {
+  try {
+    const requestRef = doc(db, 'accounts', companyId, 'join_requests', requestId);
+    const requestDoc = await getDoc(requestRef);
+    
+    if (!requestDoc.exists()) {
+      throw new Error('Join request not found');
+    }
+    
+    const requestData = requestDoc.data() as JoinRequest;
+    
+    // Update the join request status
+    await updateDoc(requestRef, {
+      status: 'approved',
+      processedAt: serverTimestamp(),
+      processedBy: adminUserId,
+      adminNotes: adminNotes || null
+    });
+    
+    // Send notification email to the user
+    try {
+      const { getFunctions, httpsCallable } = await import('firebase/functions');
+      const functions = getFunctions();
+      const sendNotification = httpsCallable(functions, 'sendJoinRequestNotification');
+      
+      await sendNotification({
+        email: requestData.email,
+        fullName: requestData.fullName,
+        companyName: requestData.companyName,
+        status: 'approved',
+        adminNotes: adminNotes
+      });
+    } catch (emailError) {
+      console.error('Error sending approval notification:', emailError);
+      // Don't throw - the approval was successful even if email failed
+    }
+    
+    // TODO: Create individual user account for the approved person
+    // This will need to be implemented when we decide how to handle
+    // multiple users per company membership
+    
+  } catch (error) {
+    console.error('Error approving join request:', error);
+    throw error;
+  }
+};
+
+// Reject a join request
+export const rejectJoinRequest = async (
+  companyId: string, 
+  requestId: string, 
+  adminUserId: string,
+  adminNotes?: string
+): Promise<void> => {
+  try {
+    const requestRef = doc(db, 'accounts', companyId, 'join_requests', requestId);
+    const requestDoc = await getDoc(requestRef);
+    
+    if (!requestDoc.exists()) {
+      throw new Error('Join request not found');
+    }
+    
+    const requestData = requestDoc.data() as JoinRequest;
+    
+    await updateDoc(requestRef, {
+      status: 'rejected',
+      processedAt: serverTimestamp(),
+      processedBy: adminUserId,
+      adminNotes: adminNotes || null
+    });
+    
+    // Send notification email to the user
+    try {
+      const { getFunctions, httpsCallable } = await import('firebase/functions');
+      const functions = getFunctions();
+      const sendNotification = httpsCallable(functions, 'sendJoinRequestNotification');
+      
+      await sendNotification({
+        email: requestData.email,
+        fullName: requestData.fullName,
+        companyName: requestData.companyName,
+        status: 'rejected',
+        adminNotes: adminNotes
+      });
+    } catch (emailError) {
+      console.error('Error sending rejection notification:', emailError);
+      // Don't throw - the rejection was successful even if email failed
+    }
+  } catch (error) {
+    console.error('Error rejecting join request:', error);
+    throw error;
   }
 };

@@ -224,15 +224,6 @@ const searchablePages: SearchableContent[] = [
 
   // Other pages
   {
-    id: 'directory',
-    title: 'Member Directory',
-    description: 'Search and browse our member directory',
-    content: 'Member directory search browse members organizations companies contacts profiles database listings member search',
-    url: '/directory',
-    category: 'Directory',
-    keywords: ['directory', 'members', 'search', 'browse', 'profiles']
-  },
-  {
     id: 'what-is-mga',
     title: 'What is an MGA?',
     description: 'Understanding Managing General Agents and their role',

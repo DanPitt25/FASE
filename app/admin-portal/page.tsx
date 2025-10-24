@@ -8,7 +8,8 @@ import { getVideos, getPendingComments, moderateComment } from '../../lib/knowle
 import type { Video, Comment } from '../../lib/knowledge-base';
 // Note: MemberApplication type no longer used after UnifiedMember migration
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, createAlert, sendMessage } from '../../lib/unified-messaging';
-import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus } from '../../lib/unified-member';
+import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest } from '../../lib/unified-member';
+import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
@@ -49,6 +50,14 @@ export default function AdminPortalPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [pendingComments, setPendingComments] = useState<Comment[]>([]);
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
+  const [pendingJoinRequests, setPendingJoinRequests] = useState<(JoinRequest & { companyData?: UnifiedMember })[]>([]);
+  const [processingRequest, setProcessingRequest] = useState<{
+    action: 'approve' | 'reject';
+    companyId: string;
+    requestId: string;
+    requestData: any;
+  } | null>(null);
+  const [adminNotes, setAdminNotes] = useState('');
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,17 +117,19 @@ export default function AdminPortalPage() {
 
   const loadData = async () => {
     try {
-      const [videosData, commentsData, pendingMembers, approvedMembers, alertsData, messagesData] = await Promise.all([
+      const [videosData, commentsData, pendingMembers, approvedMembers, joinRequestsData, alertsData, messagesData] = await Promise.all([
         getVideos(), // Get all published videos
         user?.uid ? getPendingComments(user.uid) : [],
         getMembersByStatus('pending_invoice'), // Get pending invoice members
         getMembersByStatus('approved'), // Get approved members  
+        getAllPendingJoinRequests(), // Get pending join requests
         user?.uid ? getUserAlerts(user.uid) : [],
         user?.uid ? getUserMessages(user.uid) : []
       ]);
       setVideos(videosData);
       setPendingComments(commentsData);
       setMemberApplications([...pendingMembers, ...approvedMembers]); // Combine for display
+      setPendingJoinRequests(joinRequestsData);
       setAlerts(alertsData);
       setMessages(messagesData);
     } catch (error) {
@@ -137,6 +148,41 @@ export default function AdminPortalPage() {
     } catch (error) {
       console.error('Error moderating comment:', error);
       alert('Error moderating comment. Please try again.');
+    }
+  };
+
+  const handleJoinRequestAction = (
+    action: 'approve' | 'reject',
+    companyId: string,
+    requestId: string,
+    requestData: any
+  ) => {
+    setProcessingRequest({ action, companyId, requestId, requestData });
+    setAdminNotes('');
+  };
+
+  const processJoinRequest = async () => {
+    if (!user?.uid || !processingRequest) return;
+    
+    try {
+      if (processingRequest.action === 'approve') {
+        await approveJoinRequest(processingRequest.companyId, processingRequest.requestId, user.uid, adminNotes);
+      } else {
+        await rejectJoinRequest(processingRequest.companyId, processingRequest.requestId, user.uid, adminNotes);
+      }
+      
+      // Remove from pending list
+      setPendingJoinRequests(prev => 
+        prev.filter(req => !(req.companyId === processingRequest.companyId && req.id === processingRequest.requestId))
+      );
+      
+      // Close modal
+      setProcessingRequest(null);
+      setAdminNotes('');
+      
+    } catch (error) {
+      console.error(`Error ${processingRequest.action}ing join request:`, error);
+      alert(`Error ${processingRequest.action}ing join request. Please try again.`);
     }
   };
 
@@ -1115,6 +1161,71 @@ export default function AdminPortalPage() {
           )}
         </div>
       )
+    },
+    {
+      id: 'join-requests',
+      title: `Join Requests${pendingJoinRequests.length > 0 ? ` (${pendingJoinRequests.length})` : ''}`,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+      ),
+      content: loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
+          <p className="text-fase-black">Loading join requests...</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
+            <div className="p-6 border-b border-fase-light-gold">
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Join Requests</h3>
+              <p className="text-fase-black text-sm mt-1">Employees requesting access to their company&apos;s FASE membership</p>
+            </div>
+            <div className="divide-y divide-fase-light-gold">
+              {pendingJoinRequests.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-fase-black">No pending join requests</p>
+                </div>
+              ) : (
+                pendingJoinRequests.map(request => (
+                  <div key={`${request.companyId}-${request.id}`} className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <span className="font-medium text-fase-navy text-lg">{request.fullName}</span>
+                          <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {request.jobTitle || 'No title provided'}
+                          </span>
+                        </div>
+                        <div className="text-sm text-fase-black space-y-1">
+                          <div><strong>Email:</strong> {request.email}</div>
+                          <div><strong>Company:</strong> {request.companyName}</div>
+                          <div><strong>Requested:</strong> {request.requestedAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col space-y-2 ml-4">
+                        <button
+                          onClick={() => handleJoinRequestAction('approve', request.companyId, request.id, request)}
+                          className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleJoinRequestAction('reject', request.companyId, request.id, request)}
+                          className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )
     }
   ];
 
@@ -1571,6 +1682,66 @@ export default function AdminPortalPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Join Request Processing Modal */}
+      {processingRequest && (
+        <Modal 
+          isOpen={true}
+          onClose={() => setProcessingRequest(null)}
+          title={`${processingRequest.action === 'approve' ? 'Approve' : 'Reject'} Join Request`}
+          maxWidth="lg"
+        >
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <div className="space-y-2 text-sm">
+                <div><strong>Name:</strong> {processingRequest.requestData.fullName}</div>
+                <div><strong>Email:</strong> {processingRequest.requestData.email}</div>
+                <div><strong>Company:</strong> {processingRequest.requestData.companyName}</div>
+                {processingRequest.requestData.jobTitle && (
+                  <div><strong>Job Title:</strong> {processingRequest.requestData.jobTitle}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="adminNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Notes (Optional)
+              </label>
+              <textarea
+                id="adminNotes"
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                placeholder={
+                  processingRequest.action === 'approve'
+                    ? "Optional message to include in the approval email..."
+                    : "Optional explanation for the rejection..."
+                }
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This message will be included in the email notification to the user.
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <Button 
+                variant="secondary" 
+                size="medium"
+                onClick={() => setProcessingRequest(null)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant={processingRequest.action === 'approve' ? 'primary' : 'secondary'}
+                size="medium"
+                onClick={processJoinRequest}
+                className={processingRequest.action === 'reject' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}
+              >
+                {processingRequest.action === 'approve' ? 'Approve Request' : 'Reject Request'}
+              </Button>
+            </div>
+        </Modal>
+      )}
     </>
   );
 }

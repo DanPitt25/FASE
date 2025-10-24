@@ -20,7 +20,6 @@ export interface UserProfile {
   organisation?: string;
   createdAt: any;
   updatedAt: any;
-  emailVerified: boolean;
   twoFactorEnabled: boolean;
   access?: 'none' | 'admin' | 'subscriber'; // Add admin access to users
 }
@@ -174,7 +173,6 @@ export const createUserProfile = async (
     ...(organisation && { organisation }),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    emailVerified: false,
     twoFactorEnabled: false
   };
   

@@ -2733,8 +2733,6 @@ Your application has been submitted and will be processed once payment is receiv
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
-    } else if (!loading && user && !user.emailVerified) {
-      router.push("/member-portal");
     }
   }, [user, loading, router]);
 

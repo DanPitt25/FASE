@@ -5,13 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
-import { sendVerificationEmail, checkEmailVerification } from "../../lib/auth";
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
-  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -94,28 +91,6 @@ export default function MemberContent() {
     }
   };
 
-  const handleSendVerificationEmail = async () => {
-    try {
-      await sendVerificationEmail();
-      setEmailVerificationSent(true);
-    } catch (error: any) {
-      console.error('Error sending verification email:', error);
-    }
-  };
-
-  const handleCheckVerification = async () => {
-    setIsCheckingVerification(true);
-    try {
-      const isVerified = await checkEmailVerification();
-      if (isVerified) {
-        window.location.reload();
-      }
-    } catch (error: any) {
-      console.error('Error checking verification:', error);
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -158,54 +133,54 @@ export default function MemberContent() {
       ),
       content: (
         <div className="space-y-6">
-      {/* Email Verification Alert */}
-      {user && !user.emailVerified && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
-          <div className="flex items-start">
-            <svg className="w-5 h-5 text-amber-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-amber-800 mb-2">Email Verification Required</h3>
-              <p className="text-sm text-amber-700 mb-4">
-                Please verify your email address to access all member features and ensure you receive important updates.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                {!emailVerificationSent ? (
-                  <button
-                    onClick={handleSendVerificationEmail}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-amber-800 bg-amber-100 hover:bg-amber-200 transition-colors"
-                  >
-                    Send Verification Email
-                  </button>
-                ) : (
-                  <>
-                    <div className="flex items-center text-sm text-amber-700">
-                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Verification email sent!
-                    </div>
-                    <button
-                      onClick={handleCheckVerification}
-                      disabled={isCheckingVerification}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-amber-800 bg-amber-100 hover:bg-amber-200 disabled:opacity-50 transition-colors"
-                    >
-                      {isCheckingVerification ? 'Checking...' : 'I\'ve Verified My Email'}
-                    </button>
-                    <button
-                      onClick={handleSendVerificationEmail}
-                      className="inline-flex items-center px-4 py-2 border border-amber-300 text-sm font-medium rounded-md text-amber-700 bg-white hover:bg-amber-50 transition-colors"
-                    >
-                      Resend Email
-                    </button>
-                  </>
-                )}
+          {/* Payment Status Alerts */}
+          {member && member.status === 'pending_payment' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-amber-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-amber-800 mb-2">Payment Pending</h3>
+                  <p className="text-sm text-amber-700 mb-4">
+                    Your payment is being processed. You&apos;ll have full access to member resources once payment is confirmed.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+          
+          {member && member.status === 'pending_invoice' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">Invoice Sent</h3>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Your membership invoice has been sent to your email. You&apos;ll have full access to member resources once payment is received.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {member && member.status === 'pending' && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-gray-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-800 mb-2">Application Under Review</h3>
+                  <p className="text-sm text-gray-700 mb-4">
+                    Your membership application is being reviewed by our team. You&apos;ll receive an email once it&apos;s approved.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Member Resources */}
           <div className="space-y-4">
@@ -224,12 +199,13 @@ export default function MemberContent() {
                   </div>
                 </div>
                 <Button 
-                  href="/knowledge"
-                  variant="primary" 
+                  href={hasMemberAccess ? "/knowledge" : "#"}
+                  variant={hasMemberAccess ? "primary" : "secondary"}
                   size="medium"
-                  className="flex-shrink-0"
+                  className={`flex-shrink-0 ${!hasMemberAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={!hasMemberAccess ? () => {} : undefined}
                 >
-                  Browse Resources
+                  {hasMemberAccess ? 'Browse Resources' : 'Access Restricted'}
                 </Button>
               </div>
             </div>
@@ -394,7 +370,7 @@ export default function MemberContent() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 19c-5 0-8-2.5-8-6 0-5 4-9 9-9s9 4 9 9c0 .5-.1 1-.2 1.5" />
           </svg>
-          {(unreadAlerts.length > 0 || (user && !user.emailVerified)) && (
+          {unreadAlerts.length > 0 && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
               !
             </span>

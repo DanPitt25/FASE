@@ -122,7 +122,6 @@ export async function getCurrentUserSafe(): Promise<any> {
         uid,
         email: localStorage.getItem('fase_user_email'),
         displayName: localStorage.getItem('fase_user_displayName'),
-        emailVerified: localStorage.getItem('fase_user_emailVerified') === 'true'
       };
     }
     return null;
@@ -151,7 +150,6 @@ export async function onAuthStateChangeSafe(callback: (user: any) => void) {
         uid,
         email: localStorage.getItem('fase_user_email'),
         displayName: localStorage.getItem('fase_user_displayName'),
-        emailVerified: localStorage.getItem('fase_user_emailVerified') === 'true'
       } : null;
       
       if (JSON.stringify(currentUser) !== JSON.stringify(lastUser)) {

@@ -397,22 +397,6 @@ export default function IntegratedRegisterForm() {
       
       await updateProfile(user, { displayName });
       
-      // Mark email as verified in Firebase Auth since they completed verification in Step 1
-      // This needs to be done server-side via admin SDK
-      try {
-        const response = await fetch('/api/auth/verify-user-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ uid: user.uid }),
-        });
-        if (!response.ok) {
-          console.warn('Failed to verify user email via admin SDK');
-        }
-      } catch (error) {
-        console.warn('Failed to call verify-user-email API:', error);
-      }
       
       // Create membership application
       const orgName = membershipType === 'individual' ? personalName : organizationName;
@@ -446,7 +430,6 @@ export default function IntegratedRegisterForm() {
         email: user.email,
         displayName: user.displayName,
         status,
-        emailVerified: true, // Email was verified in Step 1
         membershipType,
         personalName,
         organizationName: membershipType === 'corporate' ? organizationName : personalName,
@@ -717,7 +700,6 @@ export default function IntegratedRegisterForm() {
         email: auth.currentUser.email,
         displayName: auth.currentUser.displayName,
         status: 'pending_payment',
-        emailVerified: true,
         membershipType,
         personalName,
         organizationName: membershipType === 'corporate' ? organizationName : personalName,

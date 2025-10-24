@@ -212,8 +212,8 @@ export const sendInvoiceEmail = functions.https.onCall({
       throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
     }
 
-    // Check for Resend API key - use Firebase Functions config
-    const resendApiKey = functions.config().resend?.api_key || process.env.RESEND_API_KEY;
+    // Check for Resend API key using environment variables
+    const resendApiKey = process.env.RESEND_API_KEY;
 
     if (resendApiKey) {
       try {
@@ -265,5 +265,114 @@ export const sendInvoiceEmail = functions.https.onCall({
   } catch (error) {
     logger.error('Error sending invoice email:', error);
     throw new functions.https.HttpsError('internal', 'Failed to send invoice email');
+  }
+});
+
+export const sendJoinRequestNotification = functions.https.onCall({
+  enforceAppCheck: false,
+}, async (request) => {
+  try {
+    const { email, fullName, companyName, status, adminNotes } = request.data;
+    logger.info('sendJoinRequestNotification called for:', email);
+
+    if (!email || !fullName || !companyName || !status) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email, full name, company name, and status are required');
+    }
+
+    // Check for Resend API key using environment variables
+    const resendApiKey = process.env.RESEND_API_KEY;
+
+    const isApproved = status === 'approved';
+    const subject = `FASE Join Request ${isApproved ? 'Approved' : 'Update'} - ${companyName}`;
+    
+    let emailHtml = '';
+    
+    if (isApproved) {
+      emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #1e3a8a;">Your join request has been approved!</h2>
+          <p>Dear ${fullName},</p>
+          <p>Great news! Your request to join <strong>${companyName}</strong> has been approved by the company administrator.</p>
+          
+          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1e3a8a; margin-top: 0;">Next Steps:</h3>
+            <p>You can now create your FASE account and access your organization's membership benefits:</p>
+            <ol>
+              <li>Visit <a href="https://fasemga.com/register" style="color: #1e3a8a;">fasemga.com/register</a></li>
+              <li>Sign up with this email address (${email})</li>
+              <li>Complete the registration process</li>
+              <li>You'll automatically be associated with ${companyName}</li>
+            </ol>
+          </div>
+          
+          ${adminNotes ? `
+          <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Message from Administrator:</strong>
+            <p style="margin: 10px 0 0 0;">${adminNotes}</p>
+          </div>
+          ` : ''}
+          
+          <p>Welcome to the Federation of European MGAs!</p>
+          <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:support@fasemga.com">support@fasemga.com</a></p>
+        </div>
+      `;
+    } else {
+      emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #dc2626;">Join Request Update</h2>
+          <p>Dear ${fullName},</p>
+          <p>We have an update regarding your request to join <strong>${companyName}</strong>.</p>
+          
+          <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Status:</strong> ${status === 'rejected' ? 'Not approved at this time' : status}</p>
+            ${adminNotes ? `
+            <p><strong>Message from Administrator:</strong></p>
+            <p>${adminNotes}</p>
+            ` : ''}
+          </div>
+          
+          <p>If you have any questions about this decision, please contact the company administrator directly or reach out to us at <a href="mailto:support@fasemga.com">support@fasemga.com</a></p>
+        </div>
+      `;
+    }
+
+    if (resendApiKey) {
+      try {
+        logger.info('Sending join request notification via Resend...');
+        
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'FASE <noreply@fasemga.com>',
+            to: email,
+            subject: subject,
+            html: emailHtml,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Resend API error: ${response.status}`);
+        }
+
+        logger.info(`Join request notification sent to ${email} via Resend`);
+        return { success: true };
+      } catch (emailError) {
+        logger.error('Resend join request notification error:', emailError);
+      }
+    }
+
+    // Fallback: Log to console for development
+    logger.info(`Join request notification for ${email}:`);
+    logger.info(`Subject: ${subject}`);
+    logger.info(`Status: ${status}`);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending join request notification:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send join request notification');
   }
 });

@@ -13,8 +13,6 @@ export default function Footer() {
             <h4 className="text-lg font-noto-serif font-semibold mb-4 text-white">Membership</h4>
             <ul className="space-y-2 text-fase-cream">
               <li><a href="/join" className="hover:text-fase-navy transition duration-200">Join FASE</a></li>
-              <li><a href="/directory" className="hover:text-fase-navy transition duration-200">Member Directory</a></li>
-              <li><a href="/about/membership-directory" className="hover:text-fase-navy transition duration-200">Directory Info</a></li>
             </ul>
           </div>
           <div>

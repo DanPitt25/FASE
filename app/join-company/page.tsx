@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
 import Button from '../../components/Button';
 
 export default function JoinCompanyPage() {
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [companySearch, setCompanySearch] = useState('');
   const [companies, setCompanies] = useState<any[]>([]);
@@ -72,6 +72,11 @@ export default function JoinCompanyPage() {
       setError('Please select a company from the dropdown');
       return;
     }
+    
+    if (!fullName.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -87,9 +92,16 @@ export default function JoinCompanyPage() {
       const joinRequestRef = doc(db, 'accounts', selectedCompany.id, 'join_requests', requestId);
       await setDoc(joinRequestRef, {
         email,
+        fullName,
+        jobTitle,
         requestedAt: serverTimestamp(),
-        status: 'pending',
-        requestorName: email.split('@')[0] // fallback name from email
+        status: 'pending', // 'pending' | 'approved' | 'rejected'
+        companyId: selectedCompany.id,
+        companyName: selectedCompany.organizationName,
+        // For admin tracking
+        processedAt: null,
+        processedBy: null,
+        adminNotes: null
       });
       
       setSuccess(true);
@@ -103,55 +115,79 @@ export default function JoinCompanyPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen bg-white font-lato">
-        <div className="flex-1 relative">
-          <Header currentPage="join-company" />
-          
-          <section className="min-h-[80vh] flex items-center justify-center py-20">
-            <div className="max-w-md mx-auto px-4 text-center">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-                <div className="text-green-600 text-5xl mb-4">✓</div>
-                <h2 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">
-                  Request Submitted
-                </h2>
-                <p className="text-fase-black mb-6">
-                  Your request to join {companyName} has been sent to the company administrator for approval.
-                </p>
-                <Button
-                  onClick={() => router.push('/login')}
-                  variant="primary"
-                  size="large"
-                >
-                  Return to Sign In
-                </Button>
+      <div className="min-h-screen bg-fase-navy py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg shadow-xl border border-fase-light-gold overflow-hidden">
+            <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-6 py-8 text-center">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="/fase-logo-mark.png" 
+                  alt="FASE Logo" 
+                  className="h-10 w-auto object-contain"
+                />
+                <h1 className="text-2xl font-noto-serif font-bold text-fase-navy">FASE</h1>
               </div>
             </div>
-          </section>
-          
-          <Footer />
+            <div className="bg-white px-6 py-8 text-center">
+              <div className="text-green-600 text-5xl mb-4">✓</div>
+              <h2 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">
+                Request Submitted
+              </h2>
+              <p className="text-fase-black mb-6">
+                Your request to join {companyName} has been sent to the company administrator for approval.
+              </p>
+              <Button
+                onClick={() => router.push('/login')}
+                variant="primary"
+                size="large"
+              >
+                Return to Sign In
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-white font-lato">
-      <div className="flex-1 relative">
-        <Header currentPage="join-company" />
-        
-        <section className="min-h-[80vh] flex items-center justify-center py-20">
-          <div className="max-w-md mx-auto px-4">
-            <div className="bg-white border border-fase-light-gold shadow-lg rounded-lg p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-2xl font-noto-serif font-medium text-fase-navy mb-4">
-                  Join Company Membership
-                </h1>
-                <p className="text-fase-black">
-                  Request access to your organization&apos;s existing FASE membership
-                </p>
-              </div>
+    <div className="min-h-screen bg-fase-navy py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-lg shadow-xl border border-fase-light-gold overflow-hidden">
+          <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-6 py-8 text-center">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/fase-logo-mark.png" 
+                alt="FASE Logo" 
+                className="h-10 w-auto object-contain"
+              />
+              <h1 className="text-2xl font-noto-serif font-bold text-fase-navy">FASE</h1>
+            </div>
+            <h2 className="text-xl font-noto-serif font-medium text-fase-navy">
+              Join Company Membership
+            </h2>
+            <p className="text-fase-black text-sm">
+              Request access to your organization&apos;s existing FASE membership
+            </p>
+          </div>
+          <div className="bg-white px-6 py-8">
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-fase-black mb-2">
+                    Your Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-fase-light-gold focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    placeholder="John Smith"
+                  />
+                </div>
+                
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-fase-black mb-2">
                     Your Email Address
@@ -164,6 +200,20 @@ export default function JoinCompanyPage() {
                     required
                     className="w-full px-3 py-2 border border-fase-light-gold focus:outline-none focus:ring-2 focus:ring-fase-navy"
                     placeholder="your.email@company.com"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="jobTitle" className="block text-sm font-medium text-fase-black mb-2">
+                    Job Title (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="jobTitle"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-fase-light-gold focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    placeholder="e.g. Underwriter, Operations Manager"
                   />
                 </div>
 
@@ -211,6 +261,7 @@ export default function JoinCompanyPage() {
                     </div>
                   )}
                 </div>
+                
 
                 {error && (
                   <div className="text-red-600 text-sm">{error}</div>
@@ -227,19 +278,16 @@ export default function JoinCompanyPage() {
                 </Button>
               </form>
 
-              <div className="text-center mt-6">
-                <button
-                  onClick={() => router.push('/login')}
-                  className="text-sm text-fase-navy hover:underline"
-                >
-                  Back to Sign In
-                </button>
-              </div>
+            <div className="text-center mt-6">
+              <button
+                onClick={() => router.push('/login')}
+                className="text-sm text-fase-navy hover:underline"
+              >
+                Back to Sign In
+              </button>
             </div>
           </div>
-        </section>
-        
-        <Footer />
+        </div>
       </div>
     </div>
   );

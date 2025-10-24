@@ -21,10 +21,6 @@ export const getAuthErrorMessage = (errorCode: string): string => {
     'auth/network-request-failed': 'Network error. Please check your internet connection and try again.',
     'auth/timeout': 'Request timed out. Please try again.',
     
-    // Email verification
-    'auth/email-not-verified': 'Please verify your email address before signing in. Check your inbox for a verification email.',
-    'auth/invalid-action-code': 'This verification link is invalid or has expired. Please request a new one.',
-    'auth/expired-action-code': 'This verification link has expired. Please request a new one.',
     'auth/user-token-expired': 'Your session has expired. Please sign in again.',
     
     // Password reset
@@ -69,10 +65,6 @@ export const getFirebaseErrorCode = (error: any): string => {
     return match ? match[0] : 'auth/unknown-error';
   }
   
-  // Check for custom email verification error
-  if (typeof error === 'string' && error.includes('verify your email')) {
-    return 'auth/email-not-verified';
-  }
   
   return 'auth/unknown-error';
 };
