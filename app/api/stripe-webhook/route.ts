@@ -48,74 +48,105 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
     await initializeServices();
     const db = admin.firestore();
     
-    // Simple query: find any account where paymentUserId matches
-    console.log('Searching for account with paymentUserId:', userId);
-    const accountsSnapshot = await db.collection('accounts')
-      .where('paymentUserId', '==', userId)
-      .get();
-    
-    if (!accountsSnapshot.empty) {
-      // Found account - update it
-      const accountDoc = accountsSnapshot.docs[0];
-      const accountData = accountDoc.data();
+    // OPTIMIZATION: Try paymentUserId field first for new accounts
+    try {
+      const accountsSnapshot = await db.collection('accounts')
+        .where('paymentUserId', '==', userId)
+        .get();
       
-      await accountDoc.ref.update({
-        status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
-        paymentStatus: paymentStatus,
-        paymentMethod: paymentMethod,
-        paymentId: paymentId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      console.log('Account status updated successfully for paymentUserId:', userId, 'account type:', accountData?.membershipType, 'account ID:', accountDoc.id);
-      return;
+      if (!accountsSnapshot.empty) {
+        const accountDoc = accountsSnapshot.docs[0];
+        const accountData = accountDoc.data();
+        
+        await accountDoc.ref.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Account status updated successfully for paymentUserId:', userId, 'account type:', accountData?.membershipType, 'account ID:', accountDoc.id);
+        return;
+      }
+    } catch (optimizationError: any) {
+      console.log('PaymentUserId optimization failed, using original logic:', optimizationError?.message || 'Unknown error');
     }
     
-    // FALLBACK: Try old logic for existing accounts without paymentUserId field
-    console.log('No account found with paymentUserId, trying fallback logic for user:', userId);
-    
-    // First check if this is a direct individual account
+    // ORIGINAL WORKING LOGIC: First check if this is an individual account
     const accountRef = db.collection('accounts').doc(userId);
     const doc = await accountRef.get();
     
     if (doc.exists) {
       const accountData = doc.data();
-      console.log('Found direct account for user:', userId, 'with membershipType:', accountData?.membershipType);
+      console.log('Found account for user:', userId, 'with membershipType:', accountData?.membershipType);
       
-      await accountRef.update({
-        status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
-        paymentStatus: paymentStatus,
-        paymentMethod: paymentMethod,
-        paymentId: paymentId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      console.log('Direct account status updated successfully for user:', userId);
-      return;
+      if (accountData?.membershipType === 'individual') {
+        // Individual account - update directly
+        await accountRef.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Individual account status updated successfully for user:', userId);
+        return;
+      } else if (accountData?.membershipType === 'corporate') {
+        // Corporate account - update directly
+        await accountRef.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Corporate account status updated successfully for user:', userId);
+        return;
+      } else if (accountData?.redirectToOrg && accountData?.organizationId) {
+        // This is a redirect account - update the organization instead
+        const orgRef = db.collection('accounts').doc(accountData.organizationId);
+        await orgRef.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Organization account status updated via redirect for user:', userId);
+        return;
+      }
     }
     
-    // Search for company accounts where this user is the primary contact (legacy)
-    console.log('Searching for company accounts where user is primary contact:', userId);
-    const companyAccountsSnapshot = await db.collection('accounts')
-      .where('isCompanyAccount', '==', true)
-      .where('primaryContactMemberId', '==', userId)
+    // If not found as individual, search for user in organization members
+    const accountsSnapshot = await db.collection('accounts')
+      .where('membershipType', '==', 'corporate')
       .get();
     
-    if (!companyAccountsSnapshot.empty) {
-      const companyDoc = companyAccountsSnapshot.docs[0];
-      await companyDoc.ref.update({
-        status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
-        paymentStatus: paymentStatus,
-        paymentMethod: paymentMethod,
-        paymentId: paymentId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+    for (const orgDoc of accountsSnapshot.docs) {
+      const membersSnapshot = await orgDoc.ref.collection('members')
+        .where('firebaseUid', '==', userId)
+        .get();
       
-      console.log('Legacy company account status updated for primary contact user:', userId, 'in company:', companyDoc.id);
-      return;
+      if (!membersSnapshot.empty) {
+        // Found user in this organization - update the organization status
+        await orgDoc.ref.update({
+          status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
+          paymentStatus: paymentStatus,
+          paymentMethod: paymentMethod,
+          paymentId: paymentId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log('Organization account status updated for user:', userId, 'in org:', orgDoc.id);
+        return;
+      }
     }
     
-    console.log('No account found for user:', userId);
+    console.log('No account or organization membership found for user:', userId);
   } catch (error) {
     console.error('Error updating member status:', error);
   }
