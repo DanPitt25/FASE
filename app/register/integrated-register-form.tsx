@@ -67,7 +67,7 @@ const ValidatedInput = ({
         placeholder={placeholder}
         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
           shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
-        }`}
+        } ${props.disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''}`}
         {...props}
       />
     </div>
@@ -143,6 +143,20 @@ export default function IntegratedRegisterForm() {
   const [primaryContactEmail, setPrimaryContactEmail] = useState("");
   const [primaryContactPhone, setPrimaryContactPhone] = useState("");
   const [primaryContactJobTitle, setPrimaryContactJobTitle] = useState("");
+  
+  // NEW: Company-first structure fields
+  const [registrantRole, setRegistrantRole] = useState<'primary_contact' | 'other_member'>('primary_contact');
+  const [registrantJobTitle, setRegistrantJobTitle] = useState("");
+  
+  // Auto-fill primary contact when user selects "I am the primary contact"
+  useEffect(() => {
+    if (registrantRole === 'primary_contact') {
+      setPrimaryContactName(personalName);
+      setPrimaryContactEmail(email);
+      setPrimaryContactJobTitle(registrantJobTitle);
+      // Note: Phone is not available from personal info, user must enter it
+    }
+  }, [registrantRole, personalName, email, registrantJobTitle]);
   
   // Address fields
   const [addressLine1, setAddressLine1] = useState("");
@@ -381,31 +395,16 @@ export default function IntegratedRegisterForm() {
     setLoading(true);
     setError("");
 
+    let userToCleanup: any = null;
+
     try {
-      // Create Firebase Auth account directly (email already verified)
-      const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
-      const { auth } = await import('@/lib/firebase');
-      
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // Create display name
-      const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
-      const displayName = orgForAuth && orgForAuth.trim()
-        ? `${personalName} (${orgForAuth})`
-        : personalName;
-      
-      await updateProfile(user, { displayName });
-      
-      
-      // Create membership application
-      const orgName = membershipType === 'individual' ? personalName : organizationName;
+      // Step 1: Prepare all data first (including logo upload) before any account creation
       let logoUrl = '';
-      
       if (logoFile) {
         try {
           // Create clean identifier for logo filename
-          const cleanOrgName = orgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          const cleanOrgName = (membershipType === 'corporate' ? organizationName : personalName)
+            .toLowerCase().replace(/[^a-z0-9]/g, '_');
           
           // Use direct Firebase Storage upload
           const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
@@ -415,56 +414,153 @@ export default function IntegratedRegisterForm() {
           // Continue without logo - this is not a blocking error
         }
       }
+
+      // Step 2: Create Firebase Auth account
+      const { createUserWithEmailAndPassword, updateProfile, deleteUser } = await import('firebase/auth');
+      const { auth } = await import('@/lib/firebase');
       
-      if (!user) {
-        throw new Error('No authenticated user');
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      userToCleanup = user; // Store for potential cleanup
       
-      // Create complete Firestore document
-      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase');
+      // Create display name
+      const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
+      const displayName = orgForAuth && orgForAuth.trim()
+        ? `${personalName} (${orgForAuth})`
+        : personalName;
       
-      const accountRef = firestoreDoc(db, 'accounts', user.uid);
-      
-      const dataToWrite = {
-        email: user.email,
-        displayName: user.displayName,
-        status,
-        membershipType,
-        personalName,
-        organizationName: membershipType === 'corporate' ? organizationName : personalName,
-        ...(membershipType === 'corporate' && { organizationType }),
-        primaryContact: {
-          name: primaryContactName,
-          email: primaryContactEmail,
-          phone: primaryContactPhone,
-          jobTitle: primaryContactJobTitle
-        },
-        registeredAddress: {
-          line1: addressLine1,
-          line2: addressLine2,
-          city,
-          state,
-          postalCode,
-          country: country === 'OTHER' ? customCountry : country
-        },
-        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
-          portfolio: {
-            grossWrittenPremiums,
-            portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
-          }
-        }),
-        hasOtherAssociations: hasOtherAssociations ?? false,
-        otherAssociations: hasOtherAssociations ? otherAssociations : [],
-        logoUrl: logoUrl || null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-      
+      await updateProfile(user, { displayName });
+
+      // Step 3: Create Firestore documents - if this fails, we'll clean up the auth account
       try {
-        await setDoc(accountRef, dataToWrite);
-      } catch (firestoreError: any) {
-        console.error('Firestore write failed:', firestoreError);
+        if (membershipType === 'corporate') {
+          // Use company-first structure with client-side Firestore
+          const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
+          const { db } = await import('@/lib/firebase');
+          
+          // Generate a unique company ID
+          const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          
+          // Use a batch write to ensure atomicity of company + member creation
+          const batch = writeBatch(db);
+          
+          // Prepare company document
+          const companyRef = firestoreDoc(db, 'accounts', companyId);
+          const companyRecord = {
+            id: companyId,
+            email: user.email,
+            displayName: organizationName,
+            status,
+            personalName: '', // Empty for company accounts
+            isCompanyAccount: true,
+            primaryContactMemberId: user.uid,
+            paymentUserId: user.uid, // For webhook payment processing
+            membershipType: 'corporate' as const,
+            organizationName,
+            organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
+            primaryContact: {
+              name: primaryContactName,
+              email: primaryContactEmail,
+              phone: primaryContactPhone,
+              role: primaryContactJobTitle
+            },
+            registeredAddress: {
+              line1: addressLine1,
+              line2: addressLine2,
+              city,
+              county: state,
+              postcode: postalCode,
+              country: country === 'OTHER' ? customCountry : country
+            },
+            ...(organizationType === 'MGA' && {
+              portfolio: {
+                grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
+                portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {}
+              }
+            }),
+            hasOtherAssociations: hasOtherAssociations ?? false,
+            otherAssociations: hasOtherAssociations ? otherAssociations : [],
+            logoUrl: logoUrl || null,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+          
+          batch.set(companyRef, companyRecord);
+          
+          // Prepare member document
+          const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', user.uid);
+          const memberRecord = {
+            id: user.uid,
+            email: user.email!,
+            personalName,
+            jobTitle: registrantJobTitle,
+            isPrimaryContact: registrantRole === 'primary_contact',
+            joinedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+          
+          batch.set(memberRef, memberRecord);
+          
+          // Commit the batch atomically
+          await batch.commit();
+          
+        } else {
+          // Traditional individual membership
+          const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { db } = await import('@/lib/firebase');
+          
+          const accountRef = firestoreDoc(db, 'accounts', user.uid);
+          
+          const dataToWrite = {
+            email: user.email,
+            displayName: user.displayName,
+            status,
+            membershipType,
+            personalName,
+            organizationName: personalName,
+            paymentUserId: user.uid, // For webhook payment processing
+            primaryContact: {
+              name: primaryContactName,
+              email: primaryContactEmail,
+              phone: primaryContactPhone,
+              role: primaryContactJobTitle
+            },
+            registeredAddress: {
+              line1: addressLine1,
+              line2: addressLine2,
+              city,
+              county: state,
+              postcode: postalCode,
+              country: country === 'OTHER' ? customCountry : country
+            },
+            hasOtherAssociations: hasOtherAssociations ?? false,
+            otherAssociations: hasOtherAssociations ? otherAssociations : [],
+            logoUrl: logoUrl || null,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+          
+          await setDoc(accountRef, dataToWrite);
+        }
+        
+        // If we reach here, both auth and firestore succeeded
+        userToCleanup = null; // Don't clean up on success
+        
+      } catch (firestoreError) {
+        // Firestore failed after auth succeeded - clean up auth account
+        console.error('Firestore operation failed, cleaning up auth account:', firestoreError);
+        
+        if (userToCleanup) {
+          try {
+            await deleteUser(userToCleanup);
+            console.log('Successfully cleaned up orphaned auth account');
+          } catch (cleanupError) {
+            console.error('Failed to clean up auth account:', cleanupError);
+            // Continue with the original error
+          }
+        }
+        
         throw firestoreError;
       }
       
@@ -665,14 +761,13 @@ export default function IntegratedRegisterForm() {
     setError("");
 
     try {
-      // Create membership application
-      const orgName = membershipType === 'individual' ? personalName : organizationName;
+      // Handle logo upload first
       let logoUrl = '';
-      
       if (logoFile) {
         try {
           // Create clean identifier for logo filename
-          const cleanOrgName = orgName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          const cleanOrgName = (membershipType === 'corporate' ? organizationName : personalName)
+            .toLowerCase().replace(/[^a-z0-9]/g, '_');
           
           // Use direct Firebase Storage upload
           const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
@@ -689,52 +784,116 @@ export default function IntegratedRegisterForm() {
         throw new Error('No authenticated user');
       }
       
-      // Use setDoc with merge to update the existing document (same as step 2)
-      const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase');
-      
-      const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
-      
-      const dataToWrite = {
-        // Keep existing fields and add new ones
-        email: auth.currentUser.email,
-        displayName: auth.currentUser.displayName,
-        status: 'pending_payment',
-        membershipType,
-        personalName,
-        organizationName: membershipType === 'corporate' ? organizationName : personalName,
-        ...(membershipType === 'corporate' && { organizationType }),
-        primaryContact: {
-          name: primaryContactName,
-          email: primaryContactEmail,
-          phone: primaryContactPhone,
-          jobTitle: primaryContactJobTitle
-        },
-        registeredAddress: {
-          line1: addressLine1,
-          line2: addressLine2,
-          city,
-          state,
-          postalCode,
-          country: country === 'OTHER' ? customCountry : country
-        },
-        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
-          portfolio: {
-            grossWrittenPremiums,
-            portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : undefined
-          }
-        }),
-        hasOtherAssociations: hasOtherAssociations ?? false,
-        otherAssociations: hasOtherAssociations ? otherAssociations : [],
-        logoUrl: logoUrl || null,
-        updatedAt: serverTimestamp()
-      };
-      
-      try {
+      // Handle company-first vs traditional structure
+      if (membershipType === 'corporate') {
+        // Use company-first structure with atomic batch write
+        const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
+        const { db } = await import('@/lib/firebase');
+        
+        // Generate a unique company ID
+        const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Use a batch write to ensure atomicity of company + member creation
+        const batch = writeBatch(db);
+        
+        // Prepare company document
+        const companyRef = firestoreDoc(db, 'accounts', companyId);
+        const companyRecord = {
+          id: companyId,
+          email: auth.currentUser.email,
+          displayName: organizationName,
+          status: 'pending_payment',
+          personalName: '', // Empty for company accounts
+          isCompanyAccount: true,
+          primaryContactMemberId: auth.currentUser.uid,
+          paymentUserId: auth.currentUser.uid, // For webhook payment processing
+          membershipType: 'corporate' as const,
+          organizationName,
+          organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
+          primaryContact: {
+            name: primaryContactName,
+            email: primaryContactEmail,
+            phone: primaryContactPhone,
+            role: primaryContactJobTitle
+          },
+          registeredAddress: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city,
+            county: state,
+            postcode: postalCode,
+            country: country === 'OTHER' ? customCountry : country
+          },
+          ...(organizationType === 'MGA' && {
+            portfolio: {
+              grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
+              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {}
+            }
+          }),
+          hasOtherAssociations: hasOtherAssociations ?? false,
+          otherAssociations: hasOtherAssociations ? otherAssociations : [],
+          logoUrl: logoUrl || null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+        
+        batch.set(companyRef, companyRecord);
+        
+        // Prepare member document
+        const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', auth.currentUser.uid);
+        const memberRecord = {
+          id: auth.currentUser.uid,
+          email: auth.currentUser.email!,
+          personalName,
+          jobTitle: registrantJobTitle,
+          isPrimaryContact: registrantRole === 'primary_contact',
+          joinedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+        
+        batch.set(memberRef, memberRecord);
+        
+        // Commit the batch atomically
+        await batch.commit();
+        
+      } else {
+        // Traditional individual membership - use merge to update existing document
+        const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+        const { db } = await import('@/lib/firebase');
+        
+        const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
+        
+        const dataToWrite = {
+          // Keep existing fields and add new ones
+          email: auth.currentUser.email,
+          displayName: auth.currentUser.displayName,
+          status: 'pending_payment',
+          membershipType,
+          personalName,
+          organizationName: personalName,
+          paymentUserId: auth.currentUser.uid, // For webhook payment processing
+          primaryContact: {
+            name: primaryContactName,
+            email: primaryContactEmail,
+            phone: primaryContactPhone,
+            role: primaryContactJobTitle
+          },
+          registeredAddress: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city,
+            county: state,
+            postcode: postalCode,
+            country: country === 'OTHER' ? customCountry : country
+          },
+          hasOtherAssociations: hasOtherAssociations ?? false,
+          otherAssociations: hasOtherAssociations ? otherAssociations : [],
+          logoUrl: logoUrl || null,
+          updatedAt: serverTimestamp()
+        };
+        
         await setDoc(accountRef, dataToWrite, { merge: true });
-      } catch (firestoreError: any) {
-        console.error('Firestore write failed:', firestoreError);
-        throw firestoreError;
       }
       
       setStep(4); // Go to payment step
@@ -1026,7 +1185,7 @@ export default function IntegratedRegisterForm() {
                   </div>
                   <span className="font-medium text-fase-navy">Corporate Membership</span>
                 </div>
-                <p className="text-sm text-fase-black ml-7">For organizations</p>
+                <p className="text-sm text-fase-black ml-7">For organizations (you&apos;ll create the company account)</p>
               </div>
             </div>
           </div>
@@ -1060,9 +1219,94 @@ export default function IntegratedRegisterForm() {
             </>
           )}
 
+          {/* NEW: Your Role Section */}
+          {membershipType === 'corporate' && (
+            <div className="space-y-4">
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Your Role</h4>
+              <p className="text-sm text-fase-black">
+                What is your role in this organization?
+              </p>
+              
+              <div className="space-y-3">
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    registrantRole === 'primary_contact' 
+                      ? 'border-fase-navy bg-fase-light-blue' 
+                      : 'border-fase-light-gold bg-white hover:border-fase-navy'
+                  }`}
+                  onClick={() => {
+                    setRegistrantRole('primary_contact');
+                  }}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                      registrantRole === 'primary_contact' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
+                    }`}>
+                      {registrantRole === 'primary_contact' && (
+                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                      )}
+                    </div>
+                    <span className="font-medium text-fase-navy">I am the primary contact</span>
+                  </div>
+                  <p className="text-sm text-fase-black ml-7">You will be the main contact for this organization</p>
+                </div>
+                
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    registrantRole === 'other_member' 
+                      ? 'border-fase-navy bg-fase-light-blue' 
+                      : 'border-fase-light-gold bg-white hover:border-fase-navy'
+                  }`}
+                  onClick={() => {
+                    setRegistrantRole('other_member');
+                    // Clear auto-filled primary contact info
+                    setPrimaryContactName('');
+                    setPrimaryContactEmail('');
+                  }}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
+                      registrantRole === 'other_member' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
+                    }`}>
+                      {registrantRole === 'other_member' && (
+                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                      )}
+                    </div>
+                    <span className="font-medium text-fase-navy">Someone else is the primary contact</span>
+                  </div>
+                  <p className="text-sm text-fase-black ml-7">You&apos;ll provide the primary contact&apos;s details</p>
+                </div>
+              </div>
+              
+              <ValidatedInput
+                label="Your Job Title"
+                fieldKey="registrantJobTitle"
+                value={registrantJobTitle}
+                onChange={setRegistrantJobTitle}
+                placeholder="e.g. CEO, Operations Manager, Underwriter"
+                required
+                touchedFields={touchedFields}
+                attemptedNext={attemptedNext}
+                markFieldTouched={markFieldTouched}
+              />
+            </div>
+          )}
+
           {/* Primary Contact */}
           <div className="space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Primary Contact</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">
+              {membershipType === 'corporate' ? 'Primary Contact' : 'Primary Contact'}
+            </h4>
+            {membershipType === 'corporate' && registrantRole === 'primary_contact' && (
+              <p className="text-sm text-fase-black">
+                Name, email, and job title are auto-filled since you selected &quot;I am the primary contact&quot;. Please enter your phone number.
+              </p>
+            )}
+            {membershipType === 'corporate' && registrantRole === 'other_member' && (
+              <p className="text-sm text-fase-black">
+                Please provide the details of the person who should be the main contact for this organization.
+              </p>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ValidatedInput
@@ -1072,6 +1316,7 @@ export default function IntegratedRegisterForm() {
                 onChange={setPrimaryContactName}
                 placeholder="Full name"
                 required
+                disabled={registrantRole === 'primary_contact'}
                 touchedFields={touchedFields}
                 attemptedNext={attemptedNext}
                 markFieldTouched={markFieldTouched}
@@ -1083,6 +1328,7 @@ export default function IntegratedRegisterForm() {
                 value={primaryContactJobTitle}
                 onChange={setPrimaryContactJobTitle}
                 placeholder="Position or title"
+                disabled={registrantRole === 'primary_contact'}
                 touchedFields={touchedFields}
                 attemptedNext={attemptedNext}
                 markFieldTouched={markFieldTouched}
@@ -1098,6 +1344,7 @@ export default function IntegratedRegisterForm() {
                 onChange={setPrimaryContactEmail}
                 placeholder="contact@company.com"
                 required
+                disabled={registrantRole === 'primary_contact'}
                 touchedFields={touchedFields}
                 attemptedNext={attemptedNext}
                 markFieldTouched={markFieldTouched}
