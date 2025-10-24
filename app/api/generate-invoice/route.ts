@@ -220,6 +220,14 @@ export async function POST(request: NextRequest) {
 
     // Send invoice via email (using Firebase Functions)
     try {
+      const { functions } = await import('firebase/functions');
+      const { getApp } = await import('firebase/app');
+      const { httpsCallable } = await import('firebase/functions');
+      
+      const app = getApp();
+      const functionsInstance = functions(app);
+      const sendInvoiceEmail = httpsCallable(functionsInstance, 'sendInvoiceEmail');
+      
       const emailData: any = { 
         email: userEmail, 
         invoiceHTML,
@@ -234,17 +242,8 @@ export async function POST(request: NextRequest) {
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
       }
       
-      const response = await fetch(`https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net/sendInvoiceEmail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: emailData }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to send invoice email:', response.status);
-      }
+      await sendInvoiceEmail(emailData);
+      console.log('Invoice email sent successfully');
     } catch (emailError) {
       console.error('Error sending invoice email:', emailError);
     }
