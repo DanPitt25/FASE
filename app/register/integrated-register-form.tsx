@@ -172,6 +172,7 @@ export default function IntegratedRegisterForm() {
   // Portfolio fields (for MGAs)
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
   const [portfolioMix, setPortfolioMix] = useState<{[key: string]: number}>({});
+  const [otherLines, setOtherLines] = useState<string[]>([]);
   
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
@@ -548,7 +549,8 @@ export default function IntegratedRegisterForm() {
             ...(organizationType === 'MGA' && {
               portfolio: {
                 grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
-                portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {}
+                portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {},
+                otherLines: otherLines.filter(line => line.trim() !== '')
               }
             }),
             hasOtherAssociations: hasOtherAssociations ?? false,
@@ -903,7 +905,8 @@ export default function IntegratedRegisterForm() {
           ...(organizationType === 'MGA' && {
             portfolio: {
               grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
-              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {}
+              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {},
+              otherLines: otherLines.filter(line => line.trim() !== '')
             }
           }),
           hasOtherAssociations: hasOtherAssociations ?? false,
@@ -1597,8 +1600,16 @@ export default function IntegratedRegisterForm() {
                               const newMix = { ...prev };
                               if (value > 0) {
                                 newMix[line] = value;
+                                // If this is "Other" and we don't have any other lines yet, add one
+                                if (line === 'Other' && otherLines.length === 0) {
+                                  setOtherLines(['']);
+                                }
                               } else {
                                 delete newMix[line];
+                                // If removing "Other", clear the other lines
+                                if (line === 'Other') {
+                                  setOtherLines([]);
+                                }
                               }
                               return newMix;
                             });
@@ -1611,6 +1622,49 @@ export default function IntegratedRegisterForm() {
                     </div>
                   ))}
                 </div>
+                
+                {/* Other Lines Specification */}
+                {portfolioMix['Other'] > 0 && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-fase-navy mb-3">
+                      Please specify other lines of business:
+                    </label>
+                    <div className="space-y-2">
+                      {otherLines.map((line, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <input
+                            type="text"
+                            value={line}
+                            onChange={(e) => {
+                              const newOtherLines = [...otherLines];
+                              newOtherLines[index] = e.target.value;
+                              setOtherLines(newOtherLines);
+                            }}
+                            placeholder="Enter line of business"
+                            className="flex-1 px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newOtherLines = otherLines.filter((_, i) => i !== index);
+                              setOtherLines(newOtherLines);
+                            }}
+                            className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setOtherLines([...otherLines, ''])}
+                        className="text-sm text-fase-navy hover:text-fase-gold font-medium"
+                      >
+                        + Add another line
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
