@@ -69,21 +69,7 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store code in Firestore with expiration (20 minutes)
-    const { doc, setDoc } = await import('firebase/firestore');
-    const { db } = await import('./firebase');
-    
-    const expiresAt = new Date(Date.now() + 20 * 60 * 1000); // 20 minutes from now
-    
-    await setDoc(doc(db, 'verification_codes', email), {
-      code,
-      email,
-      expiresAt,
-      createdAt: new Date(),
-      used: false
-    });
-    
-    // Send email via Firebase function (unauthenticated call)
+    // Call Firebase Function to handle both Firestore write and email sending
     const { httpsCallable } = await import('firebase/functions');
     const { functions } = await import('./firebase');
     
