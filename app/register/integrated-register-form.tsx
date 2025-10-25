@@ -775,6 +775,7 @@ export default function IntegratedRegisterForm() {
       try {
         const { auth } = await import('@/lib/firebase');
         if (auth.currentUser) {
+          const fullName = `${firstName} ${surname}`.trim();
           const response = await fetch('/api/generate-invoice', {
             method: 'POST',
             headers: {
