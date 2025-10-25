@@ -56,7 +56,7 @@ export default function MembershipDirectoryPage() {
         'Our directory represents a growing network of insurance professionals from across Europe, with members spanning 20+ countries and covering diverse specialties and markets.',
         'From traditional insurance lines to emerging risks and technologies, FASE members represent the full spectrum of European delegated underwriting expertise.'
       ],
-      image: '/AdobeStock_374018940.jpeg',
+      image: '/consideration.jpg',
       imageAlt: 'European business network',
       imagePosition: 'left' as const
     },
@@ -65,7 +65,7 @@ export default function MembershipDirectoryPage() {
   return (
     <ContentPageLayout
       title="Member Directory"
-      bannerImage="/AdobeStock_217797984.jpeg"
+      bannerImage="/market.jpg"
       bannerImageAlt="Professional business directory"
       sections={sections}
       currentPage="membership-directory"

@@ -23,19 +23,19 @@ export default function SponsorsPage() {
         {
           title: 'Network Access',
           description: 'Direct access to C-level executives from Europe\'s leading MGAs and capacity providers through exclusive networking events.',
-          image: '/AdobeStock_172545168.jpeg',
+          image: '/seated.jpg',
           imageAlt: 'Executive networking event'
         },
         {
           title: 'Thought Leadership',
           description: 'Position your organization as an industry leader through speaking opportunities and content partnerships.',
-          image: '/AdobeStock_1606166593.jpeg',
+          image: '/airplane.jpeg',
           imageAlt: 'Industry leadership conference'
         },
         {
           title: 'Market Intelligence',
           description: 'Gain exclusive insights into European MGA market trends and opportunities through our research and events.',
-          image: '/AdobeStock_374018940.jpeg',
+          image: '/consideration.jpg',
           imageAlt: 'Market analysis and research'
         }
       ]
@@ -47,7 +47,7 @@ export default function SponsorsPage() {
         'We offer flexible partnership packages designed to meet diverse business objectives and budgets. From title sponsorship of our annual conference to targeted digital marketing opportunities.',
         'Each partnership is tailored to provide maximum value and ROI, ensuring your organization gains meaningful exposure and connects with the right audience in European insurance markets.'
       ],
-      image: '/AdobeStock_217797984.jpeg',
+      image: '/market.jpg',
       imageAlt: 'Business partnership meeting',
       imagePosition: 'left' as const
     },
@@ -56,7 +56,7 @@ export default function SponsorsPage() {
   return (
     <ContentPageLayout
       title="Partner with FASE"
-      bannerImage="/AdobeStock_481244965.jpeg"
+      bannerImage="/training.jpg"
       bannerImageAlt="Strategic business partnership"
       sections={sections}
       currentPage="sponsors"

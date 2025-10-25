@@ -56,7 +56,7 @@ export default function KnowledgePage() {
         'We are developing interactive learning modules, expert-led webinars, and collaborative forums where MGA professionals can share insights and solutions.',
         'Members have access to exclusive research, case studies, and professional development opportunities designed specifically for the European delegated underwriting market.'
       ],
-      image: '/AdobeStock_481244965.jpeg',
+      image: '/training.jpg',
       imageAlt: 'Digital learning platform',
       imagePosition: 'left' as const
     },
@@ -65,7 +65,7 @@ export default function KnowledgePage() {
   return (
     <ContentPageLayout
       title="Knowledge Base"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/conference.jpeg"
       bannerImageAlt="Professional knowledge and learning"
       sections={sections}
       currentPage="knowledge"

@@ -11,7 +11,7 @@ export default function RendezvousPage() {
         'Our flagship networking event brings together MGAs, capacity providers, and selected service providers from across Europe to foster collaboration and grow business relationships.',
         'The Rendezvous creates opportunities for meaningful connections that drive the European delegated underwriting market forward.'
       ],
-      image: '/AdobeStock_172545168.jpeg',
+      image: '/seated.jpg',
       imageAlt: 'European business networking event',
       imagePosition: 'right' as const
     },
@@ -22,19 +22,19 @@ export default function RendezvousPage() {
         {
           title: 'Capacity Matching',
           description: 'Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.',
-          image: '/AdobeStock_374018940.jpeg',
+          image: '/consideration.jpg',
           imageAlt: 'Business matching'
         },
         {
           title: 'Market Insights',
           description: 'Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.',
-          image: '/AdobeStock_481244965.jpeg',
+          image: '/training.jpg',
           imageAlt: 'Market analysis'
         },
         {
           title: 'Professional Development',
           description: 'Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.',
-          image: '/AdobeStock_217797984.jpeg',
+          image: '/market.jpg',
           imageAlt: 'Professional development'
         }
       ]
@@ -44,7 +44,7 @@ export default function RendezvousPage() {
       title: 'Join the Rendezvous',
       subtitle: 'Connect with the European MGA Community',
       description: 'Registration details and event schedule will be announced to FASE members. Become a member to secure your place at this premier networking event.',
-      backgroundImage: '/AdobeStock_1406443128.jpeg',
+      backgroundImage: '/conferenceWood.jpg',
       buttons: [
         {
           text: 'Become a Member',
@@ -63,7 +63,7 @@ export default function RendezvousPage() {
   return (
     <ContentPageLayout
       title="Rendezvous"
-      bannerImage="/AdobeStock_1606166593.jpeg"
+      bannerImage="/airplane.jpeg"
       bannerImageAlt="Pan-European MGA networking"
       sections={sections}
       currentPage="rendezvous"

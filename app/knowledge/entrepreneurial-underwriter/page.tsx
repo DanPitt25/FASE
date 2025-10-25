@@ -11,7 +11,7 @@ export default function EntrepreneurialUnderwriterPage() {
         'Dedicated content for MGAs and delegated underwriting professionals who drive innovation and growth in the European insurance marketplace.',
         'Explore insights, case studies, and practical guidance specifically designed for entrepreneurial professionals shaping the future of European delegated underwriting.'
       ],
-      image: '/AdobeStock_481244965.jpeg',
+      image: '/computer.jpeg',
       imageAlt: 'Entrepreneurial underwriting insights',
       imagePosition: 'left' as const
     },
@@ -22,19 +22,19 @@ export default function EntrepreneurialUnderwriterPage() {
         {
           title: 'Market Analysis',
           description: 'In-depth analysis of European delegated underwriting trends, regulatory developments, and emerging opportunities for MGAs.',
-          image: '/AdobeStock_217797984.jpeg',
+          image: '/market.jpg',
           imageAlt: 'Market analysis'
         },
         {
           title: 'Case Studies',
           description: 'Real-world examples of successful MGA strategies, innovative underwriting approaches, and effective capacity relationships.',
-          image: '/AdobeStock_374018940.jpeg',
+          image: '/consideration.jpg',
           imageAlt: 'Business case studies'
         },
         {
           title: 'Expert Insights',
           description: 'Perspectives from industry leaders on building sustainable MGA businesses and navigating European regulatory environments.',
-          image: '/AdobeStock_172545168.jpeg',
+          image: '/seated.jpg',
           imageAlt: 'Expert insights'
         }
       ]
@@ -50,7 +50,7 @@ export default function EntrepreneurialUnderwriterPage() {
   return (
     <ContentPageLayout
       title="Entrepreneurial Underwriter"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/conference.jpeg"
       bannerImageAlt="Entrepreneurial underwriting"
       sections={sections}
       currentPage="entrepreneurial-underwriter"

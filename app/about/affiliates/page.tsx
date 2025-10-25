@@ -176,7 +176,7 @@ export default function AffiliatesPage() {  return (
               <div className="relative">
                 <div className="aspect-w-4 aspect-h-3  overflow-hidden shadow-2xl">
                   <img 
-                    src="/vienna.jpg" 
+                    src="/conferenceWood.jpg" 
                     alt="European Partnership" 
                     className="w-full h-96 object-cover"
                     style={{ filter: 'brightness(0.9) contrast(1.1) saturate(1.2)' }}

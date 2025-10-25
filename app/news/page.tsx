@@ -55,7 +55,7 @@ export default function NewsPage() {
         'News and updates will be available once FASE is officially launched. We are preparing a comprehensive news platform that will serve as your primary source for European MGA industry information.',
         'Stay connected with FASE for the latest developments in delegated underwriting, regulatory updates, and exclusive member insights.'
       ],
-      image: '/AdobeStock_217797984.jpeg',
+      image: '/earlyMorning.jpg',
       imageAlt: 'Digital news platform',
       imagePosition: 'left' as const
     }
@@ -64,7 +64,7 @@ export default function NewsPage() {
   return (
     <ContentPageLayout
       title="News"
-      bannerImage="/AdobeStock_374018940.jpeg"
+      bannerImage="/consideration.jpg"
       bannerImageAlt="Business news and media"
       sections={sections}
       currentPage="news"

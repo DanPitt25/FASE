@@ -11,7 +11,7 @@ export default function WebinarsPage() {
         'Interactive learning sessions designed specifically for European MGA professionals, featuring industry experts and thought leaders.',
         'Our webinar series covers essential topics including regulatory compliance, market development, capacity relationships, and operational excellence.'
       ],
-      image: '/AdobeStock_481244965.jpeg',
+      image: '/seminar.jpg',
       imageAlt: 'Online learning and webinars',
       imagePosition: 'right' as const
     },
@@ -22,19 +22,19 @@ export default function WebinarsPage() {
         {
           title: 'European Regulatory Update',
           description: 'Comprehensive overview of regulatory developments affecting MGAs across European jurisdictions, with practical implementation guidance.',
-          image: '/AdobeStock_217797984.jpeg',
+          image: '/regulatory.jpg',
           imageAlt: 'Regulatory compliance'
         },
         {
           title: 'Capacity Relationship Management',
           description: 'Best practices for building and maintaining strong relationships with insurance companies, reinsurers, and Lloyd\'s syndicates.',
-          image: '/AdobeStock_374018940.jpeg',
+          image: '/conferenceWood.jpg',
           imageAlt: 'Business relationships'
         },
         {
           title: 'Digital Transformation in MGAs',
           description: 'Leveraging technology to improve underwriting efficiency, customer experience, and operational performance in delegated underwriting.',
-          image: '/AdobeStock_172545168.jpeg',
+          image: '/data.jpg',
           imageAlt: 'Digital transformation'
         }
       ]
@@ -66,7 +66,7 @@ export default function WebinarsPage() {
   return (
     <ContentPageLayout
       title="Webinar Series"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/training.jpg"
       bannerImageAlt="FASE webinar series"
       sections={sections}
       currentPage="webinars"

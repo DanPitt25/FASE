@@ -11,7 +11,7 @@ export default function JoinPage() {
         'FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium.',
         'Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.'
       ],
-      image: '/AdobeStock_172545168.jpeg',
+      image: '/seated.jpg',
       imageAlt: 'European business meeting',
       imagePosition: 'right' as const
     },
@@ -69,19 +69,19 @@ export default function JoinPage() {
         {
           title: 'MGA Member',
           description: 'Full membership for Managing General Agents operating in Europe. Includes voting rights, committee participation, and full access to resources.',
-          image: '/AdobeStock_172545168.jpeg',
+          image: '/seated.jpg',
           imageAlt: 'MGA business meeting'
         },
         {
           title: 'Market Practitioner',
           description: 'For capacity providers, insurers, and reinsurers working with MGAs. Access to market intelligence, networking, and industry insights.',
-          image: '/AdobeStock_374018940.jpeg',
+          image: '/consideration.jpg',
           imageAlt: 'Market analysis and data'
         },
         {
           title: 'Supplier',
           description: 'For service providers supporting the MGA ecosystem. Business development access, sponsorship opportunities, and market visibility.',
-          image: '/AdobeStock_481244965.jpeg',
+          image: '/training.jpg',
           imageAlt: 'Service provider collaboration'
         }
       ]
@@ -93,7 +93,7 @@ export default function JoinPage() {
         'To begin your application, complete our membership form with your organisation details and business information.',
         'Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives.'
       ],
-      image: '/AdobeStock_481244965.jpeg',
+      image: '/training.jpg',
       imageAlt: 'Application process',
       imagePosition: 'left' as const,
       buttons: [
@@ -114,7 +114,7 @@ export default function JoinPage() {
   return (
     <ContentPageLayout
       title="Join FASE"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/conference.jpeg"
       bannerImageAlt="Join FASE membership"
       sections={sections}
       currentPage="join"

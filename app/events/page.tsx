@@ -11,7 +11,7 @@ export default function EventsPage() {
         'Our annual conference brings together MGAs, capacity providers and selected service providers to grow business within and across Europe. We are planning a comprehensive program that sets the standard for European MGA events.',
         'Our events are designed to foster the collaboration that MGAs depend on, recognizing that strong relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – are essential to sustain and grow their business.'
       ],
-      image: '/AdobeStock_172545168.jpeg',
+      image: '/conference.jpeg',
       imageAlt: 'European business conference',
       imagePosition: 'right' as const
     },
@@ -22,7 +22,7 @@ export default function EventsPage() {
         'FASE events are currently in development. Join our community to be the first to know about upcoming conferences, networking opportunities, and professional development events.',
         'We are planning a comprehensive calendar of events designed to foster collaboration and growth across the European MGA ecosystem.'
       ],
-      image: '/AdobeStock_481244965.jpeg',
+      image: '/airplane.jpeg',
       imageAlt: 'Future events and networking',
       imagePosition: 'left' as const,
       buttons: [
@@ -43,7 +43,7 @@ export default function EventsPage() {
   return (
     <ContentPageLayout
       title="Events"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/conferenceWood.jpg"
       bannerImageAlt="European cityscape and business district"
       sections={sections}
       currentPage="events"

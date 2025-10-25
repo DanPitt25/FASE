@@ -11,7 +11,7 @@ export default function SearchPage() {
       <Header currentPage="search" />
       <section className="relative h-[33vh] flex items-center overflow-hidden">
         <img
-          src="/images/building.jpg"
+          src="/corporate-building-bg.png"
           alt="Search"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}

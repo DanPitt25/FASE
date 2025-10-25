@@ -11,7 +11,7 @@ export default function LeadershipPage() {
         'Our advisory board comprises distinguished industry leaders who guide FASE strategic direction and represent the diverse interests of the European MGA community.',
         'These experienced professionals bring decades of expertise in delegated underwriting, capacity provision, and regulatory affairs across European markets.'
       ],
-      image: '/AdobeStock_374018940.jpeg',
+      image: '/consideration.jpg',
       imageAlt: 'Business leadership and strategy',
       imagePosition: 'right' as const
     },
@@ -24,7 +24,7 @@ export default function LeadershipPage() {
           role: 'Position Title',
           company: 'Company Name',
           bio: 'Advisory board member biographies will be announced as appointments are confirmed. We are assembling a distinguished group of industry leaders to guide FASE strategic initiatives.',
-          image: '/AdobeStock_172545168.jpeg'
+          image: '/seated.jpg'
         }
       ]
     }
@@ -33,7 +33,7 @@ export default function LeadershipPage() {
   return (
     <ContentPageLayout
       title="Leadership"
-      bannerImage="/AdobeStock_999103753.jpeg"
+      bannerImage="/conference.jpeg"
       bannerImageAlt="FASE leadership team"
       sections={sections}
       currentPage="leadership"

@@ -16,7 +16,7 @@ export default function ContactPage() {
   return (
     <ContentPageLayout
       title="Contact Us"
-      bannerImage="/AdobeStock_1606166593.jpeg"
+      bannerImage="/airplane.jpeg"
       bannerImageAlt="Professional communication and contact"
       sections={sections}
       currentPage="contact"
