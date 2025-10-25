@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
       
       emailSent = true;
       console.log('✅ Invoice email sent successfully');
-    } catch (error) {
+    } catch (error: any) {
       emailError = error;
       console.error('❌ Error sending invoice email:', error);
       console.error('Error details:', {
