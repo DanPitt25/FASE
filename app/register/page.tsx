@@ -15,24 +15,6 @@ export default function Register() {
           </div>
           <div className="bg-white px-6 py-8">
             <IntegratedRegisterForm />
-            
-            {/* Alternative Options */}
-            <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link 
-                  href="/login" 
-                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-navy text-sm font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
-                >
-                  Already have an account? Sign in
-                </Link>
-                <Link 
-                  href="/join-company" 
-                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-gold text-sm font-medium rounded-md text-fase-gold bg-white hover:bg-fase-light-blue transition-colors duration-200"
-                >
-                  My company is already a member
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </div>

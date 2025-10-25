@@ -219,11 +219,22 @@ export async function POST(request: NextRequest) {
     });
 
     // Send invoice via email (using Firebase Functions)
+    let emailSent = false;
+    let emailError = null;
+    
     try {
+      console.log('Starting email send process...');
+      console.log('User email:', userEmail);
+      console.log('Invoice number:', invoiceNumber);
+      
       const { httpsCallable } = await import('firebase/functions');
+      console.log('Firebase functions imported successfully');
+      
       const { functions } = await import('../../../lib/firebase');
+      console.log('Firebase functions instance imported');
       
       const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
+      console.log('httpsCallable created for sendInvoiceEmail');
       
       const emailData: any = { 
         email: userEmail, 
@@ -237,19 +248,46 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
+        console.log('PDF attachment added to email data');
+      } else {
+        console.log('No PDF attachment - sending HTML email only');
       }
       
-      await sendInvoiceEmail(emailData);
-      console.log('Invoice email sent successfully');
-    } catch (emailError) {
-      console.error('Error sending invoice email:', emailError);
+      console.log('Calling sendInvoiceEmail function with data:', {
+        email: emailData.email,
+        invoiceNumber: emailData.invoiceNumber,
+        organizationName: emailData.organizationName,
+        totalAmount: emailData.totalAmount,
+        hasPdfAttachment: !!emailData.pdfAttachment
+      });
+      
+      const result = await sendInvoiceEmail(emailData);
+      console.log('sendInvoiceEmail function result:', result);
+      
+      emailSent = true;
+      console.log('✅ Invoice email sent successfully');
+    } catch (error) {
+      emailError = error;
+      console.error('❌ Error sending invoice email:', error);
+      console.error('Error details:', {
+        name: error?.name,
+        message: error?.message,
+        code: error?.code,
+        stack: error?.stack
+      });
     }
 
     return NextResponse.json({
       success: true,
       invoiceNumber,
       totalAmount,
-      message: 'Invoice generated and sent successfully'
+      message: 'Invoice generated and sent successfully',
+      emailSent,
+      emailError: emailError ? {
+        name: emailError?.name,
+        message: emailError?.message,
+        code: emailError?.code
+      } : null
     });
 
   } catch (error: any) {

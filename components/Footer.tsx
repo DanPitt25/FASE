@@ -28,6 +28,7 @@ export default function Footer() {
             <ul className="space-y-2 text-fase-cream">
               <li><a href="mailto:info@fasemga.com" className="hover:text-fase-navy transition duration-200">Contact Us</a></li>
               <li><a href="/member-portal" className="hover:text-fase-navy transition duration-200">Member Portal</a></li>
+              <li><a href="/directory" className="hover:text-fase-navy transition duration-200">Member Directory</a></li>
               <li><a href="/about" className="hover:text-fase-navy transition duration-200">About FASE</a></li>
             </ul>
           </div>

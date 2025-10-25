@@ -28,7 +28,6 @@ export default function Page() {
     { name: 'Motorcycle', image: '/motorcycle.jpeg' },
     { name: 'Seated', image: '/seated.jpg' },
     { name: 'Early Morning', image: '/earlyMorning.jpg' },
-    { name: 'Computer', image: '/computer.jpeg' },
     { name: 'Conference Wood', image: '/conferenceWood.jpg' },
     { name: 'Airplane', image: '/airplane.jpeg' }
   ];
@@ -299,15 +298,35 @@ export default function Page() {
               whoWeAreVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
             }`}>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-6">
-                A Community of Insurance Professionals
+                See and be seen
               </h2>
               <p className="text-fase-black text-base sm:text-lg leading-relaxed">
-                FASE brings together organizations and individuals who are shaping the future of delegated underwriting. Our members share a focus on collaboration, responsible growth, and consistent professional standards. Through shared insight, practical resources, and an active network, we help the delegated underwriting community work more effectively.
+                FASE raises the profile of the delegated underwriting sector and its individual members. Our members share a focus on collaboration, responsible growth, and high professional standards. Through shared insight, practical resources and an active network, we help each member build the partnerships that will sustain the growth of its business.
               </p>
             </div>
           </div>
         </div>
         
+      </section>
+
+      {/* Blue ribbon separator */}
+      <div className="relative h-12">
+        <div className="absolute right-0 h-12 bg-fase-navy shadow-lg" style={{ width: '61.8%' }}></div>
+      </div>
+
+      {/* Quote Section */}
+      <section className="bg-white py-16">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <blockquote className="text-xl sm:text-2xl font-noto-serif text-fase-navy leading-relaxed mb-8">
+              &ldquo;MGAs are, in the main, small businesses. As our members look to grow, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.&rdquo;
+            </blockquote>
+            <div className="flex flex-col items-center">
+              <cite className="text-fase-black font-medium text-lg not-italic">Dario Spata</cite>
+              <p className="text-fase-black text-sm mt-1">President of ASASE and FASE advisory board member</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Blue ribbon separator */}

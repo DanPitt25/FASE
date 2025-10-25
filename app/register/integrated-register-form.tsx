@@ -171,8 +171,12 @@ export default function IntegratedRegisterForm() {
   
   // Portfolio fields (for MGAs)
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
-  const [portfolioMix, setPortfolioMix] = useState<{[key: string]: number}>({});
-  const [otherLines, setOtherLines] = useState<string[]>([]);
+  const [gwpCurrency, setGwpCurrency] = useState("EUR");
+  const [principalLines, setPrincipalLines] = useState('');
+  const [additionalLines, setAdditionalLines] = useState('');
+  const [targetClients, setTargetClients] = useState('');
+  const [currentMarkets, setCurrentMarkets] = useState('');
+  const [plannedMarkets, setPlannedMarkets] = useState('');
   
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
@@ -208,14 +212,28 @@ export default function IntegratedRegisterForm() {
     { value: 'provider', label: 'Service Provider' }
   ];
 
-  const grossWrittenPremiumsOptions = [
-    { value: '<10m', label: 'Less than €10 million' },
-    { value: '10-20m', label: '€10-20 million' },
-    { value: '20-50m', label: '€20-50 million' },
-    { value: '50-100m', label: '€50-100 million' },
-    { value: '100-500m', label: '€100-500 million' },
-    { value: '500m+', label: 'More than €500 million' }
-  ];
+  // Currency conversion rates (approximate modern rates)
+  const currencyRates = {
+    EUR: 1.0,
+    GBP: 1.17, // 1 GBP ≈ 1.17 EUR
+    USD: 0.92  // 1 USD ≈ 0.92 EUR
+  };
+
+  // Helper function to convert currency to EUR
+  const convertToEUR = (value: number, currency: string): number => {
+    const rate = currencyRates[currency as keyof typeof currencyRates] || 1;
+    return value * rate;
+  };
+
+  // Helper function to determine GWP band from EUR value
+  const getGWPBand = (eurValue: number): '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+' => {
+    if (eurValue < 10) return '<10m';
+    if (eurValue < 20) return '10-20m';
+    if (eurValue < 50) return '20-50m';
+    if (eurValue < 100) return '50-100m';
+    if (eurValue < 500) return '100-500m';
+    return '500m+';
+  };
 
   const countryOptions = [
     { value: 'AT', label: 'Austria' },
@@ -250,9 +268,6 @@ export default function IntegratedRegisterForm() {
     { value: 'OTHER', label: 'Other' }
   ];
 
-  const portfolioMixLines = [
-    'Property', 'Casualty', 'Motor', 'Marine', 'Aviation', 'Cyber', 'D&O', 'E&O', 'Other'
-  ];
 
   const handleNext = async () => {
     setAttemptedNext(true);
@@ -348,7 +363,7 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      if (membershipType === 'corporate' && organizationType === 'MGA' && !grossWrittenPremiums) {
+      if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
         setError("Gross written premiums are required for MGA memberships");
         return;
       }
@@ -380,13 +395,20 @@ export default function IntegratedRegisterForm() {
     if (membershipType === 'individual') {
       return 500;
     } else if (membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums) {
-      switch (grossWrittenPremiums) {
+      const gwpValue = parseFloat(grossWrittenPremiums);
+      if (isNaN(gwpValue)) return 900; // Default if invalid input
+      
+      // Convert to EUR for band calculation
+      const eurValue = convertToEUR(gwpValue, gwpCurrency);
+      const band = getGWPBand(eurValue);
+      
+      switch (band) {
         case '<10m': return 900;
         case '10-20m': return 1500;
-        case '20-50m': return 2000;
+        case '20-50m': return 2200;  // Updated from 2000
         case '50-100m': return 2800;
         case '100-500m': return 4200;
-        case '500m+': return 6400;
+        case '500m+': return 7000;   // Updated from 6400
         default: return 900;
       }
     } else {
@@ -406,6 +428,29 @@ export default function IntegratedRegisterForm() {
     try {
       const domain = emailAddress.split('@')[1]?.toLowerCase();
       if (!domain) return false;
+
+      // Whitelist of common personal email domains that should be exempt from domain checks
+      const personalEmailDomains = [
+        'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.de',
+        'hotmail.com', 'hotmail.co.uk', 'hotmail.fr', 'hotmail.de', 'hotmail.it',
+        'outlook.com', 'outlook.co.uk', 'outlook.fr', 'outlook.de', 'outlook.it',
+        'live.com', 'live.co.uk', 'live.fr', 'live.de', 'live.it',
+        'msn.com', 'icloud.com', 'me.com', 'mac.com',
+        'aol.com', 'aol.co.uk', 'protonmail.com', 'proton.me',
+        'tutanota.com', 'mail.com', 'gmx.com', 'gmx.de', 'gmx.net',
+        'web.de', 'freenet.de', 't-online.de',
+        'orange.fr', 'laposte.net', 'free.fr', 'sfr.fr',
+        'libero.it', 'virgilio.it', 'alice.it',
+        'terra.com.br', 'bol.com.br', 'uol.com.br', 'globo.com',
+        'qq.com', '163.com', '126.com', 'sina.com',
+        'mail.ru', 'yandex.ru', 'rambler.ru',
+        'rediffmail.com', 'sify.com', 'indiatimes.com'
+      ];
+
+      // If it's a personal email domain, skip the domain check
+      if (personalEmailDomains.includes(domain)) {
+        return false;
+      }
 
       const { collection, query, where, getDocs } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase');
@@ -548,9 +593,15 @@ export default function IntegratedRegisterForm() {
             },
             ...(organizationType === 'MGA' && {
               portfolio: {
-                grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
-                portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {},
-                otherLines: otherLines.filter(line => line.trim() !== '')
+                grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
+                grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
+                grossWrittenPremiumsCurrency: gwpCurrency,
+                grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
+                principalLines: principalLines.trim(),
+                additionalLines: additionalLines.trim(),
+                targetClients: targetClients.trim(),
+                currentMarkets: currentMarkets.trim(),
+                plannedMarkets: plannedMarkets.trim()
               }
             }),
             hasOtherAssociations: hasOtherAssociations ?? false,
@@ -707,7 +758,7 @@ export default function IntegratedRegisterForm() {
           organizationName: orgName,
           organizationType: membershipType === 'individual' ? 'individual' : organizationType,
           membershipType,
-          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? grossWrittenPremiums : undefined,
+          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
           userEmail: email,
           userId: auth.currentUser.uid
         }),
@@ -790,7 +841,7 @@ export default function IntegratedRegisterForm() {
                 membershipType,
                 organizationName: membershipType === 'corporate' ? organizationName : fullName,
                 organizationType: membershipType === 'corporate' ? organizationType : 'individual',
-                grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? grossWrittenPremiums : undefined,
+                grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
                 primaryContact: {
                   name: primaryContactName,
                   email: primaryContactEmail,
@@ -904,9 +955,15 @@ export default function IntegratedRegisterForm() {
           },
           ...(organizationType === 'MGA' && {
             portfolio: {
-              grossWrittenPremiums: grossWrittenPremiums as '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+',
-              portfolioMix: Object.keys(portfolioMix).length > 0 ? portfolioMix : {},
-              otherLines: otherLines.filter(line => line.trim() !== '')
+              grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
+              grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
+              grossWrittenPremiumsCurrency: gwpCurrency,
+              grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
+              principalLines: principalLines.trim(),
+              additionalLines: additionalLines.trim(),
+              targetClients: targetClients.trim(),
+              currentMarkets: currentMarkets.trim(),
+              plannedMarkets: plannedMarkets.trim()
             }
           }),
           hasOtherAssociations: hasOtherAssociations ?? false,
@@ -1568,103 +1625,113 @@ export default function IntegratedRegisterForm() {
             <div className="space-y-4">
               <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Portfolio Information</h4>
               
-              <ValidatedSelect
-                label="Gross Written Premiums"
-                fieldKey="grossWrittenPremiums"
-                value={grossWrittenPremiums}
-                onChange={setGrossWrittenPremiums}
-                options={grossWrittenPremiumsOptions}
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-
               <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  Portfolio Mix (Optional) - Specify percentage for each line of business
+                <label className="block text-sm font-medium text-fase-navy mb-2">
+                  Gross Written Premiums (millions) *
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {portfolioMixLines.map((line) => (
-                    <div key={line}>
-                      <label className="block text-xs text-fase-black mb-1">{line}</label>
-                      <div className="flex items-center">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={portfolioMix[line] || ''}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value) || 0;
-                            setPortfolioMix(prev => {
-                              const newMix = { ...prev };
-                              if (value > 0) {
-                                newMix[line] = value;
-                                // If this is "Other" and we don't have any other lines yet, add one
-                                if (line === 'Other' && otherLines.length === 0) {
-                                  setOtherLines(['']);
-                                }
-                              } else {
-                                delete newMix[line];
-                                // If removing "Other", clear the other lines
-                                if (line === 'Other') {
-                                  setOtherLines([]);
-                                }
-                              }
-                              return newMix;
-                            });
-                          }}
-                          className="w-full px-2 py-1 border border-fase-light-gold rounded text-sm focus:outline-none focus:ring-1 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="0"
-                        />
-                        <span className="ml-1 text-xs text-fase-black">%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Other Lines Specification */}
-                {portfolioMix['Other'] > 0 && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-fase-navy mb-3">
-                      Please specify other lines of business:
-                    </label>
-                    <div className="space-y-2">
-                      {otherLines.map((line, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <input
-                            type="text"
-                            value={line}
-                            onChange={(e) => {
-                              const newOtherLines = [...otherLines];
-                              newOtherLines[index] = e.target.value;
-                              setOtherLines(newOtherLines);
-                            }}
-                            placeholder="Enter line of business"
-                            className="flex-1 px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newOtherLines = otherLines.filter((_, i) => i !== index);
-                              setOtherLines(newOtherLines);
-                            }}
-                            className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => setOtherLines([...otherLines, ''])}
-                        className="text-sm text-fase-navy hover:text-fase-gold font-medium"
-                      >
-                        + Add another line
-                      </button>
-                    </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={grossWrittenPremiums}
+                      onChange={(e) => {
+                        setGrossWrittenPremiums(e.target.value);
+                        markFieldTouched('grossWrittenPremiums');
+                      }}
+                      onBlur={() => markFieldTouched('grossWrittenPremiums')}
+                      placeholder="e.g. 25.5"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+                        touchedFields.grossWrittenPremiums || attemptedNext
+                          ? grossWrittenPremiums.trim() === '' ? 'border-red-300' : 'border-fase-light-gold'
+                          : 'border-fase-light-gold'
+                      }`}
+                    />
                   </div>
-                )}
+                  <div className="w-24">
+                    <select
+                      value={gwpCurrency}
+                      onChange={(e) => setGwpCurrency(e.target.value)}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    >
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                      <option value="USD">USD</option>
+                    </select>
+                  </div>
+                </div>
+                <p className="text-xs text-fase-black mt-1">
+                  Enter your annual gross written premiums in millions of {gwpCurrency}.
+                </p>
+              </div>
+
+              {/* Business Details Questions */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    1. Please list the principal lines of business you are currently underwriting?
+                  </label>
+                  <textarea
+                    value={principalLines}
+                    onChange={(e) => setPrincipalLines(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    placeholder="Describe your current lines of business..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    2. Do you have current plans to write additional lines of business in the coming year? If so, please describe them?
+                  </label>
+                  <textarea
+                    value={additionalLines}
+                    onChange={(e) => setAdditionalLines(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    placeholder="Describe any planned new lines of business..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    3. Please list, in as much detail as possible, your principal target client populations?
+                  </label>
+                  <textarea
+                    value={targetClients}
+                    onChange={(e) => setTargetClients(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    placeholder="Describe your target client populations in detail..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    4. Please list the national market[s] in which you currently do business?
+                  </label>
+                  <textarea
+                    value={currentMarkets}
+                    onChange={(e) => setCurrentMarkets(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    placeholder="List the countries/markets where you currently operate..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    5. Do you have plans to write business in additional national markets in the coming year? If so where?
+                  </label>
+                  <textarea
+                    value={plannedMarkets}
+                    onChange={(e) => setPlannedMarkets(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    placeholder="Describe any planned market expansion..."
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -1812,7 +1879,9 @@ export default function IntegratedRegisterForm() {
               {membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums && (
                 <div className="md:col-span-2">
                   <span className="text-fase-navy font-medium">Gross Written Premiums:</span>
-                  <p className="text-fase-black">{grossWrittenPremiums}</p>
+                  <p className="text-fase-black">
+                    {gwpCurrency} {parseFloat(grossWrittenPremiums).toFixed(1)} million
+                  </p>
                 </div>
               )}
             </div>
@@ -1941,69 +2010,92 @@ export default function IntegratedRegisterForm() {
 
       {/* Navigation Buttons */}
       {step < 4 && (
-        <div className="flex justify-between pt-6">
-          {step > 1 ? (
-            <Button 
-              type="button"
-              variant="secondary" 
-              onClick={handleBack}
-            >
-              Back
-            </Button>
-          ) : (
-            <div></div>
-          )}
-          
-          {step < 3 ? (
-            <Button 
-              type="button"
-              variant="primary" 
-              onClick={handleNext}
-            >
-              Next
-            </Button>
-          ) : step === 3 ? (
-            <Button 
-              type="button"
-              variant="primary" 
-              onClick={() => {
-                setAttemptedNext(true);
-                
-                // Validate fields before going to payment step
-                if (!addressLine1.trim() || !city.trim() || !country) {
-                  setError("Address information is required");
-                  return;
-                }
-                
-                if (country === 'OTHER' && !customCountry.trim()) {
-                  setError("Please specify your country");
-                  return;
-                }
-                
-                if (membershipType === 'corporate' && organizationType === 'MGA' && !grossWrittenPremiums) {
-                  setError("Gross written premiums are required for MGA memberships");
-                  return;
-                }
-                
-                if (hasOtherAssociations === null) {
-                  setError("Please specify if your organization is a member of other European MGA associations");
-                  return;
-                }
-                
-                if (hasOtherAssociations && otherAssociations.length === 0) {
-                  setError("Please select at least one European MGA association you are a member of");
-                  return;
-                }
+        <div className="pt-6">
+          <div className="flex justify-between">
+            {step > 1 ? (
+              <Button 
+                type="button"
+                variant="secondary" 
+                onClick={handleBack}
+              >
+                Back
+              </Button>
+            ) : (
+              <div></div>
+            )}
+            
+            {step < 3 ? (
+              <Button 
+                type="button"
+                variant="primary" 
+                onClick={handleNext}
+              >
+                Next
+              </Button>
+            ) : step === 3 ? (
+              <Button 
+                type="button"
+                variant="primary" 
+                onClick={() => {
+                  setAttemptedNext(true);
+                  
+                  // Validate fields before going to payment step
+                  if (!addressLine1.trim() || !city.trim() || !country) {
+                    setError("Address information is required");
+                    return;
+                  }
+                  
+                  if (country === 'OTHER' && !customCountry.trim()) {
+                    setError("Please specify your country");
+                    return;
+                  }
+                  
+                  if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
+                    setError("Gross written premiums are required for MGA memberships");
+                    return;
+                  }
+                  
+                  if (hasOtherAssociations === null) {
+                    setError("Please specify if your organization is a member of other European MGA associations");
+                    return;
+                  }
+                  
+                  if (hasOtherAssociations && otherAssociations.length === 0) {
+                    setError("Please select at least one European MGA association you are a member of");
+                    return;
+                  }
 
-                // All validated, go to payment step
-                setError("");
-                setStep(4);
-                setAttemptedNext(false);
-              }}
-            >
-              Continue
-            </Button>
-          ) : null}
+                  // All validated, go to payment step
+                  setError("");
+                  setStep(4);
+                  setAttemptedNext(false);
+                }}
+              >
+                Continue
+              </Button>
+            ) : null}
+          </div>
+          
+          {/* Alternative Options - Only show on step 1 */}
+          {step === 1 && (
+            <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
+              <p className="text-sm text-fase-black mb-4">Already a member?</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <a 
+                  href="/login" 
+                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-navy text-sm font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
+                >
+                  Sign in to existing account
+                </a>
+                <a 
+                  href="/join-company" 
+                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-gold text-sm font-medium rounded-md text-fase-gold bg-white hover:bg-fase-light-blue transition-colors duration-200"
+                >
+                  Join existing company membership
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

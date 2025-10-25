@@ -206,18 +206,26 @@ export const sendInvoiceEmail = functions.https.onCall({
 }, async (request) => {
   try {
     const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
-    logger.info('sendInvoiceEmail called for:', email);
+    logger.info('🟡 sendInvoiceEmail function called');
+    logger.info('📧 Email recipient:', email);
+    logger.info('📄 Invoice number:', invoiceNumber);
+    logger.info('🏢 Organization:', organizationName);
+    logger.info('💰 Total amount:', totalAmount);
+    logger.info('📎 Has PDF attachment:', !!pdfAttachment);
 
     if (!email || !invoiceHTML || !invoiceNumber) {
+      logger.error('❌ Missing required fields:', { email: !!email, invoiceHTML: !!invoiceHTML, invoiceNumber: !!invoiceNumber });
       throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
     }
 
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('🔑 Resend API key configured:', !!resendApiKey);
+    logger.info('🔑 API key length:', resendApiKey?.length || 0);
 
     if (resendApiKey) {
       try {
-        logger.info('Sending invoice email via Resend...');
+        logger.info('📮 Sending invoice email via Resend...');
         
         const emailPayload: any = {
           from: 'FASE <noreply@fasemga.com>',
@@ -246,24 +254,38 @@ export const sendInvoiceEmail = functions.https.onCall({
         });
 
         if (!response.ok) {
-          throw new Error(`Resend API error: ${response.status}`);
+          const errorText = await response.text();
+          logger.error('❌ Resend API error response:', { status: response.status, statusText: response.statusText, body: errorText });
+          throw new Error(`Resend API error: ${response.status} - ${errorText}`);
         }
 
-        logger.info(`Invoice email sent to ${email} via Resend`);
-        return { success: true };
-      } catch (emailError) {
-        logger.error('Resend invoice email error:', emailError);
+        const responseData = await response.json();
+        logger.info('✅ Resend API response:', responseData);
+        logger.info(`✅ Invoice email sent to ${email} via Resend`);
+        return { success: true, messageId: responseData.id };
+      } catch (emailError: any) {
+        logger.error('❌ Resend invoice email error:', emailError);
+        logger.error('❌ Error name:', emailError?.name);
+        logger.error('❌ Error message:', emailError?.message);
+        logger.error('❌ Error stack:', emailError?.stack);
       }
     }
 
     // Fallback: Log to console for development
-    logger.info(`Invoice email for ${email}:`);
-    logger.info(`Subject: FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`);
-    logger.info(`Organization: ${organizationName}`);
+    logger.info(`⚠️ No Resend API key - using fallback logging`);
+    logger.info(`📧 Invoice email for ${email}:`);
+    logger.info(`📧 Subject: FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`);
+    logger.info(`📧 Organization: ${organizationName}`);
 
-    return { success: true };
-  } catch (error) {
-    logger.error('Error sending invoice email:', error);
+    return { success: true, fallback: true };
+  } catch (error: any) {
+    logger.error('❌ Error sending invoice email:', error);
+    logger.error('❌ Error details:', {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack
+    });
     throw new functions.https.HttpsError('internal', 'Failed to send invoice email');
   }
 });
