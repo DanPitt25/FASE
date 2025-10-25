@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import CTASection from '../components/CTASection';
 import ContentHero from '../components/ContentHero';
 import Button from '../components/Button';
@@ -24,13 +25,12 @@ export default function Page() {
   const { elementRef: ribbon3Ref, isVisible: ribbon3Visible } = useScrollAnimation();
   
   const cities = [
-    { name: 'Business Meeting 1', image: '/AdobeStock_1406443128.jpeg' },
-    { name: 'Business Meeting 2', image: '/AdobeStock_1606166593.jpeg' },
-    { name: 'Business Meeting 3', image: '/AdobeStock_172545168.jpeg' },
-    { name: 'Business Meeting 4', image: '/AdobeStock_217797984.jpeg' },
-    { name: 'Business Meeting 5', image: '/AdobeStock_374018940.jpeg' },
-    { name: 'Business Meeting 6', image: '/AdobeStock_481244965.jpeg' },
-    { name: 'Business Meeting 7', image: '/AdobeStock_999103753.jpeg' }
+    { name: 'Motorcycle', image: '/motorcycle.jpeg' },
+    { name: 'Seated', image: '/seated.jpg' },
+    { name: 'Early Morning', image: '/earlyMorning.jpg' },
+    { name: 'Computer', image: '/computer.jpeg' },
+    { name: 'Conference Wood', image: '/conferenceWood.jpg' },
+    { name: 'Airplane', image: '/airplane.jpeg' }
   ];
 
   const services = [
@@ -224,11 +224,14 @@ export default function Page() {
                 index === currentImageIndex ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              <img
+              <Image
                 src={city.image}
                 alt={city.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
+                priority={index === 0}
+                sizes="(max-width: 768px) 0vw, (max-width: 1280px) 60vw, 67vw"
               />
             </div>
           ))}

@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
+import Image from 'next/image';
 import PageLayout from '../../../components/PageLayout';
 import TitleHero from '../../../components/TitleHero';
 import ContentHero from '../../../components/ContentHero';
@@ -14,7 +15,7 @@ export default function WhoWeArePage() {  return (
           id="hero"
           title="Who We Are"
           useDefaultSubtitle={true}
-          backgroundImage="/paris.jpg"
+          backgroundImage="/conferenceWood.jpg"
           fullHeight={true}
         />
 
@@ -53,9 +54,11 @@ export default function WhoWeArePage() {  return (
               {/* Image Placeholder */}
               <div className="relative">
                 <div className="aspect-w-4 aspect-h-3  overflow-hidden shadow-2xl">
-                  <img 
-                    src="/london.jpg" 
+                  <Image 
+                    src="/conference.jpeg" 
                     alt="European Business District" 
+                    width={600}
+                    height={384}
                     className="w-full h-96 object-cover"
                     style={{
                       filter: 'brightness(0.9) contrast(1.1) saturate(1.2)'
@@ -136,16 +139,17 @@ export default function WhoWeArePage() {  return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Leadership placeholder cards */}
               {[
-                { name: "[Name]", role: "[Chief Executive Officer]", location: "London", image: "/london.jpg" },
-                { name: "[Name]", role: "[Head of European Operations]", location: "Hamburg", image: "/hamburg.jpg" },
-                { name: "[Name]", role: "[Director of Member Relations]", location: "Paris", image: "/paris.jpg" }
+                { name: "[Name]", role: "[Chief Executive Officer]", location: "London", image: "/seated.jpg" },
+                { name: "[Name]", role: "[Head of European Operations]", location: "Hamburg", image: "/earlyMorning.jpg" },
+                { name: "[Name]", role: "[Director of Member Relations]", location: "Paris", image: "/computer.jpeg" }
               ].map((leader, index) => (
                 <div key={index} className="bg-white  shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                   <div className="relative h-64 overflow-hidden">
-                    <img 
+                    <Image 
                       src={leader.image} 
                       alt={`${leader.name} - ${leader.location}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                       style={{ filter: 'brightness(0.9) contrast(1.1)' }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/60 to-transparent"></div>

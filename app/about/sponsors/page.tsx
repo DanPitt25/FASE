@@ -13,7 +13,7 @@ export default function SponsorsPage() {  return (
           id="hero"
           title="Our Sponsors"
           useDefaultSubtitle={true}
-          backgroundImage="/hamburg.jpg"
+          backgroundImage="/glass.jpg"
           fullHeight={true}
         />
 

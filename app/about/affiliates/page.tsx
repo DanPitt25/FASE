@@ -12,7 +12,7 @@ export default function AffiliatesPage() {  return (
           id="hero"
           title="Affiliates & Associates"
           useDefaultSubtitle={true}
-          backgroundImage="/amsterdam.jpg"
+          backgroundImage="/airplane.jpeg"
           fullHeight={true}
         />
 

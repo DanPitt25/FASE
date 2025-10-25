@@ -12,7 +12,7 @@ export default function CommitteesPage() {  return (
           id="hero"
           title="Advisory Board & Governance"
           useDefaultSubtitle={true}
-          backgroundImage="/rome.jpg"
+          backgroundImage="/seminar.jpg"
           fullHeight={true}
         />
 
@@ -81,10 +81,10 @@ export default function CommitteesPage() {  return (
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { name: "[Name]", role: "[Executive Chair]", location: "Germany", image: "/hamburg.jpg" },
-                { name: "[Name]", role: "[Technical Lead]", location: "United Kingdom", image: "/london.jpg" },
-                { name: "[Name]", role: "[Events Director]", location: "Italy", image: "/rome.jpg" },
-                { name: "[Name]", role: "[Regulatory Affairs]", location: "France", image: "/paris.jpg" }
+                { name: "[Name]", role: "[Executive Chair]", location: "Germany", image: "/wires.jpeg" },
+                { name: "[Name]", role: "[Technical Lead]", location: "United Kingdom", image: "/nightCity.jpeg" },
+                { name: "[Name]", role: "[Events Director]", location: "Italy", image: "/airportMan.jpeg" },
+                { name: "[Name]", role: "[Regulatory Affairs]", location: "France", image: "/consideration.jpg" }
               ].map((member, index) => (
                 <div key={index} className="bg-white  shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
                   <div className="relative h-48 overflow-hidden">
