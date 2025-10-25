@@ -130,7 +130,8 @@ const ValidatedSelect = ({
 
 export default function IntegratedRegisterForm() {
   // Auth fields
-  const [personalName, setPersonalName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -151,12 +152,13 @@ export default function IntegratedRegisterForm() {
   // Auto-fill primary contact when user selects "I am the primary contact"
   useEffect(() => {
     if (registrantRole === 'primary_contact') {
-      setPrimaryContactName(personalName);
+      const fullName = `${firstName} ${surname}`.trim();
+      setPrimaryContactName(fullName);
       setPrimaryContactEmail(email);
       setPrimaryContactJobTitle(registrantJobTitle);
       // Note: Phone is not available from personal info, user must enter it
     }
-  }, [registrantRole, personalName, email, registrantJobTitle]);
+  }, [registrantRole, firstName, surname, email, registrantJobTitle]);
   
   // Address fields
   const [addressLine1, setAddressLine1] = useState("");
@@ -256,9 +258,10 @@ export default function IntegratedRegisterForm() {
     
     if (step === 1) {
       // Validate auth fields
-      const authRequiredFields = ['personalName', 'email', 'password', 'confirmPassword'];
+      const authRequiredFields = ['firstName', 'surname', 'email', 'password', 'confirmPassword'];
       const authFieldValues = {
-        personalName,
+        firstName,
+        surname,
         email,
         password,
         confirmPassword
@@ -289,9 +292,15 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      // Just send verification code without creating any accounts
+      // Check domain before sending verification code
       try {
         setLoading(true);
+        
+        // Check if domain already exists
+        const domainExists = await checkDomainExists(email);
+        if (domainExists) {
+          throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
+        }
         
         // Send verification code (no account creation yet)
         await sendVerificationCode(email);
@@ -306,7 +315,8 @@ export default function IntegratedRegisterForm() {
       }
     } else if (step === 2) {
       // Validate membership basic fields
-      const orgName = membershipType === 'individual' ? personalName : organizationName;
+      const fullName = `${firstName} ${surname}`.trim();
+      const orgName = membershipType === 'individual' ? fullName : organizationName;
       if (!orgName.trim()) {
         setError("Organization name is required");
         return;
@@ -391,6 +401,62 @@ export default function IntegratedRegisterForm() {
     return baseFee;
   };
 
+  const checkDomainExists = async (emailAddress: string): Promise<boolean> => {
+    try {
+      const domain = emailAddress.split('@')[1]?.toLowerCase();
+      if (!domain) return false;
+
+      const { collection, query, where, getDocs } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+
+      // Check accounts collection for any email with the same domain
+      const accountsRef = collection(db, 'accounts');
+      const accountsQuery = query(accountsRef);
+      const accountsSnapshot = await getDocs(accountsQuery);
+
+      // Check if any account has an email with the same domain
+      for (const doc of accountsSnapshot.docs) {
+        const data = doc.data();
+        if (data.email) {
+          const existingDomain = data.email.split('@')[1]?.toLowerCase();
+          if (existingDomain === domain) {
+            return true;
+          }
+        }
+      }
+
+      // Also check company members subcollections
+      for (const accountDoc of accountsSnapshot.docs) {
+        const data = accountDoc.data();
+        if (data.isCompanyAccount) {
+          try {
+            const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+            const membersSnapshot = await getDocs(membersRef);
+            
+            for (const memberDoc of membersSnapshot.docs) {
+              const memberData = memberDoc.data();
+              if (memberData.email) {
+                const memberDomain = memberData.email.split('@')[1]?.toLowerCase();
+                if (memberDomain === domain) {
+                  return true;
+                }
+              }
+            }
+          } catch (error) {
+            // Continue if we can't access members subcollection
+            console.warn('Could not check members for company:', accountDoc.id);
+          }
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error checking domain existence:', error);
+      // If we can't check, allow the registration to proceed
+      return false;
+    }
+  };
+
   const createAccountAndMembership = async (status: 'pending_payment' | 'pending_invoice') => {
     setLoading(true);
     setError("");
@@ -398,12 +464,18 @@ export default function IntegratedRegisterForm() {
     let userToCleanup: any = null;
 
     try {
+      // Check if domain already exists before creating account
+      const domainExists = await checkDomainExists(email);
+      if (domainExists) {
+        throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
+      }
       // Step 1: Prepare all data first (including logo upload) before any account creation
       let logoUrl = '';
       if (logoFile) {
         try {
           // Create clean identifier for logo filename
-          const cleanOrgName = (membershipType === 'corporate' ? organizationName : personalName)
+          const fullName = `${firstName} ${surname}`.trim();
+          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
             .toLowerCase().replace(/[^a-z0-9]/g, '_');
           
           // Use direct Firebase Storage upload
@@ -424,10 +496,11 @@ export default function IntegratedRegisterForm() {
       userToCleanup = user; // Store for potential cleanup
       
       // Create display name
+      const fullName = `${firstName} ${surname}`.trim();
       const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
       const displayName = orgForAuth && orgForAuth.trim()
-        ? `${personalName} (${orgForAuth})`
-        : personalName;
+        ? `${fullName} (${orgForAuth})`
+        : fullName;
       
       await updateProfile(user, { displayName });
 
@@ -492,7 +565,7 @@ export default function IntegratedRegisterForm() {
           const memberRecord = {
             id: user.uid,
             email: user.email!,
-            personalName,
+            personalName: fullName,
             jobTitle: registrantJobTitle,
             isPrimaryContact: registrantRole === 'primary_contact',
             joinedAt: serverTimestamp(),
@@ -517,8 +590,8 @@ export default function IntegratedRegisterForm() {
             displayName: user.displayName,
             status,
             membershipType,
-            personalName,
-            organizationName: personalName,
+            personalName: fullName,
+            organizationName: fullName,
             paymentUserId: user.uid, // For webhook payment processing
             primaryContact: {
               name: primaryContactName,
@@ -621,7 +694,8 @@ export default function IntegratedRegisterForm() {
       }
       
       // Create Stripe checkout session
-      const orgName = membershipType === 'individual' ? personalName : organizationName;
+      const fullName = `${firstName} ${surname}`.trim();
+      const orgName = membershipType === 'individual' ? fullName : organizationName;
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -711,7 +785,7 @@ export default function IntegratedRegisterForm() {
               userEmail: email,
               membershipData: {
                 membershipType,
-                organizationName: membershipType === 'corporate' ? organizationName : personalName,
+                organizationName: membershipType === 'corporate' ? organizationName : fullName,
                 organizationType: membershipType === 'corporate' ? organizationType : 'individual',
                 grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? grossWrittenPremiums : undefined,
                 primaryContact: {
@@ -766,7 +840,8 @@ export default function IntegratedRegisterForm() {
       if (logoFile) {
         try {
           // Create clean identifier for logo filename
-          const cleanOrgName = (membershipType === 'corporate' ? organizationName : personalName)
+          const fullName = `${firstName} ${surname}`.trim();
+          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
             .toLowerCase().replace(/[^a-z0-9]/g, '_');
           
           // Use direct Firebase Storage upload
@@ -841,10 +916,11 @@ export default function IntegratedRegisterForm() {
         
         // Prepare member document
         const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', auth.currentUser.uid);
+        const fullName = `${firstName} ${surname}`.trim();
         const memberRecord = {
           id: auth.currentUser.uid,
           email: auth.currentUser.email!,
-          personalName,
+          personalName: fullName,
           jobTitle: registrantJobTitle,
           isPrimaryContact: registrantRole === 'primary_contact',
           joinedAt: serverTimestamp(),
@@ -864,14 +940,15 @@ export default function IntegratedRegisterForm() {
         
         const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
         
+        const fullName = `${firstName} ${surname}`.trim();
         const dataToWrite = {
           // Keep existing fields and add new ones
           email: auth.currentUser.email,
           displayName: auth.currentUser.displayName,
           status: 'pending_payment',
           membershipType,
-          personalName,
-          organizationName: personalName,
+          personalName: fullName,
+          organizationName: fullName,
           paymentUserId: auth.currentUser.uid, // For webhook payment processing
           primaryContact: {
             name: primaryContactName,
@@ -1043,17 +1120,31 @@ export default function IntegratedRegisterForm() {
             <p className="text-fase-black text-sm">We&apos;ll create your account and membership application together</p>
           </div>
 
-          <ValidatedInput
-            label="Personal Name"
-            fieldKey="personalName"
-            value={personalName}
-            onChange={setPersonalName}
-            placeholder="Your full name"
-            required
-            touchedFields={touchedFields}
-            attemptedNext={attemptedNext}
-            markFieldTouched={markFieldTouched}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ValidatedInput
+              label="Name"
+              fieldKey="firstName"
+              value={firstName}
+              onChange={setFirstName}
+              placeholder="Your first name"
+              required
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+            />
+            
+            <ValidatedInput
+              label="Surname"
+              fieldKey="surname"
+              value={surname}
+              onChange={setSurname}
+              placeholder="Your surname"
+              required
+              touchedFields={touchedFields}
+              attemptedNext={attemptedNext}
+              markFieldTouched={markFieldTouched}
+            />
+          </div>
           
           <ValidatedInput
             label="Email"
@@ -1144,8 +1235,9 @@ export default function IntegratedRegisterForm() {
                 }`}
                 onClick={() => {
                   setMembershipType('individual');
-                  setOrganizationName(personalName);
-                  setPrimaryContactName(personalName);
+                  const fullName = `${firstName} ${surname}`.trim();
+                  setOrganizationName(fullName);
+                  setPrimaryContactName(fullName);
                   setPrimaryContactEmail(email);
                 }}
               >
@@ -1639,7 +1731,7 @@ export default function IntegratedRegisterForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-fase-navy font-medium">Organization:</span>
-                <p className="text-fase-black">{membershipType === 'individual' ? personalName : organizationName}</p>
+                <p className="text-fase-black">{membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName}</p>
               </div>
               
               <div>

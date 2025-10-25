@@ -98,7 +98,7 @@ export default function JoinPage() {
       imagePosition: 'left' as const,
       buttons: [
         {
-          text: 'Apply Now',
+          text: 'Join',
           href: '/register',
           variant: 'primary' as const
         },

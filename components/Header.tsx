@@ -235,7 +235,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     {t('sign_out')}
                   </button>
                 ) : (
-                  <Button href="/login" variant="primary" size="small">{t('sign_in')}</Button>
+                  <div className="flex items-center space-x-2">
+                    <Button href="/login" variant="secondary" size="small">{t('sign_in')}</Button>
+                    <Button href="/join" variant="primary" size="small">{t('join_us')}</Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -333,7 +336,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 </button>
               </div>
             ) : (
-              <Button href="/login" variant="primary" size="medium" className="w-full text-center mt-2">{t('sign_in')}</Button>
+              <div className="space-y-2 mt-2">
+                <Button href="/login" variant="secondary" size="medium" className="w-full text-center">{t('sign_in')}</Button>
+                <Button href="/join" variant="primary" size="medium" className="w-full text-center">{t('join_us')}</Button>
+              </div>
             )}
           </div>
         </div>
