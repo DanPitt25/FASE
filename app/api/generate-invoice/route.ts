@@ -227,15 +227,6 @@ export async function POST(request: NextRequest) {
       console.log('User email:', userEmail);
       console.log('Invoice number:', invoiceNumber);
       
-      const { httpsCallable } = await import('firebase/functions');
-      console.log('Firebase functions imported successfully');
-      
-      const { functions } = await import('../../../lib/firebase');
-      console.log('Firebase functions instance imported');
-      
-      const sendInvoiceEmail = httpsCallable(functions, 'sendInvoiceEmail');
-      console.log('httpsCallable created for sendInvoiceEmail');
-      
       const emailData: any = { 
         email: userEmail, 
         invoiceHTML,
@@ -253,16 +244,23 @@ export async function POST(request: NextRequest) {
         console.log('No PDF attachment - sending HTML email only');
       }
       
-      console.log('Calling sendInvoiceEmail function with data:', {
-        email: emailData.email,
-        invoiceNumber: emailData.invoiceNumber,
-        organizationName: emailData.organizationName,
-        totalAmount: emailData.totalAmount,
-        hasPdfAttachment: !!emailData.pdfAttachment
+      // Call Firebase Function via HTTP
+      const response = await fetch(`https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net/sendInvoiceEmail`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: emailData
+        }),
       });
-      
-      const result = await sendInvoiceEmail(emailData);
-      console.log('sendInvoiceEmail function result:', result);
+
+      if (!response.ok) {
+        throw new Error(`Firebase Function error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Invoice email sent successfully:', result);
       
       emailSent = true;
       console.log('✅ Invoice email sent successfully');
