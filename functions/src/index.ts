@@ -4,7 +4,16 @@ import * as admin from "firebase-admin";
 
 // Initialize Firebase Admin
 if (admin.apps.length === 0) {
-  admin.initializeApp();
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+    : undefined;
+
+  admin.initializeApp({
+    credential: serviceAccount 
+      ? admin.credential.cert(serviceAccount)
+      : admin.credential.applicationDefault(),
+    projectId: process.env.FIREBASE_PROJECT_ID || 'fase-site',
+  });
 }
 
 // Start writing Firebase Functions
@@ -68,6 +77,14 @@ export const sendVerificationCode = functions.https.onCall({
       logger.warn(`Rate limit exceeded for email: ${email}`);
       throw new functions.https.HttpsError('resource-exhausted', 'Too many verification attempts. Please wait before trying again.');
     }
+
+    // Store verification code in Firestore
+    const db = admin.firestore();
+    await db.collection('verification_codes').doc(email).set({
+      code: code,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      email: email
+    });
 
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
@@ -206,26 +223,18 @@ export const sendInvoiceEmail = functions.https.onCall({
 }, async (request) => {
   try {
     const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
-    logger.info('🟡 sendInvoiceEmail function called');
-    logger.info('📧 Email recipient:', email);
-    logger.info('📄 Invoice number:', invoiceNumber);
-    logger.info('🏢 Organization:', organizationName);
-    logger.info('💰 Total amount:', totalAmount);
-    logger.info('📎 Has PDF attachment:', !!pdfAttachment);
+    logger.info('sendInvoiceEmail called for:', email);
 
     if (!email || !invoiceHTML || !invoiceNumber) {
-      logger.error('❌ Missing required fields:', { email: !!email, invoiceHTML: !!invoiceHTML, invoiceNumber: !!invoiceNumber });
       throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
     }
 
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
-    logger.info('🔑 Resend API key configured:', !!resendApiKey);
-    logger.info('🔑 API key length:', resendApiKey?.length || 0);
 
     if (resendApiKey) {
       try {
-        logger.info('📮 Sending invoice email via Resend...');
+        logger.info('Sending invoice email via Resend...');
         
         const emailPayload: any = {
           from: 'FASE <noreply@fasemga.com>',
@@ -254,38 +263,24 @@ export const sendInvoiceEmail = functions.https.onCall({
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          logger.error('❌ Resend API error response:', { status: response.status, statusText: response.statusText, body: errorText });
-          throw new Error(`Resend API error: ${response.status} - ${errorText}`);
+          throw new Error(`Resend API error: ${response.status}`);
         }
 
-        const responseData = await response.json();
-        logger.info('✅ Resend API response:', responseData);
-        logger.info(`✅ Invoice email sent to ${email} via Resend`);
-        return { success: true, messageId: responseData.id };
-      } catch (emailError: any) {
-        logger.error('❌ Resend invoice email error:', emailError);
-        logger.error('❌ Error name:', emailError?.name);
-        logger.error('❌ Error message:', emailError?.message);
-        logger.error('❌ Error stack:', emailError?.stack);
+        logger.info(`Invoice email sent to ${email} via Resend`);
+        return { success: true };
+      } catch (emailError) {
+        logger.error('Resend invoice email error:', emailError);
       }
     }
 
     // Fallback: Log to console for development
-    logger.info(`⚠️ No Resend API key - using fallback logging`);
-    logger.info(`📧 Invoice email for ${email}:`);
-    logger.info(`📧 Subject: FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`);
-    logger.info(`📧 Organization: ${organizationName}`);
+    logger.info(`Invoice email for ${email}:`);
+    logger.info(`Subject: FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`);
+    logger.info(`Organization: ${organizationName}`);
 
-    return { success: true, fallback: true };
-  } catch (error: any) {
-    logger.error('❌ Error sending invoice email:', error);
-    logger.error('❌ Error details:', {
-      name: error?.name,
-      message: error?.message,
-      code: error?.code,
-      stack: error?.stack
-    });
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending invoice email:', error);
     throw new functions.https.HttpsError('internal', 'Failed to send invoice email');
   }
 });
