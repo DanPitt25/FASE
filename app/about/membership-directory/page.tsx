@@ -11,7 +11,7 @@ export default function MembershipDirectoryPage() {
         'FASE\'s member directory showcases the diverse community of MGAs, capacity providers, and service partners across Europe. Discover new business opportunities and connect with industry professionals.',
         'Our comprehensive directory features advanced search capabilities, detailed member profiles, and direct connection tools to help you build meaningful business relationships.'
       ],
-      image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&h=400&fit=crop',
+      image: '/consideration.jpg',
       imageAlt: 'Professional networking directory',
       imagePosition: 'right' as const
     },

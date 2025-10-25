@@ -33,7 +33,7 @@ export default function LeadershipPage() {
   return (
     <ContentPageLayout
       title="Leadership"
-      bannerImage="/conference.jpeg"
+      bannerImage="/seminar.jpg"
       bannerImageAlt="FASE leadership team"
       sections={sections}
       currentPage="leadership"

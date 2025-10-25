@@ -50,7 +50,7 @@ export default function EntrepreneurialUnderwriterPage() {
   return (
     <ContentPageLayout
       title="Entrepreneurial Underwriter"
-      bannerImage="/conference.jpeg"
+      bannerImage="/consideration.jpg"
       bannerImageAlt="Entrepreneurial underwriting"
       sections={sections}
       currentPage="entrepreneurial-underwriter"

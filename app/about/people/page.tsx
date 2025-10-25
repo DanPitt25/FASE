@@ -37,7 +37,7 @@ Her articles on investing have featured in the <i>New York Times</i>, the <i>Int
   return (
     <ContentPageLayout
       title="Our People"
-      bannerImage="/conference.jpeg"
+      bannerImage="/glass.jpg"
       bannerImageAlt="FASE leadership and team"
       sections={sections}
       currentPage="people"

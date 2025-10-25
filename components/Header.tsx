@@ -235,7 +235,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     {t('sign_out')}
                   </button>
                 ) : (
-                  <Button href="/register" variant="primary" size="small">{t('join_us')}</Button>
+                  <Button href="/register" variant="primary" size="small" className="ml-4">{t('join_us')}</Button>
                 )}
               </div>
             </div>

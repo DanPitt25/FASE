@@ -11,7 +11,7 @@ export default function NewsPage() {
         'FASE provides timely news and insights about the European MGA landscape, regulatory developments, and market trends that impact our community.',
         'Our news platform will keep members informed about industry developments, FASE activities, and opportunities for professional growth and collaboration.'
       ],
-      image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&h=400&fit=crop',
+      image: '/conference.jpeg',
       imageAlt: 'Business news and analysis',
       imagePosition: 'right' as const
     },

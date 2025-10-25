@@ -11,7 +11,7 @@ export default function KnowledgePage() {
         'FASE\'s knowledge platform provides comprehensive resources for professional development, regulatory guidance, and industry best practices across European MGA markets.',
         'Our curated content helps members stay current with evolving regulations, master new skills, and implement proven strategies for sustainable growth in delegated underwriting.'
       ],
-      image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&h=400&fit=crop',
+      image: '/seminar.jpg',
       imageAlt: 'Professional education and learning',
       imagePosition: 'right' as const
     },

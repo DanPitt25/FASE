@@ -11,7 +11,7 @@ export default function SponsorsPage() {
         'Partner with FASE to connect with Europe\'s leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.',
         'From conference sponsorship to thought leadership platforms, we offer tailored partnership packages that align with your business objectives and market reach goals.'
       ],
-      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop',
+      image: '/glass.jpg',
       imageAlt: 'Professional conference and networking',
       imagePosition: 'right' as const
     },

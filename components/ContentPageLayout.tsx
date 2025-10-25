@@ -594,7 +594,7 @@ export default function ContentPageLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-white font-lato">
+    <div className="flex min-h-screen bg-white font-lato overflow-x-hidden">
       {/* Main Content Container */}
       <div className="flex-1 relative">
         <Header currentPage={currentPage} />

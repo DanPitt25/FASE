@@ -208,7 +208,7 @@ export default function Page() {
   }, [sections]);
 
   return (
-    <div className="flex min-h-screen bg-white font-lato">
+    <div className="flex min-h-screen bg-white font-lato overflow-x-hidden">
       {/* Main Content Container */}
       <div className="flex-1 relative">
         <Header currentPage="home" />
@@ -220,7 +220,7 @@ export default function Page() {
           {cities.map((city, index) => (
             <div
               key={city.name}
-              className={`absolute inset-0 transition-opacity duration-[8000ms] ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-[6000ms] ease-in-out ${
                 index === currentImageIndex ? 'opacity-100' : 'opacity-0'
               }`}
             >
@@ -228,7 +228,11 @@ export default function Page() {
                 src={city.image}
                 alt={city.name}
                 fill
-                className="object-cover"
+                className={`object-cover ${
+                  city.name === 'Motorcycle' || city.name === 'Early Morning' 
+                    ? 'object-[25%_center]' 
+                    : ''
+                }`}
                 style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
                 priority={index === 0}
                 sizes="(max-width: 768px) 0vw, (max-width: 1280px) 60vw, 67vw"
@@ -239,7 +243,7 @@ export default function Page() {
           <div 
             className="absolute inset-0" 
             style={{
-              background: `linear-gradient(to left, transparent 0%, transparent 40%, rgba(255,255,255,0.8) 70%, #ffffff 85%)`
+              background: `linear-gradient(to left, transparent 0%, transparent 60%, rgba(255,255,255,0.8) 80%, #ffffff 95%)`
             }}
           />
         </div>
@@ -282,7 +286,7 @@ export default function Page() {
             }`}>
               <div className="transform transition-all duration-700 hover:scale-105">
                 <img 
-                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop" 
+                  src="/conferenceWood.jpg" 
                   alt="Insurance professionals collaborating"
                   className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                 />

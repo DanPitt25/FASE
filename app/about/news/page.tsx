@@ -44,7 +44,7 @@ export default function NewsPage() {
   return (
     <ContentPageLayout
       title="News"
-      bannerImage="/conference.jpeg"
+      bannerImage="/conferenceWood.jpg"
       bannerImageAlt="FASE news and updates"
       sections={sections}
       currentPage="news"

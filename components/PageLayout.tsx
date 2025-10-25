@@ -16,7 +16,7 @@ export default function PageLayout({
   const [headerLoaded, setHeaderLoaded] = useState(false);
 
   return (
-    <div className={`min-h-screen bg-fase-light-blue font-lato transition-opacity duration-300 ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-fase-light-blue font-lato transition-opacity duration-300 overflow-x-hidden ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <Header currentPage={currentPage} onLoad={() => setHeaderLoaded(true)} />
       
       {/* Main Content */}
