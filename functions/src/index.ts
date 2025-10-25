@@ -78,14 +78,6 @@ export const sendVerificationCode = functions.https.onCall({
       throw new functions.https.HttpsError('resource-exhausted', 'Too many verification attempts. Please wait before trying again.');
     }
 
-    // Store verification code in Firestore
-    const db = admin.firestore();
-    await db.collection('verification_codes').doc(email).set({
-      code: code,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      email: email
-    });
-
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
     logger.info('Resend API key configured:', !!resendApiKey);
