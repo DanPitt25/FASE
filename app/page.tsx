@@ -285,7 +285,7 @@ export default function Page() {
             }`}>
               <div className="transform transition-all duration-700 hover:scale-105">
                 <img 
-                  src="/conferenceWood.jpg" 
+                  src="/conference.jpg" 
                   alt="Insurance professionals collaborating"
                   className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                 />
