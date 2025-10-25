@@ -2,18 +2,9 @@ import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin with default credentials
 if (admin.apps.length === 0) {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-    : undefined;
-
-  admin.initializeApp({
-    credential: serviceAccount 
-      ? admin.credential.cert(serviceAccount)
-      : admin.credential.applicationDefault(),
-    projectId: process.env.FIREBASE_PROJECT_ID || 'fase-site',
-  });
+  admin.initializeApp();
 }
 
 // Start writing Firebase Functions
@@ -88,8 +79,8 @@ export const sendVerificationCode = functions.https.onCall({
       used: false
     });
 
-    // Check for Resend API key using Firebase config
-    const resendApiKey = functions.config().resend?.api_key;
+    // Check for Resend API key using environment variables
+    const resendApiKey = process.env.RESEND_API_KEY;
     logger.info('Resend API key configured:', !!resendApiKey);
 
     if (resendApiKey) {
