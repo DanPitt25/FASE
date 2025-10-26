@@ -224,6 +224,7 @@ export const sendInvoiceEmail = functions.https.onCall({
 
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('Resend API key configured:', !!resendApiKey);
 
     if (resendApiKey) {
       try {
@@ -291,6 +292,7 @@ export const sendJoinRequestNotification = functions.https.onCall({
 
     // Check for Resend API key using environment variables
     const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('Resend API key configured:', !!resendApiKey);
 
     const isApproved = status === 'approved';
     const subject = `FASE Join Request ${isApproved ? 'Approved' : 'Update'} - ${companyName}`;
