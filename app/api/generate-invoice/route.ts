@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
       const sectionGap = 25;
       
       // Helper function
-      const formatEuro = (amount) => `€ ${amount}`;
+      const formatEuro = (amount: number) => `€ ${amount}`;
       
       // Current date and due date
       const currentDate = new Date().toLocaleDateString('en-GB');
@@ -467,7 +467,7 @@ export async function POST(request: NextRequest) {
       pdfBuffer = await pdfDoc.save();
       console.log('PDF generated successfully, size:', pdfBuffer.length);
       
-    } catch (pdfError) {
+    } catch (pdfError: any) {
       console.error('Failed to generate branded PDF:', pdfError);
       console.error('PDF Error stack:', pdfError.stack);
       // Continue without PDF - will send HTML email instead
