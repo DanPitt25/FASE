@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
-import puppeteer from 'puppeteer';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Initialize Firebase Admin
 const initializeAdmin = async () => {
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db } = await initializeAdmin();
+    // const { db } = await initializeAdmin(); // Skip Firebase for PDF testing
 
     // Generate invoice number
     const invoiceNumber = `FASE-${Date.now()}-${userId.slice(-6)}`;
@@ -178,45 +180,310 @@ export async function POST(request: NextRequest) {
     // Generate invoice HTML
     const invoiceHTML = generateInvoiceHTML(membershipData, invoiceNumber, totalAmount);
 
-    // Generate PDF using Puppeteer
+    // Generate branded PDF using the EXACT working approach from standalone script
     let pdfBuffer: Uint8Array | null = null;
     try {
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // For deployment environments
+      console.log('Generating branded invoice PDF...');
+      
+      // Load the cleaned letterhead template
+      const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
+      const letterheadBytes = fs.readFileSync(letterheadPath);
+      const pdfDoc = await PDFDocument.load(letterheadBytes);
+      
+      // Get the first page
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+      const { width, height } = firstPage.getSize();
+      
+      // Embed fonts - using brand fonts (exactly like working script)
+      const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const serifFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+      const serifBoldFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+      
+      // FASE Brand Colors
+      const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
+      const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
+      const faseOrange = rgb(0.706, 0.416, 0.200);    // #B46A33
+      const faseCream = rgb(0.922, 0.910, 0.894);     // #EBE8E4
+      
+      // STANDARD 8.5x11 INVOICE LAYOUT with proper spacing
+      const margins = { left: 50, right: 50, top: 150, bottom: 80 };
+      const contentWidth = width - margins.left - margins.right;
+      const standardLineHeight = 18;
+      const sectionGap = 25;
+      
+      // Helper function
+      const formatEuro = (amount) => `€ ${amount}`;
+      
+      // Current date and due date
+      const currentDate = new Date().toLocaleDateString('en-GB');
+      const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB');
+      
+      // INVOICE HEADER SECTION (starts 150pt from top to avoid letterhead)
+      let currentY = height - margins.top;
+      
+      firstPage.drawText('INVOICE', {
+        x: margins.left,
+        y: currentY,
+        size: 18,
+        font: boldFont,
+        color: faseNavy,
       });
       
-      const page = await browser.newPage();
-      await page.setContent(invoiceHTML, { waitUntil: 'networkidle0' });
+      currentY -= 50; // Space after main header
       
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: {
-          top: '20mm',
-          right: '20mm',
-          bottom: '20mm',
-          left: '20mm'
-        },
-        printBackground: true
+      // BILL TO and INVOICE DETAILS on same line
+      firstPage.drawText('Bill To:', {
+        x: margins.left,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
       });
       
-      await browser.close();
+      // Invoice details (right-aligned)
+      const invoiceDetailsX = width - margins.right - 150;
+      firstPage.drawText(`Invoice #: ${invoiceNumber}`, {
+        x: invoiceDetailsX,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(`Date: ${currentDate}`, {
+        x: invoiceDetailsX,
+        y: currentY - 16,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(`Due Date: ${dueDate}`, {
+        x: invoiceDetailsX,
+        y: currentY - 32,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText('Terms: Net 30', {
+        x: invoiceDetailsX,
+        y: currentY - 48,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 20;
+      const billToLines = [
+        membershipData.organizationName,
+        membershipData.primaryContact.name,
+        membershipData.registeredAddress.line1,
+        membershipData.registeredAddress.line2,
+        `${membershipData.registeredAddress.city}, ${membershipData.registeredAddress.state} ${membershipData.registeredAddress.postalCode}`,
+        membershipData.registeredAddress.country
+      ].filter(line => line && line.trim() !== '');
+      
+      billToLines.forEach((line, index) => {
+        firstPage.drawText(line, {
+          x: margins.left,
+          y: currentY - (index * standardLineHeight),
+          size: 10,
+          font: index === 0 ? boldFont : bodyFont,
+          color: faseBlack,
+        });
+      });
+      
+      currentY -= (billToLines.length * standardLineHeight) + sectionGap;
+      
+      // INVOICE TABLE
+      const rowHeight = 35;
+      const tableY = currentY;
+      const colWidths = [280, 60, 80, 80];
+      const colX = [
+        margins.left,
+        margins.left + colWidths[0],
+        margins.left + colWidths[0] + colWidths[1],
+        margins.left + colWidths[0] + colWidths[1] + colWidths[2]
+      ];
+      
+      // Table header background
+      firstPage.drawRectangle({
+        x: margins.left,
+        y: tableY - rowHeight,
+        width: contentWidth,
+        height: rowHeight,
+        color: faseCream,
+      });
+      
+      // Table headers
+      const headers = ['Description', 'Qty', 'Unit Price', 'Total'];
+      headers.forEach((header, i) => {
+        firstPage.drawText(header, {
+          x: colX[i] + 10,
+          y: tableY - 20,
+          size: 11,
+          font: boldFont,
+          color: faseNavy,
+        });
+      });
+      
+      currentY -= rowHeight;
+      
+      // Invoice item row
+      const membershipDesc = membershipData.membershipType === 'individual' 
+        ? 'FASE Individual Membership - Annual'
+        : `FASE ${membershipData.organizationType} Corporate Membership - Annual`;
+      
+      firstPage.drawText(membershipDesc, {
+        x: colX[0] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+        maxWidth: colWidths[0] - 20,
+      });
+      
+      firstPage.drawText('1', {
+        x: colX[1] + 25,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(formatEuro(totalAmount), {
+        x: colX[2] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(formatEuro(totalAmount), {
+        x: colX[3] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: boldFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 40; // Space for additional details
+      
+      // Additional details (with proper spacing)
+      if (membershipData.organizationType === 'MGA' && membershipData.grossWrittenPremiums) {
+        firstPage.drawText(`Premium Bracket: ${membershipData.grossWrittenPremiums}`, {
+          x: colX[0] + 20,
+          y: currentY,
+          size: 9,
+          font: bodyFont,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+        currentY -= standardLineHeight;
+      }
+      
+      if (membershipData.hasOtherAssociations) {
+        firstPage.drawText('20% European MGA Association Member Discount Applied', {
+          x: colX[0] + 20,
+          y: currentY,
+          size: 9,
+          font: bodyFont,
+          color: faseOrange,
+        });
+        currentY -= standardLineHeight;
+      }
+      
+      currentY -= sectionGap;
+      
+      // TOTAL SECTION
+      const totalSectionWidth = 200;
+      const totalX = width - margins.right - totalSectionWidth;
+      
+      firstPage.drawRectangle({
+        x: totalX,
+        y: currentY - 35,
+        width: totalSectionWidth,
+        height: 35,
+        borderColor: faseNavy,
+        borderWidth: 2,
+      });
+      
+      firstPage.drawText('Total Amount Due:', {
+        x: totalX + 15,
+        y: currentY - 22,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      firstPage.drawText(formatEuro(totalAmount), {
+        x: totalX + totalSectionWidth - 60,
+        y: currentY - 22,
+        size: 13,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      currentY -= 60;
+      
+      // PAYMENT INSTRUCTIONS - Bottom section with tasteful separation line
+      const paymentSectionHeight = 80;
+      
+      // Tasteful separation line above payment instructions
+      firstPage.drawLine({
+        start: { x: margins.left, y: currentY - 10 },
+        end: { x: width - margins.right, y: currentY - 10 },
+        thickness: 1,
+        color: faseNavy,
+      });
+      
+      firstPage.drawText('Payment Instructions:', {
+        x: margins.left,
+        y: currentY - 30,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      const paymentLines = [
+        'Bank Name: [Bank Name]  •  Account Name: Federation of European MGAs',
+        'IBAN: [IBAN Number]  •  BIC/SWIFT: [BIC Code]',
+        `Payment Reference: ${invoiceNumber}`
+      ];
+      
+      paymentLines.forEach((line, index) => {
+        firstPage.drawText(line, {
+          x: margins.left,
+          y: currentY - 50 - (index * standardLineHeight),
+          size: 10,
+          font: bodyFont,
+          color: faseBlack,
+        });
+      });
+      
+      // Save the PDF
+      pdfBuffer = await pdfDoc.save();
+      console.log('PDF generated successfully, size:', pdfBuffer.length);
+      
     } catch (pdfError) {
-      console.error('Failed to generate PDF:', pdfError);
+      console.error('Failed to generate branded PDF:', pdfError);
+      console.error('PDF Error stack:', pdfError.stack);
       // Continue without PDF - will send HTML email instead
     }
     
-    // Store invoice record
-    await db.collection('invoices').doc(invoiceNumber).set({
-      userId,
-      userEmail,
-      membershipData,
-      invoiceNumber,
-      totalAmount,
-      status: 'sent',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    });
+    // Store invoice record (skipped for PDF testing)
+    // await db.collection('invoices').doc(invoiceNumber).set({
+    //   userId,
+    //   userEmail,
+    //   membershipData,
+    //   invoiceNumber,
+    //   totalAmount,
+    //   status: 'sent',
+    //   createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    //   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    // });
 
     // Send invoice via email (using Firebase Functions)
     let emailSent = false;
@@ -239,13 +506,34 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
+        // Replace HTML with simple PDF notification
+        emailData.invoiceHTML = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2D5574;">Your FASE Membership Invoice</h2>
+            <p>Dear ${membershipData.primaryContact.name},</p>
+            <p>Thank you for your FASE membership. Please find your invoice attached as a PDF.</p>
+            <p><strong>Invoice Number:</strong> ${invoiceNumber}<br>
+            <strong>Amount Due:</strong> €${totalAmount}</p>
+            <p>If you have any questions about this invoice, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
+            <p>Best regards,<br>FASE Team</p>
+          </div>
+        `;
         console.log('PDF attachment added to email data');
       } else {
-        console.log('No PDF attachment - sending HTML email only');
+        // If PDF generation failed, send error message instead of HTML fallback
+        emailData.invoiceHTML = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #dc2626;">Invoice Generation Error</h2>
+            <p>We're sorry, but there was an issue generating your invoice PDF.</p>
+            <p>Please contact our support team at <a href="mailto:help@fasemga.com">help@fasemga.com</a> and we'll send your invoice manually.</p>
+            <p>Reference: ${invoiceNumber}</p>
+          </div>
+        `;
+        console.log('PDF generation failed - sending error message');
       }
       
       // Call Firebase Function via HTTP
-      const response = await fetch(`https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net/sendInvoiceEmail`, {
+      const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
