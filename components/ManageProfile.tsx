@@ -41,6 +41,12 @@ export default function ManageProfile() {
   const [error, setError] = useState<string | null>(null);
   const [editingMember, setEditingMember] = useState<EditingMember | null>(null);
   const [saving, setSaving] = useState(false);
+  const [inviting, setInviting] = useState<string | null>(null);
+
+  // Helper function to check if member needs an invite (has generated ID)
+  const memberNeedsInvite = (member: Member) => {
+    return member.id.startsWith('member_');
+  };
 
   // Fetch company members
   useEffect(() => {
@@ -144,6 +150,56 @@ export default function ManageProfile() {
       setMembers(prev => prev.filter(m => m.id !== memberToRemove.id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove member');
+    }
+  };
+
+  const handleInviteMember = async (memberToInvite: Member) => {
+    if (!user || !member) return;
+
+    try {
+      setInviting(memberToInvite.id);
+
+      // Check if user is primary contact
+      const currentMember = members.find(m => m.id === user.uid);
+      if (!currentMember?.isPrimaryContact) {
+        throw new Error('Only primary contacts can invite members');
+      }
+
+      // Create invite link with member data
+      const inviteToken = btoa(JSON.stringify({
+        memberId: memberToInvite.id,
+        companyId: member.organizationId,
+        email: memberToInvite.email,
+        name: memberToInvite.personalName,
+        timestamp: Date.now()
+      }));
+
+      const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+
+      // Send invitation email via API
+      const response = await fetch('/api/send-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: memberToInvite.email,
+          name: memberToInvite.personalName,
+          companyName: member.organizationName,
+          inviteUrl: inviteUrl,
+          inviterName: user.displayName || user.email
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send invitation email');
+      }
+
+      alert(`Invitation sent to ${memberToInvite.personalName} at ${memberToInvite.email}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send invitation');
+    } finally {
+      setInviting(null);
     }
   };
 
@@ -318,6 +374,11 @@ export default function ManageProfile() {
                             You
                           </span>
                         )}
+                        {memberNeedsInvite(memberItem) && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium">
+                            Pending Invite
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-fase-black">{memberItem.email}</p>
                       {memberItem.jobTitle && (
@@ -331,13 +392,24 @@ export default function ManageProfile() {
 
                   {isCurrentUserPrimaryContact && (
                     <div className="flex space-x-2">
-                      <Button
-                        onClick={() => handleEditMember(memberItem)}
-                        variant="secondary"
-                        size="small"
-                      >
-                        Edit
-                      </Button>
+                      {memberNeedsInvite(memberItem) ? (
+                        <Button
+                          onClick={() => handleInviteMember(memberItem)}
+                          disabled={inviting === memberItem.id}
+                          variant="primary"
+                          size="small"
+                        >
+                          {inviting === memberItem.id ? 'Sending...' : 'Send Invite'}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleEditMember(memberItem)}
+                          variant="secondary"
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                      )}
                       {memberItem.id !== user?.uid && (
                         <Button
                           onClick={() => handleRemoveMember(memberItem)}

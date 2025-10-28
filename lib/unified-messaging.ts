@@ -11,9 +11,9 @@ import {
   DocumentData 
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { UnifiedMember, getMembersByStatus, getMembersWithPortalAccess } from './unified-member';
+import { UnifiedMember, getMembersByStatus, getMembersWithPortalAccess, getAllMembers } from './unified-member';
 
-// Messaging interfaces (unchanged)
+// Messaging interfaces
 export interface Message {
   id: string;
   subject: string;
@@ -23,6 +23,7 @@ export interface Message {
   senderEmail: string;
   recipientId?: string;
   recipientType: 'user' | 'all_members' | 'all_admins' | 'all_users';
+  organizationType?: 'MGA' | 'carrier' | 'provider'; // Filter by organization type
   messageType: 'direct' | 'announcement' | 'system';
   priority: 'low' | 'medium' | 'high';
   isRead: boolean;
@@ -43,7 +44,7 @@ export interface UserMessage {
   createdAt: any;
 }
 
-// Alert interfaces (unchanged)
+// Alert interfaces
 export interface Alert {
   id: string;
   title: string;
@@ -52,6 +53,7 @@ export interface Alert {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   targetAudience: 'all' | 'members' | 'admins' | 'specific';
   targetUsers?: string[];
+  organizationType?: 'MGA' | 'carrier' | 'provider'; // Filter by organization type
   isActive: boolean;
   createdAt: any;
   updatedAt: any;
@@ -88,8 +90,8 @@ export const sendMessage = async (messageData: Omit<Message, 'id' | 'createdAt' 
     
     await setDoc(messageDoc, message);
     
-    // Create user message records based on recipient type using unified members
-    await createUserMessagesForRecipientsUnified(messageDoc.id, messageData.recipientType, messageData.recipientId);
+    // Create user message records based on recipient type using account IDs
+    await createUserMessagesForRecipientsUnified(messageDoc.id, messageData.recipientType, messageData.recipientId, messageData.organizationType);
     
     return messageDoc.id;
   } catch (error) {
@@ -98,54 +100,56 @@ export const sendMessage = async (messageData: Omit<Message, 'id' | 'createdAt' 
   }
 };
 
-// Updated recipient handling with unified members
+// Simplified recipient handling using Firebase Auth UIDs only
 const createUserMessagesForRecipientsUnified = async (
   messageId: string, 
   recipientType: string, 
-  recipientId?: string
+  recipientId?: string,
+  organizationType?: 'MGA' | 'carrier' | 'provider'
 ) => {
   try {
-    let recipientIds: string[] = [];
+    let recipientUIDs: string[] = [];
     
     if (recipientType === 'user' && recipientId) {
-      recipientIds = [recipientId];
+      recipientUIDs = [recipientId];
     } else if (recipientType === 'all_members') {
-      // Get all members with portal access (approved + admin)
+      // Get all individual Firebase Auth UIDs with portal access (approved + admin)
       const members = await getMembersWithPortalAccess();
-      recipientIds = members.map(member => member.id);
+      
+      // Filter by organization type if specified
+      const filteredMembers = organizationType 
+        ? members.filter(member => member.organizationType === organizationType)
+        : members;
+      
+      recipientUIDs = filteredMembers.map(member => member.id); // These are Firebase Auth UIDs
     } else if (recipientType === 'all_admins') {
-      // Get all admin members
+      // Get all admin Firebase Auth UIDs
       const admins = await getMembersByStatus('admin');
-      recipientIds = admins.map(admin => admin.id);
+      
+      // Filter by organization type if specified
+      const filteredAdmins = organizationType 
+        ? admins.filter(admin => admin.organizationType === organizationType)
+        : admins;
+      
+      recipientUIDs = filteredAdmins.map(admin => admin.id); // These are Firebase Auth UIDs
     } else if (recipientType === 'all_users') {
-      // Get all unified members (regardless of status)
-      const accountsRef = collection(db, 'accounts');
-      const allAccounts = await getDocs(accountsRef);
+      // Get all Firebase Auth UIDs (regardless of status)
+      const allMembers = await getAllMembers();
       
-      recipientIds = [];
+      // Filter by organization type if specified
+      const filteredMembers = organizationType 
+        ? allMembers.filter(member => member.organizationType === organizationType)
+        : allMembers;
       
-      for (const accountDoc of allAccounts.docs) {
-        const accountData = accountDoc.data();
-        
-        if (accountData.membershipType === 'corporate') {
-          // For corporate accounts, get all members from subcollection
-          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
-          const membersSnapshot = await getDocs(membersRef);
-          const memberIds = membersSnapshot.docs.map(memberDoc => memberDoc.data().firebaseUid).filter(Boolean);
-          recipientIds.push(...memberIds);
-        } else {
-          // For individual accounts, use the account ID directly
-          recipientIds.push(accountDoc.id);
-        }
-      }
+      recipientUIDs = filteredMembers.map(member => member.id); // These are Firebase Auth UIDs
     }
     
-    const userMessagePromises = recipientIds.map(userId => {
+    const userMessagePromises = recipientUIDs.map(uid => {
       const userMessageRef = doc(collection(db, 'userMessages'));
       const userMessage: UserMessage = {
         id: userMessageRef.id,
         messageId,
-        userId,
+        userId: uid, // Using Firebase Auth UID consistently
         isRead: false,
         isDeleted: false,
         createdAt: serverTimestamp()
@@ -154,7 +158,7 @@ const createUserMessagesForRecipientsUnified = async (
     });
     
     await Promise.all(userMessagePromises);
-    console.log(`Created user messages for ${recipientIds.length} recipients`);
+    console.log(`Created user messages for ${recipientUIDs.length} Firebase Auth UIDs`);
   } catch (error) {
     console.error('Error creating user messages for recipients:', error);
     throw error;
@@ -176,9 +180,9 @@ export const createAlert = async (alertData: Omit<Alert, 'id' | 'createdAt' | 'u
     
     await setDoc(alertDoc, alert);
     
-    // Create user alert records using unified members
-    if (alertData.targetAudience === 'all' || alertData.targetAudience === 'members') {
-      await createUserAlertsForAudienceUnified(alertDoc.id, alertData.targetAudience);
+    // Create user alert records using account IDs
+    if (alertData.targetAudience === 'all' || alertData.targetAudience === 'members' || alertData.targetAudience === 'admins') {
+      await createUserAlertsForAudienceUnified(alertDoc.id, alertData.targetAudience, alertData.organizationType);
     } else if (alertData.targetAudience === 'specific' && alertData.targetUsers) {
       await createUserAlertsForUsers(alertDoc.id, alertData.targetUsers);
     }
@@ -190,46 +194,51 @@ export const createAlert = async (alertData: Omit<Alert, 'id' | 'createdAt' | 'u
   }
 };
 
-// Updated alert audience handling
-const createUserAlertsForAudienceUnified = async (alertId: string, audience: 'all' | 'members' | 'admins') => {
+// Simplified alert audience handling using Firebase Auth UIDs only
+const createUserAlertsForAudienceUnified = async (
+  alertId: string, 
+  audience: 'all' | 'members' | 'admins',
+  organizationType?: 'MGA' | 'carrier' | 'provider'
+) => {
   try {
-    let recipientIds: string[] = [];
+    let recipientUIDs: string[] = [];
     
     if (audience === 'admins') {
       const admins = await getMembersByStatus('admin');
-      recipientIds = admins.map(admin => admin.id);
+      
+      // Filter by organization type if specified
+      const filteredAdmins = organizationType 
+        ? admins.filter(admin => admin.organizationType === organizationType)
+        : admins;
+      
+      recipientUIDs = filteredAdmins.map(admin => admin.id); // Firebase Auth UIDs
     } else if (audience === 'members') {
       const members = await getMembersWithPortalAccess();
-      recipientIds = members.map(member => member.id);
+      
+      // Filter by organization type if specified
+      const filteredMembers = organizationType 
+        ? members.filter(member => member.organizationType === organizationType)
+        : members;
+      
+      recipientUIDs = filteredMembers.map(member => member.id); // Firebase Auth UIDs
     } else {
-      // All users
-      const accountsRef = collection(db, 'accounts');
-      const allAccounts = await getDocs(accountsRef);
+      // All members
+      const allMembers = await getAllMembers();
       
-      recipientIds = [];
+      // Filter by organization type if specified
+      const filteredMembers = organizationType 
+        ? allMembers.filter(member => member.organizationType === organizationType)
+        : allMembers;
       
-      for (const accountDoc of allAccounts.docs) {
-        const accountData = accountDoc.data();
-        
-        if (accountData.membershipType === 'corporate') {
-          // For corporate accounts, get all members from subcollection
-          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
-          const membersSnapshot = await getDocs(membersRef);
-          const memberIds = membersSnapshot.docs.map(memberDoc => memberDoc.data().firebaseUid).filter(Boolean);
-          recipientIds.push(...memberIds);
-        } else {
-          // For individual accounts, use the account ID directly
-          recipientIds.push(accountDoc.id);
-        }
-      }
+      recipientUIDs = filteredMembers.map(member => member.id); // Firebase Auth UIDs
     }
     
-    const userAlertPromises = recipientIds.map(userId => {
+    const userAlertPromises = recipientUIDs.map(uid => {
       const userAlertRef = doc(collection(db, 'userAlerts'));
       const userAlert: UserAlert = {
         id: userAlertRef.id,
         alertId,
-        userId,
+        userId: uid, // Using Firebase Auth UID consistently
         isRead: false,
         isDismissed: false,
         createdAt: serverTimestamp()
@@ -238,6 +247,7 @@ const createUserAlertsForAudienceUnified = async (alertId: string, audience: 'al
     });
     
     await Promise.all(userAlertPromises);
+    console.log(`Created user alerts for ${recipientUIDs.length} Firebase Auth UIDs`);
   } catch (error) {
     console.error('Error creating user alerts for audience:', error);
     throw error;
@@ -266,19 +276,227 @@ const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
   }
 };
 
-// All other existing message/alert functions remain the same
-// (getUserMessages, getUserAlerts, markMessageAsRead, etc.)
-// They don't need to change because they work with the userId which remains the same
+// Get messages for a specific user
+export const getUserMessages = async (userId: string): Promise<(Message & UserMessage)[]> => {
+  try {
+    console.log('[DEBUG] getUserMessages called with userId:', userId);
+    
+    const userMessagesRef = collection(db, 'userMessages');
+    const userMessagesQuery = query(
+      userMessagesRef,
+      where('userId', '==', userId),
+      where('isDeleted', '==', false)
+    );
+    
+    console.log('[DEBUG] Querying userMessages collection with filters:', {
+      collection: 'userMessages',
+      filters: [
+        { field: 'userId', operator: '==', value: userId },
+        { field: 'isDeleted', operator: '==', value: false }
+      ]
+    });
+    
+    const userMessages = await getDocs(userMessagesQuery);
+    
+    console.log('[DEBUG] userMessages query returned:', {
+      docCount: userMessages.docs.length,
+      docs: userMessages.docs.map(doc => ({
+        id: doc.id,
+        data: doc.data()
+      }))
+    });
+    
+    const messagesWithDetails = await Promise.all(
+      userMessages.docs.map(async (userMessageDoc) => {
+        const userMessage = userMessageDoc.data() as UserMessage;
+        console.log('[DEBUG] Processing userMessage:', {
+          userMessageId: userMessageDoc.id,
+          messageId: userMessage.messageId,
+          userId: userMessage.userId,
+          isRead: userMessage.isRead,
+          isDeleted: userMessage.isDeleted
+        });
+        
+        const messageDoc = await getDoc(doc(db, 'messages', userMessage.messageId));
+        
+        if (messageDoc.exists()) {
+          const message = messageDoc.data() as Message;
+          console.log('[DEBUG] Found message:', {
+            messageId: userMessage.messageId,
+            subject: message.subject,
+            content: message.content?.substring(0, 50) + '...',
+            messageType: message.messageType,
+            recipientType: message.recipientType
+          });
+          
+          const combinedMessage = { 
+            ...message, 
+            ...userMessage,
+            id: userMessageDoc.id // Use userMessage ID for operations
+          };
+          
+          console.log('[DEBUG] Combined message object:', {
+            id: combinedMessage.id,
+            subject: combinedMessage.subject,
+            messageId: combinedMessage.messageId,
+            userId: combinedMessage.userId,
+            isRead: combinedMessage.isRead,
+            isDeleted: combinedMessage.isDeleted
+          });
+          
+          return combinedMessage;
+        } else {
+          console.log('[DEBUG] Message not found for messageId:', userMessage.messageId);
+          return null;
+        }
+      })
+    );
+    
+    const finalMessages = messagesWithDetails.filter(message => message !== null) as (Message & UserMessage)[];
+    console.log('[DEBUG] Final messages returned:', {
+      count: finalMessages.length,
+      subjects: finalMessages.map(msg => msg.subject)
+    });
+    
+    return finalMessages;
+  } catch (error) {
+    console.error('[DEBUG] Error getting user messages:', error);
+    return [];
+  }
+};
 
-// Re-export existing functions from the original firestore.ts
-export { 
-  getUserMessages, 
-  getUserAlerts, 
-  markMessageAsRead, 
-  deleteMessageForUser, 
-  markAlertAsRead, 
-  dismissAlert,
-  getAllAlerts,
-  updateAlert,
-  getSentMessages
-} from './firestore';
+// Get alerts for a specific user
+export const getUserAlerts = async (userId: string): Promise<(Alert & UserAlert)[]> => {
+  try {
+    const userAlertsRef = collection(db, 'userAlerts');
+    const userAlertsQuery = query(
+      userAlertsRef,
+      where('userId', '==', userId),
+      where('isDismissed', '==', false)
+    );
+    
+    const userAlerts = await getDocs(userAlertsQuery);
+    
+    const alertsWithDetails = await Promise.all(
+      userAlerts.docs.map(async (userAlertDoc) => {
+        const userAlert = userAlertDoc.data() as UserAlert;
+        const alertDoc = await getDoc(doc(db, 'alerts', userAlert.alertId));
+        
+        if (alertDoc.exists()) {
+          const alert = alertDoc.data() as Alert;
+          return { 
+            ...alert, 
+            ...userAlert,
+            id: userAlertDoc.id // Use userAlert ID for operations
+          };
+        }
+        return null;
+      })
+    );
+    
+    return alertsWithDetails.filter(alert => alert !== null) as (Alert & UserAlert)[];
+  } catch (error) {
+    console.error('Error getting user alerts:', error);
+    return [];
+  }
+};
+
+// Mark message as read
+export const markMessageAsRead = async (userMessageId: string): Promise<void> => {
+  try {
+    const userMessageRef = doc(db, 'userMessages', userMessageId);
+    await updateDoc(userMessageRef, {
+      isRead: true,
+      readAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    throw error;
+  }
+};
+
+// Delete message for user
+export const deleteMessageForUser = async (userMessageId: string): Promise<void> => {
+  try {
+    const userMessageRef = doc(db, 'userMessages', userMessageId);
+    await updateDoc(userMessageRef, {
+      isDeleted: true,
+      deletedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    throw error;
+  }
+};
+
+// Mark alert as read
+export const markAlertAsRead = async (userAlertId: string): Promise<void> => {
+  try {
+    const userAlertRef = doc(db, 'userAlerts', userAlertId);
+    await updateDoc(userAlertRef, {
+      isRead: true,
+      readAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error marking alert as read:', error);
+    throw error;
+  }
+};
+
+// Dismiss alert
+export const dismissAlert = async (userAlertId: string): Promise<void> => {
+  try {
+    const userAlertRef = doc(db, 'userAlerts', userAlertId);
+    await updateDoc(userAlertRef, {
+      isDismissed: true,
+      dismissedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error dismissing alert:', error);
+    throw error;
+  }
+};
+
+// Get all alerts (admin function)
+export const getAllAlerts = async (): Promise<Alert[]> => {
+  try {
+    const alertsRef = collection(db, 'alerts');
+    const alertsSnapshot = await getDocs(alertsRef);
+    
+    return alertsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Alert[];
+  } catch (error) {
+    console.error('Error getting all alerts:', error);
+    return [];
+  }
+};
+
+// Update alert
+export const updateAlert = async (alertId: string, updates: Partial<Alert>): Promise<void> => {
+  try {
+    const alertRef = doc(db, 'alerts', alertId);
+    await updateDoc(alertRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating alert:', error);
+    throw error;
+  }
+};
+
+// Get sent messages
+export const getSentMessages = async (senderId: string): Promise<Message[]> => {
+  try {
+    const messagesRef = collection(db, 'messages');
+    const sentQuery = query(messagesRef, where('senderId', '==', senderId));
+    const sentMessages = await getDocs(sentQuery);
+    
+    return sentMessages.docs.map(doc => doc.data() as Message);
+  } catch (error) {
+    console.error('Error getting sent messages:', error);
+    throw error;
+  }
+};

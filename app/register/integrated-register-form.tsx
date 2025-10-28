@@ -595,8 +595,8 @@ export default function IntegratedRegisterForm() {
           const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
           const { db } = await import('@/lib/firebase');
           
-          // Generate a unique company ID
-          const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          // Use Firebase Auth UID as company ID (primary contact's UID)
+          const companyId = user.uid;
           
           // Use a batch write to ensure atomicity of company + member creation
           const batch = writeBatch(db);
@@ -983,8 +983,8 @@ export default function IntegratedRegisterForm() {
         const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
         const { db } = await import('@/lib/firebase');
         
-        // Generate a unique company ID
-        const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        // Use Firebase Auth UID as company ID (primary contact's UID)
+        const companyId = auth.currentUser.uid;
         
         // Use a batch write to ensure atomicity of company + member creation
         const batch = writeBatch(db);

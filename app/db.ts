@@ -8,7 +8,7 @@ const db = getFirestore(app);
 
 export async function getUser(email: string) {
   try {
-    const userDoc = await getDoc(doc(db, 'users', email));
+    const userDoc = await getDoc(doc(db, 'accounts', email));
     return userDoc.exists() ? [userDoc.data()] : [];
   } catch (error) {
     console.error('Error getting user:', error);

@@ -26,21 +26,54 @@ export default function MemberContent() {
   // Load alerts and messages
   useEffect(() => {
     const loadData = async () => {
-      if (!user) return;
+      if (!user || !member) {
+        console.log('[DEBUG] Missing user or member data:', { user: !!user, member: !!member });
+        return;
+      }
+      
+      console.log('[DEBUG] Loading messages for member:', {
+        memberId: member.id,
+        memberEmail: member.email,
+        membershipType: member.membershipType,
+        organizationType: member.organizationType,
+        status: member.status
+      });
       
       try {
         setLoadingAlerts(true);
         setLoadingMessages(true);
         
+        console.log('[DEBUG] Calling getUserMessages with ID:', member.id);
         const [userAlerts, userMessages] = await Promise.all([
-          getUserAlerts(user.uid),
-          getUserMessages(user.uid)
+          getUserAlerts(member.id), // Use Firestore account ID
+          getUserMessages(member.id) // Use Firestore account ID
         ]);
+        
+        console.log('[DEBUG] getUserMessages returned:', {
+          messageCount: userMessages.length,
+          messages: userMessages.map(msg => ({
+            id: msg.id,
+            subject: msg.subject,
+            messageId: msg.messageId,
+            userId: msg.userId,
+            isRead: msg.isRead
+          }))
+        });
+        
+        console.log('[DEBUG] getUserAlerts returned:', {
+          alertCount: userAlerts.length,
+          alerts: userAlerts.map(alert => ({
+            id: alert.id,
+            title: alert.title,
+            userId: alert.userId,
+            isRead: alert.isRead
+          }))
+        });
         
         setAlerts(userAlerts);
         setMessages(userMessages);
       } catch (error) {
-        console.error('Error loading alerts/messages:', error);
+        console.error('[DEBUG] Error loading alerts/messages:', error);
       } finally {
         setLoadingAlerts(false);
         setLoadingMessages(false);
@@ -48,7 +81,7 @@ export default function MemberContent() {
     };
 
     loadData();
-  }, [user]);
+  }, [user, member]);
 
   // Alert handlers
   const handleMarkAlertAsRead = async (alertId: string) => {

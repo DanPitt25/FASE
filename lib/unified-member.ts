@@ -217,16 +217,18 @@ export const createUnifiedMember = async (
   return memberData;
 };
 
-// Get unified member record
+// Get unified member record - SIMPLIFIED VERSION
+// After migration, all accounts use Firebase Auth UIDs as document IDs
 export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | null> => {
   try {
-    // First check if they have an individual account
-    const memberRef = doc(db, 'accounts', uid);
-    const memberSnap = await getDoc(memberRef);
+    // Step 1: Direct lookup by Firebase Auth UID
+    const accountRef = doc(db, 'accounts', uid);
+    const accountSnap = await getDoc(accountRef);
     
-    if (memberSnap.exists()) {
-      const data = memberSnap.data();
-      // If it's an individual membership, return with proper structure
+    if (accountSnap.exists()) {
+      const data = accountSnap.data();
+      
+      // Individual account (Firebase Auth UID = Account ID)
       if (data.membershipType === 'individual' || !data.membershipType) {
         return {
           id: uid,
@@ -240,14 +242,47 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
           updatedAt: data.updatedAt
         } as UnifiedMember;
       }
+      
+      // Corporate account (Firebase Auth UID = Primary Contact UID = Account ID)
+      if (data.membershipType === 'corporate') {
+        // Check if this user exists in the members subcollection
+        const memberRef = doc(db, 'accounts', uid, 'members', uid);
+        const memberSnap = await getDoc(memberRef);
+        
+        if (memberSnap.exists()) {
+          const memberData = memberSnap.data();
+          
+          return {
+            id: uid,
+            email: memberData.email,
+            personalName: memberData.personalName || memberData.name || 'Unknown',
+            jobTitle: memberData.jobTitle,
+            isPrimaryContact: memberData.isPrimaryContact,
+            memberJoinedAt: memberData.joinedAt,
+            membershipType: 'corporate',
+            organizationId: uid, // Account ID = Primary Contact UID after migration
+            organizationName: data.organizationName,
+            organizationType: data.organizationType,
+            status: data.status || 'approved',
+            // Organization data (from main accounts document)
+            portfolio: data.portfolio,
+            hasOtherAssociations: data.hasOtherAssociations,
+            primaryContact: data.primaryContact,
+            registeredAddress: data.registeredAddress,
+            createdAt: memberData.createdAt,
+            updatedAt: memberData.updatedAt
+          } as UnifiedMember;
+        }
+      }
     }
     
-    // If not found as individual, search in organization members subcollections
+    // Step 2: Fallback - search as team member in other corporate accounts
+    // This handles team members who are not primary contacts
     const accountsRef = collection(db, 'accounts');
-    const orgQuery = query(accountsRef, where('membershipType', '==', 'corporate'));
-    const orgSnapshot = await getDocs(orgQuery);
+    const corporateQuery = query(accountsRef, where('membershipType', '==', 'corporate'));
+    const corporateSnapshot = await getDocs(corporateQuery);
     
-    for (const orgDoc of orgSnapshot.docs) {
+    for (const orgDoc of corporateSnapshot.docs) {
       const memberRef = doc(db, 'accounts', orgDoc.id, 'members', uid);
       const memberSnap = await getDoc(memberRef);
       
@@ -255,7 +290,6 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
         const memberData = memberSnap.data();
         const orgData = orgDoc.data();
         
-        // Return member with organization context and data
         return {
           id: uid,
           email: memberData.email,
@@ -264,7 +298,7 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
           isPrimaryContact: memberData.isPrimaryContact,
           memberJoinedAt: memberData.joinedAt,
           membershipType: 'corporate',
-          organizationId: orgDoc.id,
+          organizationId: orgDoc.id, // This will be primary contact's Firebase UID after migration
           organizationName: orgData.organizationName,
           organizationType: orgData.organizationType,
           status: orgData.status || 'approved',
@@ -372,7 +406,7 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
       membersSnapshot.docs.forEach(memberDoc => {
         const memberData = memberDoc.data();
         allMembers.push({
-          id: memberDoc.id,
+          id: memberDoc.id, // This is the Firebase Auth UID used as document ID
           email: memberData.email,
           personalName: memberData.personalName || memberData.name || 'Unknown',
           jobTitle: memberData.jobTitle,
@@ -458,6 +492,23 @@ export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => 
   }
 };
 
+// Get all members (regardless of status) - for messaging system
+export const getAllMembers = async (): Promise<UnifiedMember[]> => {
+  try {
+    const [guests, pending, approved, admins] = await Promise.all([
+      getMembersByStatus('guest'),
+      getMembersByStatus('pending'),
+      getMembersByStatus('approved'),
+      getMembersByStatus('admin')
+    ]);
+    
+    return [...guests, ...pending, ...approved, ...admins];
+  } catch (error) {
+    console.error('Error getting all members:', error);
+    return [];
+  }
+};
+
 // Get members by organization type (for filtering)
 export const getMembersByOrganizationType = async (organizationType: 'MGA' | 'carrier' | 'provider'): Promise<UnifiedMember[]> => {
   try {
@@ -521,8 +572,8 @@ export const createCompanyWithMember = async (
   memberData: Omit<CompanyMember, 'createdAt' | 'updatedAt' | 'joinedAt'>
 ): Promise<{ companyId: string; memberId: string }> => {
   try {
-    // Generate a unique company ID
-    const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use primary contact's Firebase Auth UID as company ID
+    const companyId = memberData.id; // This should be the Firebase Auth UID
     
     // Create the company account (NO personal data)
     const companyRef = doc(db, 'accounts', companyId);

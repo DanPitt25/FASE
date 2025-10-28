@@ -123,8 +123,8 @@ export default function AdminPortalPage() {
         getAccountsByStatus('pending_invoice'), // Get pending invoice accounts
         getAccountsByStatus('approved'), // Get approved accounts  
         getAllPendingJoinRequests(), // Get pending join requests
-        user?.uid ? getUserAlerts(user.uid) : [],
-        user?.uid ? getUserMessages(user.uid) : []
+        member?.id ? getUserAlerts(member.id) : [], // Use account ID
+        member?.id ? getUserMessages(member.id) : [] // Use account ID
       ]);
       setVideos(videosData);
       setPendingComments(commentsData);
@@ -367,7 +367,7 @@ export default function AdminPortalPage() {
       
       // Reload alerts
       if (user) {
-        const userAlerts = await getUserAlerts(user.uid);
+        const userAlerts = await getUserAlerts(member?.id || '');
         setAlerts(userAlerts);
       }
       
@@ -430,7 +430,7 @@ export default function AdminPortalPage() {
         setShowCreateMessage(false);
         
         if (user) {
-          const userMessages = await getUserMessages(user.uid);
+          const userMessages = await getUserMessages(member?.id || '');
           setMessages(userMessages);
         }
         
@@ -469,7 +469,7 @@ export default function AdminPortalPage() {
       
       // Reload messages
       if (user) {
-        const userMessages = await getUserMessages(user.uid);
+        const userMessages = await getUserMessages(member?.id || '');
         setMessages(userMessages);
       }
       

@@ -95,7 +95,7 @@ export const requireAdmin = async (uid: string): Promise<void> => {
 // Check if user has member access
 export const hasMemberAccess = async (uid: string): Promise<boolean> => {
   try {
-    const userRef = doc(db, 'users', uid);
+    const userRef = doc(db, 'accounts', uid);
     const userSnap = await getDoc(userRef);
     
     if (userSnap.exists()) {
@@ -112,7 +112,7 @@ export const hasMemberAccess = async (uid: string): Promise<boolean> => {
 // Check if user has premium access
 export const hasPremiumAccess = async (uid: string): Promise<boolean> => {
   try {
-    const userRef = doc(db, 'users', uid);
+    const userRef = doc(db, 'accounts', uid);
     const userSnap = await getDoc(userRef);
     
     if (userSnap.exists()) {
