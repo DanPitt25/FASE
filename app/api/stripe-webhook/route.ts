@@ -132,6 +132,8 @@ export async function POST(request: NextRequest) {
       console.log('Session metadata:', session.metadata);
       
       // Update the member application status
+      console.log('=== WEBHOOK: Full session metadata ===', JSON.stringify(session.metadata, null, 2));
+      
       if (session.metadata?.user_id) {
         try {
           console.log('=== WEBHOOK: Attempting to update member for user:', session.metadata.user_id, '===');
@@ -146,8 +148,9 @@ export async function POST(request: NextRequest) {
           console.error('=== WEBHOOK: Failed to update member application:', error, '===');
         }
       } else {
-        console.log('=== WEBHOOK: No user_id found in session metadata ===');
-        console.log('Session metadata:', session.metadata);
+        console.error('=== WEBHOOK: No user_id found in session metadata ===');
+        console.error('=== WEBHOOK: Available metadata keys:', Object.keys(session.metadata || {}));
+        console.error('=== WEBHOOK: Full metadata:', JSON.stringify(session.metadata, null, 2));
       }
       break;
 
