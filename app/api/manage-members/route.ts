@@ -30,10 +30,11 @@ const initializeAdmin = async () => {
 
 // GET - Fetch company members
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
+  const userUid = searchParams.get('userUid');
+
   try {
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
-    const userUid = searchParams.get('userUid');
 
     if (!companyId || !userUid) {
       return NextResponse.json(
