@@ -44,40 +44,17 @@ export interface CompanyMember {
   updatedAt: any;
 }
 
-// Unified member interface that replaces both UserProfile and MemberApplication
-export interface UnifiedMember {
-  id: string; // Same as Firebase Auth uid
-  email: string; // Synced from Firebase Auth
-  displayName: string; // Synced from Firebase Auth
+// Organization-level interface for main accounts documents
+export interface OrganizationAccount {
+  id: string; // Company account ID
+  membershipType: 'corporate' | 'individual';
+  organizationName: string;
+  organizationType?: 'MGA' | 'carrier' | 'provider';
   status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment';
   
-  // Core profile data (always present)
-  personalName: string;
-  organisation?: string;
+  // Organization data only - NO personal identifiers
   createdAt: any;
   updatedAt: any;
-  
-  // Membership application data (optional - only for actual members/applicants)
-  membershipType?: 'corporate' | 'individual';
-  organizationName?: string;
-  organizationType?: 'MGA' | 'carrier' | 'provider';
-  logoURL?: string;
-  
-  // NEW: Company-first structure support
-  isCompanyAccount?: boolean; // True if this is a company record (not individual person)
-  primaryContactMemberId?: string; // Points to the primary contact in members subcollection
-  
-  // Privacy agreements
-  privacyAgreed?: boolean;
-  dataProcessingAgreed?: boolean;
-  
-  // Primary contact
-  primaryContact?: {
-    name: string;
-    email: string;
-    phone: string;
-    role: string;
-  };
   
   // Organization details
   organizationDetails?: {
@@ -102,39 +79,6 @@ export interface UnifiedMember {
     county?: string;
     postcode: string;
     country: string;
-  };
-  
-  // Senior leadership
-  seniorLeadership?: Array<{
-    name: string;
-    role: string;
-    email: string;
-  }>;
-  
-  // Key contacts (optional)
-  keyContacts?: Array<{
-    name: string;
-    role: string;
-    email: string;
-    phone: string;
-  }>;
-  
-  // Invoicing details
-  invoicingAddress?: {
-    line1: string;
-    line2?: string;
-    city: string;
-    county?: string;
-    postcode: string;
-    country: string;
-    sameAsRegistered: boolean;
-  };
-  
-  invoicingContact?: {
-    name: string;
-    email: string;
-    phone: string;
-    role: string;
   };
   
   // Business information
@@ -177,12 +121,58 @@ export interface UnifiedMember {
     ownership?: string;
   };
   
-  // Terms agreement
-  termsAgreed?: boolean;
-  
-  // Additional fields
+  logoURL?: string;
   hasOtherAssociations?: boolean;
   otherAssociations?: string[];
+  termsAgreed?: boolean;
+  privacyAgreed?: boolean;
+  dataProcessingAgreed?: boolean;
+}
+
+// Member-level interface - combines personal data with organization context
+export interface UnifiedMember {
+  id: string; // Firebase Auth uid
+  email: string; // Synced from Firebase Auth
+  
+  // Member personal data (from subdocument or individual account)
+  personalName: string;
+  jobTitle?: string;
+  isPrimaryContact?: boolean; // Only for corporate members
+  memberJoinedAt?: any;
+  
+  // Organization context (for corporate members)
+  organizationId?: string; // Points to the organization account
+  organizationName?: string;
+  organizationType?: 'MGA' | 'carrier' | 'provider';
+  membershipType: 'corporate' | 'individual';
+  
+  // Access control - inherited from organization for corporate members
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment';
+  
+  // Organization data (populated from organization account for corporate members)
+  portfolio?: {
+    grossWrittenPremiums?: '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+';
+    portfolioMix: Record<string, number>;
+  };
+  hasOtherAssociations?: boolean;
+  primaryContact?: {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+  registeredAddress?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    county?: string;
+    postcode: string;
+    country: string;
+  };
+  
+  // Timestamps
+  createdAt: any;
+  updatedAt: any;
 }
 
 // Helper function to determine access level
@@ -201,23 +191,24 @@ export const hasAccess = (member: UnifiedMember | null, requiredLevel: 'guest' |
   }
 };
 
-// Create or update unified member record
+// Create or update unified member record (for individual accounts)
 export const createUnifiedMember = async (
   uid: string,
   email: string,
-  displayName: string,
   personalName: string,
-  organisation?: string,
+  organizationName?: string,
+  organizationType?: 'MGA' | 'carrier' | 'provider',
   status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' = 'guest'
 ): Promise<UnifiedMember> => {
   const memberRef = doc(db, 'accounts', uid);
   const memberData: UnifiedMember = {
     id: uid,
     email,
-    displayName,
     personalName,
+    membershipType: 'individual',
+    organizationName,
+    organizationType,
     status,
-    ...(organisation && { organisation }),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
@@ -235,9 +226,19 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
     
     if (memberSnap.exists()) {
       const data = memberSnap.data();
-      // If it's an individual membership or old data, return as-is
+      // If it's an individual membership, return with proper structure
       if (data.membershipType === 'individual' || !data.membershipType) {
-        return { id: uid, ...data } as UnifiedMember;
+        return {
+          id: uid,
+          email: data.email,
+          personalName: data.personalName || data.displayName || 'Unknown',
+          membershipType: 'individual',
+          status: data.status || 'guest',
+          organizationName: data.organizationName,
+          organizationType: data.organizationType,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt
+        } as UnifiedMember;
       }
     }
     
@@ -254,26 +255,26 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
         const memberData = memberSnap.data();
         const orgData = orgDoc.data();
         
-        // Combine member data with organization context
+        // Return member with organization context and data
         return {
           id: uid,
           email: memberData.email,
-          displayName: memberData.displayName,
-          personalName: memberData.name,
-          organisation: orgData.organizationName,
-          status: orgData.status || 'approved',
+          personalName: memberData.personalName || memberData.name || 'Unknown',
+          jobTitle: memberData.jobTitle,
+          isPrimaryContact: memberData.isPrimaryContact,
+          memberJoinedAt: memberData.joinedAt,
           membershipType: 'corporate',
+          organizationId: orgDoc.id,
           organizationName: orgData.organizationName,
           organizationType: orgData.organizationType,
+          status: orgData.status || 'approved',
+          // Organization data (from main accounts document)
+          portfolio: orgData.portfolio,
+          hasOtherAssociations: orgData.hasOtherAssociations,
           primaryContact: orgData.primaryContact,
           registeredAddress: orgData.registeredAddress,
-          portfolio: orgData.portfolio,
-          // Member-specific data
-          memberRole: memberData.role,
-          memberJoinedAt: memberData.joinedAt,
-          // Organization data
-          createdAt: orgData.createdAt,
-          updatedAt: orgData.updatedAt
+          createdAt: memberData.createdAt,
+          updatedAt: memberData.updatedAt
         } as UnifiedMember;
       }
     }
@@ -283,6 +284,30 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
     console.error('Error getting unified member:', error);
     return null;
   }
+};
+
+// Get organization data for a member
+export const getOrganizationForMember = async (member: UnifiedMember): Promise<OrganizationAccount | null> => {
+  if (member.membershipType === 'individual') {
+    return null;
+  }
+  
+  if (!member.organizationId) {
+    return null;
+  }
+  
+  try {
+    const orgRef = doc(db, 'accounts', member.organizationId);
+    const orgSnap = await getDoc(orgRef);
+    
+    if (orgSnap.exists()) {
+      return { id: member.organizationId, ...orgSnap.data() } as OrganizationAccount;
+    }
+  } catch (error) {
+    console.error('Error getting organization data:', error);
+  }
+  
+  return null;
 };
 
 // Update unified member record
@@ -308,14 +333,68 @@ export const updateMemberStatus = async (
 // Get all members by status
 export const getMembersByStatus = async (status: UnifiedMember['status']): Promise<UnifiedMember[]> => {
   try {
-    const membersRef = collection(db, 'accounts');
-    const q = query(membersRef, where('status', '==', status));
-    const querySnapshot = await getDocs(q);
+    const allMembers: UnifiedMember[] = [];
     
-    return querySnapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
-    } as UnifiedMember));
+    // 1. Get individual accounts with matching status
+    const accountsRef = collection(db, 'accounts');
+    const individualQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'individual'));
+    const individualSnapshot = await getDocs(individualQuery);
+    
+    individualSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      allMembers.push({
+        id: doc.id,
+        email: data.email,
+        personalName: data.personalName || data.displayName || 'Unknown',
+        membershipType: 'individual',
+        status: data.status,
+        organizationName: data.organizationName,
+        organizationType: data.organizationType,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        // Include organization data for individual accounts
+        portfolio: data.portfolio,
+        hasOtherAssociations: data.hasOtherAssociations,
+        primaryContact: data.primaryContact,
+        registeredAddress: data.registeredAddress
+      } as UnifiedMember);
+    });
+    
+    // 2. Get corporate accounts with matching status and their members
+    const corporateQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'corporate'));
+    const corporateSnapshot = await getDocs(corporateQuery);
+    
+    for (const orgDoc of corporateSnapshot.docs) {
+      const orgData = orgDoc.data();
+      const membersRef = collection(db, 'accounts', orgDoc.id, 'members');
+      const membersSnapshot = await getDocs(membersRef);
+      
+      membersSnapshot.docs.forEach(memberDoc => {
+        const memberData = memberDoc.data();
+        allMembers.push({
+          id: memberDoc.id,
+          email: memberData.email,
+          personalName: memberData.personalName || memberData.name || 'Unknown',
+          jobTitle: memberData.jobTitle,
+          isPrimaryContact: memberData.isPrimaryContact,
+          memberJoinedAt: memberData.joinedAt,
+          membershipType: 'corporate',
+          organizationId: orgDoc.id,
+          organizationName: orgData.organizationName,
+          organizationType: orgData.organizationType,
+          status: orgData.status,
+          // Organization data from main accounts document
+          portfolio: orgData.portfolio,
+          hasOtherAssociations: orgData.hasOtherAssociations,
+          primaryContact: orgData.primaryContact,
+          registeredAddress: orgData.registeredAddress,
+          createdAt: memberData.createdAt,
+          updatedAt: memberData.updatedAt
+        } as UnifiedMember);
+      });
+    }
+    
+    return allMembers;
   } catch (error) {
     console.error('Error getting members by status:', error);
     return [];
@@ -331,25 +410,12 @@ export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]>
 // Get members with member portal access (approved + admin)
 export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => {
   try {
-    const membersRef = collection(db, 'accounts');
-    const approvedQuery = query(membersRef, where('status', '==', 'approved'));
-    const adminQuery = query(membersRef, where('status', '==', 'admin'));
-    
-    const [approvedSnapshot, adminSnapshot] = await Promise.all([
-      getDocs(approvedQuery),
-      getDocs(adminQuery)
+    const [approvedMembers, adminMembers] = await Promise.all([
+      getMembersByStatus('approved'),
+      getMembersByStatus('admin')
     ]);
     
-    const approved = approvedSnapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
-    } as UnifiedMember));
-    const admins = adminSnapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
-    } as UnifiedMember));
-    
-    return [...approved, ...admins];
+    return [...approvedMembers, ...adminMembers];
   } catch (error) {
     console.error('Error getting members with portal access:', error);
     return [];
@@ -359,15 +425,8 @@ export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => 
 // Get members by organization type (for filtering)
 export const getMembersByOrganizationType = async (organizationType: 'MGA' | 'carrier' | 'provider'): Promise<UnifiedMember[]> => {
   try {
-    const membersRef = collection(db, 'accounts');
-    const q = query(
-      membersRef,
-      where('status', 'in', ['approved', 'admin']),
-      where('organizationType', '==', organizationType)
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => doc.data() as UnifiedMember);
+    const allMembers = await getMembersWithPortalAccess();
+    return allMembers.filter(member => member.organizationType === organizationType);
   } catch (error) {
     console.error('Error getting members by organization type:', error);
     return [];
@@ -377,21 +436,12 @@ export const getMembersByOrganizationType = async (organizationType: 'MGA' | 'ca
 // Search members by organization name
 export const searchMembersByOrganizationName = async (searchTerm: string): Promise<UnifiedMember[]> => {
   try {
-    const membersRef = collection(db, 'accounts');
-    const q = query(membersRef, where('status', 'in', ['approved', 'admin']));
-    const querySnapshot = await getDocs(q);
+    const allMembers = await getMembersWithPortalAccess();
     
     // Filter by organization name on client side (Firestore doesn't support case-insensitive search)
-    const filteredMembers = querySnapshot.docs
-      .map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      } as UnifiedMember))
-      .filter(member => 
-        member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    
-    return filteredMembers;
+    return allMembers.filter(member => 
+      member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   } catch (error) {
     console.error('Error searching members by organization name:', error);
     return [];
@@ -431,23 +481,21 @@ export const getUserIdsForMemberCriteria = async (criteria: {
 
 // Create a company account with the registrant as a member
 export const createCompanyWithMember = async (
-  companyData: Partial<UnifiedMember>,
+  companyData: Partial<OrganizationAccount>,
   memberData: Omit<CompanyMember, 'createdAt' | 'updatedAt' | 'joinedAt'>
 ): Promise<{ companyId: string; memberId: string }> => {
   try {
     // Generate a unique company ID
     const companyId = `company_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Create the company account
+    // Create the company account (NO personal data)
     const companyRef = doc(db, 'accounts', companyId);
-    const companyRecord: UnifiedMember = {
+    const companyRecord: OrganizationAccount = {
       id: companyId,
-      email: memberData.email, // Use primary contact email for company
-      displayName: companyData.organizationName || 'Company Account',
+      membershipType: 'corporate',
+      organizationName: companyData.organizationName || 'Company Account',
+      organizationType: companyData.organizationType,
       status: 'pending',
-      personalName: '', // Empty for company accounts
-      isCompanyAccount: true,
-      primaryContactMemberId: memberData.id,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       ...companyData
@@ -489,9 +537,9 @@ export const getCompanyMembers = async (companyId: string): Promise<CompanyMembe
   }
 };
 
-// Check if a UnifiedMember uses the new company-first structure
-export const isCompanyFirstStructure = (member: UnifiedMember): boolean => {
-  return member.isCompanyAccount === true;
+// Check if a UnifiedMember is part of a corporate account
+export const isCorporateMember = (member: UnifiedMember): boolean => {
+  return member.membershipType === 'corporate';
 };
 
 // === JOIN REQUEST MANAGEMENT ===

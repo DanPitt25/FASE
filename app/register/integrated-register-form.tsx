@@ -140,25 +140,34 @@ export default function IntegratedRegisterForm() {
   const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('individual');
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState("");
-  const [primaryContactName, setPrimaryContactName] = useState("");
-  const [primaryContactEmail, setPrimaryContactEmail] = useState("");
-  const [primaryContactPhone, setPrimaryContactPhone] = useState("");
-  const [primaryContactJobTitle, setPrimaryContactJobTitle] = useState("");
+  // Corporate members management (up to 3 people)
+  interface Member {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    jobTitle: string;
+    isPrimaryContact: boolean;
+  }
   
-  // NEW: Company-first structure fields
-  const [registrantRole, setRegistrantRole] = useState<'primary_contact' | 'other_member'>('primary_contact');
-  const [registrantJobTitle, setRegistrantJobTitle] = useState("");
+  const [members, setMembers] = useState<Member[]>([]);
   
-  // Auto-fill primary contact when user selects "I am the primary contact"
+  // Initialize with registrant as first member when corporate is selected
   useEffect(() => {
-    if (registrantRole === 'primary_contact') {
+    if (membershipType === 'corporate' && members.length === 0) {
       const fullName = `${firstName} ${surname}`.trim();
-      setPrimaryContactName(fullName);
-      setPrimaryContactEmail(email);
-      setPrimaryContactJobTitle(registrantJobTitle);
-      // Note: Phone is not available from personal info, user must enter it
+      if (fullName && email) {
+        setMembers([{
+          id: 'registrant',
+          name: fullName,
+          email: email,
+          phone: '',
+          jobTitle: '',
+          isPrimaryContact: true
+        }]);
+      }
     }
-  }, [registrantRole, firstName, surname, email, registrantJobTitle]);
+  }, [membershipType, firstName, surname, email, members.length]);
   
   // Address fields
   const [addressLine1, setAddressLine1] = useState("");
@@ -343,9 +352,38 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      if (!primaryContactName.trim() || !primaryContactEmail.trim() || !primaryContactPhone.trim()) {
-        setError("Primary contact information is required");
-        return;
+      // Validate members for corporate membership
+      if (membershipType === 'corporate') {
+        if (members.length === 0) {
+          setError("At least one team member is required");
+          return;
+        }
+        
+        const hasPrimaryContact = members.some(m => m.isPrimaryContact);
+        if (!hasPrimaryContact) {
+          setError("You must designate one person as the primary contact");
+          return;
+        }
+        
+        // Validate all members have required fields
+        for (const member of members) {
+          if (!member.name.trim()) {
+            setError("All members must have a name");
+            return;
+          }
+          if (!member.email.trim()) {
+            setError("All members must have an email");
+            return;
+          }
+          if (!member.phone.trim()) {
+            setError("All members must have a phone number");
+            return;
+          }
+          if (!member.jobTitle.trim()) {
+            setError("All members must have a job title");
+            return;
+          }
+        }
       }
       
       setError("");
@@ -563,6 +601,12 @@ export default function IntegratedRegisterForm() {
           // Use a batch write to ensure atomicity of company + member creation
           const batch = writeBatch(db);
           
+          // Find primary contact from members
+          const primaryContactMember = members.find(m => m.isPrimaryContact);
+          if (!primaryContactMember) {
+            throw new Error("No primary contact designated");
+          }
+          
           // Prepare company document
           const companyRef = firestoreDoc(db, 'accounts', companyId);
           const companyRecord = {
@@ -578,10 +622,10 @@ export default function IntegratedRegisterForm() {
             organizationName,
             organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
             primaryContact: {
-              name: primaryContactName,
-              email: primaryContactEmail,
-              phone: primaryContactPhone,
-              role: primaryContactJobTitle
+              name: primaryContactMember.name,
+              email: primaryContactMember.email,
+              phone: primaryContactMember.phone,
+              role: primaryContactMember.jobTitle
             },
             registeredAddress: {
               line1: addressLine1,
@@ -613,20 +657,28 @@ export default function IntegratedRegisterForm() {
           
           batch.set(companyRef, companyRecord);
           
-          // Prepare member document
-          const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', user.uid);
-          const memberRecord = {
-            id: user.uid,
-            email: user.email!,
-            personalName: fullName,
-            jobTitle: registrantJobTitle,
-            isPrimaryContact: registrantRole === 'primary_contact',
-            joinedAt: serverTimestamp(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          
-          batch.set(memberRef, memberRecord);
+          // Create member documents for all members
+          for (const member of members) {
+            // For the registrant (current user), use their Firebase UID
+            // For other members, use generated IDs (they'll confirm accounts later)
+            const memberId = member.id === 'registrant' ? user.uid : member.id;
+            const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', memberId);
+            
+            const memberRecord = {
+              id: memberId,
+              email: member.email,
+              personalName: member.name,
+              jobTitle: member.jobTitle,
+              isPrimaryContact: member.isPrimaryContact,
+              isRegistrant: member.id === 'registrant',
+              accountConfirmed: member.id === 'registrant', // Only registrant is confirmed initially
+              joinedAt: serverTimestamp(),
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            };
+            
+            batch.set(memberRef, memberRecord);
+          }
           
           // Commit the batch atomically
           await batch.commit();
@@ -647,10 +699,10 @@ export default function IntegratedRegisterForm() {
             organizationName: fullName,
             paymentUserId: user.uid, // For webhook payment processing
             primaryContact: {
-              name: primaryContactName,
-              email: primaryContactEmail,
-              phone: primaryContactPhone,
-              role: primaryContactJobTitle
+              name: fullName,
+              email: user.email!,
+              phone: '', // Individual members don't need to provide phone during signup
+              role: 'Individual Member'
             },
             registeredAddress: {
               line1: addressLine1,
@@ -842,12 +894,24 @@ export default function IntegratedRegisterForm() {
                 organizationName: membershipType === 'corporate' ? organizationName : fullName,
                 organizationType: membershipType === 'corporate' ? organizationType : 'individual',
                 grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
-                primaryContact: {
-                  name: primaryContactName,
-                  email: primaryContactEmail,
-                  phone: primaryContactPhone,
-                  jobTitle: primaryContactJobTitle
-                },
+                primaryContact: (() => {
+                  if (membershipType === 'corporate') {
+                    const primaryMember = members.find(m => m.isPrimaryContact);
+                    return primaryMember ? {
+                      name: primaryMember.name,
+                      email: primaryMember.email,
+                      phone: primaryMember.phone,
+                      jobTitle: primaryMember.jobTitle
+                    } : null;
+                  } else {
+                    return {
+                      name: fullName,
+                      email: email,
+                      phone: '',
+                      jobTitle: 'Individual Member'
+                    };
+                  }
+                })(),
                 registeredAddress: {
                   line1: addressLine1,
                   line2: addressLine2,
@@ -939,12 +1003,20 @@ export default function IntegratedRegisterForm() {
           membershipType: 'corporate' as const,
           organizationName,
           organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
-          primaryContact: {
-            name: primaryContactName,
-            email: primaryContactEmail,
-            phone: primaryContactPhone,
-            role: primaryContactJobTitle
-          },
+          primaryContact: (() => {
+            const primaryMember = members.find(m => m.isPrimaryContact);
+            return primaryMember ? {
+              name: primaryMember.name,
+              email: primaryMember.email,
+              phone: primaryMember.phone,
+              role: primaryMember.jobTitle
+            } : {
+              name: `${firstName} ${surname}`.trim(),
+              email: auth.currentUser?.email || '',
+              phone: '',
+              role: 'Primary Contact'
+            };
+          })(),
           registeredAddress: {
             line1: addressLine1,
             line2: addressLine2,
@@ -975,21 +1047,28 @@ export default function IntegratedRegisterForm() {
         
         batch.set(companyRef, companyRecord);
         
-        // Prepare member document
-        const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', auth.currentUser.uid);
-        const fullName = `${firstName} ${surname}`.trim();
-        const memberRecord = {
-          id: auth.currentUser.uid,
-          email: auth.currentUser.email!,
-          personalName: fullName,
-          jobTitle: registrantJobTitle,
-          isPrimaryContact: registrantRole === 'primary_contact',
-          joinedAt: serverTimestamp(),
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        
-        batch.set(memberRef, memberRecord);
+        // Create member documents for all members
+        for (const member of members) {
+          // For the registrant (current user), use their Firebase UID
+          // For other members, use generated IDs (they'll confirm accounts later)
+          const memberId = member.id === 'registrant' ? auth.currentUser.uid : member.id;
+          const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', memberId);
+          
+          const memberRecord = {
+            id: memberId,
+            email: member.email,
+            personalName: member.name,
+            jobTitle: member.jobTitle,
+            isPrimaryContact: member.isPrimaryContact,
+            isRegistrant: member.id === 'registrant',
+            accountConfirmed: member.id === 'registrant', // Only registrant is confirmed initially
+            joinedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
+          
+          batch.set(memberRef, memberRecord);
+        }
         
         // Commit the batch atomically
         await batch.commit();
@@ -1011,12 +1090,20 @@ export default function IntegratedRegisterForm() {
           personalName: fullName,
           organizationName: fullName,
           paymentUserId: auth.currentUser.uid, // For webhook payment processing
-          primaryContact: {
-            name: primaryContactName,
-            email: primaryContactEmail,
-            phone: primaryContactPhone,
-            role: primaryContactJobTitle
-          },
+          primaryContact: (() => {
+            const primaryMember = members.find(m => m.isPrimaryContact);
+            return primaryMember ? {
+              name: primaryMember.name,
+              email: primaryMember.email,
+              phone: primaryMember.phone,
+              role: primaryMember.jobTitle
+            } : {
+              name: `${firstName} ${surname}`.trim(),
+              email: auth.currentUser?.email || '',
+              phone: '',
+              role: 'Primary Contact'
+            };
+          })(),
           registeredAddress: {
             line1: addressLine1,
             line2: addressLine2,
@@ -1298,8 +1385,7 @@ export default function IntegratedRegisterForm() {
                   setMembershipType('individual');
                   const fullName = `${firstName} ${surname}`.trim();
                   setOrganizationName(fullName);
-                  setPrimaryContactName(fullName);
-                  setPrimaryContactEmail(email);
+                  setMembers([]); // Clear members for individual
                 }}
               >
                 <div className="flex items-center mb-2">
@@ -1324,8 +1410,7 @@ export default function IntegratedRegisterForm() {
                 onClick={() => {
                   setMembershipType('corporate');
                   setOrganizationName('');
-                  setPrimaryContactName('');
-                  setPrimaryContactEmail('');
+                  // Members will be initialized by useEffect
                 }}
               >
                 <div className="flex items-center mb-2">
@@ -1372,151 +1457,166 @@ export default function IntegratedRegisterForm() {
             </>
           )}
 
-          {/* NEW: Your Role Section */}
+          {/* Team Members Section */}
           {membershipType === 'corporate' && (
-            <div className="space-y-4">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Your Role</h4>
-              <p className="text-sm text-fase-black">
-                What is your role in this organization?
-              </p>
-              
-              <div className="space-y-3">
-                <div 
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                    registrantRole === 'primary_contact' 
-                      ? 'border-fase-navy bg-fase-light-blue' 
-                      : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                  }`}
-                  onClick={() => {
-                    setRegistrantRole('primary_contact');
-                  }}
-                >
-                  <div className="flex items-center mb-2">
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                      registrantRole === 'primary_contact' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                    }`}>
-                      {registrantRole === 'primary_contact' && (
-                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                      )}
-                    </div>
-                    <span className="font-medium text-fase-navy">I am the primary contact</span>
-                  </div>
-                  <p className="text-sm text-fase-black ml-7">You will be the main contact for this organization</p>
-                </div>
-                
-                <div 
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                    registrantRole === 'other_member' 
-                      ? 'border-fase-navy bg-fase-light-blue' 
-                      : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                  }`}
-                  onClick={() => {
-                    setRegistrantRole('other_member');
-                    // Clear auto-filled primary contact info
-                    setPrimaryContactName('');
-                    setPrimaryContactEmail('');
-                  }}
-                >
-                  <div className="flex items-center mb-2">
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                      registrantRole === 'other_member' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                    }`}>
-                      {registrantRole === 'other_member' && (
-                        <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                      )}
-                    </div>
-                    <span className="font-medium text-fase-navy">Someone else is the primary contact</span>
-                  </div>
-                  <p className="text-sm text-fase-black ml-7">You&apos;ll provide the primary contact&apos;s details</p>
-                </div>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members</h4>
+                <p className="text-sm text-fase-black mt-1">
+                  Add up to 3 people to your corporate membership. They'll receive emails to confirm their accounts after registration.
+                </p>
               </div>
-              
-              <ValidatedInput
-                label="Your Job Title"
-                fieldKey="registrantJobTitle"
-                value={registrantJobTitle}
-                onChange={setRegistrantJobTitle}
-                placeholder="e.g. CEO, Operations Manager, Underwriter"
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
+
+              {/* Members List */}
+              <div className="space-y-4">
+                {members.map((member, index) => (
+                  <div key={member.id} className="p-4 border border-fase-light-gold rounded-lg bg-fase-cream">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium text-fase-navy">
+                          Member {index + 1}
+                          {member.isPrimaryContact && (
+                            <span className="ml-2 text-xs bg-fase-navy text-white px-2 py-1 rounded">
+                              Primary Contact
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      {members.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newMembers = members.filter(m => m.id !== member.id);
+                            // If we removed the primary contact, make the first member primary
+                            if (member.isPrimaryContact && newMembers.length > 0) {
+                              newMembers[0].isPrimaryContact = true;
+                            }
+                            setMembers(newMembers);
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-fase-navy mb-2">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={member.name}
+                          onChange={(e) => {
+                            const newMembers = [...members];
+                            newMembers[index] = { ...member, name: e.target.value };
+                            setMembers(newMembers);
+                          }}
+                          placeholder="Full name"
+                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          disabled={member.id === 'registrant'}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-fase-navy mb-2">
+                          Job Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={member.jobTitle}
+                          onChange={(e) => {
+                            const newMembers = [...members];
+                            newMembers[index] = { ...member, jobTitle: e.target.value };
+                            setMembers(newMembers);
+                          }}
+                          placeholder="e.g. CEO, Manager"
+                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-fase-navy mb-2">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          value={member.email}
+                          onChange={(e) => {
+                            const newMembers = [...members];
+                            newMembers[index] = { ...member, email: e.target.value };
+                            setMembers(newMembers);
+                          }}
+                          placeholder="email@company.com"
+                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          disabled={member.id === 'registrant'}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-fase-navy mb-2">
+                          Phone *
+                        </label>
+                        <input
+                          type="tel"
+                          value={member.phone}
+                          onChange={(e) => {
+                            const newMembers = [...members];
+                            newMembers[index] = { ...member, phone: e.target.value };
+                            setMembers(newMembers);
+                          }}
+                          placeholder="+44 20 1234 5678"
+                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Primary Contact Toggle */}
+                    <div className="mt-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="primaryContact"
+                          checked={member.isPrimaryContact}
+                          onChange={() => {
+                            const newMembers = members.map(m => ({
+                              ...m,
+                              isPrimaryContact: m.id === member.id
+                            }));
+                            setMembers(newMembers);
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-fase-navy">Make this person the primary contact</span>
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Member Button */}
+              {members.length < 3 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newMember: Member = {
+                      id: `member_${Date.now()}`,
+                      name: '',
+                      email: '',
+                      phone: '',
+                      jobTitle: '',
+                      isPrimaryContact: false
+                    };
+                    setMembers([...members, newMember]);
+                  }}
+                  className="w-full p-3 border-2 border-dashed border-fase-light-gold rounded-lg text-fase-navy hover:border-fase-navy hover:bg-fase-light-blue transition-colors"
+                >
+                  + Add Another Member (max 3)
+                </button>
+              )}
             </div>
           )}
-
-          {/* Primary Contact */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              {membershipType === 'corporate' ? 'Primary Contact' : 'Primary Contact'}
-            </h4>
-            {membershipType === 'corporate' && registrantRole === 'primary_contact' && (
-              <p className="text-sm text-fase-black">
-                Name, email, and job title are auto-filled since you selected &quot;I am the primary contact&quot;. Please enter your phone number.
-              </p>
-            )}
-            {membershipType === 'corporate' && registrantRole === 'other_member' && (
-              <p className="text-sm text-fase-black">
-                Please provide the details of the person who should be the main contact for this organization.
-              </p>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ValidatedInput
-                label="Contact Name"
-                fieldKey="primaryContactName"
-                value={primaryContactName}
-                onChange={setPrimaryContactName}
-                placeholder="Full name"
-                required
-                disabled={registrantRole === 'primary_contact'}
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-              
-              <ValidatedInput
-                label="Job Title"
-                fieldKey="primaryContactJobTitle"
-                value={primaryContactJobTitle}
-                onChange={setPrimaryContactJobTitle}
-                placeholder="Position or title"
-                disabled={registrantRole === 'primary_contact'}
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ValidatedInput
-                label="Email"
-                fieldKey="primaryContactEmail"
-                type="email"
-                value={primaryContactEmail}
-                onChange={setPrimaryContactEmail}
-                placeholder="contact@company.com"
-                required
-                disabled={registrantRole === 'primary_contact'}
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-              
-              <ValidatedInput
-                label="Phone"
-                fieldKey="primaryContactPhone"
-                type="tel"
-                value={primaryContactPhone}
-                onChange={setPrimaryContactPhone}
-                placeholder="+44 20 1234 5678"
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-            </div>
-          </div>
         </div>
       )}
 
@@ -1868,7 +1968,12 @@ export default function IntegratedRegisterForm() {
               
               <div>
                 <span className="text-fase-navy font-medium">Contact Email:</span>
-                <p className="text-fase-black">{primaryContactEmail}</p>
+                <p className="text-fase-black">
+                  {membershipType === 'corporate' 
+                    ? members.find(m => m.isPrimaryContact)?.email || email
+                    : email
+                  }
+                </p>
               </div>
               
               <div>

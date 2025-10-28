@@ -1,0 +1,195 @@
+FASE SITE - PROJECT HANDOVER GUIDE
+=====================================
+
+This guide contains everything needed to hand over complete access to the FASE website project to another team member.
+
+## 1. CODE REPOSITORIES
+
+### GitHub Repository
+- Repository: https://github.com/DanPitt25/FASE.git
+- Current owner: DanPitt25 (Daniel Pitt)
+- Required action: Add new team member as admin/owner to the repository
+- Branch structure:
+  - main: Production-ready desktop version
+  - mobile-optimization: Mobile improvements
+  - production-ready: Current working branch
+
+### Local Development Setup
+- Clone repository: `git clone [REPO_URL]`
+- Install dependencies: `npm install`
+- Start development: `npm run dev`
+- Build: `npm run build`
+- Lint: `npm run lint`
+
+## 2. FIREBASE PROJECT ACCESS
+
+### Firebase Console Access
+- Project ID: fase-site
+- Console URL: https://console.firebase.google.com/project/fase-site
+- Current owner: Daniel Pitt's Google account
+- Required action: Add new team member's Google account as Owner in Firebase project settings
+
+### Firebase Services Used
+- Authentication (email/password, custom tokens)
+- Firestore Database (member accounts, applications)
+- Cloud Functions (email notifications, Stripe webhooks)
+- Storage (logo uploads)
+- Hosting (if used)
+
+### Service Account Keys
+- Location: Firebase Console → Project Settings → Service Accounts
+- Required for: Server-side operations, deployment scripts
+- Action needed: Generate new service account key for handover recipient
+
+## 3. DEPLOYMENT PLATFORM
+
+### Vercel Account
+- Platform: Vercel (vercel.com)
+- Current owner: Daniel Pitt
+- Project URL: [VERCEL_PROJECT_URL]
+- Required action: Transfer project ownership or add as team member with admin access
+
+### Environment Variables (Vercel)
+The following environment variables need to be configured in Vercel dashboard:
+- NEXT_PUBLIC_FIREBASE_PROJECT_ID=fase-site
+- NEXT_PUBLIC_FIREBASE_API_KEY=[from Firebase config]
+- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=fase-site.firebaseapp.com
+- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=fase-site.firebasestorage.app
+- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=[from Firebase config]
+- NEXT_PUBLIC_FIREBASE_APP_ID=[from Firebase config]
+- FIREBASE_SERVICE_ACCOUNT_KEY=[JSON service account key]
+- STRIPE_SECRET_KEY=[from Stripe dashboard]
+- STRIPE_WEBHOOK_SECRET=[from Stripe dashboard]
+- RESEND_API_KEY=[from Resend dashboard]
+
+## 4. THIRD-PARTY SERVICE ACCESS
+
+### Stripe (Payment Processing)
+- Dashboard: https://dashboard.stripe.com
+- Current owner: Daniel Pitt
+- Required action: Add new team member as admin to Stripe account
+- Important: Contains payment processing, customer data, webhooks
+
+### Resend (Email Service)
+- Dashboard: https://resend.com
+- Current owner: Daniel Pitt
+- Required action: Add new team member or transfer account ownership
+- Used for: Member notifications, invoice emails
+
+### Domain Management
+- Domain: [DOMAIN_NAME]
+- Registrar: [REGISTRAR_NAME]
+- Current owner: Daniel Pitt
+- Required action: Transfer domain ownership or add as admin
+- DNS settings: Point to Vercel for hosting
+
+## 5. IMPORTANT PASSWORDS & CREDENTIALS
+
+### Master Password Manager
+- Service: [PASSWORD_MANAGER_NAME]
+- Account: Daniel Pitt
+- Required action: Share vault or transfer ownership
+- Contains: All service passwords, API keys, admin credentials
+
+### Critical API Keys to Transfer
+1. Firebase service account JSON
+2. Stripe secret keys (live and test)
+3. Resend API key
+4. Any other third-party API keys
+
+## 6. ADMINISTRATIVE ACCESS
+
+### Email Accounts
+- Admin email: admin@[DOMAIN]
+- Support email: support@[DOMAIN]
+- Current access: Daniel Pitt
+- Required action: Add new team member to email accounts
+
+### Social Media & Marketing
+- LinkedIn company page
+- Twitter/X account
+- Any other social media accounts
+- Required action: Add as admin to all accounts
+
+## 7. DOCUMENTATION & KNOWLEDGE TRANSFER
+
+### Key Documentation Files
+- /CLAUDE.md: Development guidelines and project memory
+- /README.md: Basic project setup
+- /SITE-MAP.md: Website structure
+- This file: PROJECT_HANDOVER_GUIDE.txt
+
+### Architecture Overview
+- Next.js 14 with TypeScript
+- Firebase Authentication & Firestore
+- Tailwind CSS for styling
+- Stripe for payments
+- Vercel for deployment
+- Member portal with corporate/individual memberships
+
+### Critical Business Logic
+- Member registration and approval workflow
+- Payment processing and invoice generation
+- Corporate vs individual membership types
+- Email notification system
+- Admin portal for member management
+
+## 8. HANDOVER CHECKLIST
+
+### Phase 1: Account Access
+□ Add to GitHub repository as admin/owner
+□ Add to Firebase project as Owner
+□ Add to Vercel project as admin
+□ Add to Stripe account as admin
+□ Add to Resend account
+□ Transfer domain management access
+
+### Phase 2: Credentials Transfer
+□ Share Firebase service account key
+□ Share all environment variables
+□ Share password manager vault
+□ Verify access to all admin panels
+
+### Phase 3: Knowledge Transfer
+□ Code walkthrough session
+□ Database structure explanation
+□ Payment flow demonstration
+□ Admin portal training
+□ Emergency procedures review
+
+### Phase 4: Testing & Validation
+□ New team member can deploy changes
+□ New team member can access all admin functions
+□ New team member can handle member inquiries
+□ Backup deployment successful
+□ All monitoring and alerts working
+
+## 9. EMERGENCY CONTACTS
+
+### Technical Issues
+- Vercel Support: support@vercel.com
+- Firebase Support: Firebase Console → Support
+- Stripe Support: Stripe Dashboard → Help
+
+### Business Continuity
+- Ensure at least 2 people have full admin access
+- Document any manual processes
+- Set up monitoring alerts for critical services
+- Maintain regular backups of database
+
+## 10. POST-HANDOVER
+
+### Recommended Actions
+1. Change all shared passwords
+2. Generate new API keys where possible
+3. Update emergency contact information
+4. Set up new monitoring/alerting
+5. Create regular backup procedures
+
+### Security Considerations
+- Remove Daniel Pitt's access after handover (if required)
+- Audit all user permissions
+- Update privacy policy with new contact information
+- Ensure GDPR compliance with new data controllers
+
+IMPORTANT: This handover involves access to sensitive member data, payment information, and business-critical systems. Ensure the recipient is properly authorized and trained before completing the transfer.

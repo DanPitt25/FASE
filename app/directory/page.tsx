@@ -35,7 +35,6 @@ export default function DirectoryPage() {
   const filteredMembers = members.filter(member => {
     const matchesSearch = !searchTerm || 
       member.personalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.organisation?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.registeredAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -203,7 +202,7 @@ export default function DirectoryPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-                          {member.personalName || member.displayName}
+                          {member.personalName}
                         </h3>
                         {member.primaryContact?.role && (
                           <p className="text-sm text-fase-black mt-1">{member.primaryContact.role}</p>
@@ -211,10 +210,10 @@ export default function DirectoryPage() {
                       </div>
                     </div>
 
-                    {(member.organizationName || member.organisation) && (
+                    {member.organizationName && (
                       <div className="mb-3">
                         <p className="text-sm font-medium text-fase-navy">
-                          {member.organizationName || member.organisation}
+                          {member.organizationName}
                         </p>
                       </div>
                     )}

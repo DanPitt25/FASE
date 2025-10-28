@@ -504,8 +504,7 @@ export default function Page() {
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-fase-navy/75"></div>
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center py-20 max-w-6xl mx-auto">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">Why Join FASE</h2>
-          <h3 className="text-lg sm:text-xl font-noto-serif font-medium text-fase-light-blue mb-6">A Practical Network for a Complex Market</h3>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">A Practical Network for a Complex Market</h2>
           <p className="text-fase-light-blue text-sm sm:text-base mb-6 leading-relaxed max-w-3xl mx-auto">
             Whether you&apos;re an MGA, insurer, broker, or service partner, FASE helps you stay connected to the people, information, and perspectives shaping delegated underwriting in Europe.
           </p>
@@ -520,7 +519,7 @@ export default function Page() {
           
           <div className="mt-16 pt-8 border-t border-fase-light-blue/30">
             <p className="text-fase-light-blue text-lg leading-relaxed italic">
-              FASE — Building a Connected, Informed, and Responsible Delegated Underwriting Community
+              FASE — building a connected, informed, and responsible Delegated Underwriting community
             </p>
           </div>
         </div>

@@ -8,17 +8,14 @@
 ## Development Notes
 - Mobile optimization branch: `mobile-optimization`
 - Main branch: `main`
-- Never add Claude attribution to git commits
-- Test commands: `npm run dev`, `npm run build`, `npm run lint`
+- Never add Claude attribution to git commits. NEVER ADD CLAUDE ATTRIBUTION TO GIT COMMITS.
+- ALWAYS use `git config user.name "Daniel Pitt"` and `git config user.email "your-email@domain.com"` before any commits
+- If Claude Code appears as contributor, immediately rewrite commit history to remove all traces
+- Test commands: `npm run build`, `npm run lint`
+- YOU CANNOT RUN NPM RUN DEV YOURSELF.
 
-## Mobile Responsiveness Status
-- ✅ Mobile hamburger menu implemented
-- ✅ Hero section optimized for mobile
-- ✅ Service cards responsive
-- ✅ Conference section mobile-friendly
-- ✅ CTA section optimized
-- ✅ Side navigation hidden on mobile
-
-## Current Branch Strategy
-- `main`: Production-ready desktop version
-- `mobile-optimization`: Mobile improvements and iterations
+## Firebase Access Patterns
+- **Client-side components**: Use client Firebase SDK (`import { db } from '../lib/firebase'`) with direct Firestore calls
+- **API routes**: Only needed for server-side operations requiring Firebase Admin SDK with service account credentials
+- **NEVER**: Create API routes just to wrap client-side Firebase operations - this breaks the auth context and requires unnecessary Admin SDK setup
+- **Rule**: If the client component can access Firestore directly (like every other part of the app), don't create an API route

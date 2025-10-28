@@ -8,13 +8,13 @@ import { getVideos, getPendingComments, moderateComment } from '../../lib/knowle
 import type { Video, Comment } from '../../lib/knowledge-base';
 // Note: MemberApplication type no longer used after UnifiedMember migration
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, createAlert, sendMessage } from '../../lib/unified-messaging';
-import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest } from '../../lib/unified-member';
+import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
 import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 
-// Pricing calculation function (adapted for UnifiedMember)
+// Pricing calculation function (member includes organization data)
 const calculateMembershipFee = (member: UnifiedMember): number => {
   let baseFee = 0;
   

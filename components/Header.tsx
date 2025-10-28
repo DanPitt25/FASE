@@ -82,7 +82,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 {user && (
                   <div className="flex items-center space-x-3">
                     <div className="text-sm text-fase-black">
-                      {t('logged_in_as')} {user.displayName || user.email?.split("@")[0]}
+                      {t('logged_in_as')} {
+                        member?.personalName 
+                          ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
+                          : user.displayName || user.email?.split("@")[0]
+                      }
                     </div>
                     {isAdmin && locale === 'en' && (
                       <a href="/admin-portal" className="text-xs text-fase-navy hover:text-fase-gold transition-colors duration-200 font-medium border border-fase-navy hover:border-fase-gold px-2 py-1 rounded">
@@ -323,7 +327,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             ) : user ? (
               <div className="mt-4 pt-4 border-t border-fase-light-gold">
                 <div className="text-center text-sm text-fase-black mb-2">
-                  {t('signed_in_as')} {user.displayName || user.email?.split('@')[0]}
+                  {t('signed_in_as')} {
+                    member?.personalName 
+                      ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
+                      : user.displayName || user.email?.split('@')[0]
+                  }
                 </div>
                 <button
                   onClick={handleSignOut}
