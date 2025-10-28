@@ -554,25 +554,7 @@ export default function IntegratedRegisterForm() {
       if (domainExists) {
         throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
       }
-      // Step 1: Prepare all data first (including logo upload) before any account creation
-      let logoUrl = '';
-      if (logoFile) {
-        try {
-          // Create clean identifier for logo filename
-          const fullName = `${firstName} ${surname}`.trim();
-          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
-            .toLowerCase().replace(/[^a-z0-9]/g, '_');
-          
-          // Use direct Firebase Storage upload
-          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
-          logoUrl = uploadResult.downloadURL;
-        } catch (uploadError) {
-          console.warn('Logo upload failed, continuing without logo:', uploadError);
-          // Continue without logo - this is not a blocking error
-        }
-      }
-
-      // Step 2: Create Firebase Auth account
+      // Step 1: Create Firebase Auth account first (required for Storage permissions)
       const { createUserWithEmailAndPassword, updateProfile, deleteUser } = await import('firebase/auth');
       const { auth } = await import('@/lib/firebase');
       
@@ -588,6 +570,24 @@ export default function IntegratedRegisterForm() {
         : fullName;
       
       await updateProfile(user, { displayName });
+
+      // Step 2: Upload logo now that user is authenticated
+      let logoUrl = '';
+      if (logoFile) {
+        try {
+          // Create clean identifier for logo filename
+          const fullName = `${firstName} ${surname}`.trim();
+          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
+            .toLowerCase().replace(/[^a-z0-9]/g, '_');
+          
+          // Use direct Firebase Storage upload (user is now authenticated)
+          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
+          logoUrl = uploadResult.downloadURL;
+        } catch (uploadError) {
+          console.warn('Logo upload failed, continuing without logo:', uploadError);
+          // Continue without logo - this is not a blocking error
+        }
+      }
 
       // Step 3: Create Firestore documents - if this fails, we'll clean up the auth account
       try {
