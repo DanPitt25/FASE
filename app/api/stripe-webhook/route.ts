@@ -53,7 +53,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
     const accountRef = db.collection('accounts').doc(userId);
     const accountDoc = await accountRef.get();
     
-    if (accountDoc.exists()) {
+    if (accountDoc.exists) {
       const accountData = accountDoc.data();
       console.log('Found account for user:', userId, 'with membershipType:', accountData?.membershipType);
       
@@ -80,7 +80,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
       const memberRef = orgDoc.ref.collection('members').doc(userId);
       const memberDoc = await memberRef.get();
       
-      if (memberDoc.exists()) {
+      if (memberDoc.exists) {
         // Found user as team member - update the organization account
         await orgDoc.ref.update({
           status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
