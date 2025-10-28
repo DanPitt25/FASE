@@ -208,6 +208,7 @@ export default function IntegratedRegisterForm() {
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<'stripe' | 'invoice' | null>(null);
 
 
@@ -319,7 +320,7 @@ export default function IntegratedRegisterForm() {
       
       // Check domain before sending verification code
       try {
-        setLoading(true);
+        setIsSendingVerification(true);
         
         // Check if domain already exists
         const domainExists = await checkDomainExists(email);
@@ -336,7 +337,7 @@ export default function IntegratedRegisterForm() {
       } catch (error: any) {
         setError(error.message || "Failed to send verification code");
       } finally {
-        setLoading(false);
+        setIsSendingVerification(false);
       }
     } else if (step === 2) {
       // Validate membership basic fields
@@ -837,11 +838,16 @@ export default function IntegratedRegisterForm() {
   };
 
   const handleSendVerificationCode = async () => {
+    if (isSendingVerification) return;
+    
     try {
+      setIsSendingVerification(true);
       await sendVerificationCode(email);
       setError("");
     } catch (error: any) {
       setError(error.message || "Failed to send verification code");
+    } finally {
+      setIsSendingVerification(false);
     }
   };
 
@@ -1184,8 +1190,9 @@ export default function IntegratedRegisterForm() {
             size="medium" 
             className="w-full"
             onClick={handleSendVerificationCode}
+            disabled={isSendingVerification}
           >
-            Resend Code
+            {isSendingVerification ? "Sending..." : "Resend Code"}
           </Button>
           
           <p className="text-xs text-fase-black text-center">
@@ -2134,8 +2141,9 @@ export default function IntegratedRegisterForm() {
                 type="button"
                 variant="primary" 
                 onClick={handleNext}
+                disabled={step === 1 && isSendingVerification}
               >
-                Next
+                {step === 1 && isSendingVerification ? "Sending Code..." : "Next"}
               </Button>
             ) : step === 3 ? (
               <Button 
