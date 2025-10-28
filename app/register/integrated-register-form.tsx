@@ -1463,7 +1463,7 @@ export default function IntegratedRegisterForm() {
               <div>
                 <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members</h4>
                 <p className="text-sm text-fase-black mt-1">
-                  Add up to 3 people to your corporate membership. They'll receive emails to confirm their accounts after registration.
+                  Add up to 3 people to your corporate membership. They&apos;ll receive emails to confirm their accounts after registration.
                 </p>
               </div>
 
