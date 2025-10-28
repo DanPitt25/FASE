@@ -16,7 +16,7 @@ const initializeStripe = () => {
     }
     
     stripe = new Stripe(stripeKey, {
-      apiVersion: '2025-09-30.clover',
+      apiVersion: '2025-08-27.basil',
     });
   }
   return stripe;
