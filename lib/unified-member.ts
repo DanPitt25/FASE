@@ -401,6 +401,42 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
   }
 };
 
+// Get accounts by status (for admin portal - returns account-level data only)
+export const getAccountsByStatus = async (status: UnifiedMember['status']): Promise<UnifiedMember[]> => {
+  try {
+    const allAccounts: UnifiedMember[] = [];
+    const accountsRef = collection(db, 'accounts');
+    
+    // Get all accounts (individual + corporate) with matching status
+    const accountsQuery = query(accountsRef, where('status', '==', status));
+    const accountsSnapshot = await getDocs(accountsQuery);
+    
+    accountsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      allAccounts.push({
+        id: doc.id, // This is the account ID, not member ID
+        email: data.email,
+        personalName: data.personalName || data.displayName || 'Unknown',
+        membershipType: data.membershipType,
+        status: data.status,
+        organizationName: data.organizationName,
+        organizationType: data.organizationType,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        // Include organization data
+        portfolio: data.portfolio,
+        hasOtherAssociations: data.hasOtherAssociations,
+        primaryContact: data.primaryContact,
+        registeredAddress: data.registeredAddress
+      } as UnifiedMember);
+    });
+    
+    return allAccounts;
+  } catch (error) {
+    console.error('Error getting accounts by status:', error);
+    return [];
+  }
+};
 
 // Get all approved members for directory
 export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]> => {

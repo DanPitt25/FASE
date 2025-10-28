@@ -8,7 +8,7 @@ import { getVideos, getPendingComments, moderateComment } from '../../lib/knowle
 import type { Video, Comment } from '../../lib/knowledge-base';
 // Note: MemberApplication type no longer used after UnifiedMember migration
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, createAlert, sendMessage } from '../../lib/unified-messaging';
-import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
+import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, getAccountsByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
 import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
 import Button from '../../components/Button';
@@ -117,18 +117,18 @@ export default function AdminPortalPage() {
 
   const loadData = async () => {
     try {
-      const [videosData, commentsData, pendingMembers, approvedMembers, joinRequestsData, alertsData, messagesData] = await Promise.all([
+      const [videosData, commentsData, pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
         getVideos(), // Get all published videos
         user?.uid ? getPendingComments(user.uid) : [],
-        getMembersByStatus('pending_invoice'), // Get pending invoice members
-        getMembersByStatus('approved'), // Get approved members  
+        getAccountsByStatus('pending_invoice'), // Get pending invoice accounts
+        getAccountsByStatus('approved'), // Get approved accounts  
         getAllPendingJoinRequests(), // Get pending join requests
         user?.uid ? getUserAlerts(user.uid) : [],
         user?.uid ? getUserMessages(user.uid) : []
       ]);
       setVideos(videosData);
       setPendingComments(commentsData);
-      setMemberApplications([...pendingMembers, ...approvedMembers]); // Combine for display
+      setMemberApplications([...pendingAccounts, ...approvedAccounts]); // Combine for display
       setPendingJoinRequests(joinRequestsData);
       setAlerts(alertsData);
       setMessages(messagesData);
