@@ -56,9 +56,6 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
     const accountDoc = await accountRef.get();
     
     if (safeDocExists(accountDoc)) {
-      const accountData = safeDocData(accountDoc);
-      console.log('Found account for user:', userId, 'with membershipType:', accountData?.membershipType);
-      
       // Update account status (works for both individual and corporate accounts)
       await accountRef.update({
         status: paymentStatus === 'paid' ? 'approved' : paymentStatus,
@@ -67,8 +64,6 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
         paymentId: paymentId,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
-      
-      console.log('Account status updated successfully for user:', userId, 'account type:', accountData?.membershipType);
       return;
     }
     
@@ -92,12 +87,11 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
         
-        console.log('Organization account status updated for team member:', userId, 'in org:', orgDoc.id);
         return;
       }
     }
     
-    console.log('No account found for user:', userId);
+    console.error('No account found for user:', userId);
   } catch (error) {
     console.error('Error updating member status:', error);
   }
@@ -105,11 +99,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
 
 
 export async function POST(request: NextRequest) {
-  console.log('=== STRIPE WEBHOOK RECEIVED - Updated Secret ===');
-  console.log('Request headers:', Object.fromEntries(request.headers.entries()));
-  
   await initializeServices();
-  console.log('Services initialized, processing webhook...');
   
   const body = await request.text();
   const headersList = headers();
@@ -119,55 +109,40 @@ export async function POST(request: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, sig!, endpointSecret);
-    console.log('Webhook signature verified, event type:', event.type);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
   }
 
   // Handle the event
-  console.log('Processing event:', event.type);
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log('Payment successful (checkout completed):', session.id);
-      console.log('Session metadata:', session.metadata);
-      
-      // Update the member application status
-      console.log('=== WEBHOOK: Full session metadata ===', JSON.stringify(session.metadata, null, 2));
       
       if (session.metadata?.user_id) {
         try {
-          console.log('=== WEBHOOK: Attempting to update member for user:', session.metadata.user_id, '===');
           await updateMemberStatus(
             session.metadata.user_id,
             'paid',
             'stripe',
             session.id
           );
-          console.log('=== WEBHOOK: Member application updated successfully for user:', session.metadata.user_id, '===');
         } catch (error) {
-          console.error('=== WEBHOOK: Failed to update member application:', error, '===');
+          console.error('Failed to update member application:', error);
         }
       } else {
-        console.error('=== WEBHOOK: No user_id found in session metadata ===');
-        console.error('=== WEBHOOK: Available metadata keys:', Object.keys(session.metadata || {}));
-        console.error('=== WEBHOOK: Full metadata:', JSON.stringify(session.metadata, null, 2));
+        console.error('No user_id found in session metadata');
       }
       break;
 
     case 'invoice.payment_succeeded':
       const invoice = event.data.object as Stripe.Invoice;
-      console.log('Invoice payment successful:', invoice.id);
-      console.log('Invoice metadata:', invoice.metadata);
       
       // Only handle subscription invoice payments (not standalone invoices)
       const invoiceAny = invoice as any;
       const subscriptionId = typeof invoiceAny.subscription === 'string' ? invoiceAny.subscription : invoiceAny.subscription?.id;
       
       if (subscriptionId) {
-        // Handle subscription invoice payments
-        console.log('Processing subscription invoice payment');
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         if (subscription.metadata?.user_id) {
           try {
@@ -177,26 +152,23 @@ export async function POST(request: NextRequest) {
               'stripe',
               invoice.id || ''
             );
-            console.log('Member application updated for subscription user:', subscription.metadata.user_id);
           } catch (error) {
             console.error('Failed to update member application:', error);
           }
         }
-      } else {
-        console.log('Non-subscription invoice - ignoring (bank transfer invoices handled manually)');
       }
       break;
 
 
     case 'payment_intent.payment_failed':
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log('Payment failed:', paymentIntent.id);
+      console.error('Payment failed:', paymentIntent.id);
       break;
 
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      // Silently ignore unhandled event types
+      break;
   }
 
-  console.log('=== WEBHOOK PROCESSING COMPLETE ===');
   return NextResponse.json({ received: true, timestamp: new Date().toISOString() });
 }

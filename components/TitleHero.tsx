@@ -1,3 +1,7 @@
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+
 type HeroVariant = 'brand' | 'page' | 'content' | 'feature' | 'minimal';
 type BackgroundTreatment = 'solid' | 'gradient' | 'image' | 'pattern';
 type LayoutPattern = 'centered' | 'split' | 'layered';
@@ -319,12 +323,13 @@ export default function TitleHero({
   return (
     <section id={id} className={`relative ${backgroundStyles} ${heightClass} overflow-hidden`}>
       {/* Background Image */}
-      {(backgroundTreatment === 'image' || backgroundImage) && (
+      {(backgroundTreatment === 'image' || backgroundImage) && backgroundImage && (
         <div className="absolute inset-0">
-          <img 
+          <Image 
             src={backgroundImage} 
             alt="" 
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-fase-navy bg-opacity-75"></div>
         </div>

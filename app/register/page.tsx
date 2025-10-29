@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import IntegratedRegisterForm from './integrated-register-form';
 
 export default function Register() {
@@ -7,9 +8,11 @@ export default function Register() {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-xl border border-fase-light-gold overflow-hidden">
           <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-6 py-8 text-center">
-            <img 
+            <Image 
               src="/fase-logo-rgb.png" 
               alt="FASE Logo" 
+              width={120}
+              height={48}
               className="h-12 w-auto object-contain"
             />
           </div>

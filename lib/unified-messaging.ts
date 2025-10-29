@@ -279,8 +279,6 @@ const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
 // Get messages for a specific user
 export const getUserMessages = async (userId: string): Promise<(Message & UserMessage)[]> => {
   try {
-    console.log('[DEBUG] getUserMessages called with userId:', userId);
-    
     const userMessagesRef = collection(db, 'userMessages');
     const userMessagesQuery = query(
       userMessagesRef,
@@ -288,79 +286,29 @@ export const getUserMessages = async (userId: string): Promise<(Message & UserMe
       where('isDeleted', '==', false)
     );
     
-    console.log('[DEBUG] Querying userMessages collection with filters:', {
-      collection: 'userMessages',
-      filters: [
-        { field: 'userId', operator: '==', value: userId },
-        { field: 'isDeleted', operator: '==', value: false }
-      ]
-    });
-    
     const userMessages = await getDocs(userMessagesQuery);
-    
-    console.log('[DEBUG] userMessages query returned:', {
-      docCount: userMessages.docs.length,
-      docs: userMessages.docs.map(doc => ({
-        id: doc.id,
-        data: doc.data()
-      }))
-    });
     
     const messagesWithDetails = await Promise.all(
       userMessages.docs.map(async (userMessageDoc) => {
         const userMessage = userMessageDoc.data() as UserMessage;
-        console.log('[DEBUG] Processing userMessage:', {
-          userMessageId: userMessageDoc.id,
-          messageId: userMessage.messageId,
-          userId: userMessage.userId,
-          isRead: userMessage.isRead,
-          isDeleted: userMessage.isDeleted
-        });
-        
         const messageDoc = await getDoc(doc(db, 'messages', userMessage.messageId));
         
         if (messageDoc.exists()) {
           const message = messageDoc.data() as Message;
-          console.log('[DEBUG] Found message:', {
-            messageId: userMessage.messageId,
-            subject: message.subject,
-            content: message.content?.substring(0, 50) + '...',
-            messageType: message.messageType,
-            recipientType: message.recipientType
-          });
-          
-          const combinedMessage = { 
+          return { 
             ...message, 
             ...userMessage,
             id: userMessageDoc.id // Use userMessage ID for operations
           };
-          
-          console.log('[DEBUG] Combined message object:', {
-            id: combinedMessage.id,
-            subject: combinedMessage.subject,
-            messageId: combinedMessage.messageId,
-            userId: combinedMessage.userId,
-            isRead: combinedMessage.isRead,
-            isDeleted: combinedMessage.isDeleted
-          });
-          
-          return combinedMessage;
         } else {
-          console.log('[DEBUG] Message not found for messageId:', userMessage.messageId);
           return null;
         }
       })
     );
     
-    const finalMessages = messagesWithDetails.filter(message => message !== null) as (Message & UserMessage)[];
-    console.log('[DEBUG] Final messages returned:', {
-      count: finalMessages.length,
-      subjects: finalMessages.map(msg => msg.subject)
-    });
-    
-    return finalMessages;
+    return messagesWithDetails.filter(message => message !== null) as (Message & UserMessage)[];
   } catch (error) {
-    console.error('[DEBUG] Error getting user messages:', error);
+    console.error('Error getting user messages:', error);
     return [];
   }
 };

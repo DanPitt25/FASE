@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/DashboardLayout';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
@@ -109,9 +109,9 @@ export default function AdminPortalPage() {
       console.log('User is admin, loading data');
       loadData();
     }
-  }, [user, isAdmin, authLoading, adminLoading, router]);
+  }, [user, isAdmin, authLoading, adminLoading, router, loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
         getAccountsByStatus('pending_invoice'), // Get pending invoice accounts
@@ -129,7 +129,7 @@ export default function AdminPortalPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
 
   const handleJoinRequestAction = (

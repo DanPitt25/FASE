@@ -284,9 +284,11 @@ export default function Page() {
               whoWeAreVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
             }`}>
               <div className="transform transition-all duration-700 hover:scale-105">
-                <img 
+                <Image 
                   src="/conference.jpg" 
                   alt="Insurance professionals collaborating"
+                  width={800}
+                  height={600}
                   className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
@@ -364,10 +366,11 @@ export default function Page() {
                 }}
               >
                 <div className="relative h-80 lg:h-96 2xl:h-[450px] overflow-hidden border border-gray-200 shadow-lg rounded-lg">
-                  <img 
+                  <Image 
                     src={impact.image} 
                     alt={impact.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-fase-navy/20 transition-all duration-300 group-hover:bg-fase-navy/10"></div>
                   

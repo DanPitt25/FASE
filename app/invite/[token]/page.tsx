@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, updateDoc, deleteDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -26,11 +26,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'validate' | 'create-password' | 'complete'>('validate');
 
-  useEffect(() => {
-    validateInviteToken();
-  }, []);
-
-  const validateInviteToken = async () => {
+  const validateInviteToken = useCallback(async () => {
     try {
       // Decode the token
       const decodedData = JSON.parse(atob(params.token));
@@ -53,7 +49,11 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.token]);
+
+  useEffect(() => {
+    validateInviteToken();
+  }, [validateInviteToken]);
 
   const validatePassword = (password: string) => {
     const requirements = {
