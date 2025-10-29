@@ -2,6 +2,8 @@ import './globals.css';
 import { UnifiedAuthProvider } from '../contexts/UnifiedAuthContext';
 import { LocaleProvider } from '../contexts/LocaleContext';
 import DynamicIntlProvider from '../components/DynamicIntlProvider';
+import CookieBanner from '../components/CookieBanner';
+import ConsentAwareAnalytics from '../components/ConsentAwareAnalytics';
 
 let title = 'FASE - Federation of European MGAs';
 let description =
@@ -38,6 +40,8 @@ export default async function RootLayout({
           <DynamicIntlProvider allMessages={allMessages}>
             <UnifiedAuthProvider>
               {children}
+              <CookieBanner />
+              <ConsentAwareAnalytics />
             </UnifiedAuthProvider>
           </DynamicIntlProvider>
         </LocaleProvider>
