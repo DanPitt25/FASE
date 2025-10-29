@@ -1,44 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
+import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
+import { DatabaseMonitor } from '../../../lib/monitoring';
 
-// Initialize Firebase Admin using same approach as stripe webhook
+// Initialize Firebase Admin using Application Default Credentials
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      throw new Error('Firebase credentials not configured');
-    }
-
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
     admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
+      credential: admin.credential.applicationDefault(),
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`,
     });
   }
   
   return {
+    auth: admin.auth(),
     storage: admin.storage()
   };
 };
 
+
 export async function POST(request: NextRequest) {
+  const clientInfo = getClientInfo(request);
+  
   try {
+    // Verify authentication first
+    const authResult = await verifyAuthToken(request);
+    const userUid = authResult.uid;
+    
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const identifier = formData.get('identifier') as string;
 
-    // Validate inputs
-    if (!file || !identifier) {
+    // Validate inputs and ensure user can only upload for themselves
+    if (!file) {
       return NextResponse.json(
-        { error: 'File and identifier are required' },
+        { error: 'File is required' },
         { status: 400 }
       );
     }
+    
+    // Use authenticated user's UID as identifier for security
+    const safeIdentifier = userUid;
 
     // Validate file
     const maxSize = 5 * 1024 * 1024; // 5MB
@@ -59,9 +62,9 @@ export async function POST(request: NextRequest) {
 
     const { storage } = await initializeAdmin();
 
-    // Create file path
+    // Create file path using authenticated user ID
     const fileExtension = file.name.split('.').pop() || 'png';
-    const fileName = `${identifier}-logo.${fileExtension}`;
+    const fileName = `${safeIdentifier}-logo.${fileExtension}`;
     const filePath = `graphics/logos/${fileName}`;
 
     // Convert File to Buffer
@@ -79,6 +82,23 @@ export async function POST(request: NextRequest) {
 
     // Make the file publicly readable
     await fileRef.makePublic();
+    
+    // Log successful upload
+    await logSecurityEvent({
+      type: 'auth_success',
+      userId: userUid,
+      email: authResult.email,
+      details: { action: 'logo_uploaded', fileName, fileSize: file.size },
+      severity: 'low',
+      ...clientInfo
+    });
+    
+    await DatabaseMonitor.logDatabaseOperation({
+      type: 'write',
+      collection: 'storage',
+      documentId: filePath,
+      userId: userUid
+    });
 
     // Get the download URL
     const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
@@ -91,6 +111,21 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Logo upload error:', error);
+    
+    if (error instanceof AuthError) {
+      await logSecurityEvent({
+        type: 'auth_failure',
+        details: { error: error.message, action: 'logo_upload' },
+        severity: 'medium',
+        ...clientInfo
+      });
+      
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: error.statusCode }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to upload logo' },
       { status: 500 }

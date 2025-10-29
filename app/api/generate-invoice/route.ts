@@ -4,21 +4,11 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin using Application Default Credentials
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      throw new Error('Firebase credentials not configured');
-    }
-
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
     admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
+      credential: admin.credential.applicationDefault(),
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
   }
@@ -27,6 +17,18 @@ const initializeAdmin = async () => {
     auth: admin.auth(),
     db: admin.firestore()
   };
+};
+
+// Verify Firebase ID token
+const verifyAuth = async (request: NextRequest) => {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+  
+  const token = authHeader.substring(7);
+  const { auth } = await initializeAdmin();
+  return await auth.verifyIdToken(token);
 };
 
 // Calculate membership fee (same logic as frontend)
@@ -160,11 +162,16 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, userEmail, membershipData } = await request.json();
+    // Verify authentication first
+    const decodedToken = await verifyAuth(request);
+    const userUid = decodedToken.uid;
+    const userEmail = decodedToken.email;
+    
+    const { membershipData } = await request.json();
 
-    if (!userId || !userEmail || !membershipData) {
+    if (!membershipData) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Membership data is required' },
         { status: 400 }
       );
     }
@@ -172,7 +179,7 @@ export async function POST(request: NextRequest) {
     // const { db } = await initializeAdmin(); // Skip Firebase for PDF testing
 
     // Generate invoice number
-    const invoiceNumber = `FASE-${Date.now()}-${userId.slice(-6)}`;
+    const invoiceNumber = `FASE-${Date.now()}-${userUid.slice(-6)}`;
     
     // Calculate fees
     const totalAmount = getDiscountedFee(membershipData);
@@ -578,6 +585,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Generate invoice error:', error);
+    
+    if (error instanceof Error && error.message.includes('authorization')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to generate invoice' },
       { status: 500 }

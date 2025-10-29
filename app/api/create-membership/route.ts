@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
+import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 
-// Initialize Firebase Admin using same approach as stripe webhook
+// Initialize Firebase Admin using Application Default Credentials
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      throw new Error('Firebase credentials not configured');
-    }
-
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
     admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
+      credential: admin.credential.applicationDefault(),
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
   }
@@ -26,23 +17,32 @@ const initializeAdmin = async () => {
   };
 };
 
+
 export async function POST(request: NextRequest) {
+  const clientInfo = getClientInfo(request);
+  
   try {
+    // Verify authentication first
+    const authResult = await verifyAuthToken(request);
+    const userUid = authResult.uid;
+    
     const membershipData = await request.json();
     console.log('Membership data received:', JSON.stringify(membershipData, null, 2));
     
     const { auth, db } = await initializeAdmin();
 
-    // Validate required fields
-    if (!membershipData.userUid || !membershipData.membershipType) {
+    // Validate required fields and ensure user can only create membership for themselves
+    if (!membershipData.membershipType) {
       return NextResponse.json(
-        { error: 'User UID and membership type are required' },
+        { error: 'Membership type is required' },
         { status: 400 }
       );
     }
+    
+    // Use authenticated user's UID, not from request body
+    membershipData.userUid = userUid;
 
     const { 
-      userUid,
       membershipType,
       personalName,
       organizationName,
@@ -82,6 +82,16 @@ export async function POST(request: NextRequest) {
 
     // Update the existing account document
     await db.collection('accounts').doc(userUid).update(updateData);
+    
+    // Log membership creation
+    await logSecurityEvent({
+      type: 'auth_success',
+      userId: userUid,
+      email: authResult.email,
+      details: { action: 'membership_created', membershipType },
+      severity: 'low',
+      ...clientInfo
+    });
 
     return NextResponse.json({
       success: true,
@@ -89,6 +99,21 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Create membership error:', error);
+    
+    if (error instanceof AuthError) {
+      await logSecurityEvent({
+        type: 'auth_failure',
+        details: { error: error.message, action: 'membership_creation' },
+        severity: 'medium',
+        ...clientInfo
+      });
+      
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: error.statusCode }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to create membership application' },
       { status: 500 }
