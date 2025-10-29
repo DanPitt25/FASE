@@ -27,7 +27,7 @@ export default function Button({
 
   const variantClasses = {
     primary: 'bg-fase-navy text-white hover:bg-fase-black border-2 border-fase-navy hover:border-fase-black',
-    secondary: 'bg-white text-fase-black border-2 border-fase-black hover:bg-fase-light-blue hover:border-fase-navy hover:text-fase-navy',
+    secondary: 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300',
     ghost: 'bg-transparent text-fase-black border-2 border-transparent hover:border-fase-black hover:bg-fase-light-blue'
   };
 

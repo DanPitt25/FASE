@@ -74,10 +74,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Admin test payment override
+    const isTestPayment = requestData.testPayment === true;
+    
     // Calculate price based on membership type and premium bracket
     let priceInCents = 90000; // Default base price
     
-    if (membershipType === 'individual') {
+    if (isTestPayment) {
+      priceInCents = 1; // 1 cent for admin testing
+    } else if (membershipType === 'individual') {
       priceInCents = 50000; // €500 for individual memberships
     } else if (organizationType === 'MGA') {
       priceInCents = getPriceForPremiumBracket(grossWrittenPremiums);
@@ -91,23 +96,29 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     const session = await stripeInstance.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isTestPayment ? 'payment' : 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`,
-              description: membershipType === 'individual' 
-                ? `Annual individual membership for ${organizationName}`
-                : organizationType === 'MGA' 
-                  ? `Annual membership for ${organizationName} (${grossWrittenPremiums} premium bracket)`
-                  : `Annual corporate membership for ${organizationName}`,
+              name: isTestPayment 
+                ? `[ADMIN TEST] FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`
+                : `FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`,
+              description: isTestPayment
+                ? `ADMIN TEST PAYMENT - 1 cent test charge for ${organizationName}`
+                : membershipType === 'individual' 
+                  ? `Annual individual membership for ${organizationName}`
+                  : organizationType === 'MGA' 
+                    ? `Annual membership for ${organizationName} (${grossWrittenPremiums} premium bracket)`
+                    : `Annual corporate membership for ${organizationName}`,
             },
-            recurring: {
-              interval: 'year',
-            },
+            ...(isTestPayment ? {} : {
+              recurring: {
+                interval: 'year',
+              }
+            }),
             unit_amount: priceInCents,
           },
           quantity: 1,
@@ -119,6 +130,7 @@ export async function POST(request: NextRequest) {
         membership_type: membershipType,
         user_id: userId || '',
         user_email: userEmail || '',
+        test_payment: isTestPayment ? 'true' : 'false',
         ...(membershipType === 'corporate' && organizationType === 'MGA' && { gross_written_premiums: grossWrittenPremiums })
       },
       success_url: `${baseUrl}/member-portal?session_id={CHECKOUT_SESSION_ID}&success=true`,

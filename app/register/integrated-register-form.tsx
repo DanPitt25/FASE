@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { sendVerificationCode, verifyCode } from "../../lib/auth";
 import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 import Button from "../../components/Button";
+import SearchableCountrySelect from "../../components/SearchableCountrySelect";
 import { handleAuthError } from "../../lib/auth-errors";
 
 // Password validation function
@@ -176,7 +177,6 @@ export default function IntegratedRegisterForm() {
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
-  const [customCountry, setCustomCountry] = useState("");
   
   // Portfolio fields (for MGAs)
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
@@ -190,6 +190,7 @@ export default function IntegratedRegisterForm() {
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
   const [otherAssociations, setOtherAssociations] = useState<string[]>([]);
+  const [isAdminTest, setIsAdminTest] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   
   const [error, setError] = useState("");
@@ -245,38 +246,6 @@ export default function IntegratedRegisterForm() {
     return '500m+';
   };
 
-  const countryOptions = [
-    { value: 'AT', label: 'Austria' },
-    { value: 'BE', label: 'Belgium' },
-    { value: 'BG', label: 'Bulgaria' },
-    { value: 'HR', label: 'Croatia' },
-    { value: 'CY', label: 'Cyprus' },
-    { value: 'CZ', label: 'Czech Republic' },
-    { value: 'DK', label: 'Denmark' },
-    { value: 'EE', label: 'Estonia' },
-    { value: 'FI', label: 'Finland' },
-    { value: 'FR', label: 'France' },
-    { value: 'DE', label: 'Germany' },
-    { value: 'GR', label: 'Greece' },
-    { value: 'HU', label: 'Hungary' },
-    { value: 'IE', label: 'Ireland' },
-    { value: 'IT', label: 'Italy' },
-    { value: 'LV', label: 'Latvia' },
-    { value: 'LT', label: 'Lithuania' },
-    { value: 'LU', label: 'Luxembourg' },
-    { value: 'MT', label: 'Malta' },
-    { value: 'NL', label: 'Netherlands' },
-    { value: 'PL', label: 'Poland' },
-    { value: 'PT', label: 'Portugal' },
-    { value: 'RO', label: 'Romania' },
-    { value: 'SK', label: 'Slovakia' },
-    { value: 'SI', label: 'Slovenia' },
-    { value: 'ES', label: 'Spain' },
-    { value: 'SE', label: 'Sweden' },
-    { value: 'GB', label: 'United Kingdom' },
-    { value: 'US', label: 'United States' },
-    { value: 'OTHER', label: 'Other' }
-  ];
 
 
   const handleNext = async () => {
@@ -397,10 +366,6 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      if (country === 'OTHER' && !customCountry.trim()) {
-        setError("Please specify your country");
-        return;
-      }
       
       if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
         setError("Gross written premiums are required for MGA memberships");
@@ -431,6 +396,9 @@ export default function IntegratedRegisterForm() {
   };
 
   const calculateMembershipFee = () => {
+    if (isAdminTest) {
+      return 0.01; // 1 cent for admin test
+    }
     if (membershipType === 'individual') {
       return 500;
     } else if (membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums) {
@@ -634,7 +602,7 @@ export default function IntegratedRegisterForm() {
               city,
               county: state,
               postcode: postalCode,
-              country: country === 'OTHER' ? customCountry : country
+              country: country
             },
             ...(organizationType === 'MGA' && {
               portfolio: {
@@ -711,7 +679,7 @@ export default function IntegratedRegisterForm() {
               city,
               county: state,
               postcode: postalCode,
-              country: country === 'OTHER' ? customCountry : country
+              country: country
             },
             hasOtherAssociations: hasOtherAssociations ?? false,
             otherAssociations: hasOtherAssociations ? otherAssociations : [],
@@ -813,7 +781,8 @@ export default function IntegratedRegisterForm() {
           membershipType,
           grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
           userEmail: email,
-          userId: auth.currentUser.uid
+          userId: auth.currentUser.uid,
+          testPayment: isAdminTest
         }),
       });
 
@@ -924,7 +893,7 @@ export default function IntegratedRegisterForm() {
                   city,
                   state,
                   postalCode,
-                  country: country === 'OTHER' ? customCountry : country
+                  country: country
                 },
                 hasOtherAssociations
               }
@@ -1029,7 +998,7 @@ export default function IntegratedRegisterForm() {
             city,
             county: state,
             postcode: postalCode,
-            country: country === 'OTHER' ? customCountry : country
+            country: country
           },
           ...(organizationType === 'MGA' && {
             portfolio: {
@@ -1116,7 +1085,7 @@ export default function IntegratedRegisterForm() {
             city,
             county: state,
             postcode: postalCode,
-            country: country === 'OTHER' ? customCountry : country
+            country: country
           },
           hasOtherAssociations: hasOtherAssociations ?? false,
           otherAssociations: hasOtherAssociations ? otherAssociations : [],
@@ -1700,31 +1669,17 @@ export default function IntegratedRegisterForm() {
               />
             </div>
             
-            <ValidatedSelect
+            <SearchableCountrySelect
               label="Country"
               fieldKey="country"
               value={country}
               onChange={setCountry}
-              options={countryOptions}
               required
               touchedFields={touchedFields}
               attemptedNext={attemptedNext}
               markFieldTouched={markFieldTouched}
             />
             
-            {country === 'OTHER' && (
-              <ValidatedInput
-                label="Specify Country"
-                fieldKey="customCountry"
-                value={customCountry}
-                onChange={setCustomCountry}
-                placeholder="Enter country name"
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-            )}
           </div>
 
           {/* Portfolio Information for MGAs */}
@@ -1913,6 +1868,44 @@ export default function IntegratedRegisterForm() {
                 </div>
               )}
             </div>
+            
+            {/* Admin Test Option */}
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-3">
+                Admin Test Payment (Remove after testing)
+              </label>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setIsAdminTest(false)}
+                  className={`px-4 py-2 rounded-lg border transition-colors ${
+                    !isAdminTest
+                      ? 'bg-fase-navy text-white border-fase-navy'
+                      : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
+                  }`}
+                >
+                  Normal Payment
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAdminTest(true)}
+                  className={`px-4 py-2 rounded-lg border transition-colors ${
+                    isAdminTest
+                      ? 'bg-red-600 text-white border-red-600'
+                      : 'bg-white text-red-600 border-red-300 hover:border-red-600'
+                  }`}
+                >
+                  Admin Test (€0.01)
+                </button>
+              </div>
+              {isAdminTest && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    <strong>WARNING:</strong> This will create a 1 cent test payment. Remove this option after testing.
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Logo Upload */}
             <div>
@@ -1985,7 +1978,7 @@ export default function IntegratedRegisterForm() {
               
               <div>
                 <span className="text-fase-navy font-medium">Country:</span>
-                <p className="text-fase-black">{country === 'OTHER' ? customCountry : country}</p>
+                <p className="text-fase-black">{country}</p>
               </div>
               
               {membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums && (
@@ -2158,10 +2151,6 @@ export default function IntegratedRegisterForm() {
                     return;
                   }
                   
-                  if (country === 'OTHER' && !customCountry.trim()) {
-                    setError("Please specify your country");
-                    return;
-                  }
                   
                   if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
                     setError("Gross written premiums are required for MGA memberships");
@@ -2193,18 +2182,12 @@ export default function IntegratedRegisterForm() {
           {step === 1 && (
             <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
               <p className="text-sm text-fase-black mb-4">Already a member?</p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex justify-center">
                 <a 
                   href="/login" 
                   className="inline-flex items-center justify-center px-4 py-2 border border-fase-navy text-sm font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
                 >
                   Sign in to existing account
-                </a>
-                <a 
-                  href="/join-company" 
-                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-gold text-sm font-medium rounded-md text-fase-gold bg-white hover:bg-fase-light-blue transition-colors duration-200"
-                >
-                  Join existing company membership
                 </a>
               </div>
             </div>

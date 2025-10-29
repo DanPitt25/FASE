@@ -124,6 +124,7 @@ export interface OrganizationAccount {
   logoURL?: string;
   hasOtherAssociations?: boolean;
   otherAssociations?: string[];
+  linesOfBusiness?: string[];
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
   dataProcessingAgreed?: boolean;
@@ -169,6 +170,10 @@ export interface UnifiedMember {
     postcode: string;
     country: string;
   };
+  
+  // Additional organization data
+  logoURL?: string;
+  linesOfBusiness?: string[];
   
   // Timestamps
   createdAt: any;
@@ -238,6 +243,13 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
           status: data.status || 'guest',
           organizationName: data.organizationName,
           organizationType: data.organizationType,
+          // Organization data for individual accounts
+          portfolio: data.portfolio,
+          hasOtherAssociations: data.hasOtherAssociations,
+          primaryContact: data.primaryContact,
+          registeredAddress: data.registeredAddress,
+          logoURL: data.logoURL,
+          linesOfBusiness: data.linesOfBusiness,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt
         } as UnifiedMember;
@@ -269,6 +281,8 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
             hasOtherAssociations: data.hasOtherAssociations,
             primaryContact: data.primaryContact,
             registeredAddress: data.registeredAddress,
+            logoURL: data.logoURL,
+            linesOfBusiness: data.linesOfBusiness,
             createdAt: memberData.createdAt,
             updatedAt: memberData.updatedAt
           } as UnifiedMember;
@@ -307,6 +321,8 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
           hasOtherAssociations: orgData.hasOtherAssociations,
           primaryContact: orgData.primaryContact,
           registeredAddress: orgData.registeredAddress,
+          logoURL: orgData.logoURL,
+          linesOfBusiness: orgData.linesOfBusiness,
           createdAt: memberData.createdAt,
           updatedAt: memberData.updatedAt
         } as UnifiedMember;
@@ -390,7 +406,9 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
         portfolio: data.portfolio,
         hasOtherAssociations: data.hasOtherAssociations,
         primaryContact: data.primaryContact,
-        registeredAddress: data.registeredAddress
+        registeredAddress: data.registeredAddress,
+        logoURL: data.logoURL,
+        linesOfBusiness: data.linesOfBusiness
       } as UnifiedMember);
     });
     
@@ -422,6 +440,8 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
           hasOtherAssociations: orgData.hasOtherAssociations,
           primaryContact: orgData.primaryContact,
           registeredAddress: orgData.registeredAddress,
+          logoURL: orgData.logoURL,
+          linesOfBusiness: orgData.linesOfBusiness,
           createdAt: memberData.createdAt,
           updatedAt: memberData.updatedAt
         } as UnifiedMember);
@@ -495,14 +515,16 @@ export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => 
 // Get all members (regardless of status) - for messaging system
 export const getAllMembers = async (): Promise<UnifiedMember[]> => {
   try {
-    const [guests, pending, approved, admins] = await Promise.all([
+    const [guests, pending, pendingInvoice, pendingPayment, approved, admins] = await Promise.all([
       getMembersByStatus('guest'),
       getMembersByStatus('pending'),
+      getMembersByStatus('pending_invoice'),
+      getMembersByStatus('pending_payment'),
       getMembersByStatus('approved'),
       getMembersByStatus('admin')
     ]);
     
-    return [...guests, ...pending, ...approved, ...admins];
+    return [...guests, ...pending, ...pendingInvoice, ...pendingPayment, ...approved, ...admins];
   } catch (error) {
     console.error('Error getting all members:', error);
     return [];
@@ -714,9 +736,6 @@ export const approveJoinRequest = async (
       // Don't throw - the approval was successful even if email failed
     }
     
-    // TODO: Create individual user account for the approved person
-    // This will need to be implemented when we decide how to handle
-    // multiple users per company membership
     
   } catch (error) {
     console.error('Error approving join request:', error);

@@ -11,6 +11,8 @@ export default function DirectoryPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedOrganizationType, setSelectedOrganizationType] = useState('');
+  const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState('');
   
   // Animation hooks
   const bannerAnimation = useScrollAnimation();
@@ -31,7 +33,7 @@ export default function DirectoryPage() {
     loadMembers();
   }, []);
 
-  // Filter members based on search and country
+  // Filter members based on search and filters
   const filteredMembers = members.filter(member => {
     const matchesSearch = !searchTerm || 
       member.personalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,12 +42,25 @@ export default function DirectoryPage() {
     
     const matchesCountry = !selectedCountry || member.registeredAddress?.country === selectedCountry;
     
-    return matchesSearch && matchesCountry;
+    const matchesOrganizationType = !selectedOrganizationType || member.organizationType === selectedOrganizationType;
+    
+    const matchesLinesOfBusiness = !selectedLinesOfBusiness || 
+      (member.linesOfBusiness && member.linesOfBusiness.includes(selectedLinesOfBusiness));
+    
+    return matchesSearch && matchesCountry && matchesOrganizationType && matchesLinesOfBusiness;
   });
 
-  // Get unique countries for filter
+  // Get unique values for filters
   const availableCountries = Array.from(new Set(
     members.map(member => member.registeredAddress?.country).filter(Boolean)
+  )).sort();
+
+  const availableOrganizationTypes = Array.from(new Set(
+    members.map(member => member.organizationType).filter(Boolean)
+  )).sort();
+
+  const availableLinesOfBusiness = Array.from(new Set(
+    members.flatMap(member => member.linesOfBusiness || [])
   )).sort();
 
   if (loading) {
@@ -126,7 +141,7 @@ export default function DirectoryPage() {
           <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             {/* Search and Filters */}
             <div className="bg-white rounded-lg border border-fase-light-gold p-6 mb-8">
-              <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-4">
                 {/* Search */}
                 <div className="flex-1">
                   <label htmlFor="search" className="block text-sm font-medium text-fase-black mb-2">
@@ -147,22 +162,61 @@ export default function DirectoryPage() {
                   </div>
                 </div>
 
-                {/* Country Filter */}
-                <div className="md:w-64">
-                  <label htmlFor="country" className="block text-sm font-medium text-fase-black mb-2">
-                    Filter by Country
-                  </label>
-                  <select
-                    id="country"
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
-                  >
-                    <option value="">All Countries</option>
-                    {availableCountries.map(country => (
-                      <option key={country} value={country}>{country}</option>
-                    ))}
-                  </select>
+                {/* Filters Row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Country Filter */}
+                  <div>
+                    <label htmlFor="country" className="block text-sm font-medium text-fase-black mb-2">
+                      Filter by Country
+                    </label>
+                    <select
+                      id="country"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
+                    >
+                      <option value="">All Countries</option>
+                      {availableCountries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Organization Type Filter */}
+                  <div>
+                    <label htmlFor="organizationType" className="block text-sm font-medium text-fase-black mb-2">
+                      Filter by Type
+                    </label>
+                    <select
+                      id="organizationType"
+                      value={selectedOrganizationType}
+                      onChange={(e) => setSelectedOrganizationType(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
+                    >
+                      <option value="">All Types</option>
+                      {availableOrganizationTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Lines of Business Filter */}
+                  <div>
+                    <label htmlFor="linesOfBusiness" className="block text-sm font-medium text-fase-black mb-2">
+                      Filter by Business Line
+                    </label>
+                    <select
+                      id="linesOfBusiness"
+                      value={selectedLinesOfBusiness}
+                      onChange={(e) => setSelectedLinesOfBusiness(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
+                    >
+                      <option value="">All Business Lines</option>
+                      {availableLinesOfBusiness.map(line => (
+                        <option key={line} value={line}>{line}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -174,7 +228,7 @@ export default function DirectoryPage() {
               </h2>
               <p className="text-sm text-gray-600">
                 {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''}
-                {searchTerm || selectedCountry ? ' found' : ''}
+                {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness ? ' found' : ''}
               </p>
             </div>
 
@@ -186,7 +240,7 @@ export default function DirectoryPage() {
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {searchTerm || selectedCountry 
+                  {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness
                     ? "Try adjusting your search or filter criteria."
                     : "The directory will be populated as members join FASE."
                   }

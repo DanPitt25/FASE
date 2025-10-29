@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { isAdmin } from '../lib/knowledge-base';
+import { checkAdminClaim } from '../lib/admin-claims';
 
 export const useAdmin = () => {
   const { user, loading: authLoading } = useAuth();
@@ -20,7 +20,7 @@ export const useAdmin = () => {
       if (user?.uid) {
         console.log('Checking admin status for user:', user.uid);
         try {
-          const adminStatus = await isAdmin(user.uid);
+          const adminStatus = await checkAdminClaim();
           console.log('Admin status result:', adminStatus);
           setIsAdminUser(adminStatus);
         } catch (error) {

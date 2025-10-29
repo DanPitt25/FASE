@@ -28,12 +28,6 @@ export default function Login() {
                 Sign up
               </Link>
             </p>
-            <p>
-              {"Company member? "}
-              <Link href="/join-company" className="font-semibold text-fase-gold hover:underline">
-                Join existing membership
-              </Link>
-            </p>
           </div>
         </div>
       </div>

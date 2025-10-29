@@ -7,13 +7,13 @@ let blockCheckPromise: Promise<boolean> | null = null;
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyB3T8X5QNU5iYG89u5XWyGhrIdKjnb2be0",
-  authDomain: "fase-site.firebaseapp.com",
-  projectId: "fase-site",
-  storageBucket: "fase-site.firebasestorage.app",
-  messagingSenderId: "1031442839092",
-  appId: "1:1031442839092:web:57238d8824182cbbda7c61",
-  measurementId: "G-MPQWL4XJYH"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
 };
 
 // Test if Firebase connections are blocked

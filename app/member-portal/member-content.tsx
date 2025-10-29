@@ -141,22 +141,8 @@ export default function MemberContent() {
     return null; // Will redirect to login
   }
 
-  // Status badge - Professional design
-  const statusBadge = (
-    <div className="bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-500 rounded-r-lg p-4 shadow-sm">
-      <div className="flex items-center space-x-3">
-        <div className="flex-shrink-0">
-          <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <div>
-          <span className="text-emerald-800 font-semibold text-sm">Active Member</span>
-          <p className="text-emerald-700 text-xs mt-1">Full access to all member resources</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Clean status display - no bubbles
+  const statusBadge = null; // Remove entirely
 
   // Get active alert count
   const unreadAlerts = alerts.filter(alert => !alert.isRead);
@@ -174,21 +160,17 @@ export default function MemberContent() {
       ),
       content: (
         <div className="space-y-6">
-          {/* Payment Status Alerts */}
+          {/* Payment Status - Clean design */}
           {member && member.status === 'pending_payment' && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-lg p-6 shadow-sm">
+            <div className="border border-amber-200 bg-white p-6">
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                  </div>
-                </div>
+                <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
                 <div className="flex-1">
-                  <h3 className="text-amber-900 font-semibold text-sm">Payment Required</h3>
-                  <p className="text-amber-800 text-sm mt-1 leading-relaxed">
-                    Complete your membership payment to unlock full access to all FASE resources and benefits.
+                  <h3 className="text-gray-900 font-medium">Payment Required</h3>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Complete your membership payment to access all FASE resources.
                   </p>
                 </div>
               </div>
@@ -196,15 +178,15 @@ export default function MemberContent() {
           )}
           
           {member && member.status === 'pending_invoice' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="border border-blue-200 bg-white p-6">
+              <div className="flex items-start space-x-4">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">Invoice Sent</h3>
-                  <p className="text-sm text-blue-700 mb-4">
-                    Your membership invoice has been sent to your email. You&apos;ll have full access to member resources once payment is received.
+                  <h3 className="text-gray-900 font-medium">Invoice Sent</h3>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Your membership invoice has been sent to your email. Access will be activated upon payment receipt.
                   </p>
                 </div>
               </div>
@@ -212,14 +194,14 @@ export default function MemberContent() {
           )}
           
           {member && member.status === 'pending' && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-gray-400 mt-0.5 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="border border-gray-200 bg-white p-6">
+              <div className="flex items-start space-x-4">
+                <svg className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-800 mb-2">Application Under Review</h3>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h3 className="text-gray-900 font-medium">Application Under Review</h3>
+                  <p className="text-gray-600 text-sm mt-1">
                     Your membership application is being reviewed by our team. You&apos;ll receive an email once it&apos;s approved.
                   </p>
                 </div>

@@ -116,15 +116,6 @@ const searchablePages: SearchableContent[] = [
     category: 'Membership',
     keywords: ['join', 'membership', 'application', 'benefits', 'registration']
   },
-  {
-    id: 'join-company',
-    title: 'Company Membership',
-    description: 'Information about corporate membership options',
-    content: 'Company corporate membership organizational institutional business enterprise membership benefits fees application process',
-    url: '/join-company',
-    category: 'Membership',
-    keywords: ['company', 'corporate', 'business', 'organizational', 'enterprise']
-  },
 
   // Services
   {

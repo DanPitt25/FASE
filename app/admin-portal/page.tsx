@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/DashboardLayout';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
-import { getVideos, getPendingComments, moderateComment } from '../../lib/knowledge-base';
-import type { Video, Comment } from '../../lib/knowledge-base';
 // Note: MemberApplication type no longer used after UnifiedMember migration
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, createAlert, sendMessage } from '../../lib/unified-messaging';
 import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, getAccountsByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
@@ -47,8 +45,6 @@ export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
   const adminLoading = false; // No longer needed with unified auth
   const router = useRouter();
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [pendingComments, setPendingComments] = useState<Comment[]>([]);
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
   const [pendingJoinRequests, setPendingJoinRequests] = useState<(JoinRequest & { companyData?: UnifiedMember })[]>([]);
   const [processingRequest, setProcessingRequest] = useState<{
@@ -117,17 +113,13 @@ export default function AdminPortalPage() {
 
   const loadData = async () => {
     try {
-      const [videosData, commentsData, pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
-        getVideos(), // Get all published videos
-        user?.uid ? getPendingComments(user.uid) : [],
+      const [pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
         getAccountsByStatus('pending_invoice'), // Get pending invoice accounts
         getAccountsByStatus('approved'), // Get approved accounts  
         getAllPendingJoinRequests(), // Get pending join requests
         member?.id ? getUserAlerts(member.id) : [], // Use account ID
         member?.id ? getUserMessages(member.id) : [] // Use account ID
       ]);
-      setVideos(videosData);
-      setPendingComments(commentsData);
       setMemberApplications([...pendingAccounts, ...approvedAccounts]); // Combine for display
       setPendingJoinRequests(joinRequestsData);
       setAlerts(alertsData);
@@ -139,17 +131,6 @@ export default function AdminPortalPage() {
     }
   };
 
-  const handleModerateComment = async (commentId: string, status: 'approved' | 'rejected') => {
-    if (!user?.uid) return;
-    
-    try {
-      await moderateComment(user.uid, commentId, status);
-      setPendingComments(prev => prev.filter(comment => comment.id !== commentId));
-    } catch (error) {
-      console.error('Error moderating comment:', error);
-      alert('Error moderating comment. Please try again.');
-    }
-  };
 
   const handleJoinRequestAction = (
     action: 'approve' | 'reject',
@@ -542,9 +523,9 @@ export default function AdminPortalPage() {
                     </div>
                     
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Pending Comments</h3>
-                      <p className="text-3xl font-bold text-red-600 mb-2">{pendingComments.length}</p>
-                      <p className="text-fase-black text-sm">Awaiting moderation</p>
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Join Requests</h3>
+                      <p className="text-3xl font-bold text-purple-600 mb-2">{pendingJoinRequests.length}</p>
+                      <p className="text-fase-black text-sm">Pending approval</p>
                     </div>
                   </div>
                   
@@ -772,126 +753,6 @@ export default function AdminPortalPage() {
       )
     },
     {
-      id: 'videos',
-      title: 'Videos',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
-      content: loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-          <p className="text-fase-black">Loading video data...</p>
-        </div>
-      ) : (
-                <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
-                  <div className="p-6 border-b border-fase-light-gold">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Published Videos</h3>
-                      <Button variant="primary" size="small">Add Video</Button>
-                    </div>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-fase-light-gold">
-                      <thead className="bg-fase-cream">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Title</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Category</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Views</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Upload Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-fase-navy uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-fase-light-gold">
-                        {videos.map(video => (
-                          <tr key={video.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-fase-navy">{video.title}</div>
-                              <div className="text-sm text-fase-black">{video.author}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-fase-navy text-white">
-                                {video.category}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">{video.views}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-fase-black">
-                              {video.uploadDate ? new Date(video.uploadDate.seconds * 1000).toLocaleDateString() : 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button className="text-fase-navy hover:text-fase-gold mr-3">Edit</button>
-                              <button className="text-red-600 hover:text-red-900">Delete</button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-        </div>
-      )
-    },
-    {
-      id: 'comments',
-      title: `Comments${pendingComments.length > 0 ? ` (${pendingComments.length})` : ''}`,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
-      content: loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-          <p className="text-fase-black">Loading comment data...</p>
-        </div>
-      ) : (
-                <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
-                  <div className="p-6 border-b border-fase-light-gold">
-                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Comments</h3>
-                    <p className="text-fase-black text-sm mt-1">Review and moderate user comments</p>
-                  </div>
-                  <div className="divide-y divide-fase-light-gold">
-                    {pendingComments.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className="text-fase-black">No pending comments to review</p>
-                      </div>
-                    ) : (
-                      pendingComments.map(comment => (
-                        <div key={comment.id} className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center mb-2">
-                                <span className="font-medium text-fase-navy">{comment.authorName}</span>
-                                <span className="text-fase-black text-sm ml-2">
-                                  {new Date(comment.createdAt.seconds * 1000).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-fase-black mb-3">{comment.text}</p>
-                              <p className="text-fase-black text-xs">Video ID: {comment.videoId}</p>
-                            </div>
-                            <div className="flex space-x-2 ml-4">
-                              <button
-                                onClick={() => handleModerateComment(comment.id, 'approved')}
-                                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleModerateComment(comment.id, 'rejected')}
-                                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-        </div>
-      )
-    },
-    {
       id: 'messages',
       title: 'Messages',
       icon: (
@@ -1003,7 +864,7 @@ export default function AdminPortalPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 19H9l4-4h-1a2 2 0 01-2-2V9a2 2 0 012-2h1l-4-4h4l4 4v4a2 2 0 01-2 2h-1l4 4z" />
           </svg>
           {/* Alert indicator - add condition for actual alerts */}
-          {(pendingApplications.length > 0 || pendingComments.length > 0 || alerts.filter(a => !a.isRead).length > 0) && (
+          {(pendingApplications.length > 0 || pendingJoinRequests.length > 0 || alerts.filter(a => !a.isRead).length > 0) && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
               !
             </span>
@@ -1100,7 +961,7 @@ export default function AdminPortalPage() {
           )}
           
           {/* Administrative Alerts */}
-          {(pendingApplications.length > 0 || pendingComments.length > 0) && (
+          {(pendingApplications.length > 0 || pendingJoinRequests.length > 0) && (
             <>
               <div className="border-t pt-4 mt-6">
                 <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Administrative Alerts</h3>
@@ -1120,16 +981,16 @@ export default function AdminPortalPage() {
                   </div>
                 </div>
               )}
-              {pendingComments.length > 0 && (
+              {pendingJoinRequests.length > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start">
                     <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
                     <div>
-                      <h4 className="text-sm font-medium text-blue-800 mb-1">Pending Comments</h4>
+                      <h4 className="text-sm font-medium text-blue-800 mb-1">Pending Join Requests</h4>
                       <p className="text-sm text-blue-700">
-                        {pendingComments.length} comment{pendingComments.length !== 1 ? 's' : ''} awaiting moderation.
+                        {pendingJoinRequests.length} join request{pendingJoinRequests.length !== 1 ? 's' : ''} awaiting approval.
                       </p>
                     </div>
                   </div>
@@ -1139,7 +1000,7 @@ export default function AdminPortalPage() {
           )}
           
           {/* All Clear State */}
-          {alerts.length === 0 && pendingApplications.length === 0 && pendingComments.length === 0 && (
+          {alerts.length === 0 && pendingApplications.length === 0 && pendingJoinRequests.length === 0 && (
             <div className="text-center py-12">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

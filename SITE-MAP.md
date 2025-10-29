@@ -116,9 +116,6 @@ Detailed information about FASE's offerings.
   - Pricing structure (not detailed, links to application)
   - Member testimonials and success stories
 
-#### **Join Company (/join-company)**
-- **Purpose**: Allow individuals to request joining existing member companies
-- **Features**: Application form for company membership requests
 
 #### **Directory (/directory)**
 - **Purpose**: Searchable directory of FASE members

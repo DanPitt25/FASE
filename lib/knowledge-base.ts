@@ -69,24 +69,18 @@ export interface WebinarRegistration {
 
 // ============== ADMIN CHECK FUNCTIONS ==============
 
-export const isAdmin = async (uid: string): Promise<boolean> => {
+export const isAdmin = async (uid?: string): Promise<boolean> => {
   try {
-    const userRef = doc(db, 'accounts', uid);
-    const userSnap = await getDoc(userRef);
-    
-    if (userSnap.exists()) {
-      const user = userSnap.data();
-      return user.status === 'admin';
-    }
-    return false;
+    const { checkAdminClaim } = await import('./admin-claims');
+    return await checkAdminClaim();
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
   }
 };
 
-export const requireAdmin = async (uid: string): Promise<void> => {
-  const adminStatus = await isAdmin(uid);
+export const requireAdmin = async (uid?: string): Promise<void> => {
+  const adminStatus = await isAdmin();
   if (!adminStatus) {
     throw new Error('Admin access required');
   }
@@ -164,7 +158,7 @@ export const createVideo = async (
   uid: string,
   videoData: Omit<Video, 'id' | 'views' | 'likes' | 'uploadedBy' | 'createdAt' | 'updatedAt'>
 ): Promise<string> => {
-  await requireAdmin(uid);
+  // Note: Admin check should be done by caller
   
   const videoId = doc(collection(db, 'videos')).id;
   const videoRef = doc(db, 'videos', videoId);
@@ -226,7 +220,7 @@ export const updateVideo = async (
   videoId: string,
   updates: Partial<Omit<Video, 'id' | 'uploadedBy' | 'createdAt'>>
 ): Promise<void> => {
-  await requireAdmin(uid);
+  // Note: Admin check should be done by caller
   
   const videoRef = doc(db, 'videos', videoId);
   await updateDoc(videoRef, {
@@ -237,7 +231,7 @@ export const updateVideo = async (
 
 // Delete video (admin only)
 export const deleteVideo = async (uid: string, videoId: string): Promise<void> => {
-  await requireAdmin(uid);
+  // Note: Admin check should be done by caller
   
   const videoRef = doc(db, 'videos', videoId);
   await deleteDoc(videoRef);
@@ -350,8 +344,7 @@ export const getVideoComments = async (
 
 // Get pending comments (admin only)
 export const getPendingComments = async (uid: string): Promise<Comment[]> => {
-  await requireAdmin(uid);
-  
+  // Note: Admin check should be done by caller since this runs client-side
   try {
     const commentsRef = collection(db, 'comments');
     const q = query(
@@ -374,7 +367,7 @@ export const moderateComment = async (
   commentId: string,
   status: 'approved' | 'rejected'
 ): Promise<void> => {
-  await requireAdmin(uid);
+  // Note: Admin check should be done by caller
   
   const commentRef = doc(db, 'comments', commentId);
   await updateDoc(commentRef, {
@@ -420,7 +413,7 @@ export const deleteComment = async (uid: string, commentId: string): Promise<voi
   
   const comment = commentSnap.data() as Comment;
   const isAuthor = comment.authorUid === uid;
-  const adminStatus = await isAdmin(uid);
+  const adminStatus = await isAdmin();
   
   if (!isAuthor && !adminStatus) {
     throw new Error('Only the author or an admin can delete this comment');
@@ -524,7 +517,7 @@ export const isRegisteredForWebinar = async (videoId: string, userId: string): P
 
 // Get webinar registrations (admin only)
 export const getWebinarRegistrations = async (uid: string, videoId: string): Promise<WebinarRegistration[]> => {
-  await requireAdmin(uid);
+  // Note: Admin check should be done by caller
   
   try {
     const registrationsRef = collection(db, 'webinar_registrations');

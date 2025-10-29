@@ -5,13 +5,33 @@ import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getCompanyMembers } from '../lib/unified-member';
 import { doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../lib/firebase';
+
+const LINES_OF_BUSINESS = [
+  'Business and Consulting',
+  'Education and Training',
+  'Entertainment and Arts',
+  'Environmental and Energy',
+  'Financial and Legal',
+  'Healthcare',
+  'Insurance',
+  'Manufacturing and Trade',
+  'Property and Real Estate',
+  'Social and Community',
+  'Retail and Trade',
+  'Tourism and Hospitality',
+  'Transportation and Vehicle',
+  'Other'
+];
 
 interface CompanyInfo {
   id: string;
   organizationName: string;
   organizationType: string;
   status: string;
+  logoURL?: string;
+  linesOfBusiness?: string[];
 }
 
 interface Member {
@@ -34,7 +54,7 @@ interface EditingMember {
 }
 
 export default function ManageProfile() {
-  const { user, member } = useUnifiedAuth();
+  const { user, member, refreshMemberData } = useUnifiedAuth();
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +62,9 @@ export default function ManageProfile() {
   const [editingMember, setEditingMember] = useState<EditingMember | null>(null);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState<string[]>([]);
 
   // Helper function to check if member needs an invite (has generated ID)
   const memberNeedsInvite = (member: Member) => {
@@ -64,8 +87,13 @@ export default function ManageProfile() {
           id: member.organizationId!,
           organizationName: member.organizationName || 'Unknown Company',
           organizationType: member.organizationType || 'Unknown',
-          status: member.status
+          status: member.status,
+          logoURL: member.logoURL,
+          linesOfBusiness: member.linesOfBusiness
         });
+        
+        // Set selected lines of business
+        setSelectedLinesOfBusiness(member.linesOfBusiness || []);
         
         setMembers(membersData);
       } catch (err) {
@@ -120,6 +148,25 @@ export default function ManageProfile() {
       setError(err instanceof Error ? err.message : 'Failed to update member');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLinesOfBusinessChange = async (selectedLines: string[]) => {
+    if (!user || !member) return;
+    
+    try {
+      // Update the organization account document
+      const orgRef = doc(db, 'accounts', member.organizationId!);
+      await updateDoc(orgRef, {
+        linesOfBusiness: selectedLines,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local state
+      setSelectedLinesOfBusiness(selectedLines);
+      setCompany(prev => prev ? { ...prev, linesOfBusiness: selectedLines } : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update lines of business');
     }
   };
 
@@ -203,6 +250,60 @@ export default function ManageProfile() {
     }
   };
 
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user || !member || !company) return;
+
+    // Check if user is primary contact
+    const currentMember = members.find(m => m.id === user.uid);
+    if (!currentMember?.isPrimaryContact) {
+      setError('Only primary contacts can update the company logo');
+      return;
+    }
+
+    // Validate file type and size
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPG, PNG, or SVG)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      setError('File size must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingLogo(true);
+      setError(null);
+
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `graphics/logos/${member.organizationId}-${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Update company document
+      const companyRef = doc(db, 'accounts', member.organizationId!);
+      await updateDoc(companyRef, {
+        logoURL: downloadURL,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local state
+      setCompany(prev => prev ? { ...prev, logoURL: downloadURL } : null);
+      
+      // Refresh member data in context to ensure logoURL is updated everywhere
+      await refreshMemberData();
+      
+      console.log('Logo uploaded successfully:', downloadURL);
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const isCurrentUserPrimaryContact = members.find(m => m.id === user?.uid)?.isPrimaryContact;
 
   if (loading) {
@@ -251,21 +352,139 @@ export default function ManageProfile() {
       {/* Company Info */}
       {company && (
         <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
-            {company.organizationName}
-          </h3>
-          <div className="flex items-center space-x-4 text-sm text-fase-black">
-            <span className="inline-flex items-center px-2 py-1 rounded-full bg-fase-cream text-fase-navy">
-              {company.organizationType}
-            </span>
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              company.status === 'approved' ? 'bg-green-100 text-green-800' :
-              company.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {company.status}
-            </span>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
+                {company.organizationName}
+              </h3>
+              <div className="flex items-center space-x-6 text-sm text-gray-600">
+                <span className="font-medium">
+                  {company.organizationType === 'MGA' ? 'Managing General Agent' : 
+                   company.organizationType === 'carrier' ? 'Insurance Carrier' : 
+                   company.organizationType === 'provider' ? 'Service Provider' : 
+                   company.organizationType}
+                </span>
+                <span className="font-medium">
+                  {company.status === 'approved' ? 'Active Member' : 
+                   company.status === 'pending' ? 'Under Review' : 
+                   company.status === 'pending_payment' ? 'Payment Required' : 
+                   company.status === 'pending_invoice' ? 'Invoice Sent' : 
+                   company.status}
+                </span>
+              </div>
+            </div>
+            
+            {/* Company Logo */}
+            <div className="relative">
+              <input
+                type="file"
+                id="logo-upload"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+                disabled={uploadingLogo || !isCurrentUserPrimaryContact}
+              />
+              <label 
+                htmlFor={isCurrentUserPrimaryContact ? "logo-upload" : undefined}
+                className={`relative cursor-pointer group block ${!isCurrentUserPrimaryContact ? 'cursor-not-allowed opacity-50' : ''}`}
+              >
+                <div className={`w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center transition-colors ${
+                  uploadingLogo 
+                    ? 'bg-gray-100' 
+                    : isCurrentUserPrimaryContact 
+                      ? 'group-hover:bg-gray-100' 
+                      : ''
+                }`}>
+                  {uploadingLogo ? (
+                    <div className="w-6 h-6 border-2 border-fase-navy border-t-transparent rounded-full animate-spin"></div>
+                  ) : company.logoURL ? (
+                    <img src={company.logoURL} alt="Company logo" className="w-14 h-14 object-contain rounded" />
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                  {/* Plus overlay */}
+                  {!uploadingLogo && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-fase-navy rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </label>
+            </div>
           </div>
+          
+          {/* Settings button on separate line, left-aligned */}
+          <div className="mb-4">
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className="text-sm text-gray-600 hover:text-gray-900 flex items-center space-x-1"
+            >
+              <span>Settings</span>
+              <svg className={`w-4 h-4 transition-transform ${showSettings ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Company Settings - Collapsible */}
+          {showSettings && (
+            <div className="border-t border-gray-100 pt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Company Settings</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Include in Member Directory</span>
+                    <p className="text-xs text-gray-500">Show your company in the public member directory</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" defaultChecked />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Public Contact Information</span>
+                    <p className="text-xs text-gray-500">Allow other members to see your contact details</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" defaultChecked />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                {/* Lines of Business */}
+                <div className="border-t border-gray-100 pt-3">
+                  <div className="mb-3">
+                    <span className="text-sm font-medium text-gray-700">Lines of Business</span>
+                    <p className="text-xs text-gray-500">Select all business lines that apply to your organization</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LINES_OF_BUSINESS.map((line) => (
+                      <label key={line} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedLinesOfBusiness.includes(line)}
+                          onChange={(e) => {
+                            const newLines = e.target.checked
+                              ? [...selectedLinesOfBusiness, line]
+                              : selectedLinesOfBusiness.filter(l => l !== line);
+                            handleLinesOfBusinessChange(newLines);
+                          }}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <span className="text-xs text-gray-700">{line}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -365,18 +584,18 @@ export default function ManageProfile() {
                           {memberItem.personalName}
                         </h4>
                         {memberItem.isPrimaryContact && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-fase-gold text-white text-xs font-medium">
-                            Primary
+                          <span className="text-xs font-medium text-gray-600">
+                            (Primary Contact)
                           </span>
                         )}
                         {memberItem.id === user?.uid && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-                            You
+                          <span className="text-xs font-medium text-gray-600">
+                            (You)
                           </span>
                         )}
                         {memberNeedsInvite(memberItem) && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium">
-                            Pending Invite
+                          <span className="text-xs font-medium text-amber-600">
+                            (Pending Invite)
                           </span>
                         )}
                       </div>

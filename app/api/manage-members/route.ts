@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { CompanyMember } from '../../../lib/unified-member';
+import { verifyAuth } from '../../../lib/auth-middleware';
 
 // Initialize Firebase Admin
 const initializeAdmin = async () => {
@@ -30,12 +31,17 @@ const initializeAdmin = async () => {
 
 // GET - Fetch company members
 export async function GET(request: NextRequest) {
+  // Verify the requesting user's token first
+  const authenticatedUser = await verifyAuth(request);
+  if (!authenticatedUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   const userUid = searchParams.get('userUid');
 
   try {
-
     if (!companyId || !userUid) {
       return NextResponse.json(
         { error: 'Company ID and User UID are required' },
@@ -43,41 +49,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if we're in development and Firebase Admin isn't configured
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      console.warn('Development mode: returning mock data for manage-members API');
-      return NextResponse.json({
-        success: true,
-        company: {
-          id: companyId,
-          organizationName: 'Mock Company Ltd',
-          organizationType: 'MGA',
-          status: 'approved'
-        },
-        members: [
-          {
-            id: userUid,
-            email: 'user@example.com',
-            personalName: 'John Doe',
-            jobTitle: 'CEO',
-            isPrimaryContact: true,
-            joinedAt: { toDate: () => new Date() },
-            createdAt: { toDate: () => new Date() },
-            updatedAt: { toDate: () => new Date() }
-          },
-          {
-            id: 'member_123456',
-            email: 'jane@example.com',
-            personalName: 'Jane Smith',
-            jobTitle: 'CTO',
-            isPrimaryContact: false,
-            joinedAt: { toDate: () => new Date() },
-            createdAt: { toDate: () => new Date() },
-            updatedAt: { toDate: () => new Date() }
-          }
-        ]
-      });
+    // Verify the authenticated user matches the requested userUid
+    if (authenticatedUser.uid !== userUid) {
+      return NextResponse.json(
+        { error: 'Forbidden: Cannot access other users\' data' },
+        { status: 403 }
+      );
     }
+
 
     const { db } = await initializeAdmin();
 
