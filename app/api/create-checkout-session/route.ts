@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     let priceInCents = 90000; // Default base price
     
     if (isTestPayment) {
-      priceInCents = 1; // 1 cent for admin testing
+      priceInCents = 50; // 50 cents for admin testing
     } else if (membershipType === 'individual') {
       priceInCents = 50000; // €500 for individual memberships
     } else if (organizationType === 'MGA') {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
                 ? `[ADMIN TEST] FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`
                 : `FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`,
               description: isTestPayment
-                ? `ADMIN TEST PAYMENT - 1 cent test charge for ${organizationName}`
+                ? `ADMIN TEST PAYMENT - 50 cent test charge for ${organizationName}`
                 : membershipType === 'individual' 
                   ? `Annual individual membership for ${organizationName}`
                   : organizationType === 'MGA' 
