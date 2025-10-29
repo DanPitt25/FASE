@@ -26,21 +26,20 @@ const initializeServices = async () => {
     admin = await import('firebase-admin');
     
     if (admin.apps.length === 0) {
-      try {
-        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-          ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-          : undefined;
-
-        admin.initializeApp({
-          credential: serviceAccount 
-            ? admin.credential.cert(serviceAccount)
-            : admin.credential.applicationDefault(),
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        });
-      } catch (error) {
-        console.error('Firebase Admin initialization failed:', error);
-        throw new Error('Firebase credentials not configured properly');
+      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        throw new Error('Firebase credentials not configured');
       }
+
+      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+        : undefined;
+
+      admin.initializeApp({
+        credential: serviceAccount 
+          ? admin.credential.cert(serviceAccount)
+          : admin.credential.applicationDefault(),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
     }
   }
 };
