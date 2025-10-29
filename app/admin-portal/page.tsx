@@ -93,24 +93,6 @@ export default function AdminPortalPage() {
   const [organizationSearchResults, setOrganizationSearchResults] = useState<UnifiedMember[]>([]);
   const [isSearchingOrganizations, setIsSearchingOrganizations] = useState(false);
 
-  useEffect(() => {
-    console.log('Admin portal useEffect:', { authLoading, adminLoading, user: !!user, isAdmin });
-    if (!authLoading && !adminLoading) {
-      if (!user) {
-        console.log('No user, redirecting to login');
-        router.push('/login');
-        return;
-      }
-      if (!isAdmin) {
-        console.log('User is not admin, redirecting to home');
-        router.push('/');
-        return;
-      }
-      console.log('User is admin, loading data');
-      loadData();
-    }
-  }, [user, isAdmin, authLoading, adminLoading, router, loadData]);
-
   const loadData = useCallback(async () => {
     try {
       const [pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
@@ -129,7 +111,25 @@ export default function AdminPortalPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [member?.id]);
+
+  useEffect(() => {
+    console.log('Admin portal useEffect:', { authLoading, adminLoading, user: !!user, isAdmin });
+    if (!authLoading && !adminLoading) {
+      if (!user) {
+        console.log('No user, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      if (!isAdmin) {
+        console.log('User is not admin, redirecting to home');
+        router.push('/');
+        return;
+      }
+      console.log('User is admin, loading data');
+      loadData();
+    }
+  }, [user, isAdmin, authLoading, adminLoading, router, loadData]);
 
 
   const handleJoinRequestAction = (
