@@ -1,17 +1,18 @@
 import { NextRequest } from 'next/server';
 import * as admin from 'firebase-admin';
-import { getGCPCredentials } from './gcp-credentials';
 
-// Initialize Firebase Admin with GCP credentials
+// Initialize Firebase Admin with service account key
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    const gcpCredentials = getGCPCredentials();
-    
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+      : undefined;
+
     admin.initializeApp({
-      credential: gcpCredentials.credentials 
-        ? admin.credential.cert(gcpCredentials.credentials)
+      credential: serviceAccount 
+        ? admin.credential.cert(serviceAccount)
         : admin.credential.applicationDefault(),
-      projectId: gcpCredentials.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
   }
   
