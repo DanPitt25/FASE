@@ -11,9 +11,14 @@ const initializeAdmin = async () => {
       throw new Error('Firebase credentials not configured');
     }
 
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
+    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    console.log('FIREBASE_SERVICE_ACCOUNT_KEY length:', rawKey?.length);
+    console.log('First 50 chars:', rawKey?.substring(0, 50));
+    console.log('Contains project_id:', rawKey?.includes('project_id'));
+    
+    const serviceAccount = rawKey ? JSON.parse(rawKey) : undefined;
+    console.log('Parsed project_id exists:', !!serviceAccount?.project_id);
+    console.log('project_id type:', typeof serviceAccount?.project_id);
 
     admin.initializeApp({
       credential: serviceAccount 
