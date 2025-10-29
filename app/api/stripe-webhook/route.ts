@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { safeDocExists, safeDocData } from '../../../lib/firebase-helpers';
+import { getGCPCredentials } from '../../../lib/gcp-credentials';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -26,19 +27,13 @@ const initializeServices = async () => {
     admin = await import('firebase-admin');
     
     if (admin.apps.length === 0) {
-      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        throw new Error('Firebase credentials not configured');
-      }
-
-      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-        : undefined;
-
+      const gcpCredentials = getGCPCredentials();
+      
       admin.initializeApp({
-        credential: serviceAccount 
-          ? admin.credential.cert(serviceAccount)
+        credential: gcpCredentials.credentials 
+          ? admin.credential.cert(gcpCredentials.credentials)
           : admin.credential.applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        projectId: gcpCredentials.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
     }
   }

@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 import { DatabaseMonitor } from '../../../lib/monitoring';
+import { getGCPCredentials } from '../../../lib/gcp-credentials';
 
-// Initialize Firebase Admin using Application Default Credentials
+// Initialize Firebase Admin using GCP credentials
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
+    const gcpCredentials = getGCPCredentials();
+    
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`,
+      credential: gcpCredentials.credentials 
+        ? admin.credential.cert(gcpCredentials.credentials)
+        : admin.credential.applicationDefault(),
+      projectId: gcpCredentials.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: `${gcpCredentials.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`,
     });
   }
   
