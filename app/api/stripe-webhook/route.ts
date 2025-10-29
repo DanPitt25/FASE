@@ -28,8 +28,14 @@ const initializeServices = async () => {
     
     if (admin.apps.length === 0) {
       try {
+        if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+          throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
+        }
+
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
         admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
+          credential: admin.credential.cert(serviceAccount),
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         });
       } catch (error) {

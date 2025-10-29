@@ -9,7 +9,7 @@
 - Mobile optimization branch: `mobile-optimization`
 - Main branch: `main`
 - Never add Claude attribution to git commits. NEVER ADD CLAUDE ATTRIBUTION TO GIT COMMITS.
-- ALWAYS use `git config user.name "Daniel Pitt"` and `git config user.email "your-email@domain.com"` before any commits
+- ALWAYS use `git config user.name "Daniel Pitt"` and `git config user.email "danielhpitt@gmail.com"` before any commits
 - If Claude Code appears as contributor, immediately rewrite commit history to remove all traces
 - Test commands: `npm run build`, `npm run lint`
 - YOU CANNOT RUN NPM RUN DEV YOURSELF.
