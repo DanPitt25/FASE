@@ -513,12 +513,12 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
-        // Replace HTML with simple PDF notification
+        // Simple email with PDF attachment
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #2D5574;">Your FASE Membership Invoice</h2>
             <p>Dear ${membershipData.primaryContact.name},</p>
-            <p>Thank you for your FASE membership. Please find your invoice attached as a PDF.</p>
+            <p>Thank you for your FASE membership application. Please find your invoice attached as a PDF.</p>
             <p><strong>Invoice Number:</strong> ${invoiceNumber}<br>
             <strong>Amount Due:</strong> €${totalAmount}</p>
             <p>If you have any questions about this invoice, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
@@ -527,7 +527,7 @@ export async function POST(request: NextRequest) {
         `;
         console.log('PDF attachment added to email data');
       } else {
-        // If PDF generation failed, send error message instead of HTML fallback
+        // If PDF generation failed, send error message
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #dc2626;">Invoice Generation Error</h2>
@@ -539,7 +539,7 @@ export async function POST(request: NextRequest) {
         console.log('PDF generation failed - sending error message');
       }
       
-      // Call Firebase Function via HTTP
+      // Call Firebase Function directly via HTTP (server-side)
       const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
         method: 'POST',
         headers: {

@@ -138,13 +138,15 @@ export default function IntegratedRegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   
   // Membership fields
-  const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('individual');
+  const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('corporate');
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState("");
   // Corporate members management (up to 3 people)
   interface Member {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
+    name: string; // computed field for backward compatibility
     email: string;
     phone: string;
     jobTitle: string;
@@ -153,18 +155,20 @@ export default function IntegratedRegisterForm() {
   
   const [members, setMembers] = useState<Member[]>([]);
   
-  // Initialize with registrant as first member when corporate is selected
+  // Initialize with registrant as first member 
   useEffect(() => {
     if (membershipType === 'corporate' && members.length === 0) {
       const fullName = `${firstName} ${surname}`.trim();
       if (fullName && email) {
         setMembers([{
           id: 'registrant',
+          firstName: firstName,
+          lastName: surname,
           name: fullName,
           email: email,
           phone: '',
           jobTitle: '',
-          isPrimaryContact: true
+          isPrimaryContact: true // Default registrant as admin
         }]);
       }
     }
@@ -178,7 +182,11 @@ export default function IntegratedRegisterForm() {
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
   
-  // Portfolio fields (for MGAs)
+  // Portfolio fields (for MGAs) - separate inputs for each magnitude
+  const [gwpBillions, setGwpBillions] = useState("");
+  const [gwpMillions, setGwpMillions] = useState("");
+  const [gwpThousands, setGwpThousands] = useState("");
+  const [gwpHundreds, setGwpHundreds] = useState("");
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
   const [gwpCurrency, setGwpCurrency] = useState("EUR");
   const [principalLines, setPrincipalLines] = useState('');
@@ -195,8 +203,25 @@ export default function IntegratedRegisterForm() {
   
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Helper function to calculate total GWP from magnitude inputs
+  const calculateTotalGWP = () => {
+    const billions = parseFloat(gwpBillions) || 0;
+    const millions = parseFloat(gwpMillions) || 0;
+    const thousands = parseFloat(gwpThousands) || 0;
+    const hundreds = parseFloat(gwpHundreds) || 0;
+    
+    const totalInMillions = (billions * 1000) + millions + (thousands / 1000) + (hundreds / 1000000);
+    return totalInMillions;
+  };
+  
+  // Update grossWrittenPremiums whenever magnitude inputs change
+  useEffect(() => {
+    const total = calculateTotalGWP();
+    setGrossWrittenPremiums(total.toString());
+  }, [gwpBillions, gwpMillions, gwpThousands, gwpHundreds]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
@@ -211,6 +236,10 @@ export default function IntegratedRegisterForm() {
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<'stripe' | 'invoice' | null>(null);
+  
+  // Consent states
+  const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
+  const [codeOfConductConsent, setCodeOfConductConsent] = useState(false);
 
 
   const markFieldTouched = (fieldKey: string) => {
@@ -251,7 +280,27 @@ export default function IntegratedRegisterForm() {
   const handleNext = async () => {
     setAttemptedNext(true);
     
-    if (step === 1) {
+    if (step === 0) {
+      // Validate data notice consent
+      if (!dataNoticeConsent) {
+        setError("Please consent to our data notice to continue");
+        return;
+      }
+      
+      setError("");
+      setStep(1);
+      setAttemptedNext(false);
+    } else if (step === 1) {
+      // Validate Code of Conduct consent
+      if (!codeOfConductConsent) {
+        setError("Please consent to the Code of Conduct to continue");
+        return;
+      }
+      
+      setError("");
+      setStep(2);
+      setAttemptedNext(false);
+    } else if (step === 2) {
       // Validate auth fields
       const authRequiredFields = ['firstName', 'surname', 'email', 'password', 'confirmPassword'];
       const authFieldValues = {
@@ -308,7 +357,7 @@ export default function IntegratedRegisterForm() {
       } finally {
         setIsSendingVerification(false);
       }
-    } else if (step === 2) {
+    } else if (step === 3) {
       // Validate membership basic fields
       const fullName = `${firstName} ${surname}`.trim();
       const orgName = membershipType === 'individual' ? fullName : organizationName;
@@ -331,21 +380,21 @@ export default function IntegratedRegisterForm() {
         
         const hasPrimaryContact = members.some(m => m.isPrimaryContact);
         if (!hasPrimaryContact) {
-          setError("You must designate one person as the primary contact");
+          setError("You must designate one person as the account administrator");
           return;
         }
         
         // Validate all members have required fields
         for (const member of members) {
-          if (!member.name.trim()) {
-            setError("All members must have a name");
+          if (!member.firstName?.trim() || !member.lastName?.trim()) {
+            setError("All members must have a first and last name");
             return;
           }
           if (!member.email.trim()) {
             setError("All members must have an email");
             return;
           }
-          if (!member.phone.trim()) {
+          if (member.id !== 'registrant' && !member.phone.trim()) {
             setError("All members must have a phone number");
             return;
           }
@@ -357,9 +406,9 @@ export default function IntegratedRegisterForm() {
       }
       
       setError("");
-      setStep(3);
+      setStep(4);
       setAttemptedNext(false);
-    } else if (step === 3) {
+    } else if (step === 4) {
       // Validate address and portfolio fields before proceeding to payment
       if (!addressLine1.trim() || !city.trim() || !country) {
         setError("Address information is required");
@@ -383,13 +432,13 @@ export default function IntegratedRegisterForm() {
       }
       
       setError("");
-      setStep(4);
+      setStep(5);
       setAttemptedNext(false);
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
+    if (step > 0) {
       setStep(step - 1);
       setError("");
     }
@@ -412,10 +461,10 @@ export default function IntegratedRegisterForm() {
       switch (band) {
         case '<10m': return 900;
         case '10-20m': return 1500;
-        case '20-50m': return 2200;  // Updated from 2000
+        case '20-50m': return 2200;
         case '50-100m': return 2800;
         case '100-500m': return 4200;
-        case '500m+': return 7000;   // Updated from 6400
+        case '500m+': return 7000;
         default: return 900;
       }
     } else {
@@ -573,7 +622,7 @@ export default function IntegratedRegisterForm() {
           // Find primary contact from members
           const primaryContactMember = members.find(m => m.isPrimaryContact);
           if (!primaryContactMember) {
-            throw new Error("No primary contact designated");
+            throw new Error("No account administrator designated");
           }
           
           // Prepare company document
@@ -585,18 +634,18 @@ export default function IntegratedRegisterForm() {
             status,
             personalName: '', // Empty for company accounts
             isCompanyAccount: true,
-            primaryContactMemberId: user.uid,
+            accountAdministratorMemberId: user.uid,
             paymentUserId: user.uid, // For webhook payment processing
             membershipType: 'corporate' as const,
             organizationName,
             organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
-            primaryContact: {
+            accountAdministrator: {
               name: primaryContactMember.name,
               email: primaryContactMember.email,
               phone: primaryContactMember.phone,
               role: primaryContactMember.jobTitle
             },
-            registeredAddress: {
+            businessAddress: {
               line1: addressLine1,
               line2: addressLine2,
               city,
@@ -638,7 +687,7 @@ export default function IntegratedRegisterForm() {
               email: member.email,
               personalName: member.name,
               jobTitle: member.jobTitle,
-              isPrimaryContact: member.isPrimaryContact,
+              isAccountAdministrator: member.isPrimaryContact,
               isRegistrant: member.id === 'registrant',
               accountConfirmed: member.id === 'registrant', // Only registrant is confirmed initially
               joinedAt: serverTimestamp(),
@@ -667,13 +716,13 @@ export default function IntegratedRegisterForm() {
             personalName: fullName,
             organizationName: fullName,
             paymentUserId: user.uid, // For webhook payment processing
-            primaryContact: {
+            accountAdministrator: {
               name: fullName,
               email: user.email!,
               phone: '', // Individual members don't need to provide phone during signup
               role: 'Individual Member'
             },
-            registeredAddress: {
+            businessAddress: {
               line1: addressLine1,
               line2: addressLine2,
               city,
@@ -739,9 +788,9 @@ export default function IntegratedRegisterForm() {
       if (isVerified) {
         setShowEmailVerification(false);
         
-        // If this is after Step 1, continue to Step 2
+        // If this is after Step 2, continue to Step 3
         if (!pendingPaymentAction) {
-          setStep(2);
+          setStep(3);
         } else {
           // This is after payment - continue with the pending payment action
           if (pendingPaymentAction === 'stripe') {
@@ -848,66 +897,76 @@ export default function IntegratedRegisterForm() {
     setPaymentError("");
 
     try {
-      // Create the account with 'pending_invoice' status
-      await createAccountAndMembership('pending_invoice');
-      
-      // Generate and send invoice
-      try {
-        const { auth } = await import('@/lib/firebase');
-        if (auth.currentUser) {
-          const fullName = `${firstName} ${surname}`.trim();
-          const response = await fetch('/api/generate-invoice', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: auth.currentUser.uid,
-              userEmail: email,
-              membershipData: {
-                membershipType,
-                organizationName: membershipType === 'corporate' ? organizationName : fullName,
-                organizationType: membershipType === 'corporate' ? organizationType : 'individual',
-                grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
-                primaryContact: (() => {
-                  if (membershipType === 'corporate') {
-                    const primaryMember = members.find(m => m.isPrimaryContact);
-                    return primaryMember ? {
-                      name: primaryMember.name,
-                      email: primaryMember.email,
-                      phone: primaryMember.phone,
-                      jobTitle: primaryMember.jobTitle
-                    } : null;
-                  } else {
-                    return {
-                      name: fullName,
-                      email: email,
-                      phone: '',
-                      jobTitle: 'Individual Member'
-                    };
-                  }
-                })(),
-                registeredAddress: {
-                  line1: addressLine1,
-                  line2: addressLine2,
-                  city,
-                  state,
-                  postalCode,
-                  country: country
-                },
-                hasOtherAssociations
-              }
-            }),
-          });
-          
-          if (!response.ok) {
-            console.warn('Failed to generate invoice:', response.statusText);
-          }
-        }
-      } catch (invoiceError) {
-        console.warn('Failed to generate/send invoice:', invoiceError);
-        // Don't block the registration process if invoice fails
+      // First, generate PDF and send invoice using the API route (which does EVERYTHING)
+      const { auth } = await import('@/lib/firebase');
+      if (!auth.currentUser) {
+        throw new Error('User must be authenticated');
       }
+
+      const fullName = `${firstName} ${surname}`.trim();
+      const token = await auth.currentUser.getIdToken();
+
+      const response = await fetch('/api/generate-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          membershipData: {
+            membershipType,
+            organizationName: membershipType === 'corporate' ? organizationName : fullName,
+            organizationType: membershipType === 'corporate' ? organizationType : 'individual',
+            grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
+            primaryContact: (() => {
+              if (membershipType === 'corporate') {
+                const primaryMember = members.find(m => m.isPrimaryContact);
+                return primaryMember ? {
+                  name: primaryMember.name,
+                  email: primaryMember.email,
+                  phone: primaryMember.phone,
+                  role: primaryMember.jobTitle
+                } : {
+                  name: fullName,
+                  email: email,
+                  phone: '',
+                  role: 'Account Administrator'
+                };
+              } else {
+                return {
+                  name: fullName,
+                  email: email,
+                  phone: '',
+                  role: 'Individual Member'
+                };
+              }
+            })(),
+            registeredAddress: {
+              line1: addressLine1,
+              line2: addressLine2,
+              city,
+              state,
+              postalCode,
+              country: country
+            },
+            hasOtherAssociations: hasOtherAssociations ?? false,
+            otherAssociations: hasOtherAssociations ? otherAssociations : []
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to generate invoice: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      if (!result.success || !result.emailSent) {
+        throw new Error(result.emailError?.message || 'Failed to send invoice email');
+      }
+      
+      // Only create the account if invoice sending succeeded
+      await createAccountAndMembership('pending_invoice');
       
       // Go directly to success (email already verified)
       setRegistrationComplete(true);
@@ -973,12 +1032,12 @@ export default function IntegratedRegisterForm() {
           status: 'pending_payment',
           personalName: '', // Empty for company accounts
           isCompanyAccount: true,
-          primaryContactMemberId: auth.currentUser.uid,
+          accountAdministratorMemberId: auth.currentUser.uid,
           paymentUserId: auth.currentUser.uid, // For webhook payment processing
           membershipType: 'corporate' as const,
           organizationName,
           organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
-          primaryContact: (() => {
+          accountAdministrator: (() => {
             const primaryMember = members.find(m => m.isPrimaryContact);
             return primaryMember ? {
               name: primaryMember.name,
@@ -989,10 +1048,10 @@ export default function IntegratedRegisterForm() {
               name: `${firstName} ${surname}`.trim(),
               email: auth.currentUser?.email || '',
               phone: '',
-              role: 'Primary Contact'
+              role: 'Account Administrator'
             };
           })(),
-          registeredAddress: {
+          businessAddress: {
             line1: addressLine1,
             line2: addressLine2,
             city,
@@ -1065,7 +1124,7 @@ export default function IntegratedRegisterForm() {
           personalName: fullName,
           organizationName: fullName,
           paymentUserId: auth.currentUser.uid, // For webhook payment processing
-          primaryContact: (() => {
+          accountAdministrator: (() => {
             const primaryMember = members.find(m => m.isPrimaryContact);
             return primaryMember ? {
               name: primaryMember.name,
@@ -1076,10 +1135,10 @@ export default function IntegratedRegisterForm() {
               name: `${firstName} ${surname}`.trim(),
               email: auth.currentUser?.email || '',
               phone: '',
-              role: 'Primary Contact'
+              role: 'Account Administrator'
             };
           })(),
-          registeredAddress: {
+          businessAddress: {
             line1: addressLine1,
             line2: addressLine2,
             city,
@@ -1096,7 +1155,7 @@ export default function IntegratedRegisterForm() {
         await setDoc(accountRef, dataToWrite, { merge: true });
       }
       
-      setStep(4); // Go to payment step
+      setStep(5); // Go to payment step
       
     } catch (error: any) {
       setError(handleAuthError(error));
@@ -1120,7 +1179,7 @@ export default function IntegratedRegisterForm() {
         <div>
           <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Verify Your Email</h2>
           <p className="text-fase-black mb-6">
-            We&apos;ve sent a 6-digit code to: <strong>{email}</strong>
+            We&apos;ve sent a 6-digit verification code to: <strong>{email}</strong>
           </p>
         </div>
 
@@ -1209,35 +1268,263 @@ export default function IntegratedRegisterForm() {
     <div className="space-y-6">
       {/* Progress indicator */}
       <div className="flex items-center justify-center mb-8">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 1 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
+            step >= 0 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             1
           </div>
-          <div className={`w-12 h-1 ${step >= 2 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-8 h-1 ${step >= 1 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 2 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
+            step >= 1 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             2
           </div>
-          <div className={`w-12 h-1 ${step >= 3 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-8 h-1 ${step >= 2 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 3 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
+            step >= 2 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             3
           </div>
-          <div className={`w-12 h-1 ${step >= 4 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-8 h-1 ${step >= 3 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+            step >= 3 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
+            4
+          </div>
+          <div className={`w-8 h-1 ${step >= 4 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             step >= 4 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
-            4
+            5
           </div>
         </div>
       </div>
 
-      {/* Step 1: Account Information */}
+      {/* Step 0: Data Notice Consent */}
+      {step === 0 && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Data Notice</h3>
+            <p className="text-fase-black text-sm">Please review and consent to our data usage policy</p>
+          </div>
+
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
+            <div className="space-y-4 text-base text-fase-black">
+              <h4 className="font-semibold text-fase-navy text-lg">Data Protection Notice</h4>
+              
+              <div className="space-y-3">
+                <p className="mb-3">
+                  <strong>Data Controller:</strong> Federation of European MGAs (FASE), Herengracht 124-128, 1015 BT Amsterdam, Netherlands. Contact: info@fasemga.com
+                </p>
+                
+                <p className="mb-3">
+                  FASE collects the personal and business information you provide to manage your membership and operate as an association for Managing General Agents and related insurance professionals.
+                </p>
+                
+                <p className="mb-2">
+                  <strong>Legal Basis and Purpose:</strong> We process your data based on:
+                </p>
+                <ul className="list-disc list-inside ml-4 mb-3">
+                  <li><strong>Contractual necessity:</strong> to process your membership application, provide member services, and fulfill our membership agreement</li>
+                  <li><strong>Legitimate interests:</strong> to facilitate professional networking, maintain member directories, and promote the insurance industry</li>
+                  <li><strong>Legal obligations:</strong> to meet regulatory and professional association requirements</li>
+                  <li><strong>Your consent:</strong> for marketing communications and sharing your details for networking (where you have agreed)</li>
+                </ul>
+                
+                <p className="mb-3">
+                  <strong>Data Sharing and Confidentiality:</strong> FASE may share basic business contact information with other members for legitimate organisational and networking purposes. However, FASE will not sell, transfer, or otherwise divulge organisationally identifiable information to third parties outside the membership without explicit consent. Commercially sensitive information, including financial data, business strategies, and proprietary information, will be held in strict confidence.
+                </p>
+                
+                <p className="mb-3">
+                  <strong>International Transfers:</strong> Your data may be transferred to other FASE members across Europe. We ensure appropriate safeguards are in place for any transfers outside the EU/EEA.
+                </p>
+                
+                <p className="mb-3">
+                  <strong>Retention Period:</strong> We retain your data for the duration of your membership plus 7 years for regulatory compliance, unless you request earlier deletion or we have another legal basis to retain it.
+                </p>
+                
+                <p className="mb-3">
+                  <strong>Your Rights:</strong> Under GDPR and UK data protection law, you have the right to:
+                </p>
+                <ul className="list-disc list-inside ml-4 mb-3">
+                  <li>access your personal data and receive a copy</li>
+                  <li>rectify inaccurate or incomplete data</li>
+                  <li>erase your data (where legally permissible)</li>
+                  <li>restrict or object to processing</li>
+                  <li>data portability</li>
+                  <li>withdraw consent (where processing is based on consent)</li>
+                  <li>lodge a complaint with your local data protection authority</li>
+                </ul>
+                
+                <p className="mb-3">
+                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at info@fasemga.com or write to FASE Data Protection, Herengracht 124-128, 1015 BT Amsterdam, Netherlands.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-fase-light-gold rounded-lg p-4">
+            <label className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                checked={dataNoticeConsent}
+                onChange={(e) => setDataNoticeConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+              />
+              <span className="text-base text-fase-black">
+                I have read and understand the data notice above, and I consent to FASE collecting, using, and storing my personal and business information as described. *
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Step 1: Code of Conduct Consent */}
       {step === 1 && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">FASE Code of Conduct</h3>
+            <p className="text-fase-black text-sm">Please review and consent to our Code of Conduct</p>
+          </div>
+
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
+            <div className="text-base text-fase-black">
+              <div className="prose prose-base max-w-none">
+                <h4 className="font-semibold text-fase-navy text-lg mb-4">FASE Code of Conduct</h4>
+                
+                <p className="mb-3">
+                  FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.
+                </p>
+                
+                <p className="mb-3">
+                  Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.
+                </p>
+                
+                <p className="mb-4">
+                  Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code.
+                </p>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">1. Legal responsibilities</h5>
+                <p className="mb-3">
+                  Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.
+                </p>
+                
+                <p className="mb-2">
+                  Members will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:
+                </p>
+                
+                <ul className="list-disc list-inside ml-4 mb-3">
+                  <li>A member being in breach of any regulatory requirement and</li>
+                  <li>Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities</li>
+                </ul>
+                
+                <p className="mb-4">
+                  Members will provide all reasonable lawful assistance to regulatory, professional and law enforcement organization in the discharge of their duties, whether in respect of themselves, another Member or a non-member.
+                </p>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">2. Financial Responsibilities</h5>
+                <p className="mb-3">
+                  Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.
+                </p>
+                
+                <p className="mb-4">
+                  Members must comply with applicable solvency or like requirements.
+                </p>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">3. Inter-organisational Responsibilities</h5>
+                <p className="mb-3">
+                  Members will compete fairly and honourably in the markets in which they operate.
+                </p>
+                
+                <p className="mb-2">
+                  This includes, but is not limited to:
+                </p>
+                
+                <ul className="list-disc list-inside ml-4 mb-4">
+                  <li>making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;</li>
+                  <li>entering into any agreement intended to diminish competition within the market.</li>
+                </ul>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">4. Community Responsibilities</h5>
+                <p className="mb-3">
+                  FASE members must conduct themselves in a manner befitting the privileges of membership.
+                </p>
+                
+                <p className="mb-3">
+                  Members will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.
+                </p>
+                
+                <p className="mb-3">
+                  Members are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.
+                </p>
+                
+                <p className="mb-4">
+                  Members will encourage continuing education and training for staff.
+                </p>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">5. Relationships with Insurers</h5>
+                <p className="mb-2">
+                  Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:
+                </p>
+                
+                <ul className="list-disc list-inside ml-4 mb-4">
+                  <li>faithfully execute the underwriting guidelines of the insurers they represent;</li>
+                  <li>act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;</li>
+                  <li>keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship.</li>
+                </ul>
+                
+                <h5 className="font-semibold text-fase-navy mt-6 mb-3">6. Relationships with Brokers and Agents (or Insureds if operating directly)</h5>
+                <p className="mb-2">
+                  Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:
+                </p>
+                
+                <ul className="list-disc list-inside ml-4 mb-3">
+                  <li>consider at all times the financial stability of insurers with which the Member places business;</li>
+                  <li>make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.</li>
+                </ul>
+                
+                <p className="mb-3">
+                  Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.
+                </p>
+                
+                <p className="mb-3">
+                  Effective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.
+                </p>
+                
+                <p className="mb-3">
+                  FASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.
+                </p>
+                
+                <p className="mb-6">
+                  Members should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed.
+                </p>
+                
+                <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
+                  All notices of potential breach made under this Code should be made to: Chairman of the Business Conduct Committee, FASE, Herengracht, 124-128, 1015 BT Amsterdam, Netherlands.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-fase-light-gold rounded-lg p-4">
+            <label className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                checked={codeOfConductConsent}
+                onChange={(e) => setCodeOfConductConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+              />
+              <span className="text-base text-fase-black">
+                I have read and agree to abide by the FASE Code of Conduct as a condition of my membership. I understand that failure to comply may result in membership termination. *
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Account Information */}
+      {step === 2 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Create Your Account</h3>
@@ -1339,107 +1626,46 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 2: Membership Information */}
-      {step === 2 && (
+      {/* Step 3: Membership Information */}
+      {step === 3 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Membership Information</h3>
             <p className="text-fase-black text-sm">Tell us about your organization</p>
           </div>
 
-          {/* Membership Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-fase-navy mb-3">Membership Type *</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div 
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  membershipType === 'individual' 
-                    ? 'border-fase-navy bg-fase-light-blue' 
-                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                }`}
-                onClick={() => {
-                  setMembershipType('individual');
-                  const fullName = `${firstName} ${surname}`.trim();
-                  setOrganizationName(fullName);
-                  setMembers([]); // Clear members for individual
-                }}
-              >
-                <div className="flex items-center mb-2">
-                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    membershipType === 'individual' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                  }`}>
-                    {membershipType === 'individual' && (
-                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                    )}
-                  </div>
-                  <span className="font-medium text-fase-navy">Individual Membership</span>
-                </div>
-                <p className="text-sm text-fase-black ml-7">For individual professionals</p>
-              </div>
-              
-              <div 
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  membershipType === 'corporate' 
-                    ? 'border-fase-navy bg-fase-light-blue' 
-                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                }`}
-                onClick={() => {
-                  setMembershipType('corporate');
-                  setOrganizationName('');
-                  // Members will be initialized by useEffect
-                }}
-              >
-                <div className="flex items-center mb-2">
-                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    membershipType === 'corporate' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                  }`}>
-                    {membershipType === 'corporate' && (
-                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                    )}
-                  </div>
-                  <span className="font-medium text-fase-navy">Corporate Membership</span>
-                </div>
-                <p className="text-sm text-fase-black ml-7">For organizations (you&apos;ll create the company account)</p>
-              </div>
-            </div>
-          </div>
 
           {/* Organization Information */}
-          {membershipType === 'corporate' && (
-            <>
-              <ValidatedInput
-                label="Organization Name"
-                fieldKey="organizationName"
-                value={organizationName}
-                onChange={setOrganizationName}
-                placeholder="Your company or organization name"
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
+          <ValidatedInput
+            label="Organization Name"
+            fieldKey="organizationName"
+            value={organizationName}
+            onChange={setOrganizationName}
+            placeholder="Your company or organization name"
+            required
+            touchedFields={touchedFields}
+            attemptedNext={attemptedNext}
+            markFieldTouched={markFieldTouched}
+          />
 
-              <ValidatedSelect
-                label="Organization Type"
-                fieldKey="organizationType"
-                value={organizationType}
-                onChange={setOrganizationType}
-                options={organizationTypeOptions}
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-            </>
-          )}
+          <ValidatedSelect
+            label="Organization Type"
+            fieldKey="organizationType"
+            value={organizationType}
+            onChange={setOrganizationType}
+            options={organizationTypeOptions}
+            required
+            touchedFields={touchedFields}
+            attemptedNext={attemptedNext}
+            markFieldTouched={markFieldTouched}
+          />
 
           {/* Team Members Section */}
-          {membershipType === 'corporate' && (
             <div className="space-y-6">
               <div>
-                <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members</h4>
-                <p className="text-sm text-fase-black mt-1">
-                  Add up to 3 people to your corporate membership. They&apos;ll receive emails to confirm their accounts after registration.
+                <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members & Account Administrator</h4>
+                <p className="text-sm text-fase-black mt-2 mb-4">
+                  Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events. One person must be designated as the account administrator to manage billing and settings. <span className="text-fase-navy font-medium">You can add more seats after completing your registration.</span>
                 </p>
               </div>
 
@@ -1450,20 +1676,20 @@ export default function IntegratedRegisterForm() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-fase-navy">
-                          Member {index + 1}
+                          {member.id === 'registrant' ? 'You' : `Member ${index + 1}`}
                           {member.isPrimaryContact && (
                             <span className="ml-2 text-xs bg-fase-navy text-white px-2 py-1 rounded">
-                              Primary Contact
+                              Account Administrator
                             </span>
                           )}
                         </span>
                       </div>
-                      {members.length > 1 && (
+                      {member.id !== 'registrant' && (
                         <button
                           type="button"
                           onClick={() => {
                             const newMembers = members.filter(m => m.id !== member.id);
-                            // If we removed the primary contact, make the first member primary
+                            // If we removed the account administrator, make the first member administrator
                             if (member.isPrimaryContact && newMembers.length > 0) {
                               newMembers[0].isPrimaryContact = true;
                             }
@@ -1479,17 +1705,45 @@ export default function IntegratedRegisterForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Full Name *
+                          First Name *
                         </label>
                         <input
                           type="text"
-                          value={member.name}
+                          value={member.firstName}
                           onChange={(e) => {
                             const newMembers = [...members];
-                            newMembers[index] = { ...member, name: e.target.value };
+                            const updatedMember = { 
+                              ...member, 
+                              firstName: e.target.value,
+                              name: `${e.target.value} ${member.lastName}`.trim()
+                            };
+                            newMembers[index] = updatedMember;
                             setMembers(newMembers);
                           }}
-                          placeholder="Full name"
+                          placeholder="First name"
+                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          disabled={member.id === 'registrant'}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-fase-navy mb-2">
+                          Last Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={member.lastName}
+                          onChange={(e) => {
+                            const newMembers = [...members];
+                            const updatedMember = { 
+                              ...member, 
+                              lastName: e.target.value,
+                              name: `${member.firstName} ${e.target.value}`.trim()
+                            };
+                            newMembers[index] = updatedMember;
+                            setMembers(newMembers);
+                          }}
+                          placeholder="Last name"
                           className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                           disabled={member.id === 'registrant'}
                         />
@@ -1548,12 +1802,12 @@ export default function IntegratedRegisterForm() {
                       </div>
                     </div>
 
-                    {/* Primary Contact Toggle */}
+                    {/* Account Administrator Toggle */}
                     <div className="mt-4">
                       <label className="flex items-center">
                         <input
                           type="radio"
-                          name="primaryContact"
+                          name="accountAdministrator"
                           checked={member.isPrimaryContact}
                           onChange={() => {
                             const newMembers = members.map(m => ({
@@ -1564,9 +1818,10 @@ export default function IntegratedRegisterForm() {
                           }}
                           className="mr-2"
                         />
-                        <span className="text-sm text-fase-navy">Make this person the primary contact</span>
+                        <span className="text-sm text-fase-navy">Make this person the account administrator</span>
                       </label>
                     </div>
+
                   </div>
                 ))}
               </div>
@@ -1578,6 +1833,8 @@ export default function IntegratedRegisterForm() {
                   onClick={() => {
                     const newMember: Member = {
                       id: `member_${Date.now()}`,
+                      firstName: '',
+                      lastName: '',
                       name: '',
                       email: '',
                       phone: '',
@@ -1592,12 +1849,11 @@ export default function IntegratedRegisterForm() {
                 </button>
               )}
             </div>
-          )}
         </div>
       )}
 
-      {/* Step 3: Additional Details */}
-      {step === 3 && (
+      {/* Step 4: Additional Details */}
+      {step === 4 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Additional Details</h3>
@@ -1607,7 +1863,7 @@ export default function IntegratedRegisterForm() {
           {/* Address Information */}
           <div className="space-y-4">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              {membershipType === 'individual' ? 'Personal Address' : 'Registered Address'}
+              {membershipType === 'individual' ? 'Personal Address' : 'Business Address'}
             </h4>
             
             <ValidatedInput
@@ -1689,43 +1945,120 @@ export default function IntegratedRegisterForm() {
               
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Gross Written Premiums (millions) *
+                  Annual Gross Written Premiums *
                 </label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={grossWrittenPremiums}
-                      onChange={(e) => {
-                        setGrossWrittenPremiums(e.target.value);
-                        markFieldTouched('grossWrittenPremiums');
-                      }}
-                      onBlur={() => markFieldTouched('grossWrittenPremiums')}
-                      placeholder="e.g. 25.5"
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-                        touchedFields.grossWrittenPremiums || attemptedNext
-                          ? grossWrittenPremiums.trim() === '' ? 'border-red-300' : 'border-fase-light-gold'
-                          : 'border-fase-light-gold'
-                      }`}
-                    />
-                  </div>
-                  <div className="w-24">
+                <div className="space-y-3">
+                  {/* Currency Selection */}
+                  <div>
+                    <label className="block text-xs text-fase-black mb-1">Currency</label>
                     <select
                       value={gwpCurrency}
                       onChange={(e) => setGwpCurrency(e.target.value)}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      className="w-32 px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     >
-                      <option value="EUR">EUR</option>
-                      <option value="GBP">GBP</option>
-                      <option value="USD">USD</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="USD">USD ($)</option>
                     </select>
                   </div>
+                  
+                  {/* Amount Builder - Separate inputs for each magnitude */}
+                  <div className="grid grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-xs text-fase-black mb-1">Billions</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="99"
+                        step="1"
+                        value={gwpBillions}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 99)) {
+                            setGwpBillions(value);
+                            markFieldTouched('grossWrittenPremiums');
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs text-fase-black mb-1">Millions</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="999"
+                        step="1"
+                        value={gwpMillions}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
+                            setGwpMillions(value);
+                            markFieldTouched('grossWrittenPremiums');
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs text-fase-black mb-1">Thousands</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="999"
+                        step="1"
+                        value={gwpThousands}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
+                            setGwpThousands(value);
+                            markFieldTouched('grossWrittenPremiums');
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs text-fase-black mb-1">Hundreds of thousands</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="999"
+                        step="1"
+                        value={gwpHundreds}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
+                            setGwpHundreds(value);
+                            markFieldTouched('grossWrittenPremiums');
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Display Total */}
+                  <div className="bg-fase-cream/20 p-3 rounded-lg">
+                    <div className="text-sm text-fase-navy font-medium">
+                      Total: {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
+                        const billions = parseFloat(gwpBillions) || 0;
+                        const millions = parseFloat(gwpMillions) || 0;
+                        const thousands = parseFloat(gwpThousands) || 0;
+                        const hundreds = parseFloat(gwpHundreds) || 0;
+                        const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+                        return total.toLocaleString('en-US');
+                      })()}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-fase-black mt-1">
-                  Enter your annual gross written premiums in millions of {gwpCurrency}.
-                </p>
               </div>
 
               {/* Business Details Questions */}
@@ -1938,8 +2271,8 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 4: Payment */}
-      {step === 4 && (
+      {/* Step 5: Payment */}
+      {step === 5 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Complete Your Membership</h3>
@@ -1981,11 +2314,18 @@ export default function IntegratedRegisterForm() {
                 <p className="text-fase-black">{country}</p>
               </div>
               
-              {membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums && (
+              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands || gwpHundreds) && (
                 <div className="md:col-span-2">
                   <span className="text-fase-navy font-medium">Gross Written Premiums:</span>
                   <p className="text-fase-black">
-                    {gwpCurrency} {parseFloat(grossWrittenPremiums).toFixed(1)} million
+                    {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
+                      const billions = parseFloat(gwpBillions) || 0;
+                      const millions = parseFloat(gwpMillions) || 0;
+                      const thousands = parseFloat(gwpThousands) || 0;
+                      const hundreds = parseFloat(gwpHundreds) || 0;
+                      const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+                      return total.toLocaleString('en-US');
+                    })()}
                   </p>
                 </div>
               )}
@@ -2114,10 +2454,10 @@ export default function IntegratedRegisterForm() {
       )}
 
       {/* Navigation Buttons */}
-      {step < 4 && (
+      {step < 6 && (
         <div className="pt-6">
           <div className="flex justify-between">
-            {step > 1 ? (
+            {step > 0 ? (
               <Button 
                 type="button"
                 variant="secondary" 
@@ -2129,57 +2469,28 @@ export default function IntegratedRegisterForm() {
               <div></div>
             )}
             
-            {step < 3 ? (
+            {step < 4 ? (
               <Button 
                 type="button"
                 variant="primary" 
                 onClick={handleNext}
-                disabled={step === 1 && isSendingVerification}
+                disabled={step === 2 && isSendingVerification}
               >
-                {step === 1 && isSendingVerification ? "Sending Code..." : "Next"}
+                {step === 2 && isSendingVerification ? "Sending Code..." : "Next"}
               </Button>
-            ) : step === 3 ? (
+            ) : step === 4 ? (
               <Button 
                 type="button"
                 variant="primary" 
-                onClick={() => {
-                  setAttemptedNext(true);
-                  
-                  // Validate fields before going to payment step
-                  if (!addressLine1.trim() || !city.trim() || !country) {
-                    setError("Address information is required");
-                    return;
-                  }
-                  
-                  
-                  if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
-                    setError("Gross written premiums are required for MGA memberships");
-                    return;
-                  }
-                  
-                  if (hasOtherAssociations === null) {
-                    setError("Please specify if your organization is a member of other European MGA associations");
-                    return;
-                  }
-                  
-                  if (hasOtherAssociations && otherAssociations.length === 0) {
-                    setError("Please select at least one European MGA association you are a member of");
-                    return;
-                  }
-
-                  // All validated, go to payment step
-                  setError("");
-                  setStep(4);
-                  setAttemptedNext(false);
-                }}
+                onClick={handleNext}
               >
-                Continue
+                Continue to Payment
               </Button>
             ) : null}
           </div>
           
-          {/* Alternative Options - Only show on step 1 */}
-          {step === 1 && (
+          {/* Alternative Options - Only show on step 2 (account creation) */}
+          {step === 2 && (
             <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
               <p className="text-sm text-fase-black mb-4">Already a member?</p>
               <div className="flex justify-center">
