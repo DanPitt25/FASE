@@ -8,6 +8,7 @@ import Button from '../components/Button';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { useTranslations } from 'next-intl';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -15,6 +16,10 @@ export default function Page() {
   const [currentServiceIndex, setCurrentServiceIndex] = useState(-1);
   const [currentStandardIndex, setCurrentStandardIndex] = useState(-1);
   const [currentImpactIndex, setCurrentImpactIndex] = useState(-1); // No card selected initially
+  
+  // Translation hooks
+  const tHomepage = useTranslations('homepage');
+  const tNav = useTranslations('navigation');
   
   // Scroll animation hooks
   const { elementRef: whoWeAreRef, isVisible: whoWeAreVisible } = useScrollAnimation();
@@ -34,8 +39,8 @@ export default function Page() {
 
   const services = [
     {
-      title: "Pan-European Events",
-      description: "Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development.",
+      title: tHomepage('services.pan_european_events.title'),
+      description: tHomepage('services.pan_european_events.description'),
       image: "/conference.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,8 +49,8 @@ export default function Page() {
       )
     },
     {
-      title: "Digital Platform",
-      description: "Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members.",
+      title: tHomepage('services.digital_platform.title'),
+      description: tHomepage('services.digital_platform.description'),
       image: "/data.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,8 +59,8 @@ export default function Page() {
       )
     },
     {
-      title: "Market Intelligence",
-      description: "Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights.",
+      title: tHomepage('services.market_intelligence.title'),
+      description: tHomepage('services.market_intelligence.description'),
       image: "/market.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,8 +70,8 @@ export default function Page() {
       )
     },
     {
-      title: "Industry Advocacy",
-      description: "Voice for MGAs in regulatory discussions at national and pan-European levels.",
+      title: tHomepage('services.industry_advocacy.title'),
+      description: tHomepage('services.industry_advocacy.description'),
       image: "/regulatory.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,8 +80,8 @@ export default function Page() {
       )
     },
     {
-      title: "Education & Training",
-      description: "Online education and training modules for MGA employees across various specialisms.",
+      title: tHomepage('services.education_training.title'),
+      description: tHomepage('services.education_training.description'),
       image: "/training.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,8 +90,8 @@ export default function Page() {
       )
     },
     {
-      title: "Market Research",
-      description: "Research capabilities for MGAs seeking access to new European markets and growth opportunities.",
+      title: tHomepage('services.market_research.title'),
+      description: tHomepage('services.market_research.description'),
       image: "/market.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,8 +100,8 @@ export default function Page() {
       )
     },
     {
-      title: "Capacity Transparency",
-      description: "Enhanced transparency on insurer appetite for MGA-sourced business by geography and class.",
+      title: tHomepage('services.capacity_transparency.title'),
+      description: tHomepage('services.capacity_transparency.description'),
       image: "/capacity.jpg",
       icon: (
         <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,8 +113,8 @@ export default function Page() {
 
   const impacts = [
     {
-      title: "Networking & Collaboration",
-      description: "Engage with peers through forums, events, and working groups that foster practical connections and help members find solutions to common challenges.",
+      title: tHomepage('impact.networking.title'),
+      description: tHomepage('impact.networking.description'),
       image: "/conference.jpg",
       icon: (
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,8 +123,8 @@ export default function Page() {
       )
     },
     {
-      title: "Professional Development",
-      description: "Access targeted learning opportunities and research designed to help MGAs build expertise and leadership capability.",
+      title: tHomepage('impact.professional_development.title'),
+      description: tHomepage('impact.professional_development.description'),
       image: "/training.jpg",
       icon: (
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,8 +133,8 @@ export default function Page() {
       )
     },
     {
-      title: "Market Intelligence",
-      description: "Benefit from curated data and insights that give members a clear understanding of current trends, regulatory shifts, and emerging opportunities across European markets.",
+      title: tHomepage('impact.market_intelligence.title'),
+      description: tHomepage('impact.market_intelligence.description'),
       image: "/market.jpg",
       icon: (
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,20 +146,20 @@ export default function Page() {
 
   const standards = [
     {
-      title: "Eligibility Review",
-      description: "Confirmation of business credentials, regulatory status, and ethical track record."
+      title: tHomepage('standards.eligibility_review.title'),
+      description: tHomepage('standards.eligibility_review.description')
     },
     {
-      title: "Standards Alignment",
-      description: "Assessment of each applicant's alignment with recognised delegated underwriting principles."
+      title: tHomepage('standards.standards_alignment.title'),
+      description: tHomepage('standards.standards_alignment.description')
     },
     {
-      title: "Peer Endorsement", 
-      description: "Consultation with our Advisory Board and existing members to ensure credibility and fit within the community."
+      title: tHomepage('standards.peer_endorsement.title'), 
+      description: tHomepage('standards.peer_endorsement.description')
     },
     {
-      title: "Ongoing Review",
-      description: "Periodic reaffirmation of good standing and continued commitment to shared standards."
+      title: tHomepage('standards.ongoing_review.title'),
+      description: tHomepage('standards.ongoing_review.description')
     }
   ];
 
@@ -251,17 +256,17 @@ export default function Page() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
           <div className="max-w-lg xl:max-w-xl 2xl:max-w-2xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-tight">
-              Connecting Europe&apos;s insurance innovators
+              {tHomepage('hero.title')}
             </h1>
             <p className="text-lg sm:text-xl text-fase-black mb-8 font-lato leading-relaxed">
-              Linking MGAs, capacity providers, distributors and service partners to share knowledge, build relationships, and improve delegated underwriting across Europe.
+              {tHomepage('hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button href="/join" variant="primary" size="large">
-                Join Now
+                {tHomepage('hero.join_now')}
               </Button>
               <Button href="/about" variant="secondary" size="large">
-                Learn More
+                {tHomepage('hero.learn_more')}
               </Button>
             </div>
           </div>
@@ -300,10 +305,10 @@ export default function Page() {
               whoWeAreVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
             }`}>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-6">
-                See and be seen
+                {tHomepage('who_we_are.title')}
               </h2>
               <p className="text-fase-black text-base sm:text-lg leading-relaxed">
-                FASE raises the profile of the delegated underwriting sector and its individual members. Our members share a focus on collaboration, responsible growth, and high professional standards. Through shared insight, practical resources and an active network, we help each member build the partnerships that will sustain the growth of its business.
+                {tHomepage('who_we_are.description')}
               </p>
             </div>
           </div>
@@ -321,11 +326,11 @@ export default function Page() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="max-w-4xl mx-auto text-center">
             <blockquote className="text-xl sm:text-2xl font-noto-serif text-fase-navy leading-relaxed mb-8">
-              &ldquo;MGAs are, in the main, small businesses. As our members look to grow, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.&rdquo;
+              &ldquo;{tHomepage('quote.text')}&rdquo;
             </blockquote>
             <div className="flex flex-col items-center">
-              <cite className="text-fase-black font-medium text-lg not-italic">Dario Spata</cite>
-              <p className="text-fase-black text-sm mt-1">President of ASASE and FASE advisory board member</p>
+              <cite className="text-fase-black font-medium text-lg not-italic">{tHomepage('quote.author')}</cite>
+              <p className="text-fase-black text-sm mt-1">{tHomepage('quote.title')}</p>
             </div>
           </div>
         </div>
@@ -344,7 +349,7 @@ export default function Page() {
           <div className="text-center mb-12">
             <h2 className={`text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-8 transition-all duration-700 ${
               impactVisible ? 'scroll-visible' : 'scroll-hidden'
-            }`}>Our Impact</h2>
+            }`}>{tHomepage('impact.title')}</h2>
           </div>
           
           {/* Impact Cards */}
@@ -420,11 +425,11 @@ export default function Page() {
           <div className="text-center mb-8">
             <h2 className={`text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-fase-navy mb-3 transition-all duration-700 ${
               standardsVisible ? 'scroll-visible' : 'scroll-hidden'
-            }`}>Vetting & Standards</h2>
+            }`}>{tHomepage('standards.title')}</h2>
             <p className={`text-fase-black text-base sm:text-lg max-w-3xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${
               standardsVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>
-              To uphold the professionalism of the FASE community, we have established a membership protocol:
+              {tHomepage('standards.subtitle')}
             </p>
           </div>
           
@@ -433,7 +438,7 @@ export default function Page() {
               standardsVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>
               <div className="bg-gradient-to-r from-fase-navy to-fase-navy/90 p-4">
-                <h3 className="text-white text-lg font-medium text-center">Our Review Process</h3>
+                <h3 className="text-white text-lg font-medium text-center">{tHomepage('standards.review_process')}</h3>
               </div>
               <div className="divide-y divide-fase-cream">
                 {standards.map((standard, index) => (
@@ -488,7 +493,7 @@ export default function Page() {
             </div>
             
             <p className="text-fase-black text-base sm:text-lg mt-8 text-center leading-relaxed font-medium">
-              This process ensures FASE remains a trusted network of professionals working to raise consistency, transparency, and performance in delegated underwriting.
+              {tHomepage('standards.conclusion')}
             </p>
           </div>
         </div>
@@ -507,22 +512,22 @@ export default function Page() {
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-fase-navy/75"></div>
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center py-20 max-w-6xl mx-auto">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">A Practical Network for a Complex Market</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">{tHomepage('why_join.title')}</h2>
           <p className="text-fase-light-blue text-sm sm:text-base mb-6 leading-relaxed max-w-3xl mx-auto">
-            Whether you&apos;re an MGA, insurer, broker, or service partner, FASE helps you stay connected to the people, information, and perspectives shaping delegated underwriting in Europe.
+            {tHomepage('why_join.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/join" className="inline-flex items-center px-8 py-4 bg-white text-fase-navy font-semibold  hover:bg-fase-light-blue transition-colors">
-              Become a Member
+              {tHomepage('why_join.become_member')}
             </a>
             <a href="/events" className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold  hover:bg-white hover:text-fase-navy transition-colors">
-              View Upcoming Events
+              {tHomepage('why_join.view_events')}
             </a>
           </div>
           
           <div className="mt-16 pt-8 border-t border-fase-light-blue/30">
             <p className="text-fase-light-blue text-lg leading-relaxed italic">
-              FASE — building a connected, informed, and responsible Delegated Underwriting community
+              {tHomepage('why_join.tagline')}
             </p>
           </div>
         </div>

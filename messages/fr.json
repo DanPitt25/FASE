@@ -1,10 +1,69 @@
 {
-  "Header": {
+  "common": {
+    "search": "Rechercher",
+    "search_placeholder": "Rechercher...",
+    "language": "Langue",
+    "language_label": "Langue :",
+    "english": "English",
+    "french": "Français",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès"
+  },
+  "navigation": {
+    "main_menu": "Menu Principal",
+    "close_menu": "Fermer le Menu",
+    "about_fase": "À Propos de FASE",
+    "about_us": "À Propos",
+    "leadership": "Direction",
+    "management": "Gestion",
+    "news": "Actualités",
+    "advisory_board": "Conseil Consultatif",
+    "affiliates": "Affiliés",
+    "who_we_are": "Qui Nous Sommes",
+    "people": "Équipe",
+    "sponsors": "Partenaires",
+    "networking": "Réseautage",
+    "events": "Événements",
+    "rendezvous": "Rendez-vous",
+    "knowledge_education": "Connaissances & Éducation",
+    "knowledge": "Connaissances",
+    "education": "Éducation",
+    "webinars": "Webinaires",
+    "entrepreneurial_underwriter": "Souscripteur Entrepreneurial",
+    "industry_advocacy": "Plaidoyer Industriel",
+    "capacity_transparency": "Transparence des Capacités",
+    "digital_platform": "Plateforme Numérique",
+    "market_intelligence": "Intelligence de Marché",
+    "what_is_mga": "Qu'est-ce qu'une Agence de Souscription ?",
+    "join_us": "Nous Rejoindre",
+    "join": "Rejoindre",
+    "sponsorship": "Partenariat",
+    "member_portal": "Portail Membre",
+    "directory": "Annuaire",
+    "contact": "Contact",
+    "search_site": "Rechercher sur le Site"
+  },
+  "auth": {
+    "sign_in": "Se Connecter",
+    "sign_out": "Se Déconnecter",
+    "sign_up": "S'Inscrire",
+    "register": "S'Enregistrer",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "logged_in_as": "Connecté en tant que",
+    "signed_in_as": "Connecté en tant que :",
+    "welcome": "Bienvenue",
+    "account": "Compte",
+    "profile": "Profil",
+    "admin_portal": "Portail Administrateur"
+  },
+  "header": {
     "search_placeholder": "Rechercher...",
     "language_label": "Langue :",
     "about_us": "À Propos",
     "join_us": "Nous Rejoindre", 
-    "sponsorship": "Parrainage",
+    "sponsorship": "Partenariat",
     "events": "Événements",
     "knowledge": "Connaissances & Éducation",
     "news": "Actualités",
@@ -13,5 +72,111 @@
     "sign_out": "Se Déconnecter",
     "logged_in_as": "Connecté en tant que",
     "signed_in_as": "Connecté en tant que :"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Connecter les innovateurs de l'assurance européenne",
+      "subtitle": "Relier les agences de souscription, les fournisseurs de capacité, les distributeurs et les partenaires de service pour partager les connaissances, établir des relations et améliorer la souscription déléguée à travers l'Europe.",
+      "join_now": "Rejoindre Maintenant",
+      "learn_more": "En Savoir Plus"
+    },
+    "who_we_are": {
+      "title": "Voir et être vu",
+      "description": "FASE élève le profil du secteur de la souscription déléguée et de ses membres individuels. Nos membres partagent un accent sur la collaboration, la croissance responsable et des normes professionnelles élevées. Grâce à des perspectives partagées, des ressources pratiques et un réseau actif, nous aidons chaque membre à construire les partenariats qui soutiendront la croissance de son entreprise."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Événements Pan-Européens",
+        "description": "Conférences bisannuelles rassemblant les agences de souscription, les fournisseurs de capacité et les prestataires de services pour le réseautage et le développement commercial."
+      },
+      "digital_platform": {
+        "title": "Plateforme Numérique",
+        "description": "Plateforme numérique multilingue fournissant des ressources techniques, réglementaires et d'appétit pour le risque aux membres agences de souscription."
+      },
+      "market_intelligence": {
+        "title": "Intelligence de Marché",
+        "description": "Rapports annuels du marché européen démontrant le dynamisme des agences de souscription avec des statistiques précises et des perspectives pan-européennes."
+      },
+      "industry_advocacy": {
+        "title": "Plaidoyer Industriel",
+        "description": "Voix pour les agences de souscription dans les discussions réglementaires aux niveaux national et pan-européen."
+      },
+      "education_training": {
+        "title": "Éducation et Formation",
+        "description": "Modules d'éducation et de formation en ligne pour les employés d'agences de souscription dans diverses spécialités."
+      },
+      "market_research": {
+        "title": "Recherche de Marché",
+        "description": "Capacités de recherche pour les agences de souscription cherchant l'accès à de nouveaux marchés européens et opportunités de croissance."
+      },
+      "capacity_transparency": {
+        "title": "Transparence des Capacités",
+        "description": "Transparence améliorée sur l'appétit des assureurs pour les affaires issues d'agences de souscription par géographie et classe."
+      }
+    },
+    "quote": {
+      "text": "Les agences de souscription sont, en général, de petites entreprises. Alors que nos membres cherchent à se développer, ils sont parfois entravés par des obstacles réglementaires, des lacunes de données et des contraintes de capacité. FASE peut aider.",
+      "author": "Dario Spata",
+      "title": "Président d'ASASE et membre du conseil consultatif de FASE"
+    },
+    "impact": {
+      "title": "Notre Impact",
+      "networking": {
+        "title": "Réseautage et Collaboration",
+        "description": "Engagez-vous avec des pairs à travers des forums, événements et groupes de travail qui favorisent les connexions pratiques et aident les membres à trouver des solutions aux défis communs."
+      },
+      "professional_development": {
+        "title": "Développement Professionnel",
+        "description": "Accédez à des opportunités d'apprentissage ciblées et à la recherche conçues pour aider les agences de souscription à développer leur expertise et leur capacité de leadership."
+      },
+      "market_intelligence": {
+        "title": "Intelligence de Marché",
+        "description": "Bénéficiez de données et d'analyses curées qui donnent aux membres une compréhension claire des tendances actuelles, des changements réglementaires et des opportunités émergentes sur les marchés européens."
+      }
+    },
+    "standards": {
+      "title": "Vérification et Normes",
+      "subtitle": "Pour maintenir le professionnalisme de la communauté FASE, nous avons établi un protocole d'adhésion :",
+      "review_process": "Notre Processus d'Évaluation",
+      "eligibility_review": {
+        "title": "Évaluation d'Éligibilité",
+        "description": "Confirmation des références commerciales, du statut réglementaire et des antécédents éthiques."
+      },
+      "standards_alignment": {
+        "title": "Alignement des Normes",
+        "description": "Évaluation de l'alignement de chaque candidat avec les principes reconnus de souscription déléguée."
+      },
+      "peer_endorsement": {
+        "title": "Approbation par les Pairs",
+        "description": "Consultation avec notre Conseil Consultatif et les membres existants pour assurer la crédibilité et l'adéquation au sein de la communauté."
+      },
+      "ongoing_review": {
+        "title": "Examen Continu",
+        "description": "Réaffirmation périodique de la bonne réputation et de l'engagement continu envers les normes partagées."
+      },
+      "conclusion": "Ce processus garantit que FASE reste un réseau de confiance de professionnels travaillant à améliorer la cohérence, la transparence et la performance dans la souscription déléguée."
+    },
+    "why_join": {
+      "title": "Un réseau pratique pour un marché complexe",
+      "subtitle": "Que vous soyez une agence de souscription, un assureur, un courtier ou un partenaire de service, FASE vous aide à rester connecté aux personnes, informations et perspectives qui façonnent la souscription déléguée en Europe.",
+      "become_member": "Devenir Membre",
+      "view_events": "Voir les Événements À Venir",
+      "tagline": "FASE — construire une communauté de Souscription Déléguée connectée, informée et responsable"
+    }
+  },
+  "footer": {
+    "description": "La Fédération des Agences de Souscription Européennes - représentant la communauté des agences de souscription à travers l'Europe.",
+    "membership": "Adhésion",
+    "join_fase": "Rejoindre FASE",
+    "member_directory": "Annuaire des Membres",
+    "resources": "Ressources",
+    "knowledge_base": "Base de Connaissances",
+    "events": "Événements",
+    "news": "Actualités",
+    "connect": "Connexion",
+    "contact_us": "Nous Contacter",
+    "member_portal": "Portail Membre",
+    "about_fase": "À Propos de FASE",
+    "copyright": "© 2025 FASE B.V. Tous droits réservés."
   }
 }

@@ -1,5 +1,64 @@
 {
-  "Header": {
+  "common": {
+    "search": "Search",
+    "search_placeholder": "Search...",
+    "language": "Language",
+    "language_label": "Language:",
+    "english": "English",
+    "french": "Français",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "main_menu": "Main Menu",
+    "close_menu": "Close Menu",
+    "about_fase": "About FASE",
+    "about_us": "About Us",
+    "leadership": "Leadership",
+    "management": "Management",
+    "news": "News",
+    "advisory_board": "Advisory Board",
+    "affiliates": "Affiliates",
+    "who_we_are": "Who We Are",
+    "people": "People",
+    "sponsors": "Sponsors",
+    "networking": "Networking",
+    "events": "Events",
+    "rendezvous": "Rendezvous",
+    "knowledge_education": "Knowledge & Education",
+    "knowledge": "Knowledge",
+    "education": "Education",
+    "webinars": "Webinars",
+    "entrepreneurial_underwriter": "Entrepreneurial Underwriter",
+    "industry_advocacy": "Industry Advocacy",
+    "capacity_transparency": "Capacity Transparency",
+    "digital_platform": "Digital Platform",
+    "market_intelligence": "Market Intelligence",
+    "what_is_mga": "What is an MGA?",
+    "join_us": "Join Us",
+    "join": "Join",
+    "sponsorship": "Sponsorship",
+    "member_portal": "Member Portal",
+    "directory": "Directory",
+    "contact": "Contact",
+    "search_site": "Search Site"
+  },
+  "auth": {
+    "sign_in": "Sign In",
+    "sign_out": "Sign Out",
+    "sign_up": "Sign Up",
+    "register": "Register",
+    "login": "Login",
+    "logout": "Logout",
+    "logged_in_as": "Logged in as",
+    "signed_in_as": "Signed in as:",
+    "welcome": "Welcome",
+    "account": "Account",
+    "profile": "Profile",
+    "admin_portal": "Admin Portal"
+  },
+  "header": {
     "search_placeholder": "Search...",
     "language_label": "Language:",
     "about_us": "About Us",
@@ -13,5 +72,111 @@
     "sign_out": "Sign Out",
     "logged_in_as": "Logged in as",
     "signed_in_as": "Signed in as:"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Connecting Europe's insurance innovators",
+      "subtitle": "Linking MGAs, capacity providers, distributors and service partners to share knowledge, build relationships, and improve delegated underwriting across Europe.",
+      "join_now": "Join Now",
+      "learn_more": "Learn More"
+    },
+    "who_we_are": {
+      "title": "See and be seen",
+      "description": "FASE raises the profile of the delegated underwriting sector and its individual members. Our members share a focus on collaboration, responsible growth, and high professional standards. Through shared insight, practical resources and an active network, we help each member build the partnerships that will sustain the growth of its business."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Pan-European Events",
+        "description": "Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development."
+      },
+      "digital_platform": {
+        "title": "Digital Platform",
+        "description": "Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members."
+      },
+      "market_intelligence": {
+        "title": "Market Intelligence",
+        "description": "Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights."
+      },
+      "industry_advocacy": {
+        "title": "Industry Advocacy",
+        "description": "Voice for MGAs in regulatory discussions at national and pan-European levels."
+      },
+      "education_training": {
+        "title": "Education & Training",
+        "description": "Online education and training modules for MGA employees across various specialisms."
+      },
+      "market_research": {
+        "title": "Market Research",
+        "description": "Research capabilities for MGAs seeking access to new European markets and growth opportunities."
+      },
+      "capacity_transparency": {
+        "title": "Capacity Transparency",
+        "description": "Enhanced transparency on insurer appetite for MGA-sourced business by geography and class."
+      }
+    },
+    "quote": {
+      "text": "MGAs are, in the main, small businesses. As our members look to grow, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.",
+      "author": "Dario Spata",
+      "title": "President of ASASE and FASE advisory board member"
+    },
+    "impact": {
+      "title": "Our Impact",
+      "networking": {
+        "title": "Networking & Collaboration",
+        "description": "Engage with peers through forums, events, and working groups that foster practical connections and help members find solutions to common challenges."
+      },
+      "professional_development": {
+        "title": "Professional Development",
+        "description": "Access targeted learning opportunities and research designed to help MGAs build expertise and leadership capability."
+      },
+      "market_intelligence": {
+        "title": "Market Intelligence",
+        "description": "Benefit from curated data and insights that give members a clear understanding of current trends, regulatory shifts, and emerging opportunities across European markets."
+      }
+    },
+    "standards": {
+      "title": "Vetting & Standards",
+      "subtitle": "To uphold the professionalism of the FASE community, we have established a membership protocol:",
+      "review_process": "Our Review Process",
+      "eligibility_review": {
+        "title": "Eligibility Review",
+        "description": "Confirmation of business credentials, regulatory status, and ethical track record."
+      },
+      "standards_alignment": {
+        "title": "Standards Alignment",
+        "description": "Assessment of each applicant's alignment with recognised delegated underwriting principles."
+      },
+      "peer_endorsement": {
+        "title": "Peer Endorsement",
+        "description": "Consultation with our Advisory Board and existing members to ensure credibility and fit within the community."
+      },
+      "ongoing_review": {
+        "title": "Ongoing Review",
+        "description": "Periodic reaffirmation of good standing and continued commitment to shared standards."
+      },
+      "conclusion": "This process ensures FASE remains a trusted network of professionals working to raise consistency, transparency, and performance in delegated underwriting."
+    },
+    "why_join": {
+      "title": "A Practical Network for a Complex Market",
+      "subtitle": "Whether you're an MGA, insurer, broker, or service partner, FASE helps you stay connected to the people, information, and perspectives shaping delegated underwriting in Europe.",
+      "become_member": "Become a Member",
+      "view_events": "View Upcoming Events",
+      "tagline": "FASE — building a connected, informed, and responsible Delegated Underwriting community"
+    }
+  },
+  "footer": {
+    "description": "The Federation of European MGAs - representing the MGA community across Europe.",
+    "membership": "Membership",
+    "join_fase": "Join FASE",
+    "member_directory": "Member Directory",
+    "resources": "Resources",
+    "knowledge_base": "Knowledge Base",
+    "events": "Events",
+    "news": "News",
+    "connect": "Connect",
+    "contact_us": "Contact Us",
+    "member_portal": "Member Portal",
+    "about_fase": "About FASE",
+    "copyright": "© 2025 FASE B.V. All rights reserved."
   }
 }

@@ -9,6 +9,7 @@ import { useLocale } from '../contexts/LocaleContext';
 import { signOut } from '../lib/auth';
 import { useTranslations } from 'next-intl';
 import { useUnifiedAdmin } from '../hooks/useUnifiedAdmin';
+import { getAvailableLocales, formatLocaleDisplayName } from '../lib/translations';
 
 interface HeaderProps {
   currentPage?: string;
@@ -22,7 +23,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
   const { user, member, loading, isAdmin, hasMemberAccess } = useUnifiedAuth();
   const { locale, setLocale } = useLocale();
   const router = useRouter();
-  const t = useTranslations('Header');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('navigation');
+  const tAuth = useTranslations('auth');
+  const tHeader = useTranslations('header'); // Keep for backward compatibility
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -82,7 +86,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 {user && (
                   <div className="flex items-center space-x-3">
                     <div className="text-sm text-fase-black">
-                      {t('logged_in_as')} {
+                      {tAuth('logged_in_as')} {
                         member?.personalName 
                           ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
                           : user.displayName || user.email?.split("@")[0]
@@ -102,12 +106,12 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleSearchKeyPress}
-                    placeholder={t('search_placeholder')}
-                    className="bg-fase-cream text-fase-black px-4 py-1 pr-10 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
+                    placeholder={tCommon('search_placeholder')}
+                    className="bg-fase-cream text-fase-black px-2 lg:px-4 py-1 pr-8 lg:pr-10 text-xs lg:text-sm w-32 lg:w-40 xl:w-48 focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
                   />
                   <button
                     onClick={handleSearch}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-fase-navy hover:text-fase-gold cursor-pointer"
+                    className="absolute right-2 lg:right-3 top-1/2 transform -translate-y-1/2 h-3 lg:h-4 w-3 lg:w-4 text-fase-navy hover:text-fase-gold cursor-pointer"
                   >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -115,15 +119,15 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </button>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-fase-black">{t('language_label')}</span>
+                <div className="flex items-center space-x-1 lg:space-x-2">
+                  <span className="text-xs lg:text-sm text-fase-black">{tCommon('language_label')}</span>
                   <select 
                     value={locale}
                     onChange={(e) => setLocale(e.target.value as 'en' | 'fr')}
-                    className="bg-white text-fase-black text-sm border border-fase-light-gold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    className="bg-white text-fase-black text-xs lg:text-sm border border-fase-light-gold rounded px-1 lg:px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy"
                   >
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
+                    <option value="en">{tCommon('english')}</option>
+                    <option value="fr">{tCommon('french')}</option>
                   </select>
                 </div>
               </div>
@@ -145,14 +149,14 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               </div>
 
               {/* Desktop Navigation Menu */}
-              <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-4">
-                <div className="flex items-center space-x-6">
+              <div className="hidden lg:flex items-center justify-between flex-1 py-1 ml-2 xl:ml-4">
+                <div className="flex items-center space-x-1 lg:space-x-2 xl:space-x-4 2xl:space-x-6">
                   {/* About FASE Dropdown */}
                   <div className="relative group">
-                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                    <span className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
                       currentPage === 'about' || currentPage === 'people' || currentPage === 'leadership' || currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
                     }`}>
-                      About FASE
+                      {tNav('about_fase')}
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -160,22 +164,22 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <a href="/about/leadership" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'leadership' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>Leadership</a>
+                      }`}>{tNav('leadership')}</a>
                       <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>Management</a>
+                      }`}>{tNav('management')}</a>
                       <a href="/about/news" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>News</a>
+                      }`}>{tNav('news')}</a>
                     </div>
                   </div>
 
                   {/* Networking Dropdown */}
                   <div className="relative group">
-                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                    <span className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
                       currentPage === 'events' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
                     }`}>
-                      Networking
+                      {tNav('networking')}
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -184,20 +188,20 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       <div className="py-2">
                         <a href="/events" className={`block px-4 py-2 text-sm ${
                           currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Events</a>
+                        }`}>{tNav('events')}</a>
                         <a href="/networking/rendezvous" className={`block px-4 py-2 text-sm ${
                           currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Rendezvous</a>
+                        }`}>{tNav('rendezvous')}</a>
                       </div>
                     </div>
                   </div>
 
                   {/* Knowledge Dropdown */}
                   <div className="relative group">
-                    <span className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
+                    <span className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
                       currentPage === 'knowledge' || currentPage === 'entrepreneurial-underwriter' || currentPage === 'webinars' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
                     }`}>
-                      Knowledge
+                      {tNav('knowledge')}
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -215,17 +219,17 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
 
                   {/* Member Portal */}
-                  <a href="/member-portal" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
+                  <a href="/member-portal" className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'member-portal' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
-                  }`}>{t('member_portal')}</a>
+                  }`}>{tNav('member_portal')}</a>
                   
                   {/* Sponsors */}
-                  <a href="/sponsors" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
+                  <a href="/sponsors" className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'sponsors' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Sponsors</a>
                   
                   {/* Contact */}
-                  <a href="/contact" className={`px-4 py-3 text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
+                  <a href="/contact" className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'contact' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Contact</a>
                 </div>
@@ -234,12 +238,12 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 ) : user ? (
                   <button
                     onClick={handleSignOut}
-                    className="px-3 py-2 text-sm xl:text-base 2xl:text-lg font-medium text-fase-black hover:text-fase-navy"
+                    className="px-2 lg:px-3 py-2 text-xs lg:text-sm xl:text-base 2xl:text-lg font-medium text-fase-black hover:text-fase-navy"
                   >
-                    {t('sign_out')}
+                    {tAuth('sign_out')}
                   </button>
                 ) : (
-                  <Button href="/register" variant="primary" size="small" className="ml-4">{t('join_us')}</Button>
+                  <Button href="/register" variant="primary" size="small" className="ml-4">{tNav('join_us')}</Button>
                 )}
               </div>
             </div>
@@ -257,7 +261,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleSearchKeyPress}
-                placeholder={t('search_placeholder')}
+                placeholder={tCommon('search_placeholder')}
                 className="w-full bg-fase-cream text-fase-black px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-fase-navy border border-fase-light-gold"
               />
               <button
@@ -282,7 +286,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             </div>
 
             <div className="space-y-1">
-              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">About FASE</div>
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">{tNav('about_fase')}</div>
               <a href="/about/leadership" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'leadership' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Leadership</a>
@@ -295,7 +299,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             </div>
             
             <div className="space-y-1">
-              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">Networking</div>
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">{tNav('networking')}</div>
               <a href="/events" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Events</a>
@@ -305,7 +309,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             </div>
             
             <div className="space-y-1">
-              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">Knowledge</div>
+              <div className="px-3 py-2 text-sm font-semibold text-fase-navy">{tNav('knowledge')}</div>
               <a href="/knowledge/entrepreneurial-underwriter" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Entrepreneurial Underwriter</a>
@@ -315,7 +319,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             </div>
             <a href="/member-portal" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'member-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>{t('member_portal')}</a>
+            }`}>{tNav('member_portal')}</a>
             <a href="/sponsors" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'sponsors' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>Sponsors</a>
@@ -327,7 +331,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             ) : user ? (
               <div className="mt-4 pt-4 border-t border-fase-light-gold">
                 <div className="text-center text-sm text-fase-black mb-2">
-                  {t('signed_in_as')} {
+                  {tAuth('signed_in_as')} {
                     member?.personalName 
                       ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
                       : user.displayName || user.email?.split('@')[0]
@@ -337,11 +341,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   onClick={handleSignOut}
                   className="w-full text-center py-2 px-4 bg-fase-black text-white rounded hover:bg-fase-gold transition-colors"
                 >
-                  {t('sign_out')}
+                  {tAuth('sign_out')}
                 </button>
               </div>
             ) : (
-              <Button href="/register" variant="primary" size="medium" className="w-full text-center mt-2">{t('join_us')}</Button>
+              <Button href="/register" variant="primary" size="medium" className="w-full text-center mt-2">{tNav('join_us')}</Button>
             )}
           </div>
         </div>
