@@ -1485,7 +1485,7 @@ export default function IntegratedRegisterForm() {
                 </ul>
                 
                 <p className="mb-3">
-                  Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.
+                  Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers&apos; customers&apos; business with.
                 </p>
                 
                 <p className="mb-3">
