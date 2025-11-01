@@ -17,7 +17,7 @@ export const metadata = {
     title,
     description,
   },
-  metadataBase: new URL('https://fase-site.vercel.app'),
+  metadataBase: new URL('https://fasemga.com'),
 };
 
 export default async function RootLayout({
