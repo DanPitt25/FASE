@@ -214,8 +214,9 @@ export default function IntegratedRegisterForm() {
     const thousands = parseFloat(gwpThousands) || 0;
     const hundreds = parseFloat(gwpHundreds) || 0;
     
-    const totalInMillions = (billions * 1000) + millions + (thousands / 1000) + (hundreds / 1000000);
-    return totalInMillions;
+    // Calculate the actual EUR value (not in millions)
+    const totalInEUR = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + hundreds;
+    return totalInEUR;
   };
   
   // Update grossWrittenPremiums whenever magnitude inputs change
