@@ -231,14 +231,14 @@ export default function IntegratedRegisterForm() {
   const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'invoice'>('stripe');
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'invoice'>('paypal');
   
   // Email verification state for after account creation
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
-  const [pendingPaymentAction, setPendingPaymentAction] = useState<'stripe' | 'invoice' | null>(null);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState<'paypal' | 'invoice' | null>(null);
   
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
@@ -851,8 +851,8 @@ export default function IntegratedRegisterForm() {
           setStep(3);
         } else {
           // This is after payment - continue with the pending payment action
-          if (pendingPaymentAction === 'stripe') {
-            await continueWithStripePayment();
+          if (pendingPaymentAction === 'paypal') {
+            await continueWithPayPalPayment();
           } else if (pendingPaymentAction === 'invoice') {
             setRegistrationComplete(true);
           }
@@ -867,17 +867,17 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const continueWithStripePayment = async () => {
+  const continueWithPayPalPayment = async () => {
     try {
       const { auth } = await import('@/lib/firebase');
       if (!auth.currentUser) {
         throw new Error('No authenticated user');
       }
       
-      // Create Stripe checkout session
+      // Create PayPal order
       const fullName = `${firstName} ${surname}`.trim();
       const orgName = membershipType === 'individual' ? fullName : organizationName;
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch('/api/create-paypal-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -895,17 +895,17 @@ export default function IntegratedRegisterForm() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Stripe API error:', response.status, errorText);
+        console.error('PayPal API error:', response.status, errorText);
         throw new Error(`Payment processing failed (${response.status}). Please try again.`);
       }
 
       const data = await response.json();
 
-      // Redirect to Stripe Checkout
-      if (data.url) {
-        window.location.href = data.url;
+      // Redirect to PayPal Checkout
+      if (data.approvalUrl) {
+        window.location.href = data.approvalUrl;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No approval URL received from PayPal');
       }
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -937,8 +937,8 @@ export default function IntegratedRegisterForm() {
       // Create the account and membership record
       await createAccountAndMembership('pending_payment');
       
-      // Go directly to Stripe payment (email already verified)
-      await continueWithStripePayment();
+      // Go directly to PayPal payment (email already verified)
+      await continueWithPayPalPayment();
       
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -2489,23 +2489,23 @@ export default function IntegratedRegisterForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div 
                 className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  paymentMethod === 'stripe' 
+                  paymentMethod === 'paypal' 
                     ? 'border-fase-navy bg-fase-light-blue' 
                     : 'border-fase-light-gold bg-white hover:border-fase-navy'
                 }`}
-                onClick={() => setPaymentMethod('stripe')}
+                onClick={() => setPaymentMethod('paypal')}
               >
                 <div className="flex items-center mb-2">
                   <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    paymentMethod === 'stripe' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
+                    paymentMethod === 'paypal' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
                   }`}>
-                    {paymentMethod === 'stripe' && (
+                    {paymentMethod === 'paypal' && (
                       <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
                     )}
                   </div>
                   <span className="font-medium text-fase-navy">Pay Online</span>
                 </div>
-                <p className="text-sm text-fase-black ml-7">Secure payment via Stripe (Credit/Debit Card)</p>
+                <p className="text-sm text-fase-black ml-7">Secure payment via PayPal (Credit/Debit Card or PayPal Balance)</p>
               </div>
               
               <div 
@@ -2537,7 +2537,7 @@ export default function IntegratedRegisterForm() {
               type="button"
               variant="primary"
               size="large"
-              onClick={paymentMethod === 'stripe' ? handlePayment : handleInvoiceRequest}
+              onClick={paymentMethod === 'paypal' ? handlePayment : handleInvoiceRequest}
               disabled={processingPayment}
               className="w-full"
             >
@@ -2549,7 +2549,7 @@ export default function IntegratedRegisterForm() {
                   </svg>
                   Processing...
                 </>
-              ) : paymentMethod === 'stripe' ? (
+              ) : paymentMethod === 'paypal' ? (
                 "Complete Payment"
               ) : (
                 "Request Invoice"
@@ -2557,8 +2557,8 @@ export default function IntegratedRegisterForm() {
             </Button>
             
             <p className="text-xs text-fase-black mt-3">
-              {paymentMethod === 'stripe' 
-                ? "Secure payment powered by Stripe. You'll be redirected to complete your payment."
+              {paymentMethod === 'paypal' 
+                ? "Secure payment powered by PayPal. You&apos;ll be redirected to complete your payment."
                 : "An invoice will be sent to your email address for payment via bank transfer."
               }
             </p>
