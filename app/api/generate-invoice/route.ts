@@ -143,10 +143,14 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
         <h3>Payment Instructions:</h3>
         <p><strong>Please transfer the total amount to:</strong></p>
         <p>
-            <strong>Bank:</strong> [Bank Name]<br>
-            <strong>Account Name:</strong> Federation of European MGAs<br>
-            <strong>IBAN:</strong> [IBAN Number]<br>
-            <strong>BIC/SWIFT:</strong> [BIC Code]<br>
+            Please deposit to the following account: Lexicon Associates, LLC<br><br>
+            <strong>Bank:</strong> Citibank, N.A.<br>
+            <strong>Address:</strong> USCC CITISWEEP<br>
+            100 Citibank Drive<br>
+            San Antonio, TX 78245<br><br>
+            <strong>Account Number:</strong> 125582998<br>
+            <strong>ABA:</strong> 221172610<br>
+            <strong>SWIFT:</strong> CITIUS33<br>
             <strong>Reference:</strong> ${invoiceNumber}
         </p>
         <p><em>Please include the invoice number (${invoiceNumber}) as the payment reference.</em></p>
@@ -455,8 +459,9 @@ export async function POST(request: NextRequest) {
       });
       
       const paymentLines = [
-        'Bank Name: [Bank Name]  •  Account Name: Federation of European MGAs',
-        'IBAN: [IBAN Number]  •  BIC/SWIFT: [BIC Code]',
+        'Please deposit to the following account: Lexicon Associates, LLC',
+        'Citibank, N.A. • USCC CITISWEEP • 100 Citibank Drive, San Antonio, TX 78245',
+        'Account: 125582998 • ABA: 221172610 • SWIFT: CITIUS33',
         `Payment Reference: ${invoiceNumber}`
       ];
       
@@ -513,27 +518,27 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
-        // Simple email with PDF attachment
         emailData.invoiceHTML = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #2D5574;">Your FASE Membership Invoice</h2>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+            <h2 style="color: #2D5574; margin-bottom: 20px;">Thank You for Your FASE Membership Application</h2>
             <p>Dear ${membershipData.primaryContact.name},</p>
-            <p>Thank you for your FASE membership application. Please find your invoice attached as a PDF.</p>
-            <p><strong>Invoice Number:</strong> ${invoiceNumber}<br>
-            <strong>Amount Due:</strong> €${totalAmount}</p>
-            <p>If you have any questions about this invoice, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
-            <p>Best regards,<br>FASE Team</p>
+            <p>Thank you for submitting your application to become a member of the Federation of European MGAs.</p>
+            <p>We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
+            <p>Your invoice for membership dues is attached. Please process payment according to the instructions in the invoice.</p>
+            <p>If you have any questions, please contact us at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a></p>
+            <p>Best regards,<br><strong>The FASE Team</strong></p>
           </div>
         `;
         console.log('PDF attachment added to email data');
       } else {
-        // If PDF generation failed, send error message
         emailData.invoiceHTML = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #dc2626;">Invoice Generation Error</h2>
-            <p>We're sorry, but there was an issue generating your invoice PDF.</p>
-            <p>Please contact our support team at <a href="mailto:help@fasemga.com">help@fasemga.com</a> and we'll send your invoice manually.</p>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+            <h2 style="color: #dc2626;">Thank You - Invoice Generation Issue</h2>
+            <p>Dear ${membershipData.primaryContact.name},</p>
+            <p>Thank you for your FASE membership application. We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
+            <p>There was a technical issue generating your invoice PDF. Please contact our support team at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a> and we'll send your invoice manually.</p>
             <p>Reference: ${invoiceNumber}</p>
+            <p>Best regards,<br><strong>The FASE Team</strong></p>
           </div>
         `;
         console.log('PDF generation failed - sending error message');
