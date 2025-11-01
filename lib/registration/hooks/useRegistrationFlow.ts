@@ -51,6 +51,10 @@ const initialState: RegistrationState = {
   currentMarkets: '',
   plannedMarkets: '',
   
+  // Structured business fields
+  selectedLinesOfBusiness: [],
+  selectedMarkets: [],
+  
   // Other fields
   hasOtherAssociations: null,
   otherAssociations: [],
@@ -59,7 +63,24 @@ const initialState: RegistrationState = {
   
   // Consent states
   dataNoticeConsent: false,
-  codeOfConductConsent: false
+  codeOfConductConsent: false,
+  
+  // Loading states
+  error: '',
+  loading: false,
+  showPasswordReqs: false,
+  registrationComplete: false,
+  showPaymentStep: false,
+  processingPayment: false,
+  paymentError: '',
+  paymentMethod: 'paypal',
+  
+  // Email verification
+  showEmailVerification: false,
+  verificationCode: '',
+  isCheckingVerification: false,
+  isSendingVerification: false,
+  pendingPaymentAction: null
 };
 
 export function useRegistrationFlow() {

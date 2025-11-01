@@ -25,8 +25,8 @@ export interface TouchedFields {
 
 export type MembershipType = 'individual' | 'corporate';
 export type OrganizationType = 'MGA' | 'carrier' | 'provider';
-export type PaymentMethod = 'stripe' | 'invoice';
-export type PaymentAction = 'stripe' | 'invoice' | null;
+export type PaymentMethod = 'paypal' | 'invoice';
+export type PaymentAction = 'paypal' | 'invoice' | null;
 
 export interface GWPInputs {
   billions: string;
@@ -35,7 +35,7 @@ export interface GWPInputs {
   hundreds: string;
 }
 
-export interface AddressInfo {
+export interface Address {
   line1: string;
   line2: string;
   city: string;
@@ -43,6 +43,7 @@ export interface AddressInfo {
   postalCode: string;
   country: string;
 }
+
 
 export interface RegistrationState {
   // Step tracking
@@ -64,7 +65,7 @@ export interface RegistrationState {
   members: Member[];
   
   // Address
-  address: AddressInfo;
+  address: Address;
   
   // Portfolio (MGAs)
   gwpInputs: GWPInputs;
@@ -75,6 +76,10 @@ export interface RegistrationState {
   targetClients: string;
   currentMarkets: string;
   plannedMarkets: string;
+  
+  // Structured business fields
+  selectedLinesOfBusiness: string[];
+  selectedMarkets: string[];
   
   // Other associations
   hasOtherAssociations: boolean | null;
@@ -121,22 +126,6 @@ export interface RegistrationActions {
   // Form management
   resetForm: () => void;
   
-  // Member management
-  addMember: () => void;
-  updateMember: (id: string, updates: Partial<Member>) => void;
-  removeMember: (id: string) => void;
-  setPrimaryContact: (id: string) => void;
-  
-  // API actions
-  createAccountAndMembership: (status: string) => Promise<void>;
-  handlePayment: () => Promise<void>;
-  handleInvoiceRequest: () => Promise<void>;
-  handleVerification: () => Promise<void>;
-  resendVerificationCode: () => Promise<void>;
-  
-  // Utilities
-  calculateMembershipFee: () => number;
-  resetForm: () => void;
 }
 
 export interface StepComponentProps {
