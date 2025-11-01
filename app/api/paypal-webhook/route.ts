@@ -97,37 +97,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle successful payment
-    if (webhookData.event_type === 'CHECKOUT.ORDER.APPROVED') {
-      const orderId = webhookData.resource.id;
-      const customId = webhookData.resource.purchase_units[0]?.custom_id;
+    if (webhookData.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+      const captureId = webhookData.resource.id;
+      const customId = webhookData.resource.custom_id;
       
       if (!customId) {
         console.error('No custom_id (userId) found in PayPal webhook');
         return NextResponse.json({ error: 'Missing user ID' }, { status: 400 });
       }
 
-      // Get access token and capture the order
-      const accessToken = await getPayPalAccessToken();
-      const environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
-      const base = environment === 'sandbox' 
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
-
-      // Capture the payment
-      const captureResponse = await fetch(`${base}/v2/checkout/orders/${orderId}/capture`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!captureResponse.ok) {
-        console.error('Failed to capture PayPal payment:', await captureResponse.text());
-        return NextResponse.json({ error: 'Failed to capture payment' }, { status: 500 });
-      }
-
-      const captureData = await captureResponse.json();
+      // Payment is already captured by PayPal, just process the approval
       
       // Update Firebase account status
       const { db } = await initializeAdmin();
@@ -141,22 +120,22 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Account not found' }, { status: 404 });
       }
 
-      // Update account status to active
+      // Update account status to approved (matching Stripe webhook logic)
       await accountRef.update({
-        status: 'active',
-        paymentProvider: 'paypal',
+        status: 'approved',
+        paymentStatus: 'paid',
+        paymentMethod: 'paypal',
+        paymentId: captureId,
         paymentDetails: {
-          orderId: orderId,
-          captureId: captureData.id,
+          captureId: captureId,
           paymentTime: admin.firestore.FieldValue.serverTimestamp(),
-          amount: captureData.purchase_units[0]?.payments?.captures[0]?.amount?.value,
-          currency: captureData.purchase_units[0]?.payments?.captures[0]?.amount?.currency_code
+          amount: webhookData.resource.amount?.value,
+          currency: webhookData.resource.amount?.currency_code
         },
-        activatedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      console.log(`Account ${customId} activated via PayPal payment ${orderId}`);
+      console.log(`Account ${customId} activated via PayPal payment ${captureId}`);
       
       return NextResponse.json({ success: true });
     }
