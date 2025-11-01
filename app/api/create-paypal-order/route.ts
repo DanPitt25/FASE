@@ -29,7 +29,9 @@ async function getPayPalAccessToken() {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get PayPal access token');
+    const errorText = await response.text();
+    console.error('PayPal OAuth error:', response.status, errorText);
+    throw new Error(`Failed to get PayPal access token: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
@@ -125,8 +127,8 @@ export async function POST(request: NextRequest) {
         landing_page: 'NO_PREFERENCE',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment-success?provider=paypal`,
-        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/register?cancelled=true`
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-success?provider=paypal`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/register?cancelled=true`
       }
     };
 
