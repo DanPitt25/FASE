@@ -189,11 +189,12 @@ export default function IntegratedRegisterForm() {
   const [gwpHundreds, setGwpHundreds] = useState("");
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
   const [gwpCurrency, setGwpCurrency] = useState("EUR");
-  const [principalLines, setPrincipalLines] = useState('');
-  const [additionalLines, setAdditionalLines] = useState('');
-  const [targetClients, setTargetClients] = useState('');
-  const [currentMarkets, setCurrentMarkets] = useState('');
-  const [plannedMarkets, setPlannedMarkets] = useState('');
+  // New structured business fields
+  const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState<string[]>([]);
+  const [otherLineOfBusiness1, setOtherLineOfBusiness1] = useState('');
+  const [otherLineOfBusiness2, setOtherLineOfBusiness2] = useState('');
+  const [otherLineOfBusiness3, setOtherLineOfBusiness3] = useState('');
+  const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
   
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
@@ -252,6 +253,92 @@ export default function IntegratedRegisterForm() {
     { value: 'provider', label: 'Service Provider' }
   ];
 
+  // Lines of business options
+  const linesOfBusinessOptions = [
+    'Accident & Health',
+    'Aviation',
+    'Bloodstock',
+    'Casualty',
+    'Construction',
+    'Cyber',
+    'Energy',
+    'Event Cancellation',
+    'Fine Art & Specie',
+    'Legal Expenses',
+    'Life',
+    'Livestock',
+    'Marine',
+    'Management Liability (D&O, EPLI etc)',
+    'Motor, commercial',
+    'Motor, personal lines',
+    'Pet',
+    'Political Risk',
+    'Professional Indemnity / E&O',
+    'Property, commercial',
+    'Property, personal lines',
+    'Surety',
+    'Trade Credit',
+    'Travel',
+    'Warranty & Indemnity',
+    'Other',
+    'Other #2',
+    'Other #3'
+  ];
+
+  // Country options for markets
+  const marketCountryOptions = [
+    { code: 'AT', name: 'Austria' },
+    { code: 'BE', name: 'Belgium' },
+    { code: 'BG', name: 'Bulgaria' },
+    { code: 'HR', name: 'Croatia' },
+    { code: 'CY', name: 'Cyprus' },
+    { code: 'CZ', name: 'Czech Republic' },
+    { code: 'DK', name: 'Denmark' },
+    { code: 'EE', name: 'Estonia' },
+    { code: 'FI', name: 'Finland' },
+    { code: 'FR', name: 'France' },
+    { code: 'DE', name: 'Germany' },
+    { code: 'GR', name: 'Greece' },
+    { code: 'HU', name: 'Hungary' },
+    { code: 'IE', name: 'Ireland' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'LV', name: 'Latvia' },
+    { code: 'LT', name: 'Lithuania' },
+    { code: 'LU', name: 'Luxembourg' },
+    { code: 'MT', name: 'Malta' },
+    { code: 'NL', name: 'Netherlands' },
+    { code: 'PL', name: 'Poland' },
+    { code: 'PT', name: 'Portugal' },
+    { code: 'RO', name: 'Romania' },
+    { code: 'SK', name: 'Slovakia' },
+    { code: 'SI', name: 'Slovenia' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'SE', name: 'Sweden' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'US', name: 'United States' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'NZ', name: 'New Zealand' },
+    { code: 'CH', name: 'Switzerland' },
+    { code: 'NO', name: 'Norway' },
+    { code: 'IS', name: 'Iceland' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'SG', name: 'Singapore' },
+    { code: 'HK', name: 'Hong Kong' },
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'ZA', name: 'South Africa' },
+    { code: 'BR', name: 'Brazil' },
+    { code: 'MX', name: 'Mexico' },
+    { code: 'IN', name: 'India' },
+    { code: 'CN', name: 'China' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'TH', name: 'Thailand' },
+    { code: 'MY', name: 'Malaysia' },
+    { code: 'ID', name: 'Indonesia' },
+    { code: 'PH', name: 'Philippines' },
+    { code: 'VN', name: 'Vietnam' }
+  ];
+
   // Currency conversion rates (approximate modern rates)
   const currencyRates = {
     EUR: 1.0,
@@ -273,6 +360,27 @@ export default function IntegratedRegisterForm() {
     if (eurValue < 100) return '50-100m';
     if (eurValue < 500) return '100-500m';
     return '500m+';
+  };
+
+  // Helper functions for managing selections
+  const toggleLineOfBusiness = (line: string) => {
+    setSelectedLinesOfBusiness(prev => 
+      prev.includes(line) 
+        ? prev.filter(l => l !== line)
+        : [...prev, line]
+    );
+  };
+
+  const toggleMarket = (countryCode: string) => {
+    setSelectedMarkets(prev => 
+      prev.includes(countryCode) 
+        ? prev.filter(c => c !== countryCode)
+        : [...prev, countryCode]
+    );
+  };
+
+  const removeMarket = (countryCode: string) => {
+    setSelectedMarkets(prev => prev.filter(c => c !== countryCode));
   };
 
 
@@ -659,11 +767,13 @@ export default function IntegratedRegisterForm() {
                 grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
                 grossWrittenPremiumsCurrency: gwpCurrency,
                 grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
-                principalLines: principalLines.trim(),
-                additionalLines: additionalLines.trim(),
-                targetClients: targetClients.trim(),
-                currentMarkets: currentMarkets.trim(),
-                plannedMarkets: plannedMarkets.trim()
+                linesOfBusiness: selectedLinesOfBusiness,
+                otherLinesOfBusiness: {
+                  other1: otherLineOfBusiness1.trim(),
+                  other2: otherLineOfBusiness2.trim(),
+                  other3: otherLineOfBusiness3.trim()
+                },
+                markets: selectedMarkets
               }
             }),
             hasOtherAssociations: hasOtherAssociations ?? false,
@@ -1065,11 +1175,13 @@ export default function IntegratedRegisterForm() {
               grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
               grossWrittenPremiumsCurrency: gwpCurrency,
               grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
-              principalLines: principalLines.trim(),
-              additionalLines: additionalLines.trim(),
-              targetClients: targetClients.trim(),
-              currentMarkets: currentMarkets.trim(),
-              plannedMarkets: plannedMarkets.trim()
+              linesOfBusiness: selectedLinesOfBusiness,
+              otherLinesOfBusiness: {
+                other1: otherLineOfBusiness1.trim(),
+                other2: otherLineOfBusiness2.trim(),
+                other3: otherLineOfBusiness3.trim()
+              },
+              markets: selectedMarkets
             }
           }),
           hasOtherAssociations: hasOtherAssociations ?? false,
@@ -2061,71 +2173,131 @@ export default function IntegratedRegisterForm() {
                 </div>
               </div>
 
-              {/* Business Details Questions */}
+              {/* Business Details Questions - Structured */}
               <div className="space-y-6">
+                {/* Lines of Business Question */}
                 <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    1. Please list the principal lines of business you are currently underwriting?
+                  <label className="block text-sm font-medium text-fase-navy mb-3">
+                    1. Which of the following lines of business are you currently underwriting? *
                   </label>
-                  <textarea
-                    value={principalLines}
-                    onChange={(e) => setPrincipalLines(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    placeholder="Describe your current lines of business..."
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+                    {linesOfBusinessOptions.map((line) => (
+                      <label key={line} className="flex items-center space-x-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={selectedLinesOfBusiness.includes(line)}
+                          onChange={() => toggleLineOfBusiness(line)}
+                          className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                        />
+                        <span className="text-fase-black">{line}</span>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  {/* Other fields */}
+                  {selectedLinesOfBusiness.includes('Other') && (
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-fase-navy mb-1">
+                        Please specify &quot;Other&quot;:
+                      </label>
+                      <input
+                        type="text"
+                        value={otherLineOfBusiness1}
+                        onChange={(e) => setOtherLineOfBusiness1(e.target.value)}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                        placeholder="Please specify..."
+                      />
+                    </div>
+                  )}
+                  
+                  {selectedLinesOfBusiness.includes('Other #2') && (
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-fase-navy mb-1">
+                        Please specify &quot;Other #2&quot;:
+                      </label>
+                      <input
+                        type="text"
+                        value={otherLineOfBusiness2}
+                        onChange={(e) => setOtherLineOfBusiness2(e.target.value)}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                        placeholder="Please specify..."
+                      />
+                    </div>
+                  )}
+                  
+                  {selectedLinesOfBusiness.includes('Other #3') && (
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-fase-navy mb-1">
+                        Please specify &quot;Other #3&quot;:
+                      </label>
+                      <input
+                        type="text"
+                        value={otherLineOfBusiness3}
+                        onChange={(e) => setOtherLineOfBusiness3(e.target.value)}
+                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                        placeholder="Please specify..."
+                      />
+                    </div>
+                  )}
                 </div>
 
+                {/* Markets Question */}
                 <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    2. Do you have current plans to write additional lines of business in the coming year? If so, please describe them?
+                  <label className="block text-sm font-medium text-fase-navy mb-3">
+                    2. In which of the following national markets does your organisation do business? *
                   </label>
-                  <textarea
-                    value={additionalLines}
-                    onChange={(e) => setAdditionalLines(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    placeholder="Describe any planned new lines of business..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    3. Please list, in as much detail as possible, your principal target client populations?
-                  </label>
-                  <textarea
-                    value={targetClients}
-                    onChange={(e) => setTargetClients(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    placeholder="Describe your target client populations in detail..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    4. Please list the national market[s] in which you currently do business?
-                  </label>
-                  <textarea
-                    value={currentMarkets}
-                    onChange={(e) => setCurrentMarkets(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    placeholder="List the countries/markets where you currently operate..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    5. Do you have plans to write business in additional national markets in the coming year? If so where?
-                  </label>
-                  <textarea
-                    value={plannedMarkets}
-                    onChange={(e) => setPlannedMarkets(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    placeholder="Describe any planned market expansion..."
-                  />
+                  
+                  {/* Selected Markets Display */}
+                  {selectedMarkets.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-fase-navy mb-2">Selected markets:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedMarkets.map((countryCode) => {
+                          const country = marketCountryOptions.find(c => c.code === countryCode);
+                          return (
+                            <span
+                              key={countryCode}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-fase-navy text-white"
+                            >
+                              {country?.name}
+                              <button
+                                type="button"
+                                onClick={() => removeMarket(countryCode)}
+                                className="ml-2 text-white hover:text-gray-200"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Country Dropdown */}
+                  <div>
+                    <label className="block text-xs font-medium text-fase-navy mb-1">
+                      Add markets:
+                    </label>
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value && !selectedMarkets.includes(e.target.value)) {
+                          toggleMarket(e.target.value);
+                        }
+                        e.target.value = ''; // Reset selection
+                      }}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+                    >
+                      <option value="">Select a country/market...</option>
+                      {marketCountryOptions
+                        .filter(country => !selectedMarkets.includes(country.code))
+                        .map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
