@@ -5,6 +5,7 @@ import { sendVerificationCode, verifyCode } from "../../lib/auth";
 import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
 import Button from "../../components/Button";
 import SearchableCountrySelect from "../../components/SearchableCountrySelect";
+import { countries } from "../../lib/countries";
 import { handleAuthError } from "../../lib/auth-errors";
 
 // Password validation function
@@ -195,6 +196,7 @@ export default function IntegratedRegisterForm() {
   const [otherLineOfBusiness2, setOtherLineOfBusiness2] = useState('');
   const [otherLineOfBusiness3, setOtherLineOfBusiness3] = useState('');
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
+  const [currentMarketSelection, setCurrentMarketSelection] = useState('');
   
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
@@ -285,59 +287,6 @@ export default function IntegratedRegisterForm() {
     'Other #3'
   ];
 
-  // Country options for markets
-  const marketCountryOptions = [
-    { code: 'AT', name: 'Austria' },
-    { code: 'BE', name: 'Belgium' },
-    { code: 'BG', name: 'Bulgaria' },
-    { code: 'HR', name: 'Croatia' },
-    { code: 'CY', name: 'Cyprus' },
-    { code: 'CZ', name: 'Czech Republic' },
-    { code: 'DK', name: 'Denmark' },
-    { code: 'EE', name: 'Estonia' },
-    { code: 'FI', name: 'Finland' },
-    { code: 'FR', name: 'France' },
-    { code: 'DE', name: 'Germany' },
-    { code: 'GR', name: 'Greece' },
-    { code: 'HU', name: 'Hungary' },
-    { code: 'IE', name: 'Ireland' },
-    { code: 'IT', name: 'Italy' },
-    { code: 'LV', name: 'Latvia' },
-    { code: 'LT', name: 'Lithuania' },
-    { code: 'LU', name: 'Luxembourg' },
-    { code: 'MT', name: 'Malta' },
-    { code: 'NL', name: 'Netherlands' },
-    { code: 'PL', name: 'Poland' },
-    { code: 'PT', name: 'Portugal' },
-    { code: 'RO', name: 'Romania' },
-    { code: 'SK', name: 'Slovakia' },
-    { code: 'SI', name: 'Slovenia' },
-    { code: 'ES', name: 'Spain' },
-    { code: 'SE', name: 'Sweden' },
-    { code: 'GB', name: 'United Kingdom' },
-    { code: 'US', name: 'United States' },
-    { code: 'CA', name: 'Canada' },
-    { code: 'AU', name: 'Australia' },
-    { code: 'NZ', name: 'New Zealand' },
-    { code: 'CH', name: 'Switzerland' },
-    { code: 'NO', name: 'Norway' },
-    { code: 'IS', name: 'Iceland' },
-    { code: 'JP', name: 'Japan' },
-    { code: 'SG', name: 'Singapore' },
-    { code: 'HK', name: 'Hong Kong' },
-    { code: 'AE', name: 'United Arab Emirates' },
-    { code: 'ZA', name: 'South Africa' },
-    { code: 'BR', name: 'Brazil' },
-    { code: 'MX', name: 'Mexico' },
-    { code: 'IN', name: 'India' },
-    { code: 'CN', name: 'China' },
-    { code: 'KR', name: 'South Korea' },
-    { code: 'TH', name: 'Thailand' },
-    { code: 'MY', name: 'Malaysia' },
-    { code: 'ID', name: 'Indonesia' },
-    { code: 'PH', name: 'Philippines' },
-    { code: 'VN', name: 'Vietnam' }
-  ];
 
   // Currency conversion rates (approximate modern rates)
   const currencyRates = {
@@ -371,12 +320,11 @@ export default function IntegratedRegisterForm() {
     );
   };
 
-  const toggleMarket = (countryCode: string) => {
-    setSelectedMarkets(prev => 
-      prev.includes(countryCode) 
-        ? prev.filter(c => c !== countryCode)
-        : [...prev, countryCode]
-    );
+  const addMarket = (countryCode: string) => {
+    if (countryCode && !selectedMarkets.includes(countryCode)) {
+      setSelectedMarkets(prev => [...prev, countryCode]);
+      setCurrentMarketSelection(''); // Reset the selection
+    }
   };
 
   const removeMarket = (countryCode: string) => {
@@ -2253,13 +2201,13 @@ export default function IntegratedRegisterForm() {
                       <p className="text-xs font-medium text-fase-navy mb-2">Selected markets:</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedMarkets.map((countryCode) => {
-                          const country = marketCountryOptions.find(c => c.code === countryCode);
+                          const country = countries.find(c => c.value === countryCode);
                           return (
                             <span
                               key={countryCode}
                               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-fase-navy text-white"
                             >
-                              {country?.name}
+                              {country?.label}
                               <button
                                 type="button"
                                 onClick={() => removeMarket(countryCode)}
@@ -2274,29 +2222,26 @@ export default function IntegratedRegisterForm() {
                     </div>
                   )}
                   
-                  {/* Country Dropdown */}
+                  {/* Searchable Country Select */}
                   <div>
-                    <label className="block text-xs font-medium text-fase-navy mb-1">
-                      Add markets:
-                    </label>
-                    <select
-                      onChange={(e) => {
-                        if (e.target.value && !selectedMarkets.includes(e.target.value)) {
-                          toggleMarket(e.target.value);
+                    <SearchableCountrySelect
+                      label="Add market"
+                      fieldKey="currentMarketSelection"
+                      value={currentMarketSelection}
+                      onChange={(value) => {
+                        setCurrentMarketSelection(value);
+                        if (value) {
+                          addMarket(value);
                         }
-                        e.target.value = ''; // Reset selection
                       }}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                    >
-                      <option value="">Select a country/market...</option>
-                      {marketCountryOptions
-                        .filter(country => !selectedMarkets.includes(country.code))
-                        .map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country.name}
-                          </option>
-                        ))}
-                    </select>
+                      touchedFields={touchedFields}
+                      attemptedNext={attemptedNext}
+                      markFieldTouched={markFieldTouched}
+                      className="text-sm"
+                    />
+                    <p className="text-xs text-fase-black mt-1">
+                      Search and select countries/markets where you do business. Selected markets will appear as tokens above.
+                    </p>
                   </div>
                 </div>
               </div>
