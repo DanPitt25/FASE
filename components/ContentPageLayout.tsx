@@ -426,12 +426,9 @@ export default function ContentPageLayout({
                   <div className={`transition-all duration-1000 transform ${
                     animation.isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'
                   }`}>
-                    {/* Opening quote mark - left side */}
-                    <div className="absolute -left-4 md:-left-8 top-0 text-8xl text-gray-300 font-serif leading-none">&ldquo;</div>
-                    
                     {/* Quote text - centered */}
-                    <div className="text-center pt-12">
-                      <blockquote className="text-2xl md:text-3xl font-noto-serif text-fase-navy leading-relaxed mb-8">
+                    <div className="text-center py-12">
+                      <blockquote className="text-2xl md:text-3xl font-noto-serif text-fase-navy leading-relaxed mb-8 italic">
                         {section.quote}
                       </blockquote>
                       
@@ -441,9 +438,6 @@ export default function ContentPageLayout({
                         <span className="text-gray-600"> • {section.title}</span>
                       </div>
                     </div>
-                    
-                    {/* Closing quote mark - bottom right */}
-                    <div className="absolute -right-4 md:-right-8 bottom-0 text-8xl text-gray-300 font-serif leading-none">&rdquo;</div>
                   </div>
                 </div>
               </div>
@@ -488,11 +482,11 @@ export default function ContentPageLayout({
                       }}
                     >
                       <div className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0">
-                        <div className="aspect-square overflow-hidden rounded-lg">
+                        <div className="w-64 h-auto mx-auto rounded-lg overflow-hidden">
                           <img 
                             src={person.image} 
                             alt={person.name}
-                            className="w-full h-full object-cover object-center"
+                            className="w-full h-auto object-cover object-top"
                           />
                         </div>
                       </div>
@@ -559,14 +553,6 @@ export default function ContentPageLayout({
                           </a>
                         </div>
                         
-                        {/* Phone */}
-                        <div className="flex items-center justify-center">
-                          <svg className="w-6 h-6 text-fase-navy mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span className="text-lg text-fase-black">+44 20 7000 0000</span>
-                        </div>
-                        
                         {/* Address */}
                         <div className="flex items-start justify-center">
                           <svg className="w-6 h-6 text-fase-navy mr-4 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -574,9 +560,9 @@ export default function ContentPageLayout({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
                           <div className="text-lg text-fase-black text-center">
-                            <div>123 Insurance Square</div>
-                            <div>London EC3V 0DT</div>
-                            <div>United Kingdom</div>
+                            <div>Herengracht 124</div>
+                            <div>1015 BT Amsterdam</div>
+                            <div>Netherlands</div>
                           </div>
                         </div>
                       </div>

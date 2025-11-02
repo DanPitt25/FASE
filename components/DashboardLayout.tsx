@@ -70,10 +70,10 @@ export default function DashboardLayout({
             />
             <div className="absolute inset-0 bg-fase-navy/40"></div>
             <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-              <div className={`w-1/2 lg:w-2/5 xl:w-1/3 transition-all duration-700 ${
+              <div className={`w-3/4 lg:w-3/5 xl:w-1/2 transition-all duration-700 ${
                 isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
               }`}>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-white leading-tight">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-noto-serif font-medium text-white leading-tight">
                   {title}
                 </h1>
                 {subtitle && (

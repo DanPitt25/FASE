@@ -8,7 +8,7 @@ export default function ContactPage() {
       type: 'contact' as const,
       title: 'Contact Information',
       content: [
-        'Federation of European MGAs (FASE)'
+        'Fédération des agences de souscription (FASE)'
       ]
     }
   ];

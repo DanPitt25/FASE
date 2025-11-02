@@ -243,7 +243,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     {tAuth('sign_out')}
                   </button>
                 ) : (
-                  <Button href="/register" variant="primary" size="small" className="ml-4">{tNav('join_us')}</Button>
+                  <Button href="/join" variant="primary" size="small" className="ml-4">{tNav('join_us')}</Button>
                 )}
               </div>
             </div>
@@ -345,7 +345,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 </button>
               </div>
             ) : (
-              <Button href="/register" variant="primary" size="medium" className="w-full text-center mt-2">{tNav('join_us')}</Button>
+              <Button href="/join" variant="primary" size="medium" className="w-full text-center mt-2">{tNav('join_us')}</Button>
             )}
           </div>
         </div>

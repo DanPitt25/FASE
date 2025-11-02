@@ -12,7 +12,7 @@ export default function SponsorshipPage() {  return (
           id="hero"
           title="Sponsorship"
           useDefaultSubtitle={true}
-          backgroundImage="/conference.jpg"
+          backgroundImage="/conferenceWood.jpg"
           fullHeight={true}
         />
         

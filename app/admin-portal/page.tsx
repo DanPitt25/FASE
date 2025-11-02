@@ -1095,7 +1095,7 @@ export default function AdminPortalPage() {
       <DashboardLayout
         title="Admin Portal"
         subtitle="Manage knowledge base content, moderate comments, and review member applications"
-        bannerImage="/conference.jpg"
+        bannerImage="/conferenceWood.jpg"
         bannerImageAlt="Corporate Management"
         sections={dashboardSections}
         currentPage="admin-portal"

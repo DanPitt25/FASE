@@ -70,7 +70,7 @@ export default function DirectoryPage() {
           {/* Hero Banner */}
           <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
             <img
-              src="/conference.jpg"
+              src="/conferenceWood.jpg"
               alt="Member Directory"
               className="absolute inset-0 w-full h-full object-cover"
               style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
@@ -112,7 +112,7 @@ export default function DirectoryPage() {
         {/* Hero Banner */}
         <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
           <img
-            src="/conference.jpg"
+            src="/conferenceWood.jpg"
             alt="Member Directory"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}

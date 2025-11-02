@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from '../../lib/auth';
+import { signIn, sendPasswordReset } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
 
@@ -11,6 +11,8 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,6 +40,27 @@ export default function LoginForm() {
       
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setResetLoading(true);
+    setError('');
+
+    try {
+      await sendPasswordReset(email);
+      setResetSent(true);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      const errorMessage = handleAuthError(error);
+      setError(errorMessage);
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -95,6 +118,11 @@ export default function LoginForm() {
         <div className="text-red-600 text-sm">{error}</div>
       )}
 
+      {resetSent && (
+        <div className="text-green-600 text-sm">
+          Password reset email sent! Check your inbox and follow the instructions to reset your password.
+        </div>
+      )}
 
       <Button 
         type="submit" 
@@ -105,6 +133,17 @@ export default function LoginForm() {
       >
         {loading ? 'Signing In...' : 'Sign In'}
       </Button>
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={handlePasswordReset}
+          disabled={resetLoading}
+          className="text-sm text-fase-navy hover:text-fase-gold transition-colors underline"
+        >
+          {resetLoading ? 'Sending...' : 'Forgot your password?'}
+        </button>
+      </div>
     </form>
   );
 }

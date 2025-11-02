@@ -448,3 +448,46 @@ export const getSentMessages = async (senderId: string): Promise<Message[]> => {
     throw error;
   }
 };
+
+// Create welcome message for new account signups
+export const createWelcomeMessage = async (newUserId: string): Promise<void> => {
+  try {
+    console.log('Creating welcome message for new user:', newUserId);
+    
+    const welcomeMessage = {
+      subject: 'Welcome to FASE - Fédération des agences de souscription',
+      content: `Welcome to the Federation of European Managing General Agents (FASE)!
+
+We're delighted to have you join our growing community of MGA professionals, capacity providers, and service companies across Europe.
+
+Your account has been successfully created and is currently under review. You'll receive an email notification once your membership status is updated.
+
+In the meantime, you can:
+• Explore our member resources and educational content
+• Learn about upcoming events and networking opportunities
+• Connect with the European MGA community
+
+If you have any questions about your membership or need assistance, please don't hesitate to contact us at info@fasemga.com.
+
+Thank you for choosing to be part of FASE's mission to strengthen and advance the European MGA ecosystem.
+
+Best regards,
+The FASE Team`,
+      senderId: 'system',
+      senderName: 'FASE System',
+      senderEmail: 'info@fasemga.com',
+      recipientId: newUserId,
+      recipientType: 'user' as const,
+      messageType: 'system' as const,
+      priority: 'medium' as const,
+      isRead: false
+    };
+
+    // Send the welcome message
+    await sendMessage(welcomeMessage);
+    console.log('Welcome message created successfully for user:', newUserId);
+  } catch (error) {
+    console.error('Error creating welcome message:', error);
+    // Don't throw error to avoid breaking account creation
+  }
+};

@@ -7,6 +7,8 @@ import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
+import { sendPasswordReset } from "../../lib/auth";
+import { updateProfile } from "firebase/auth";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
@@ -14,6 +16,11 @@ export default function MemberContent() {
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({ displayName: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
   
   const router = useRouter();
 
@@ -83,6 +90,15 @@ export default function MemberContent() {
     loadData();
   }, [user, member]);
 
+  // Initialize profile data when user and member load
+  useEffect(() => {
+    if (user || member) {
+      setProfileData({
+        displayName: member?.personalName || user?.displayName || ''
+      });
+    }
+  }, [user, member]);
+
   // Alert handlers
   const handleMarkAlertAsRead = async (alertId: string) => {
     try {
@@ -123,6 +139,60 @@ export default function MemberContent() {
     } catch (error) {
       console.error('Error deleting message:', error);
     }
+  };
+
+  // Password reset handler
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    
+    try {
+      setSendingPasswordReset(true);
+      await sendPasswordReset(user.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      alert('Failed to send password reset email. Please try again.');
+    } finally {
+      setSendingPasswordReset(false);
+    }
+  };
+
+  // Profile editing handlers
+  const handleEditProfile = () => {
+    setEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    try {
+      setSavingProfile(true);
+      
+      // Update Firebase Auth profile
+      await updateProfile(user, {
+        displayName: profileData.displayName.trim() || null
+      });
+      
+      // Force reload user data
+      await user.reload();
+      
+      setEditingProfile(false);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    // Reset to original values
+    setProfileData({
+      displayName: member?.personalName || user?.displayName || ''
+    });
+    setEditingProfile(false);
   };
 
 
@@ -535,13 +605,134 @@ export default function MemberContent() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       ),
-      content: <ManageProfile />
+      content: (
+        <div className="space-y-6">
+          {/* Account Settings */}
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Account Settings</h3>
+            
+            {/* Account Information */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">Email Address</label>
+                <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
+                  {user?.email}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Your email address cannot be changed</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
+                {editingProfile ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={profileData.displayName}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      placeholder="Enter your personal name"
+                    />
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={handleSaveProfile}
+                        disabled={savingProfile}
+                        variant="primary"
+                        size="small"
+                      >
+                        {savingProfile ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        onClick={handleCancelEdit}
+                        variant="secondary"
+                        size="small"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
+                      {member?.personalName || user?.displayName || 'Not set'}
+                    </div>
+                    <Button
+                      onClick={handleEditProfile}
+                      variant="secondary"
+                      size="small"
+                      className="ml-3"
+                    >
+                      Edit
+                    </Button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">Your personal name only. Company name cannot be changed here.</p>
+              </div>
+              
+              {/* Show company name separately for corporate members */}
+              {member?.membershipType === 'corporate' && member?.organizationName && (
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
+                  <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
+                    {member.organizationName}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Contact support to change your company information</p>
+                </div>
+              )}
+            </div>
+
+            {/* Password Reset */}
+            <div className="border-t border-gray-100 pt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Security</h4>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Password</span>
+                  <p className="text-xs text-gray-500">Reset your password via email</p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  {passwordResetSent && (
+                    <span className="text-sm text-green-600 font-medium">Reset email sent!</span>
+                  )}
+                  <Button
+                    onClick={handlePasswordReset}
+                    disabled={sendingPasswordReset}
+                    variant="secondary"
+                    size="small"
+                  >
+                    {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Company Management (if applicable) */}
+          <ManageProfile />
+        </div>
+      )
     }
   ];
 
+  // Construct title with personal name and company name (if applicable)
+  const getWelcomeTitle = () => {
+    if (!user?.displayName && !member?.personalName) {
+      return "Member Portal";
+    }
+    
+    const personalName = member?.personalName || user?.displayName || "";
+    const companyName = member?.organizationName;
+    
+    if (personalName && companyName && member?.membershipType === 'corporate') {
+      return `Welcome, ${personalName} (${companyName})`;
+    } else if (personalName) {
+      return `Welcome, ${personalName}`;
+    } else {
+      return "Member Portal";
+    }
+  };
+
   return (
     <DashboardLayout
-      title={user?.displayName ? `Welcome, ${user.displayName}` : "Member Portal"}
+      title={getWelcomeTitle()}
       subtitle={user?.email || "Access all member benefits and resources"}
       bannerImage="/education.jpg"
       bannerImageAlt="Business Meeting"

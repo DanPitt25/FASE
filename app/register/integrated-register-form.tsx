@@ -48,8 +48,11 @@ const ValidatedInput = ({
   markFieldTouched: (fieldKey: string) => void;
   [key: string]: any;
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
   const isValid = value.trim() !== '';
   const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
+  const isPasswordField = type === "password";
+  const inputType = isPasswordField ? (showPassword ? "text" : "password") : type;
   
   return (
     <div className={className}>
@@ -58,20 +61,42 @@ const ValidatedInput = ({
           {label} {required && '*'}
         </label>
       )}
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          markFieldTouched(fieldKey);
-        }}
-        onBlur={() => markFieldTouched(fieldKey)}
-        placeholder={placeholder}
-        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-          shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
-        } ${props.disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''}`}
-        {...props}
-      />
+      <div className="relative">
+        <input
+          type={inputType}
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            markFieldTouched(fieldKey);
+          }}
+          onBlur={() => markFieldTouched(fieldKey)}
+          placeholder={placeholder}
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+            shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
+          } ${props.disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''} ${
+            isPasswordField ? 'pr-10' : ''
+          }`}
+          {...props}
+        />
+        {isPasswordField && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-fase-navy hover:text-fase-gold transition-colors"
+          >
+            {showPassword ? (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 };
@@ -801,6 +826,16 @@ export default function IntegratedRegisterForm() {
         
         // If we reach here, both auth and firestore succeeded
         userToCleanup = null; // Don't clean up on success
+        
+        // Create welcome message for new user (async, don't wait for completion)
+        try {
+          const { createWelcomeMessage } = await import('../../lib/unified-messaging');
+          createWelcomeMessage(user.uid).catch(error => {
+            console.error('Failed to create welcome message:', error);
+          });
+        } catch (error) {
+          console.error('Failed to import welcome message function:', error);
+        }
         
       } catch (firestoreError) {
         // Firestore failed after auth succeeded - clean up auth account
@@ -2559,7 +2594,7 @@ export default function IntegratedRegisterForm() {
             
             <p className="text-xs text-fase-black mt-3">
               {paymentMethod === 'paypal' 
-                ? "Secure payment powered by PayPal. You&apos;ll be redirected to complete your payment."
+                ? "Secure payment powered by PayPal. You'll be redirected to complete your payment."
                 : "An invoice will be sent to your email address for payment via bank transfer."
               }
             </p>

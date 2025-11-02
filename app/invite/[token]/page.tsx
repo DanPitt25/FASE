@@ -115,6 +115,16 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       // Delete the old member document with generated ID
       await deleteDoc(oldMemberRef);
 
+      // Create welcome message for new user (async, don't wait for completion)
+      try {
+        const { createWelcomeMessage } = await import('../../../lib/unified-messaging');
+        createWelcomeMessage(user.uid).catch(error => {
+          console.error('Failed to create welcome message:', error);
+        });
+      } catch (error) {
+        console.error('Failed to import welcome message function:', error);
+      }
+
       setStep('complete');
       
       // Redirect to member portal after a short delay

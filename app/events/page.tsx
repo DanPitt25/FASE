@@ -6,34 +6,54 @@ export default function EventsPage() {
   const sections = [
     {
       type: 'split' as const,
-      title: 'Pan-European MGA Rendezvous',
+      title: 'FASE Events',
       content: [
-        'Our annual conference brings together MGAs, capacity providers and selected service providers to grow business within and across Europe. We are planning a comprehensive program that sets the standard for European MGA events.',
-        'Our events are designed to foster the collaboration that MGAs depend on, recognizing that strong relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – are essential to sustain and grow their business.'
+        'Our flagship networking event brings together MGAs, capacity providers, and selected service providers from across Europe to foster collaboration and grow business relationships.',
+        'FASE events create opportunities for meaningful connections that drive the European delegated underwriting market forward.'
       ],
-      image: '/conference.jpeg',
-      imageAlt: 'European business conference',
+      image: '/seated.jpg',
+      imageAlt: 'European business networking event',
       imagePosition: 'right' as const
     },
     {
-      type: 'split' as const,
-      title: 'Coming Soon',
-      content: [
-        'FASE events are currently in development. Join our community to be the first to know about upcoming conferences, networking opportunities, and professional development events.',
-        'We are planning a comprehensive calendar of events designed to foster collaboration and growth across the European MGA ecosystem.'
-      ],
-      image: '/airplane.jpeg',
-      imageAlt: 'Future events and networking',
-      imagePosition: 'left' as const,
+      type: 'cards' as const,
+      title: 'Event Features',
+      cards: [
+        {
+          title: 'Capacity Matching',
+          description: 'Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.',
+          image: '/consideration.jpg',
+          imageAlt: 'Business matching'
+        },
+        {
+          title: 'Market Insights',
+          description: 'Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.',
+          image: '/training.jpg',
+          imageAlt: 'Market analysis'
+        },
+        {
+          title: 'Professional Development',
+          description: 'Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.',
+          image: '/market.jpg',
+          imageAlt: 'Professional development'
+        }
+      ]
+    },
+    {
+      type: 'cta' as const,
+      title: 'Join Our Events',
+      subtitle: 'Connect with the European MGA Community',
+      description: 'Registration details and event schedules will be announced to FASE members. Become a member to secure your place at our premier networking events.',
+      backgroundImage: '/conferenceWood.jpg',
       buttons: [
         {
-          text: 'Join Us',
+          text: 'Become a Member',
           href: '/join',
           variant: 'primary' as const
         },
         {
-          text: 'Contact',
-          href: '/contact',
+          text: 'Learn More About Rendezvous',
+          href: '/networking/rendezvous',
           variant: 'secondary' as const
         }
       ]

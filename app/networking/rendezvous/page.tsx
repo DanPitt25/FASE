@@ -8,51 +8,31 @@ export default function RendezvousPage() {
       type: 'split' as const,
       title: 'Pan-European MGA Rendezvous',
       content: [
-        'Our flagship networking event brings together MGAs, capacity providers, and selected service providers from across Europe to foster collaboration and grow business relationships.',
-        'The Rendezvous creates opportunities for meaningful connections that drive the European delegated underwriting market forward.'
+        'Our annual conference brings together MGAs, capacity providers and selected service providers to grow business within and across Europe. We are planning a comprehensive program that sets the standard for European MGA events.',
+        'Our events are designed to foster the collaboration that MGAs depend on, recognizing that strong relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – are essential to sustain and grow their business.'
       ],
-      image: '/seated.jpg',
-      imageAlt: 'European business networking event',
+      image: '/conference.jpeg',
+      imageAlt: 'European business conference',
       imagePosition: 'right' as const
     },
     {
-      type: 'cards' as const,
-      title: 'Event Features',
-      cards: [
-        {
-          title: 'Capacity Matching',
-          description: 'Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.',
-          image: '/consideration.jpg',
-          imageAlt: 'Business matching'
-        },
-        {
-          title: 'Market Insights',
-          description: 'Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.',
-          image: '/training.jpg',
-          imageAlt: 'Market analysis'
-        },
-        {
-          title: 'Professional Development',
-          description: 'Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.',
-          image: '/market.jpg',
-          imageAlt: 'Professional development'
-        }
-      ]
-    },
-    {
-      type: 'cta' as const,
-      title: 'Join the Rendezvous',
-      subtitle: 'Connect with the European MGA Community',
-      description: 'Registration details and event schedule will be announced to FASE members. Become a member to secure your place at this premier networking event.',
-      backgroundImage: '/conferenceWood.jpg',
+      type: 'split' as const,
+      title: 'Coming Soon',
+      content: [
+        'The FASE Rendezvous is currently in development. Join our community to be the first to know about this upcoming flagship networking opportunity.',
+        'We are planning a comprehensive program designed to foster collaboration and growth across the European MGA ecosystem.'
+      ],
+      image: '/airplane.jpeg',
+      imageAlt: 'Future networking event',
+      imagePosition: 'left' as const,
       buttons: [
         {
-          text: 'Become a Member',
+          text: 'Join Us',
           href: '/join',
           variant: 'primary' as const
         },
         {
-          text: 'Learn More',
+          text: 'View All Events',
           href: '/events',
           variant: 'secondary' as const
         }

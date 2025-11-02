@@ -64,23 +64,23 @@ export default function JoinPage() {
     {
       type: 'cards' as const,
       title: 'Membership Categories',
-      subtitle: 'Three distinct membership types to serve the European MGA ecosystem.',
+      subtitle: 'Three distinct membership types reflect the diversity of the MGA ecosystem.',
       cards: [
         {
           title: 'MGA Member',
-          description: 'Full membership for Managing General Agents operating in Europe. Includes voting rights, committee participation, and full access to resources.',
+          description: 'MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.',
           image: '/seated.jpg',
           imageAlt: 'MGA business meeting'
         },
         {
-          title: 'Market Practitioner',
-          description: 'For capacity providers, insurers, and reinsurers working with MGAs. Access to market intelligence, networking, and industry insights.',
+          title: 'Carrier Member',
+          description: 'Insurance or reinsurance companies or Lloyd\'s Managing Agencies transacting business with MGAs.',
           image: '/consideration.jpg',
           imageAlt: 'Market analysis and data'
         },
         {
-          title: 'Supplier',
-          description: 'For service providers supporting the MGA ecosystem. Business development access, sponsorship opportunities, and market visibility.',
+          title: 'Service Provider Member',
+          description: 'Service providers active within the MGA ecosystem.',
           image: '/training.jpg',
           imageAlt: 'Service provider collaboration'
         }

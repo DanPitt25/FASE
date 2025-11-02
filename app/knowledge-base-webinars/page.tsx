@@ -274,10 +274,10 @@ export default function KnowledgeBaseWebinarsPage() {
       'Regulatory': '/regulatory.jpg',
       'Technology': '/data.jpg', 
       'Market Analysis': '/market.jpg',
-      'Webinars': '/conference.jpg',
+      'Webinars': '/conferenceWood.jpg',
       'Training': '/training.jpg'
     };
-    return images[category as keyof typeof images] || '/conference.jpg';
+    return images[category as keyof typeof images] || '/conferenceWood.jpg';
   };
 
   const CategoryCard = ({ category, count, onClick }: { category: string; count: number; onClick: () => void }) => (

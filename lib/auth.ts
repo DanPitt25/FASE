@@ -6,6 +6,7 @@ import {
   updateProfile,
   updatePassword,
   reload,
+  sendPasswordResetEmail,
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -157,5 +158,14 @@ export const removeAdminClaim = async (targetUserId: string): Promise<void> => {
   } catch (error: any) {
     console.error('Error removing admin claim:', error);
     throw new Error(error.message || 'Failed to remove admin claim');
+  }
+};
+
+// Send password reset email
+export const sendPasswordReset = async (email: string): Promise<void> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error: any) {
+    throw new Error(error.message);
   }
 };
