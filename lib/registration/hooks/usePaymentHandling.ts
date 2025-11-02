@@ -36,8 +36,7 @@ export function usePaymentHandling() {
       const billions = parseFloat(state.gwpInputs.billions) || 0;
       const millions = parseFloat(state.gwpInputs.millions) || 0;
       const thousands = parseFloat(state.gwpInputs.thousands) || 0;
-      const ones = parseFloat(state.gwpInputs.hundreds) || 0; // Still using 'hundreds' field name for compatibility
-      const totalGWP = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + ones;
+      const totalGWP = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
       
       // Currency conversion rates
       const currencyRates = { EUR: 1.0, GBP: 1.17, USD: 0.92 };

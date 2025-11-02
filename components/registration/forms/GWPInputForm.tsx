@@ -18,8 +18,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
     const billions = parseFloat(gwpInputs.billions) || 0;
     const millions = parseFloat(gwpInputs.millions) || 0;
     const thousands = parseFloat(gwpInputs.thousands) || 0;
-    const ones = parseFloat(gwpInputs.hundreds) || 0; // Renamed for clarity
-    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + ones;
+    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
     return total;
   };
 
@@ -47,7 +46,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
           </div>
           
           {/* Amount Builder - Separate inputs for each magnitude */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs text-fase-black mb-1">Billions</label>
               <input
@@ -63,7 +62,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
                   }
                 }}
                 placeholder="0"
-                className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
             
@@ -82,7 +81,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
                   }
                 }}
                 placeholder="0"
-                className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
             
@@ -101,26 +100,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
                   }
                 }}
                 placeholder="0"
-                className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-xs text-fase-black mb-1">Ones</label>
-              <input
-                type="number"
-                min="0"
-                max="999"
-                step="1"
-                value={gwpInputs.hundreds}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
-                    updateGWPInput('hundreds', value);
-                  }
-                }}
-                placeholder="0"
-                className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
           </div>

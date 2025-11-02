@@ -40,8 +40,7 @@ const initialState: RegistrationState = {
   gwpInputs: {
     billions: '',
     millions: '',
-    thousands: '',
-    hundreds: ''
+    thousands: ''
   },
   gwpCurrency: 'EUR',
   grossWrittenPremiums: '',
@@ -112,10 +111,9 @@ export function useRegistrationFlow() {
       const billions = parseFloat(state.gwpInputs.billions) || 0;
       const millions = parseFloat(state.gwpInputs.millions) || 0;
       const thousands = parseFloat(state.gwpInputs.thousands) || 0;
-      const hundreds = parseFloat(state.gwpInputs.hundreds) || 0;
       
       // Calculate the actual EUR value (not in millions)
-      const totalInEUR = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + hundreds;
+      const totalInEUR = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
       return totalInEUR;
     };
 

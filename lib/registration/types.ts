@@ -32,7 +32,6 @@ export interface GWPInputs {
   billions: string;
   millions: string;
   thousands: string;
-  hundreds: string;
 }
 
 export interface Address {
