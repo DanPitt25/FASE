@@ -212,7 +212,6 @@ export default function IntegratedRegisterForm() {
   const [gwpBillions, setGwpBillions] = useState("");
   const [gwpMillions, setGwpMillions] = useState("");
   const [gwpThousands, setGwpThousands] = useState("");
-  const [gwpHundreds, setGwpHundreds] = useState("");
   const [grossWrittenPremiums, setGrossWrittenPremiums] = useState("");
   const [gwpCurrency, setGwpCurrency] = useState("EUR");
   // New structured business fields
@@ -2058,7 +2057,7 @@ export default function IntegratedRegisterForm() {
                   </div>
                   
                   {/* Amount Builder - Separate inputs for each magnitude */}
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="block text-xs text-fase-black mb-1">Billions</label>
                       <input
@@ -2111,26 +2110,6 @@ export default function IntegratedRegisterForm() {
                           const value = e.target.value;
                           if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
                             setGwpThousands(value);
-                            markFieldTouched('grossWrittenPremiums');
-                          }
-                        }}
-                        placeholder="0"
-                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs text-fase-black mb-1">Hundreds of thousands</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="999"
-                        step="1"
-                        value={gwpHundreds}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
-                            setGwpHundreds(value);
                             markFieldTouched('grossWrittenPremiums');
                           }
                         }}
@@ -2465,7 +2444,7 @@ export default function IntegratedRegisterForm() {
                 <p className="text-fase-black">{country}</p>
               </div>
               
-              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands || gwpHundreds) && (
+              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
                 <div className="md:col-span-2">
                   <span className="text-fase-navy font-medium">Gross Written Premiums:</span>
                   <p className="text-fase-black">
