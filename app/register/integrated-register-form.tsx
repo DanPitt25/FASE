@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { sendVerificationCode, verifyCode } from "../../lib/auth";
-import { uploadMemberLogo, validateLogoFile } from "../../lib/storage";
+import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
 import Button from "../../components/Button";
 import SearchableCountrySelect from "../../components/SearchableCountrySelect";
 import { countries } from "../../lib/countries";
 import { handleAuthError } from "../../lib/auth-errors";
+import { auth } from "../../lib/firebase";
 
 // Password validation function
 const validatePassword = (password: string) => {
@@ -199,6 +199,7 @@ export default function IntegratedRegisterForm() {
       }
     }
   }, [membershipType, firstName, surname, email, members.length]);
+
   
   // Address fields
   const [addressLine1, setAddressLine1] = useState("");
@@ -225,8 +226,6 @@ export default function IntegratedRegisterForm() {
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
   const [otherAssociations, setOtherAssociations] = useState<string[]>([]);
-  const [isAdminTest, setIsAdminTest] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
   
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -237,9 +236,9 @@ export default function IntegratedRegisterForm() {
     const millions = parseFloat(gwpMillions) || 0;
     const thousands = parseFloat(gwpThousands) || 0;
     
-    // Calculate the actual EUR value (not in millions)
-    const totalInEUR = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
-    return totalInEUR;
+    // Convert everything to millions for consistency with getGWPBand()
+    const totalInMillions = billions * 1000 + millions + thousands / 1000;
+    return totalInMillions;
   };
   
   // Update grossWrittenPremiums whenever magnitude inputs change
@@ -267,6 +266,18 @@ export default function IntegratedRegisterForm() {
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
   const [codeOfConductConsent, setCodeOfConductConsent] = useState(false);
+
+  // New carrier-specific fields
+  const [isDelegatingInEurope, setIsDelegatingInEurope] = useState('');
+  const [numberOfMGAs, setNumberOfMGAs] = useState('');
+  const [delegatingCountries, setDelegatingCountries] = useState<string[]>([]);
+  const [frontingOptions, setFrontingOptions] = useState('');
+  const [considerStartupMGAs, setConsiderStartupMGAs] = useState('');
+  const [amBestRating, setAmBestRating] = useState('');
+  const [otherRating, setOtherRating] = useState('');
+
+  // New service provider fields
+  const [servicesProvided, setServicesProvided] = useState<string[]>([]);
 
 
   const markFieldTouched = (fieldKey: string) => {
@@ -369,18 +380,9 @@ export default function IntegratedRegisterForm() {
       
       setError("");
       setStep(1);
+      window.scrollTo(0, 0);
       setAttemptedNext(false);
     } else if (step === 1) {
-      // Validate Code of Conduct consent
-      if (!codeOfConductConsent) {
-        setError("Please consent to the Code of Conduct to continue");
-        return;
-      }
-      
-      setError("");
-      setStep(2);
-      setAttemptedNext(false);
-    } else if (step === 2) {
       // Validate auth fields
       const authRequiredFields = ['firstName', 'surname', 'email', 'password', 'confirmPassword'];
       const authFieldValues = {
@@ -437,7 +439,7 @@ export default function IntegratedRegisterForm() {
       } finally {
         setIsSendingVerification(false);
       }
-    } else if (step === 3) {
+    } else if (step === 2) {
       // Validate membership basic fields
       const fullName = `${firstName} ${surname}`.trim();
       const orgName = membershipType === 'individual' ? fullName : organizationName;
@@ -486,9 +488,10 @@ export default function IntegratedRegisterForm() {
       }
       
       setError("");
-      setStep(4);
+      setStep(3);
+      window.scrollTo(0, 0);
       setAttemptedNext(false);
-    } else if (step === 4) {
+    } else if (step === 3) {
       // Validate address and portfolio fields before proceeding to payment
       if (!addressLine1.trim() || !city.trim() || !country) {
         setError("Address information is required");
@@ -512,7 +515,8 @@ export default function IntegratedRegisterForm() {
       }
       
       setError("");
-      setStep(5);
+      setStep(4);
+      window.scrollTo(0, 0);
       setAttemptedNext(false);
     }
   };
@@ -521,18 +525,16 @@ export default function IntegratedRegisterForm() {
     if (step > 0) {
       setStep(step - 1);
       setError("");
+      window.scrollTo(0, 0);
     }
   };
 
   const calculateMembershipFee = () => {
-    if (isAdminTest) {
-      return 0.01; // 1 cent for admin test
-    }
     if (membershipType === 'individual') {
       return 500;
-    } else if (membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums) {
-      const gwpValue = parseFloat(grossWrittenPremiums);
-      if (isNaN(gwpValue)) return 900; // Default if invalid input
+    } else if (membershipType === 'corporate' && organizationType === 'MGA') {
+      const gwpValue = parseFloat(grossWrittenPremiums) || 0;
+      if (gwpValue === 0) return 900; // Default if no GWP input
       
       // Convert to EUR for band calculation
       const eurValue = convertToEUR(gwpValue, gwpCurrency);
@@ -547,6 +549,10 @@ export default function IntegratedRegisterForm() {
         case '500m+': return 7000;
         default: return 900;
       }
+    } else if (membershipType === 'corporate' && organizationType === 'carrier') {
+      return 4000; // Flat rate for carriers
+    } else if (membershipType === 'corporate' && organizationType === 'provider') {
+      return 5000; // Flat rate for service providers
     } else {
       return 900; // Default corporate rate
     }
@@ -639,7 +645,7 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const createAccountAndMembership = async (status: 'pending_payment' | 'pending_invoice') => {
+  const createAccountAndMembership = async (status: 'pending_payment' | 'pending_invoice' | 'pending') => {
     setLoading(true);
     setError("");
 
@@ -668,23 +674,6 @@ export default function IntegratedRegisterForm() {
       
       await updateProfile(user, { displayName });
 
-      // Step 2: Upload logo now that user is authenticated
-      let logoUrl = '';
-      if (logoFile) {
-        try {
-          // Create clean identifier for logo filename
-          const fullName = `${firstName} ${surname}`.trim();
-          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
-            .toLowerCase().replace(/[^a-z0-9]/g, '_');
-          
-          // Use direct Firebase Storage upload (user is now authenticated)
-          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
-          logoUrl = uploadResult.downloadURL;
-        } catch (uploadError) {
-          console.warn('Logo upload failed, continuing without logo:', uploadError);
-          // Continue without logo - this is not a blocking error
-        }
-      }
 
       // Step 3: Create Firestore documents - if this fails, we'll clean up the auth account
       try {
@@ -750,7 +739,7 @@ export default function IntegratedRegisterForm() {
             }),
             hasOtherAssociations: hasOtherAssociations ?? false,
             otherAssociations: hasOtherAssociations ? otherAssociations : [],
-            logoUrl: logoUrl || null,
+            logoUrl: null,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           };
@@ -814,7 +803,7 @@ export default function IntegratedRegisterForm() {
             },
             hasOtherAssociations: hasOtherAssociations ?? false,
             otherAssociations: hasOtherAssociations ? otherAssociations : [],
-            logoUrl: logoUrl || null,
+            logoUrl: null,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           };
@@ -882,7 +871,8 @@ export default function IntegratedRegisterForm() {
         
         // If this is after Step 2, continue to Step 3
         if (!pendingPaymentAction) {
-          setStep(3);
+          setStep(2);
+          window.scrollTo(0, 0);
         } else {
           // This is after payment - continue with the pending payment action
           if (pendingPaymentAction === 'paypal') {
@@ -923,7 +913,7 @@ export default function IntegratedRegisterForm() {
           grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
           userEmail: email,
           userId: auth.currentUser.uid,
-          testPayment: isAdminTest
+          testPayment: false
         }),
       });
 
@@ -977,6 +967,100 @@ export default function IntegratedRegisterForm() {
     } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentError(error.message || 'Failed to start payment process');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!codeOfConductConsent) {
+      setError("Please consent to the Code of Conduct to continue");
+      return;
+    }
+
+    if (processingPayment) return;
+
+    setProcessingPayment(true);
+    setPaymentError("");
+
+    try {
+      // Prepare application data
+      const applicationData = {
+        // Personal info
+        firstName,
+        surname,
+        email,
+        phone: membershipType === 'corporate' ? members.find(m => m.isPrimaryContact)?.phone || '' : '',
+        membershipType,
+        
+        // Organization info
+        ...(membershipType === 'corporate' && {
+          organizationName,
+          organizationType,
+          members: membershipType === 'corporate' ? members : undefined,
+        }),
+
+        // Address
+        businessAddress: {
+          line1: addressLine1,
+          line2: addressLine2,
+          city,
+          state,
+          postalCode,
+          country,
+        },
+
+        // MGA specific
+        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
+          grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
+          gwpCurrency,
+          selectedLinesOfBusiness,
+          selectedMarkets,
+          hasOtherAssociations,
+          otherAssociations: hasOtherAssociations ? otherAssociations : undefined,
+        }),
+
+        // Carrier specific
+        ...(membershipType === 'corporate' && organizationType === 'carrier' && {
+          isDelegatingInEurope,
+          numberOfMGAs: isDelegatingInEurope === 'Yes' ? numberOfMGAs : undefined,
+          delegatingCountries: isDelegatingInEurope === 'Yes' ? delegatingCountries : undefined,
+          frontingOptions,
+          considerStartupMGAs,
+          amBestRating,
+          otherRating,
+        }),
+
+        // Service provider specific
+        ...(membershipType === 'corporate' && organizationType === 'provider' && {
+          servicesProvided,
+        }),
+
+        // Consents
+        dataNoticeConsent,
+        codeOfConductConsent,
+      };
+
+      // Submit application using Firebase Function
+      const result = await submitApplication(applicationData);
+      console.log('Application submitted successfully:', result);
+
+      // Create Firebase Auth account and Firestore record for the applicant
+      await createAccountAndMembership('pending');
+
+      // Store application data in sessionStorage for thank you page
+      const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+      sessionStorage.setItem('applicationSubmission', JSON.stringify({
+        applicationNumber: result.applicationNumber,
+        applicantName: applicantName
+      }));
+
+      // Redirect to clean thank you page URL
+      window.location.href = '/register/thank-you';
+
+    } catch (error: any) {
+      console.error('Application submission error:', error);
+      setPaymentError(error.message || 'Failed to submit application');
     } finally {
       setProcessingPayment(false);
     }
@@ -1079,24 +1163,6 @@ export default function IntegratedRegisterForm() {
     setError("");
 
     try {
-      // Handle logo upload first
-      let logoUrl = '';
-      if (logoFile) {
-        try {
-          // Create clean identifier for logo filename
-          const fullName = `${firstName} ${surname}`.trim();
-          const cleanOrgName = (membershipType === 'corporate' ? organizationName : fullName)
-            .toLowerCase().replace(/[^a-z0-9]/g, '_');
-          
-          // Use direct Firebase Storage upload
-          const uploadResult = await uploadMemberLogo(logoFile, cleanOrgName);
-          logoUrl = uploadResult.downloadURL;
-        } catch (uploadError) {
-          console.warn('Logo upload failed, continuing without logo:', uploadError);
-          // Continue without logo - this is not a blocking error
-        }
-      }
-      
       const { auth } = await import('@/lib/firebase');
       
       if (!auth.currentUser) {
@@ -1249,7 +1315,8 @@ export default function IntegratedRegisterForm() {
         await setDoc(accountRef, dataToWrite, { merge: true });
       }
       
-      setStep(5); // Go to payment step
+      setStep(4); // Go to payment step
+      window.scrollTo(0, 0);
       
     } catch (error: any) {
       setError(handleAuthError(error));
@@ -1474,151 +1541,8 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 1: Code of Conduct Consent */}
+      {/* Step 1: Account Information */}
       {step === 1 && (
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">FASE Code of Conduct</h3>
-            <p className="text-fase-black text-sm">Please review and consent to our Code of Conduct</p>
-          </div>
-
-          <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
-            <div className="text-base text-fase-black">
-              <div className="prose prose-base max-w-none">
-                <h4 className="font-semibold text-fase-navy text-lg mb-4">FASE Code of Conduct</h4>
-                
-                <p className="mb-3">
-                  FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.
-                </p>
-                
-                <p className="mb-3">
-                  Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.
-                </p>
-                
-                <p className="mb-4">
-                  Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code.
-                </p>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">1. Legal responsibilities</h5>
-                <p className="mb-3">
-                  Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.
-                </p>
-                
-                <p className="mb-2">
-                  Members will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:
-                </p>
-                
-                <ul className="list-disc list-inside ml-4 mb-3">
-                  <li>A member being in breach of any regulatory requirement and</li>
-                  <li>Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities</li>
-                </ul>
-                
-                <p className="mb-4">
-                  Members will provide all reasonable lawful assistance to regulatory, professional and law enforcement organization in the discharge of their duties, whether in respect of themselves, another Member or a non-member.
-                </p>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">2. Financial Responsibilities</h5>
-                <p className="mb-3">
-                  Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.
-                </p>
-                
-                <p className="mb-4">
-                  Members must comply with applicable solvency or like requirements.
-                </p>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">3. Inter-organisational Responsibilities</h5>
-                <p className="mb-3">
-                  Members will compete fairly and honourably in the markets in which they operate.
-                </p>
-                
-                <p className="mb-2">
-                  This includes, but is not limited to:
-                </p>
-                
-                <ul className="list-disc list-inside ml-4 mb-4">
-                  <li>making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;</li>
-                  <li>entering into any agreement intended to diminish competition within the market.</li>
-                </ul>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">4. Community Responsibilities</h5>
-                <p className="mb-3">
-                  FASE members must conduct themselves in a manner befitting the privileges of membership.
-                </p>
-                
-                <p className="mb-3">
-                  Members will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.
-                </p>
-                
-                <p className="mb-3">
-                  Members are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.
-                </p>
-                
-                <p className="mb-4">
-                  Members will encourage continuing education and training for staff.
-                </p>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">5. Relationships with Insurers</h5>
-                <p className="mb-2">
-                  Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:
-                </p>
-                
-                <ul className="list-disc list-inside ml-4 mb-4">
-                  <li>faithfully execute the underwriting guidelines of the insurers they represent;</li>
-                  <li>act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;</li>
-                  <li>keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship.</li>
-                </ul>
-                
-                <h5 className="font-semibold text-fase-navy mt-6 mb-3">6. Relationships with Brokers and Agents (or Insureds if operating directly)</h5>
-                <p className="mb-2">
-                  Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:
-                </p>
-                
-                <ul className="list-disc list-inside ml-4 mb-3">
-                  <li>consider at all times the financial stability of insurers with which the Member places business;</li>
-                  <li>make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.</li>
-                </ul>
-                
-                <p className="mb-3">
-                  Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers&apos; customers&apos; business with.
-                </p>
-                
-                <p className="mb-3">
-                  Effective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.
-                </p>
-                
-                <p className="mb-3">
-                  FASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.
-                </p>
-                
-                <p className="mb-6">
-                  Members should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed.
-                </p>
-                
-                <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
-                  All notices of potential breach made under this Code should be made to: Chairman of the Business Conduct Committee, FASE, Herengracht, 124-128, 1015 BT Amsterdam, Netherlands.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-fase-light-gold rounded-lg p-4">
-            <label className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                checked={codeOfConductConsent}
-                onChange={(e) => setCodeOfConductConsent(e.target.checked)}
-                className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-              />
-              <span className="text-base text-fase-black">
-                I have read and agree to abide by the FASE Code of Conduct as a condition of my membership. I understand that failure to comply may result in membership termination. *
-              </span>
-            </label>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Account Information */}
-      {step === 2 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Create Your Account</h3>
@@ -1720,8 +1644,8 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 3: Membership Information */}
-      {step === 3 && (
+      {/* Step 2: Membership Information */}
+      {step === 2 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Membership Information</h3>
@@ -1946,8 +1870,8 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 4: Additional Details */}
-      {step === 4 && (
+      {/* Step 3: Additional Details */}
+      {step === 3 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Additional Details</h3>
@@ -2331,87 +2255,256 @@ export default function IntegratedRegisterForm() {
                 </div>
               )}
             </div>
-            
-            {/* Admin Test Option */}
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-3">
-                Admin Test Payment (Remove after testing)
-              </label>
-              <div className="flex space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAdminTest(false)}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    !isAdminTest
-                      ? 'bg-fase-navy text-white border-fase-navy'
-                      : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
-                  }`}
-                >
-                  Normal Payment
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAdminTest(true)}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    isAdminTest
-                      ? 'bg-red-600 text-white border-red-600'
-                      : 'bg-white text-red-600 border-red-300 hover:border-red-600'
-                  }`}
-                >
-                  Admin Test (€0.01)
-                </button>
-              </div>
-              {isAdminTest && (
-                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">
-                    <strong>WARNING:</strong> This will create a 1 cent test payment. Remove this option after testing.
-                  </p>
-                </div>
-              )}
-            </div>
 
-            {/* Logo Upload */}
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-3">
-                Organization Logo (Optional)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    try {
-                      validateLogoFile(file);
-                      setLogoFile(file);
-                      setError('');
-                    } catch (error: any) {
-                      setError(error.message || 'Invalid file');
-                      setLogoFile(null);
-                    }
-                  }
-                }}
-                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <p className="text-xs text-fase-black mt-1">
-                PNG, JPG, or SVG. Max 5MB. Recommended: 200x200px or larger.
-              </p>
+          {/* Carrier-specific Information */}
+          {membershipType === 'corporate' && organizationType === 'carrier' && (
+            <div className="space-y-4">
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Carrier Information</h4>
+              
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-3">
+                  Is your company currently writing delegated authority business through MGAs in Europe? (Continental Europe and/or the UK and/or Ireland) *
+                </label>
+                <div className="text-xs text-fase-black mb-3">
+                  Note: This is not a qualification for membership. Carriers that are planning to delegate authority to MGAs in Europe are also eligible for FASE membership.
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsDelegatingInEurope('Yes')}
+                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      isDelegatingInEurope === 'Yes' 
+                        ? 'border-fase-navy bg-fase-navy text-white' 
+                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                    }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDelegatingInEurope('No')}
+                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      isDelegatingInEurope === 'No' 
+                        ? 'border-fase-navy bg-fase-navy text-white' 
+                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+
+              {isDelegatingInEurope === 'Yes' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-3">
+                      How many MGAs do you currently work with in Europe? *
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {['2-5', '6-10', '11-25', '25+'].map((range) => (
+                        <button
+                          key={range}
+                          type="button"
+                          onClick={() => setNumberOfMGAs(range)}
+                          className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                            numberOfMGAs === range 
+                              ? 'border-fase-navy bg-fase-navy text-white' 
+                              : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                          }`}
+                        >
+                          {range}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-3">
+                      In which European countries are you currently delegating underwriting authority to MGAs? *
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-fase-light-gold rounded-lg p-3">
+                      {countries.filter(country => [
+                        'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'IS', 'LI', 'NO', 'CH'
+                      ].includes(country.value)).map((country) => (
+                        <label key={country.value} className="flex items-center text-sm">
+                          <input
+                            type="checkbox"
+                            checked={delegatingCountries.includes(country.value)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setDelegatingCountries([...delegatingCountries, country.value]);
+                              } else {
+                                setDelegatingCountries(delegatingCountries.filter(c => c !== country.value));
+                              }
+                            }}
+                            className="mr-2 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                          />
+                          <span className="text-fase-black">{country.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-3">
+                  Do you offer fronting options? *
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {['None', 'Pure', 'Hybrid', 'Both'].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setFrontingOptions(option)}
+                      className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                        frontingOptions === option 
+                          ? 'border-fase-navy bg-fase-navy text-white' 
+                          : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-3">
+                  Do you consider startup MGAs? *
+                </label>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setConsiderStartupMGAs('Yes')}
+                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      considerStartupMGAs === 'Yes' 
+                        ? 'border-fase-navy bg-fase-navy text-white' 
+                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                    }`}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConsiderStartupMGAs('No')}
+                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      considerStartupMGAs === 'No' 
+                        ? 'border-fase-navy bg-fase-navy text-white' 
+                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-3">
+                  AM Best rating (if rated)
+                </label>
+                <select
+                  value={amBestRating}
+                  onChange={(e) => setAmBestRating(e.target.value)}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                >
+                  <option value="">Select rating</option>
+                  <option value="A++">A++</option>
+                  <option value="A+">A+</option>
+                  <option value="A">A</option>
+                  <option value="A-">A-</option>
+                  <option value="B++">B++</option>
+                  <option value="B+">B+</option>
+                  <option value="B">B</option>
+                  <option value="B-">B-</option>
+                  <option value="C++">C++</option>
+                  <option value="C">C</option>
+                  <option value="C-">C-</option>
+                  <option value="D">D</option>
+                  <option value="Unrated">Unrated</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-2">
+                  Additional / Other rating (Please specify)
+                </label>
+                <input
+                  type="text"
+                  value={otherRating}
+                  onChange={(e) => setOtherRating(e.target.value)}
+                  placeholder="Please specify other rating if applicable"
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+              </div>
             </div>
+          )}
+
+          {/* Service Provider Information */}
+          {membershipType === 'corporate' && organizationType === 'provider' && (
+            <div className="space-y-4">
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Service Provider Information</h4>
+              
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-3">
+                  Which of the following services do you provide? *
+                </label>
+                <div className="space-y-2">
+                  {[
+                    'Actuarial Services',
+                    'Back-office/Underwriting Outsourcing',
+                    'Business Consulting/Marketing',
+                    'Capital/Financial Provider',
+                    'Claims Management',
+                    'Client/Policy Management Technology',
+                    'Data Solutions',
+                    'Financial Services',
+                    'M&A Advisory',
+                    'Program/Product Development',
+                    'Rating and Issuing Technology',
+                    'Regulatory Compliance/Licensing',
+                    'Reinsurance Intermediary',
+                    'Risk Management/Risk Control',
+                    'Talent/Staffing/Personnel',
+                    'Technology - Other'
+                  ].map((service) => (
+                    <label key={service} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={servicesProvided.includes(service)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setServicesProvided([...servicesProvided, service]);
+                          } else {
+                            setServicesProvided(servicesProvided.filter(s => s !== service));
+                          }
+                        }}
+                        className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-fase-black">{service}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+            
+
           </div>
         </div>
       )}
 
-      {/* Step 5: Payment */}
-      {step === 5 && (
+      {/* Step 4: Final Review & Submit Application */}
+      {step === 4 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Complete Your Membership</h3>
-            <p className="text-fase-black text-sm">Review and pay for your FASE membership</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Submit Your Application</h3>
+            <p className="text-fase-black text-sm">Review your information and submit your membership application</p>
           </div>
 
-          {/* Membership Summary */}
+          {/* Application Summary */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Membership Summary</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application Summary</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
@@ -2494,63 +2587,152 @@ export default function IntegratedRegisterForm() {
             </p>
           </div>
 
-          {/* Payment Method Selection */}
+          {/* Code of Conduct Consent */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Payment Method</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">FASE Code of Conduct</h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div 
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  paymentMethod === 'paypal' 
-                    ? 'border-fase-navy bg-fase-light-blue' 
-                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                }`}
-                onClick={() => setPaymentMethod('paypal')}
-              >
-                <div className="flex items-center mb-2">
-                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    paymentMethod === 'paypal' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                  }`}>
-                    {paymentMethod === 'paypal' && (
-                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                    )}
-                  </div>
-                  <span className="font-medium text-fase-navy">Pay Online</span>
+            <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm mb-4">
+              <div className="text-base text-fase-black">
+                <div className="prose prose-base max-w-none">
+                  <h4 className="font-semibold text-fase-navy text-lg mb-4">FASE Code of Conduct</h4>
+                  
+                  <p className="mb-3">
+                    FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.
+                  </p>
+                  
+                  <p className="mb-3">
+                    Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.
+                  </p>
+                  
+                  <p className="mb-4">
+                    Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code.
+                  </p>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">1. Legal responsibilities</h5>
+                  <p className="mb-3">
+                    Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.
+                  </p>
+                  
+                  <p className="mb-2">
+                    Members will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:
+                  </p>
+                  
+                  <ul className="list-disc list-inside ml-4 mb-3">
+                    <li>A member being in breach of any regulatory requirement and</li>
+                    <li>Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities</li>
+                  </ul>
+                  
+                  <p className="mb-4">
+                    Members will provide all reasonable lawful assistance to regulatory, professional and law enforcement organization in the discharge of their duties, whether in respect of themselves, another Member or a non-member.
+                  </p>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">2. Financial Responsibilities</h5>
+                  <p className="mb-3">
+                    Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.
+                  </p>
+                  
+                  <p className="mb-4">
+                    Members must comply with applicable solvency or like requirements.
+                  </p>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">3. Inter-organisational Responsibilities</h5>
+                  <p className="mb-3">
+                    Members will compete fairly and honourably in the markets in which they operate.
+                  </p>
+                  
+                  <p className="mb-2">
+                    This includes, but is not limited to:
+                  </p>
+                  
+                  <ul className="list-disc list-inside ml-4 mb-4">
+                    <li>making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;</li>
+                    <li>entering into any agreement intended to diminish competition within the market.</li>
+                  </ul>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">4. Community Responsibilities</h5>
+                  <p className="mb-3">
+                    FASE members must conduct themselves in a manner befitting the privileges of membership.
+                  </p>
+                  
+                  <p className="mb-3">
+                    Members will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.
+                  </p>
+                  
+                  <p className="mb-3">
+                    Members are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.
+                  </p>
+                  
+                  <p className="mb-4">
+                    Members will encourage continuing education and training for staff.
+                  </p>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">5. Relationships with Insurers</h5>
+                  <p className="mb-2">
+                    Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:
+                  </p>
+                  
+                  <ul className="list-disc list-inside ml-4 mb-4">
+                    <li>faithfully execute the underwriting guidelines of the insurers they represent;</li>
+                    <li>act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;</li>
+                    <li>keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship.</li>
+                  </ul>
+                  
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">6. Relationships with Brokers and Agents (or Insureds if operating directly)</h5>
+                  <p className="mb-2">
+                    Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:
+                  </p>
+                  
+                  <ul className="list-disc list-inside ml-4 mb-3">
+                    <li>consider at all times the financial stability of insurers with which the Member places business;</li>
+                    <li>make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.</li>
+                  </ul>
+                  
+                  <p className="mb-3">
+                    Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers&apos; customers&apos; business with.
+                  </p>
+                  
+                  <p className="mb-3">
+                    Effective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.
+                  </p>
+                  
+                  <p className="mb-3">
+                    FASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.
+                  </p>
+                  
+                  <p className="mb-6">
+                    Members should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed.
+                  </p>
+                  
+                  <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
+                    All notices of potential breach made under this Code should be made to: Chairman of the Business Conduct Committee, FASE, Herengracht, 124-128, 1015 BT Amsterdam, Netherlands.
+                  </p>
                 </div>
-                <p className="text-sm text-fase-black ml-7">Secure payment via PayPal (Credit/Debit Card or PayPal Balance)</p>
               </div>
-              
-              <div 
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  paymentMethod === 'invoice' 
-                    ? 'border-fase-navy bg-fase-light-blue' 
-                    : 'border-fase-light-gold bg-white hover:border-fase-navy'
-                }`}
-                onClick={() => setPaymentMethod('invoice')}
-              >
-                <div className="flex items-center mb-2">
-                  <div className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                    paymentMethod === 'invoice' ? 'border-fase-navy bg-fase-navy' : 'border-gray-300'
-                  }`}>
-                    {paymentMethod === 'invoice' && (
-                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
-                    )}
-                  </div>
-                  <span className="font-medium text-fase-navy">Request Invoice</span>
-                </div>
-                <p className="text-sm text-fase-black ml-7">Pay later via bank transfer</p>
-              </div>
+            </div>
+
+            <div className="bg-white border border-fase-light-gold rounded-lg p-4">
+              <label className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  checked={codeOfConductConsent}
+                  onChange={(e) => setCodeOfConductConsent(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                />
+                <span className="text-sm text-fase-black">
+                  I have read and agree to abide by the FASE Code of Conduct as a condition of my membership. I understand that failure to comply may result in membership termination. *
+                </span>
+              </label>
             </div>
           </div>
 
-          {/* Payment Button */}
+          {/* Submit Application Button */}
           <div className="text-center">
             <Button
               type="button"
               variant="primary"
               size="large"
-              onClick={paymentMethod === 'paypal' ? handlePayment : handleInvoiceRequest}
-              disabled={processingPayment}
+              onClick={handleSubmitApplication}
+              disabled={!codeOfConductConsent || processingPayment}
               className="w-full"
             >
               {processingPayment ? (
@@ -2559,20 +2741,15 @@ export default function IntegratedRegisterForm() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Processing...
+                  Submitting Application...
                 </>
-              ) : paymentMethod === 'paypal' ? (
-                "Complete Payment"
               ) : (
-                "Request Invoice"
+                "Submit Application"
               )}
             </Button>
             
             <p className="text-xs text-fase-black mt-3">
-              {paymentMethod === 'paypal' 
-                ? "Secure payment powered by PayPal. You'll be redirected to complete your payment."
-                : "An invoice will be sent to your email address for payment via bank transfer."
-              }
+              Your application will be sent to our team for review. You will hear back from us within one business day.
             </p>
           </div>
         </div>
@@ -2583,7 +2760,7 @@ export default function IntegratedRegisterForm() {
       )}
 
       {/* Navigation Buttons */}
-      {step < 6 && (
+      {step < 5 && (
         <div className="pt-6">
           <div className="flex justify-between">
             {step > 0 ? (
@@ -2598,28 +2775,28 @@ export default function IntegratedRegisterForm() {
               <div></div>
             )}
             
-            {step < 4 ? (
+            {step < 3 ? (
               <Button 
                 type="button"
                 variant="primary" 
                 onClick={handleNext}
-                disabled={step === 2 && isSendingVerification}
+                disabled={step === 1 && isSendingVerification}
               >
-                {step === 2 && isSendingVerification ? "Sending Code..." : "Next"}
+                {step === 1 && isSendingVerification ? "Sending Code..." : "Next"}
               </Button>
-            ) : step === 4 ? (
+            ) : step === 3 ? (
               <Button 
                 type="button"
                 variant="primary" 
                 onClick={handleNext}
               >
-                Continue to Payment
+                Review & Submit
               </Button>
             ) : null}
           </div>
           
-          {/* Alternative Options - Only show on step 2 (account creation) */}
-          {step === 2 && (
+          {/* Alternative Options - Only show on step 1 (account creation) */}
+          {step === 1 && (
             <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
               <p className="text-sm text-fase-black mb-4">Already a member?</p>
               <div className="flex justify-center">
