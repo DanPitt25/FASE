@@ -22,11 +22,9 @@ export const europeanCountries = [
   { value: 'GI', label: 'Gibraltar' },
   { value: 'GR', label: 'Greece' },
   { value: 'GL', label: 'Greenland' },
-  { value: 'GG', label: 'Guernsey' },
   { value: 'HU', label: 'Hungary' },
   { value: 'IS', label: 'Iceland' },
   { value: 'IE', label: 'Ireland' },
-  { value: 'IM', label: 'Isle of Man' },
   { value: 'IT', label: 'Italy' },
   { value: 'JE', label: 'Jersey' },
   { value: 'XK', label: 'Kosovo' },
@@ -50,13 +48,11 @@ export const europeanCountries = [
   { value: 'SK', label: 'Slovakia' },
   { value: 'SI', label: 'Slovenia' },
   { value: 'ES', label: 'Spain' },
-  { value: 'SJ', label: 'Svalbard and Jan Mayen' },
   { value: 'SE', label: 'Sweden' },
   { value: 'CH', label: 'Switzerland' },
   { value: 'TR', label: 'Turkey' },
   { value: 'UA', label: 'Ukraine' },
   { value: 'GB', label: 'United Kingdom' },
-  { value: 'VA', label: 'Vatican City' }
 ];
 
 export const countries = [

@@ -476,10 +476,6 @@ export default function IntegratedRegisterForm() {
             setError("All members must have an email");
             return;
           }
-          if (member.id !== 'registrant' && !member.phone.trim()) {
-            setError("All members must have a phone number");
-            return;
-          }
           if (!member.jobTitle.trim()) {
             setError("All members must have a job title");
             return;
@@ -1519,7 +1515,7 @@ export default function IntegratedRegisterForm() {
                 </ul>
                 
                 <p className="mb-3">
-                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at info@fasemga.com or write to FASE Data Protection, Herengracht 124-128, 1015 BT Amsterdam, Netherlands.
+                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at admin@fasemga.com or write to FASE Data Protection, Herengracht 124, 1015 BT Amsterdam, Netherlands.
                 </p>
               </div>
             </div>
@@ -1804,7 +1800,7 @@ export default function IntegratedRegisterForm() {
 
                       <div>
                         <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Phone *
+                          Phone
                         </label>
                         <input
                           type="tel"
@@ -2301,8 +2297,8 @@ export default function IntegratedRegisterForm() {
                     <label className="block text-sm font-medium text-fase-navy mb-3">
                       How many MGAs do you currently work with in Europe? *
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {['2-5', '6-10', '11-25', '25+'].map((range) => (
+                    <div className="grid grid-cols-5 gap-2">
+                      {['1','2-5', '6-10', '11-25', '25+'].map((range) => (
                         <button
                           key={range}
                           type="button"
@@ -2420,7 +2416,6 @@ export default function IntegratedRegisterForm() {
                   <option value="C">C</option>
                   <option value="C-">C-</option>
                   <option value="D">D</option>
-                  <option value="Unrated">Unrated</option>
                 </select>
               </div>
 
