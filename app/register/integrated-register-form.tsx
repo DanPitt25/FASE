@@ -1234,7 +1234,7 @@ export default function IntegratedRegisterForm() {
           }),
           hasOtherAssociations: hasOtherAssociations ?? false,
           otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: logoUrl || null,
+          logoUrl: null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         };
@@ -1308,7 +1308,7 @@ export default function IntegratedRegisterForm() {
           },
           hasOtherAssociations: hasOtherAssociations ?? false,
           otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: logoUrl || null,
+          logoUrl: null,
           updatedAt: serverTimestamp()
         };
         
