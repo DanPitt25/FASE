@@ -521,7 +521,6 @@ export async function POST(request: NextRequest) {
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
             <h2 style="color: #2D5574; margin-bottom: 20px;">Thank You for Your FASE Membership Application</h2>
-            <p>Dear ${membershipData.primaryContact.name},</p>
             <p>Thank you for submitting your application to become a member of the Federation of European MGAs.</p>
             <p>We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
             <p>Your invoice for membership dues is attached. Please process payment according to the instructions in the invoice.</p>
@@ -534,7 +533,6 @@ export async function POST(request: NextRequest) {
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
             <h2 style="color: #dc2626;">Thank You - Invoice Generation Issue</h2>
-            <p>Dear ${membershipData.primaryContact.name},</p>
             <p>Thank you for your FASE membership application. We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
             <p>There was a technical issue generating your invoice PDF. Please contact our support team at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a> and we'll send your invoice manually.</p>
             <p>Reference: ${invoiceNumber}</p>

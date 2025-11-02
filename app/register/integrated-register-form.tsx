@@ -2497,13 +2497,13 @@ export default function IntegratedRegisterForm() {
       {step === 4 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Submit Your Application</h3>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Submit your application</h3>
             <p className="text-fase-black text-sm">Review your information and submit your membership application</p>
           </div>
 
           {/* Application Summary */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application Summary</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application summary</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
@@ -2512,7 +2512,7 @@ export default function IntegratedRegisterForm() {
               </div>
               
               <div>
-                <span className="text-fase-navy font-medium">Membership Type:</span>
+                <span className="text-fase-navy font-medium">Membership type:</span>
                 <p className="text-fase-black">
                   {membershipType === 'individual' 
                     ? 'Individual' 
@@ -2522,7 +2522,7 @@ export default function IntegratedRegisterForm() {
               </div>
               
               <div>
-                <span className="text-fase-navy font-medium">Contact Email:</span>
+                <span className="text-fase-navy font-medium">Contact email:</span>
                 <p className="text-fase-black">
                   {membershipType === 'corporate' 
                     ? members.find(m => m.isPrimaryContact)?.email || email
@@ -2538,7 +2538,7 @@ export default function IntegratedRegisterForm() {
               
               {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
                 <div className="md:col-span-2">
-                  <span className="text-fase-navy font-medium">Gross Written Premiums:</span>
+                  <span className="text-fase-navy font-medium">Gross written premiums:</span>
                   <p className="text-fase-black">
                     {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
                       const billions = parseFloat(gwpBillions) || 0;
@@ -2555,7 +2555,7 @@ export default function IntegratedRegisterForm() {
 
           {/* Pricing */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Annual Membership Fee</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Annual membership fee</h4>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
@@ -2572,14 +2572,14 @@ export default function IntegratedRegisterForm() {
               
               <div className="border-t border-fase-light-gold pt-2 mt-2">
                 <div className="flex justify-between items-center font-semibold text-lg">
-                  <span className="text-fase-navy">Total Annual Fee</span>
+                  <span className="text-fase-navy">Total annual fee</span>
                   <span className="text-fase-navy">€{getDiscountedFee()}</span>
                 </div>
               </div>
             </div>
             
             <p className="text-xs text-fase-black mt-4">
-              * Membership fee is billed annually. You can cancel at any time.
+              Membership is billed annually, with notice prior to renewal.
               {membershipType === 'corporate' && hasOtherAssociations && (
                 <>* 20% discount applied for members of other European MGA associations.</>
               )}

@@ -63,8 +63,7 @@ export default function ThankYouPage() {
           {/* Personalized message */}
           {applicantName && (
             <p className="text-lg text-fase-black mb-6">
-              Dear {applicantName},
-            </p>
+                          </p>
           )}
 
           {/* Main message */}

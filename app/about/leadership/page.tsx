@@ -20,11 +20,11 @@ export default function LeadershipPage() {
       title: 'Advisory Board Members',
       people: [
         {
-          name: 'Olaf Jonder',
+          name: 'Olaf Jonda',
           role: 'CEO',
           company: 'DUAL Europe',
-          bio: 'Olaf Jonder is chief executive officer at DUAL Europe. He was appointed to the role in 2022 and is responsible for leading DUAL Europe\'s management and underwriting teams\' growth and profitability, along with driving strategic vision across 13 countries. He is also a member of the DUAL Group Executive Committee.',
-          image: '/cropped_Olaf_Jonder_b&w.jpg'
+          bio: 'Olaf Jonda is chief executive officer at DUAL Europe. He was appointed to the role in 2022 and is responsible for leading DUAL Europe\'s management and underwriting teams\' growth and profitability, along with driving strategic vision across 13 countries. He is also a member of the DUAL Group Executive Committee.',
+          image: '/cropped_Olaf_Jonda_b&w.jpg'
         },
         {
           name: 'Tim Quayle',
