@@ -31,7 +31,7 @@ export default function LeadershipPage() {
           role: 'CEO',
           company: 'OneAdvent',
           bio: 'Tim Quayle is chief executive officer at OneAdvent. Tim began his insurance career developing policy administration and claims systems for intermediaries and insurers. In 2017 he joined a private equity-backed insurance group pursuing an MGA-focused strategy. He led a management buyout, forming OneAdvent in late 2023.',
-          image: '/cropped_Tim Quayle.jpg'
+          image: '/cropped_Tim_Quayle.jpg'
         },
         {
           name: 'Stuart McMurdo',
