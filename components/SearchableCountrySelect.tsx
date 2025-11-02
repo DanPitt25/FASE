@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { countries } from '../lib/countries';
+import { countries, europeanCountries } from '../lib/countries';
 
 interface SearchableCountrySelectProps {
   label: string;
@@ -13,6 +13,7 @@ interface SearchableCountrySelectProps {
   touchedFields: Record<string, boolean>;
   attemptedNext: boolean;
   markFieldTouched: (fieldKey: string) => void;
+  europeanOnly?: boolean;
 }
 
 export default function SearchableCountrySelect({
@@ -24,16 +25,18 @@ export default function SearchableCountrySelect({
   fieldKey,
   touchedFields,
   attemptedNext,
-  markFieldTouched
+  markFieldTouched,
+  europeanOnly = false
 }: SearchableCountrySelectProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const countryList = europeanOnly ? europeanCountries : countries;
   const [selectedCountry, setSelectedCountry] = useState(
-    countries.find(c => c.value === value) || null
+    countryList.find(c => c.value === value) || null
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const filteredCountries = countries.filter(country =>
+  const filteredCountries = countryList.filter(country =>
     country.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -52,8 +55,8 @@ export default function SearchableCountrySelect({
   }, []);
 
   useEffect(() => {
-    setSelectedCountry(countries.find(c => c.value === value) || null);
-  }, [value]);
+    setSelectedCountry(countryList.find(c => c.value === value) || null);
+  }, [value, countryList]);
 
   const handleSelect = (country: typeof countries[0]) => {
     setSelectedCountry(country);

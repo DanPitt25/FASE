@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
 import Button from "../../components/Button";
 import SearchableCountrySelect from "../../components/SearchableCountrySelect";
-import { countries } from "../../lib/countries";
+import { countries, europeanCountries } from "../../lib/countries";
 import { handleAuthError } from "../../lib/auth-errors";
 import { auth } from "../../lib/firebase";
 
@@ -2129,7 +2129,7 @@ export default function IntegratedRegisterForm() {
                 {/* Markets Question */}
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-3">
-                    2. In which of the following national markets does your organisation do business? *
+                    2. In which European markets does your organisation do business? *
                   </label>
                   
                   {/* Selected Markets Display */}
@@ -2138,7 +2138,7 @@ export default function IntegratedRegisterForm() {
                       <p className="text-xs font-medium text-fase-navy mb-2">Selected markets:</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedMarkets.map((countryCode) => {
-                          const country = countries.find(c => c.value === countryCode);
+                          const country = europeanCountries.find(c => c.value === countryCode);
                           return (
                             <span
                               key={countryCode}
@@ -2175,9 +2175,10 @@ export default function IntegratedRegisterForm() {
                       attemptedNext={attemptedNext}
                       markFieldTouched={markFieldTouched}
                       className="text-sm"
+                      europeanOnly={true}
                     />
                     <p className="text-xs text-fase-black mt-1">
-                      Search and select countries/markets where you do business. Selected markets will appear as tokens above.
+                      Search and select European countries/markets where you do business. Selected markets will appear as tokens above.
                     </p>
                   </div>
                 </div>
@@ -2323,9 +2324,7 @@ export default function IntegratedRegisterForm() {
                       In which European countries are you currently delegating underwriting authority to MGAs? *
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-fase-light-gold rounded-lg p-3">
-                      {countries.filter(country => [
-                        'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'IS', 'LI', 'NO', 'CH'
-                      ].includes(country.value)).map((country) => (
+                      {europeanCountries.map((country) => (
                         <label key={country.value} className="flex items-center text-sm">
                           <input
                             type="checkbox"
