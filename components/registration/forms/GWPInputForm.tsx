@@ -18,8 +18,8 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
     const billions = parseFloat(gwpInputs.billions) || 0;
     const millions = parseFloat(gwpInputs.millions) || 0;
     const thousands = parseFloat(gwpInputs.thousands) || 0;
-    const hundreds = parseFloat(gwpInputs.hundreds) || 0;
-    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+    const ones = parseFloat(gwpInputs.hundreds) || 0; // Renamed for clarity
+    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + ones;
     return total;
   };
 
@@ -106,7 +106,7 @@ export default function GWPInputForm({ state, actions }: GWPInputFormProps) {
             </div>
             
             <div>
-              <label className="block text-xs text-fase-black mb-1">Hundreds of thousands</label>
+              <label className="block text-xs text-fase-black mb-1">Ones</label>
               <input
                 type="number"
                 min="0"

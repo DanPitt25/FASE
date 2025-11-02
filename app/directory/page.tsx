@@ -14,6 +14,9 @@ export default function DirectoryPage() {
   const [selectedOrganizationType, setSelectedOrganizationType] = useState('');
   const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState('');
   
+  // Show coming soon overlay
+  const [showComingSoon] = useState(true);
+  
   // Animation hooks
   const bannerAnimation = useScrollAnimation();
   const ribbonAnimation = useScrollAnimation();
@@ -139,6 +142,67 @@ export default function DirectoryPage() {
         {/* Directory Content Section */}
         <section className="bg-white py-12 lg:py-16 2xl:py-20">
           <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+            {showComingSoon ? (
+              /* Coming Soon Overlay */
+              <div className="text-center py-20">
+                <div className="max-w-2xl mx-auto">
+                  <svg className="w-20 h-20 text-fase-navy mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  
+                  <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">
+                    Member Directory Coming Soon
+                  </h2>
+                  
+                  <p className="text-xl text-fase-black mb-8 leading-relaxed">
+                    The FASE Member Directory will launch on <strong>November 17th, 2024</strong>, providing a comprehensive view of our European MGA community.
+                  </p>
+                  
+                  <div className="bg-fase-cream/50 border border-fase-light-gold rounded-lg p-6 mb-8">
+                    <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">
+                      What to Expect
+                    </h3>
+                    <ul className="text-fase-black space-y-2 text-left max-w-md mx-auto">
+                      <li className="flex items-start">
+                        <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Searchable member profiles and contact information
+                      </li>
+                      <li className="flex items-start">
+                        <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Filtering by country, organization type, and lines of business
+                      </li>
+                      <li className="flex items-start">
+                        <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Direct access to connect with European MGA professionals
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a 
+                      href="/join"
+                      className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-navy/90 transition-colors duration-200"
+                    >
+                      Become a Member
+                    </a>
+                    <a 
+                      href="/member-portal"
+                      className="inline-flex items-center justify-center px-6 py-3 border border-fase-navy text-base font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
+                    >
+                      Member Portal
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Original Directory Content - Keep for future activation */
+              <>
             {/* Search and Filters */}
             <div className="bg-white rounded-lg border border-fase-light-gold p-6 mb-8">
               <div className="flex flex-col gap-4">
@@ -309,6 +373,8 @@ export default function DirectoryPage() {
                   </div>
                 ))}
               </div>
+            )}
+              </>
             )}
           </div>
         </section>

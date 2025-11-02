@@ -32,7 +32,12 @@ export function usePaymentHandling() {
     if (state.membershipType === 'individual') {
       return 500;
     } else if (state.membershipType === 'corporate' && state.organizationType === 'MGA') {
-      const gwpValue = parseFloat(state.grossWrittenPremiums) || 0;
+      // Calculate total GWP from input components
+      const billions = parseFloat(state.gwpInputs.billions) || 0;
+      const millions = parseFloat(state.gwpInputs.millions) || 0;
+      const thousands = parseFloat(state.gwpInputs.thousands) || 0;
+      const ones = parseFloat(state.gwpInputs.hundreds) || 0; // Still using 'hundreds' field name for compatibility
+      const totalGWP = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + ones;
       
       // Currency conversion rates
       const currencyRates = { EUR: 1.0, GBP: 1.17, USD: 0.92 };
@@ -42,7 +47,7 @@ export function usePaymentHandling() {
       };
       
       // Convert to EUR for band calculation
-      const eurValue = convertToEUR(gwpValue, state.gwpCurrency);
+      const eurValue = convertToEUR(totalGWP, state.gwpCurrency);
       const eurValueInMillions = eurValue / 1000000;
       
       if (eurValueInMillions < 10) return 900;
@@ -51,8 +56,12 @@ export function usePaymentHandling() {
       if (eurValueInMillions < 100) return 1500;
       if (eurValueInMillions < 500) return 1700;
       return 2000;
+    } else if (state.membershipType === 'corporate' && state.organizationType === 'carrier') {
+      return 4000; // Flat rate for carriers
+    } else if (state.membershipType === 'corporate' && state.organizationType === 'provider') {
+      return 5000; // Flat rate for service providers
     } else {
-      // Other corporate types (carrier, provider)
+      // Fallback for any other types
       return 900;
     }
   };

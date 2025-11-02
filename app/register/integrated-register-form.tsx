@@ -2149,7 +2149,7 @@ export default function IntegratedRegisterForm() {
                         const millions = parseFloat(gwpMillions) || 0;
                         const thousands = parseFloat(gwpThousands) || 0;
                         const hundreds = parseFloat(gwpHundreds) || 0;
-                        const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+                        const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + hundreds;
                         return total.toLocaleString('en-US');
                       })()}
                     </div>
@@ -2476,7 +2476,7 @@ export default function IntegratedRegisterForm() {
                       const millions = parseFloat(gwpMillions) || 0;
                       const thousands = parseFloat(gwpThousands) || 0;
                       const hundreds = parseFloat(gwpHundreds) || 0;
-                      const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+                      const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + hundreds;
                       return total.toLocaleString('en-US');
                     })()}
                   </p>

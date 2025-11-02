@@ -38,7 +38,7 @@ export default function PaymentStep({
     const millions = parseFloat(gwpInputs.millions) || 0;
     const thousands = parseFloat(gwpInputs.thousands) || 0;
     const hundreds = parseFloat(gwpInputs.hundreds) || 0;
-    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + (hundreds * 100000);
+    const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000) + hundreds;
     return total;
   };
 
