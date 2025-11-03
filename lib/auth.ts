@@ -9,6 +9,7 @@ import {
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
+import { getMemberApplicationsByUserId } from './firestore';
 
 export interface AuthUser {
   uid: string;
@@ -17,14 +18,58 @@ export interface AuthUser {
   twoFactorEnabled?: boolean;
 }
 
+export class AccountPendingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AccountPendingError';
+  }
+}
+
+export class AccountNotApprovedError extends Error {
+  constructor(message: string, public status: string) {
+    super(message);
+    this.name = 'AccountNotApprovedError';
+  }
+}
 
 
-// Sign in existing user - simplified to only use Firebase Auth data
+
+// Sign in existing user - now checks member status before allowing login
 export const signIn = async (email: string, password: string): Promise<AuthUser> => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
+    // Check member status after successful authentication
+    try {
+      const memberApplications = await getMemberApplicationsByUserId(user.uid);
+      
+      if (memberApplications && memberApplications.length > 0) {
+        // Get the most recent member application
+        const memberData = memberApplications[0];
+        
+        // Check if member status allows login
+        if (memberData.status === 'pending') {
+          // Sign out the user since they shouldn't be logged in
+          await firebaseSignOut(auth);
+          throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
+        }
+        
+        if (!['approved', 'admin'].includes(memberData.status)) {
+          // Sign out the user since they shouldn't be logged in
+          await firebaseSignOut(auth);
+          throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
+        }
+      }
+      // If no member data exists, allow login (might be an admin user or special case)
+    } catch (statusError) {
+      // If it's our custom error, re-throw it
+      if (statusError instanceof AccountPendingError || statusError instanceof AccountNotApprovedError) {
+        throw statusError;
+      }
+      // For other errors (e.g., member data not found), allow login to proceed
+      console.warn('Could not check member status:', statusError);
+    }
     
     return {
       uid: user.uid,

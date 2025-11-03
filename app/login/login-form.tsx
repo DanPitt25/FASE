@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, sendPasswordReset } from '../../lib/auth';
+import { signIn, sendPasswordReset, AccountPendingError, AccountNotApprovedError } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
 
