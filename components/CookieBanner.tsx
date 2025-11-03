@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Button from './Button';
 
 interface CookiePreferences {
@@ -10,6 +11,7 @@ interface CookiePreferences {
 }
 
 export default function CookieBanner() {
+  const t = useTranslations('cookie_banner');
   const [showBanner, setShowBanner] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -80,15 +82,15 @@ export default function CookieBanner() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
               <h3 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
-                We use cookies
+                {t('title')}
               </h3>
               <p className="text-fase-black text-sm leading-relaxed">
-                We use essential cookies to make our site work. We&apos;d also like to set optional cookies to help us improve our website and analyze how it&apos;s used. 
+                {t('description')}{' '}
                 <button 
                   onClick={() => setShowPreferences(true)}
                   className="text-fase-navy underline hover:text-fase-gold transition-colors ml-1"
                 >
-                  Customize settings
+                  {t('customize_settings')}
                 </button>
               </p>
             </div>
@@ -99,7 +101,7 @@ export default function CookieBanner() {
                 size="medium"
                 className="whitespace-nowrap"
               >
-                Reject All
+                {t('reject_all')}
               </Button>
               <Button
                 onClick={handleAcceptAll}
@@ -107,7 +109,7 @@ export default function CookieBanner() {
                 size="medium"
                 className="whitespace-nowrap"
               >
-                Accept All
+                {t('accept_all')}
               </Button>
             </div>
           </div>
@@ -116,7 +118,7 @@ export default function CookieBanner() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-noto-serif font-medium text-fase-navy">
-                Cookie Preferences
+                {t('preferences_title')}
               </h3>
               <button
                 onClick={() => setShowPreferences(false)}
@@ -132,9 +134,9 @@ export default function CookieBanner() {
               {/* Necessary Cookies */}
               <div className="flex items-start justify-between p-4 bg-fase-cream/30 rounded-lg">
                 <div className="flex-1">
-                  <h4 className="font-medium text-fase-navy mb-1">Necessary Cookies</h4>
+                  <h4 className="font-medium text-fase-navy mb-1">{t('necessary.title')}</h4>
                   <p className="text-sm text-fase-black">
-                    These cookies are essential for the website to function and cannot be disabled. They include authentication, security, and basic functionality.
+                    {t('necessary.description')}
                   </p>
                 </div>
                 <div className="ml-4">
@@ -155,9 +157,9 @@ export default function CookieBanner() {
               {/* Analytics Cookies */}
               <div className="flex items-start justify-between p-4 bg-white border border-fase-light-gold rounded-lg">
                 <div className="flex-1">
-                  <h4 className="font-medium text-fase-navy mb-1">Analytics Cookies</h4>
+                  <h4 className="font-medium text-fase-navy mb-1">{t('analytics.title')}</h4>
                   <p className="text-sm text-fase-black">
-                    These cookies help us understand how visitors interact with our website by collecting anonymous information about usage patterns.
+                    {t('analytics.description')}
                   </p>
                 </div>
                 <div className="ml-4">
@@ -179,9 +181,9 @@ export default function CookieBanner() {
               {/* Marketing Cookies */}
               <div className="flex items-start justify-between p-4 bg-white border border-fase-light-gold rounded-lg">
                 <div className="flex-1">
-                  <h4 className="font-medium text-fase-navy mb-1">Marketing Cookies</h4>
+                  <h4 className="font-medium text-fase-navy mb-1">{t('marketing.title')}</h4>
                   <p className="text-sm text-fase-black">
-                    These cookies are used to track visitors across websites to display relevant advertisements and measure campaign effectiveness.
+                    {t('marketing.description')}
                   </p>
                 </div>
                 <div className="ml-4">
@@ -208,7 +210,7 @@ export default function CookieBanner() {
                 size="medium"
                 className="flex-1 sm:flex-none"
               >
-                Reject All
+                {t('reject_all')}
               </Button>
               <Button
                 onClick={handleSavePreferences}
@@ -216,7 +218,7 @@ export default function CookieBanner() {
                 size="medium"
                 className="flex-1 sm:flex-none"
               >
-                Save Preferences
+                {t('save_preferences')}
               </Button>
             </div>
           </div>

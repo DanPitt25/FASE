@@ -591,6 +591,22 @@
       }
     }
   },
+  "thank_you": {
+    "title": "Thank You for Your Application!",
+    "application_submitted": "Your FASE membership application has been successfully submitted and sent to our team for review.",
+    "application_reference": "Application Reference:",
+    "what_happens_next": {
+      "title": "What happens next?",
+      "step1": "You will hear back from us within one business day",
+      "step2": "We'll review your application and contact you with next steps", 
+      "step3": "If approved, you'll receive membership details and payment instructions"
+    },
+    "contact": {
+      "question": "Questions about your application?",
+      "email_text": "Contact us at"
+    },
+    "return_home": "Return to Homepage"
+  },
   "leadership": {
     "page": {
       "title": "Leadership",
@@ -761,7 +777,7 @@
       "william_pitt": {
         "name": "William Pitt",
         "role": "Executive Director",
-        "bio": "William founded FASE in 2025 to address a widely recognized need for a pan-European body to represent Europe's fast-growing, but little understood, MGA sector.\n\nPrior to establishing FASE, William led research and consulting projects at Lexicon Associates and Conning. He is the author of &lt;i&gt;The MGA Revolution: How MGAs are reshaping the insurance value chain&lt;/i&gt;, published by Lexicon Associates in November 2024. He previously led consulting initiatives for Conning in the United States and was the author of Conning's annual MGA studies.\n\nPrior to joining Conning in 2021, he served for twelve years as global chief marketing officer at Beazley. Earlier in his career, he held senior marketing and business development roles at Marsh & McLennan Companies and Lloyd's.\n\nWilliam has written extensively on insurance for publications including the &lt;i&gt;Wall Street Journal&lt;/i&gt;, &lt;i&gt;Harvard Business Review&lt;/i&gt;, &lt;i&gt;Institutional Investor&lt;/i&gt;, &lt;i&gt;the Insurer&lt;/i&gt;, and &lt;i&gt;Corriere della Sera&lt;/i&gt;. He is the author of &lt;i&gt;More Equal than Others: a Director's Guide to EU Competition Policy&lt;/i&gt;, published by Director Books."
+        "bio": "William founded FASE in 2025 to address a widely recognized need for a pan-European body to represent Europe's fast-growing, but little understood, MGA sector.\n\nPrior to establishing FASE, William led research and consulting projects at Lexicon Associates and Conning. He is the author of The MGA Revolution: How MGAs are reshaping the insurance value chain, published by Lexicon Associates in November 2024. He previously led consulting initiatives for Conning in the United States and was the author of Conning's annual MGA studies.\n\nPrior to joining Conning in 2021, he served for twelve years as global chief marketing officer at Beazley. Earlier in his career, he held senior marketing and business development roles at Marsh & McLennan Companies and Lloyd's.\n\nWilliam has written extensively on insurance for publications including the Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer, and Corriere della Sera. He is the author of More Equal than Others: a Director's Guide to EU Competition Policy, published by Director Books."
       },
       "aline_sullivan": {
         "name": "Aline Sullivan",
@@ -977,5 +993,26 @@
     "member_portal": "Member Portal",
     "about_fase": "About FASE",
     "copyright": "© 2025 FASE B.V. All rights reserved."
+  },
+  "cookie_banner": {
+    "title": "We use cookies",
+    "description": "We use essential cookies to make our site work. We'd also like to set optional cookies to help us improve our website and analyze how it's used.",
+    "customize_settings": "Customize settings",
+    "accept_all": "Accept All",
+    "reject_all": "Reject All",
+    "preferences_title": "Cookie Preferences",
+    "save_preferences": "Save Preferences",
+    "necessary": {
+      "title": "Necessary Cookies",
+      "description": "These cookies are essential for the website to function and cannot be disabled. They include authentication, security, and basic functionality."
+    },
+    "analytics": {
+      "title": "Analytics Cookies", 
+      "description": "These cookies help us understand how visitors interact with our website by collecting anonymous information about usage patterns."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "These cookies are used to track visitors across websites to display relevant advertisements and measure campaign effectiveness."
+    }
   }
 }

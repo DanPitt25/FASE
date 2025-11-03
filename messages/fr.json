@@ -591,6 +591,22 @@
       }
     }
   },
+  "thank_you": {
+    "title": "Merci pour votre candidature !",
+    "application_submitted": "Votre demande d'adhésion FASE a été soumise avec succès et envoyée à notre équipe pour examen.",
+    "application_reference": "Référence de candidature :",
+    "what_happens_next": {
+      "title": "Que se passe-t-il ensuite ?",
+      "step1": "Vous aurez de nos nouvelles dans un jour ouvrable",
+      "step2": "Nous examinerons votre candidature et vous contacterons avec les prochaines étapes", 
+      "step3": "Si approuvée, vous recevrez les détails d'adhésion et les instructions de paiement"
+    },
+    "contact": {
+      "question": "Des questions sur votre candidature ?",
+      "email_text": "Contactez-nous à"
+    },
+    "return_home": "Retour à la page d'accueil"
+  },
   "leadership": {
     "page": {
       "title": "Direction",
@@ -977,5 +993,26 @@
     "member_portal": "Portail Membre",
     "about_fase": "À Propos de FASE",
     "copyright": "© 2025 FASE B.V. Tous droits réservés."
+  },
+  "cookie_banner": {
+    "title": "Nous utilisons des cookies",
+    "description": "Nous utilisons des cookies essentiels pour faire fonctionner notre site. Nous aimerions également définir des cookies optionnels pour nous aider à améliorer notre site web et analyser son utilisation.",
+    "customize_settings": "Personnaliser les paramètres",
+    "accept_all": "Tout Accepter",
+    "reject_all": "Tout Rejeter",
+    "preferences_title": "Préférences des Cookies",
+    "save_preferences": "Enregistrer les Préférences",
+    "necessary": {
+      "title": "Cookies Nécessaires",
+      "description": "Ces cookies sont essentiels au fonctionnement du site web et ne peuvent pas être désactivés. Ils incluent l'authentification, la sécurité et les fonctionnalités de base."
+    },
+    "analytics": {
+      "title": "Cookies d'Analyse", 
+      "description": "Ces cookies nous aident à comprendre comment les visiteurs interagissent avec notre site web en collectant des informations anonymes sur les modèles d'utilisation."
+    },
+    "marketing": {
+      "title": "Cookies de Marketing",
+      "description": "Ces cookies sont utilisés pour suivre les visiteurs sur les sites web afin d'afficher des publicités pertinentes et mesurer l'efficacité des campagnes."
+    }
   }
 }
