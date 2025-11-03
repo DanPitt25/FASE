@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 // European MGA Associations Component
 export const EuropeanAssociationsSection = ({
   hasOtherAssociations,
@@ -12,10 +14,12 @@ export const EuropeanAssociationsSection = ({
   otherAssociations: string[];
   setOtherAssociations: (associations: string[]) => void;
 }) => {
+  const t = useTranslations('register_form.associations');
+  
   return (
     <div>
       <label className="block text-sm font-medium text-fase-navy mb-3">
-        Is your organization a member of other European MGA associations? *
+        {t('question')} *
       </label>
       <div className="flex space-x-4">
         <button
@@ -29,7 +33,7 @@ export const EuropeanAssociationsSection = ({
               : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
           }`}
         >
-          Yes
+          {t('yes')}
         </button>
         <button
           type="button"
@@ -43,14 +47,14 @@ export const EuropeanAssociationsSection = ({
               : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
           }`}
         >
-          No
+          {t('no')}
         </button>
       </div>
 
       {hasOtherAssociations && (
         <div className="mt-4">
           <label className="block text-sm font-medium text-fase-navy mb-2">
-            Select associations you are a member of *
+            {t('select_associations')} *
           </label>
           <div className="space-y-2">
             {[

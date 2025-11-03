@@ -59,6 +59,334 @@
     "profile": "Profil",
     "admin_portal": "Portail Administrateur"
   },
+  "login_form": {
+    "title": "Se Connecter",
+    "subtitle": "Accédez à votre portail membre FASE",
+    "email_label": "E-mail",
+    "password_label": "Mot de passe",
+    "sign_in_button": "Se Connecter",
+    "signing_in": "Connexion en cours...",
+    "forgot_password": "Mot de passe oublié ?",
+    "sending": "Envoi en cours...",
+    "new_member": "Nouveau membre ?",
+    "sign_up_link": "S'inscrire",
+    "email_verified_title": "E-mail vérifié avec succès !",
+    "email_verified_message": "Votre e-mail a été vérifié. Vous pouvez maintenant vous connecter à votre compte.",
+    "password_reset_sent": "E-mail de réinitialisation du mot de passe envoyé ! Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.",
+    "enter_email_first": "Veuillez d'abord entrer votre adresse e-mail"
+  },
+  "register_form": {
+    "organization_selection": {
+      "title": "Sélectionner le Type d'Organisation",
+      "subtitle": "Choisissez le type qui décrit le mieux votre organisation",
+      "mga_title": "MGA",
+      "mga_description": "Agences de souscription générales effectuant des transactions commerciales en Europe",
+      "carrier_title": "Assureur",
+      "carrier_description": "Compagnies d'assurance et réassureurs travaillant avec des agences de souscription",
+      "provider_title": "Prestataire de Services",
+      "provider_description": "Technologie, juridique, financier et autres prestataires de services aux agences de souscription",
+      "continue_button": "Continuer"
+    },
+    "data_consent": {
+      "title": "Avis de Traitement des Données",
+      "consent_text": "Je consens à ce que FASE traite mes données personnelles conformément à notre politique de confidentialité à des fins d'administration d'adhésion.",
+      "continue_button": "Continuer"
+    },
+    "account_info": {
+      "title": "Créez Votre Compte",
+      "subtitle": "Nous créerons votre compte et votre demande d'adhésion ensemble",
+      "name_label": "Prénom",
+      "name_placeholder": "Votre prénom",
+      "surname_label": "Nom de famille",
+      "surname_placeholder": "Votre nom de famille",
+      "email_label": "E-mail",
+      "password_label": "Mot de passe",
+      "confirm_password_label": "Confirmer le mot de passe",
+      "password_requirements": "Le mot de passe doit inclure :",
+      "req_length": "Au moins 8 caractères",
+      "req_uppercase": "Une lettre majuscule (A-Z)",
+      "req_special": "Un caractère spécial (!@#$%^&*...)",
+      "next_button": "Suivant"
+    },
+    "organization_info": {
+      "title": "Informations sur l'Organisation",
+      "org_name_label": "Nom de l'Organisation",
+      "org_name_placeholder": "Entrez le nom de votre organisation",
+      "next_button": "Suivant"
+    },
+    "verification": {
+      "title": "Vérification E-mail",
+      "subtitle": "Nous avons envoyé un code de vérification à votre e-mail",
+      "code_label": "Code de Vérification",
+      "code_placeholder": "Entrez le code à 6 chiffres",
+      "verify_button": "Vérifier et Continuer",
+      "verifying": "Vérification en cours...",
+      "resend_button": "Renvoyer le Code",
+      "resending": "Renvoi en cours...",
+      "resend_code": "Renvoyer le Code",
+      "code_expires": "Le code expire dans 10 minutes"
+    },
+    "common": {
+      "back_button": "Retour",
+      "next_button": "Suivant", 
+      "continue_button": "Continuer",
+      "submit_button": "Soumettre la Candidature",
+      "submitting": "Soumission en cours...",
+      "required_field": "Obligatoire"
+    },
+    "steps": {
+      "organization_type": {
+        "title": "Choisissez le Type de Votre Organisation",
+        "subtitle": "Sélectionnez le type qui décrit le mieux votre organisation"
+      },
+      "data_notice": {
+        "title": "Avis de Données",
+        "subtitle": "Veuillez examiner et consentir à notre politique d'utilisation des données"
+      },
+      "membership_info": {
+        "title": "Informations d'Adhésion",
+        "subtitle": "Parlez-nous de votre organisation"
+      },
+      "additional_details": {
+        "title": "Détails Supplémentaires",
+        "subtitle": "Complétez votre demande d'adhésion"
+      },
+      "submit_application": {
+        "title": "Soumettez votre candidature",
+        "subtitle": "Vérifiez vos informations et soumettez votre demande d'adhésion"
+      }
+    },
+    "fields": {
+      "organization_name": "Nom de l'Organisation"
+    },
+    "placeholders": {
+      "organization_name": "Le nom de votre entreprise ou organisation"
+    },
+    "membership_types": {
+      "individual": "Individuel"
+    },
+    "team_members": {
+      "title": "Membres de l'Équipe et Administrateur du Compte",
+      "description": "Ajoutez les personnes de votre organisation qui recevront les avantages d'adhésion FASE - y compris l'accès aux analyses de l'industrie, aux opportunités de réseautage, aux ressources de développement professionnel et aux événements réservés aux membres.",
+      "admin_requirement": "Une personne doit être désignée comme administrateur du compte pour gérer la facturation et les paramètres.",
+      "you_label": "Vous",
+      "member_label": "Membre",
+      "admin_badge": "Administrateur du Compte",
+      "make_admin_button": "Nommer Administrateur",
+      "remove_button": "Supprimer",
+      "first_name_label": "Prénom",
+      "last_name_label": "Nom de famille",
+      "email_label": "E-mail",
+      "phone_label": "Téléphone",
+      "job_title_label": "Titre du Poste",
+      "add_member_button": "+ Ajouter un Autre Membre (max 3)"
+    },
+    "address": {
+      "business_title": "Adresse de l'Entreprise",
+      "personal_title": "Adresse Personnelle",
+      "address_line_1": "Ligne d'Adresse 1",
+      "address_line_1_placeholder": "Adresse de la rue",
+      "address_line_2": "Ligne d'Adresse 2",
+      "address_line_2_placeholder": "Appartement, suite, etc. (optionnel)",
+      "city": "Ville",
+      "city_placeholder": "Ville",
+      "state_province": "État/Province",
+      "state_placeholder": "État ou province",
+      "postal_code": "Code Postal",
+      "postal_code_placeholder": "Code postal",
+      "country": "Pays"
+    },
+    "portfolio": {
+      "title": "Informations de Portefeuille",
+      "annual_gwp": "Primes Brutes Souscrites Annuelles",
+      "currency_label": "Devise",
+      "billions": "Milliards",
+      "millions": "Millions",
+      "thousands": "Milliers",
+      "total": "Total",
+      "lines_of_business_question": "Quelles sont les branches d'activité que vous souscrivez actuellement ?",
+      "lines_of_business": {
+        "accident_health": "Accident et Santé",
+        "aviation": "Aviation",
+        "bloodstock": "Cheptel de Pur-sang",
+        "casualty": "Responsabilité Civile",
+        "construction": "Construction",
+        "cyber": "Cyber",
+        "energy": "Énergie",
+        "event_cancellation": "Annulation d'Événements",
+        "fine_art_specie": "Beaux-Arts et Espèces",
+        "legal_expenses": "Frais Juridiques",
+        "life": "Vie",
+        "livestock": "Bétail",
+        "marine": "Maritime",
+        "management_liability": "Responsabilité de Direction (D&O, EPLI etc)",
+        "motor_commercial": "Automobile, commercial",
+        "motor_personal": "Automobile, particuliers",
+        "pet": "Animaux de Compagnie",
+        "political_risk": "Risque Politique",
+        "professional_indemnity": "Responsabilité Professionnelle / E&O",
+        "property_commercial": "Biens, commercial",
+        "property_personal": "Biens, particuliers",
+        "surety": "Caution",
+        "trade_credit": "Crédit Commercial",
+        "travel": "Voyage",
+        "warranty_indemnity": "Garantie et Indemnité",
+        "other": "Autre",
+        "other_2": "Autre #2",
+        "other_3": "Autre #3"
+      },
+      "specify_other": "Veuillez spécifier \"Autre\" :",
+      "specify_other_2": "Veuillez spécifier \"Autre #2\" :",
+      "specify_other_3": "Veuillez spécifier \"Autre #3\" :",
+      "specify_placeholder": "Veuillez spécifier...",
+      "european_markets_question": "Dans quels marchés européens votre organisation fait-elle affaire ?",
+      "add_market": "Ajouter un marché",
+      "selected_markets": "Marchés sélectionnés :",
+      "market_search_help": "Recherchez et sélectionnez les pays/marchés européens où vous faites affaire. Les marchés sélectionnés apparaîtront sous forme de jetons ci-dessus."
+    },
+    "associations": {
+      "question": "Votre organisation est-elle membre d'autres associations européennes d'agences de souscription ?",
+      "yes": "Oui",
+      "no": "Non",
+      "select_associations": "Sélectionnez les associations dont vous êtes membre"
+    },
+    "application_summary": {
+      "title": "Résumé de la candidature",
+      "organization": "Organisation",
+      "membership_type": "Type d'adhésion",
+      "contact_email": "Email de contact",
+      "country": "Pays",
+      "gwp": "Primes brutes souscrites"
+    },
+    "pricing": {
+      "title": "Cotisation annuelle d'adhésion (membre fondateur)",
+      "base_fee": "Tarif de Base",
+      "member_discount": "Remise Membre (20%)",
+      "total_fee": "Cotisation annuelle totale",
+      "billing_note": "L'adhésion est facturée annuellement, avec préavis avant le renouvellement.",
+      "discount_note": "* Remise de 20% appliquée pour les membres d'autres associations européennes d'agences de souscription."
+    },
+    "buttons": {
+      "back": "Retour",
+      "next": "Suivant",
+      "sending_code": "Envoi du Code...",
+      "review_submit": "Vérifier et Soumettre",
+      "submitting_application": "Soumission de la Candidature...",
+      "submit_application": "Soumettre la Candidature"
+    },
+    "registration_complete": {
+      "title": "Inscription Terminée !",
+      "message": "Votre compte a été créé et votre demande d'adhésion soumise. Vous pouvez maintenant vous connecter pour accéder à votre portail membre.",
+      "continue_button": "Continuer vers la Connexion"
+    },
+    "help": {
+      "contact_prefix": "Problèmes d'inscription ? Veuillez contacter"
+    },
+    "submit_note": "Votre candidature sera envoyée à notre équipe pour examen. Vous aurez de nos nouvelles dans un jour ouvrable.",
+    "data_notice": {
+      "title": "Avis de protection des données",
+      "controller": "Responsable du traitement des données : FASE B.V., Herengracht 124, 1015 BT Amsterdam, Pays-Bas. Contact : admin@fasemga.com",
+      "purpose": "FASE collecte les informations personnelles et commerciales que vous fournissez pour gérer votre adhésion et opérer en tant qu'association pour les agents généraux de gestion et les professionnels de l'assurance connexes.",
+      "legal_basis": {
+        "title": "Base légale et objectif : Nous traitons vos données sur la base de :",
+        "contractual": "Nécessité contractuelle : pour traiter votre demande d'adhésion, fournir des services aux membres et remplir notre accord d'adhésion",
+        "legitimate": "Intérêts légitimes : pour faciliter le réseautage professionnel, maintenir les annuaires de membres et promouvoir l'industrie de l'assurance",
+        "legal": "Obligations légales : pour répondre aux exigences réglementaires et des associations professionnelles",
+        "consent": "Votre consentement : pour les communications marketing et le partage de vos coordonnées pour le réseautage (lorsque vous avez accepté)"
+      },
+      "sharing": "Partage de données et confidentialité : FASE peut partager des informations de base sur votre entreprise publiquement et avec d'autres membres à des fins organisationnelles légitimes et de réseautage. Les informations commercialement sensibles, y compris les données de traitement financier, les stratégies commerciales et les informations propriétaires, seront tenues strictement confidentielles.",
+      "retention": "Période de conservation : Nous conservons vos données pendant la durée de votre adhésion plus un an pour la conformité réglementaire, sauf si vous demandez une suppression plus tôt ou si nous avons une autre base légale pour les conserver.",
+      "rights": {
+        "title": "Vos droits : Sous le RGPD et la loi britannique sur la protection des données, vous avez le droit de :",
+        "access": "accéder à vos données personnelles et en recevoir une copie",
+        "rectify": "rectifier des données inexactes ou incomplètes",
+        "erase": "effacer vos données (lorsque légalement permis)",
+        "restrict": "restreindre ou vous opposer au traitement",
+        "portability": "portabilité des données",
+        "withdraw": "retirer votre consentement (lorsque le traitement est basé sur le consentement)",
+        "complain": "déposer une plainte auprès de votre autorité locale de protection des données"
+      },
+      "contact": "Contact : Pour exercer vos droits ou pour des questions sur la protection des données, contactez-nous à admin@fasemga.com.",
+      "consent_text": "J'ai lu et compris l'avis de données ci-dessus, et je consens à ce que FASE collecte, utilise et stocke mes informations personnelles et commerciales comme décrit. *"
+    },
+    "code_of_conduct": {
+      "review_header": "Veuillez examiner et consentir à notre code de conduite.",
+      "consent_text": "J'ai lu et accepte de respecter le Code de Conduite FASE comme condition de mon adhésion. Je comprends que le non-respect peut entraîner la résiliation de l'adhésion. *",
+      "intro": {
+        "title": "Code de Conduite FASE",
+        "content": {
+          "paragraph1": "FASE soutient les plus hauts standards professionnels et éthiques, tels que décrits dans ce Code de Conduite, et exige que tous les membres s'engagent annuellement à respecter ces standards comme condition de leur adhésion.",
+          "paragraph2": "Les membres s'engagent par les présentes à agir de manière légale, équitable et éthique dans toutes leurs relations avec toutes les parties.",
+          "paragraph3": "Les membres s'engagent à coopérer pleinement et en tout temps avec FASE dans l'application de ce Code."
+        }
+      },
+      "sections": {
+        "title": "Sections du Code de Conduite",
+        "legal": {
+          "title": "1. Responsabilités légales",
+          "content": "Les membres se conformeront à toutes les lois et réglementations applicables dans les lieux où ils exercent leurs activités. Si cette responsabilité légale entre en conflit avec un autre devoir décrit dans ce Code, cette responsabilité légale prendra la priorité.\n\nLes membres porteront à l'attention du Comité de Conduite des Affaires de FASE toute circonstance dont ils prennent connaissance impliquant :\n\n• Un membre en violation d'une exigence réglementaire et\n\n• Toute circonstance pouvant raisonnablement conduire à des sanctions contre le membre ou un membre de son personnel ou de ses dirigeants par les autorités réglementaires pertinentes\n\nLes membres fourniront toute assistance légale raisonnable aux organisations réglementaires, professionnelles et d'application de la loi dans l'exercice de leurs fonctions, que ce soit en ce qui les concerne eux-mêmes, un autre Membre ou un non-membre."
+        },
+        "financial": {
+          "title": "2. Responsabilités financières",
+          "content": "Les membres doivent toujours honorer leurs obligations financières à temps. Cela inclut, mais ne se limite pas au paiement des dettes, des primes dues aux assureurs, des retours dus aux courtiers et assurés, des sommes dues aux employés.\n\nLes membres doivent se conformer aux exigences de solvabilité applicables ou similaires."
+        },
+        "inter_org": {
+          "title": "3. Responsabilités inter-organisationnelles",
+          "content": "Les membres rivaliseront de manière équitable et honorable sur les marchés où ils opèrent.\n\nCela inclut, mais ne se limite pas à :\n\n• ne faire aucune déclaration sur les autres Membres, concurrents ou autres participants du marché, en privé ou en public, qu'ils ne croient pas honnêtement être vraie et pertinente basée sur les meilleures informations raisonnablement disponibles ;\n\n• conclure tout accord destiné à diminuer la concurrence au sein du marché."
+        },
+        "community": {
+          "title": "4. Responsabilités communautaires",
+          "content": "Les membres de FASE doivent se conduire d'une manière digne des privilèges de l'adhésion.\n\nLes membres ne se contenteront pas seulement de respecter leurs obligations légales concernant la discrimination, mais dans toutes leurs relations prendront des mesures raisonnables pour ne pas causer de préjudice à toute personne ou organisation en raison de la race, du sexe, de l'orientation sexuelle, de la réassignation de genre, de la grossesse et de la maternité, du statut marital ou de partenariat civil, de la religion ou des croyances, de l'âge et du handicap.\n\nLes membres sont encouragés à participer aux activités civiques, caritatives et philanthropiques qui contribuent à la promotion de la bonne réputation du secteur de l'assurance, de sa contribution au bien public et du bien-être de ceux qui y travaillent.\n\nLes membres encourageront la formation continue et la formation du personnel."
+        },
+        "insurers": {
+          "title": "5. Relations avec les assureurs",
+          "content": "Les membres traiteront de manière équitable et honnête lorsqu'ils agissent au nom des assureurs. En particulier, ils devraient :\n\n• exécuter fidèlement les directives de souscription des assureurs qu'ils représentent ;\n\n• agir de la plus grande bonne foi et rassembler toutes les données nécessaires pour prendre une décision de souscription appropriée avant de mettre un assureur en risque ;\n\n• se tenir au courant des lois et réglementations dans tous les domaines où ils ont autorité, et conseiller les assureurs en conséquence de l'impact de ces lois et réglementations sur leur relation."
+        },
+        "brokers": {
+          "title": "6. Relations avec les courtiers et agents (ou assurés si opérant directement)",
+          "content": "Les membres doivent traiter de manière équitable et honnête avec les courtiers, agents ou assurés (si opérant directement), et ce faisant :\n\n• considérer en tout temps la stabilité financière des assureurs avec lesquels le Membre place des affaires ;\n\n• ne faire aucune fausse déclaration ou déclaration trompeuse sur la couverture fournie, ou les limitations ou exclusions de couverture ou imposer des limitations ou exclusions telles que la police ne fournit aucun avantage effectif à l'assuré.\n\nLes membres doivent être en mesure de démontrer qu'ils ont soigneusement considéré les assureurs qu'ils représentent comme agents de souscription et placent les affaires de leurs clients et de leurs courtiers.\n\nUne diligence raisonnable efficace et appropriée est une partie clé du processus que les Membres doivent effectuer sur les compagnies d'assurance qu'ils représentent comme sécurité pour les polices qu'ils fournissent. Il y a un risque pour les clients dans le cas où un assureur fait faillite et est incapable de payer les réclamations valides.\n\nFASE s'attend à ce que les Membres MGA soient en mesure de démontrer qu'une diligence raisonnable appropriée a été effectuée sur les assureurs qu'ils représentent et offrent comme sécurité d'assurance.\n\nLes membres doivent fournir des détails clairs et non ambigus du nom et de l'adresse de l'assureur dans toute la documentation pertinente fournie aux courtiers et assurés. Nous attendons des Membres qu'ils évitent positivement de donner au preneur d'assurance l'impression que l'MGA est l'assureur et d'obscurcir le nom de l'assureur derrière l'MGA. Il est important que les clients puissent prendre une décision éclairée sur l'endroit où leur assurance est placée."
+        }
+      },
+      "reporting": {
+        "title": "Signalement des violations",
+        "content": {
+          "paragraph1": "Tous les avis de violation potentielle faits sous ce Code doivent être adressés au Comité de Conduite des Affaires à conduct@fasemga.com."
+        }
+      }
+    },
+    "errors": {
+      "select_organization_type": "Veuillez sélectionner un type d'organisation",
+      "consent_required": "Vous devez consentir à l'avis de données pour continuer",
+      "fill_required_fields": "Veuillez remplir tous les champs obligatoires",
+      "passwords_dont_match": "Les mots de passe ne correspondent pas",
+      "password_requirements_prefix": "Le mot de passe doit contenir : ",
+      "eight_characters": "au moins 8 caractères",
+      "capital_letter": "une lettre majuscule",
+      "special_character": "un caractère spécial",
+      "domain_already_registered": "Une organisation avec ce domaine email est déjà enregistrée. Veuillez nous contacter si vous pensez qu'il s'agit d'une erreur.",
+      "verification_failed": "Échec de l'envoi du code de vérification",
+      "organization_name_required": "Le nom de l'organisation est requis",
+      "organization_type_required": "Le type d'organisation est requis pour les adhésions corporatives",
+      "team_member_required": "Au moins un membre d'équipe est requis",
+      "primary_contact_required": "Vous devez désigner une personne comme administrateur du compte",
+      "members_need_name": "Tous les membres doivent avoir un prénom et un nom de famille",
+      "members_need_email": "Tous les membres doivent avoir un email",
+      "members_need_job_title": "Tous les membres doivent avoir un titre de poste",
+      "address_required": "Les informations d'adresse sont requises",
+      "gwp_required": "Les primes brutes souscrites sont requises pour les adhésions d'agences de souscription",
+      "associations_specify_required": "Veuillez spécifier si vous êtes membre d'autres associations européennes d'agences de souscription",
+      "associations_select_required": "Veuillez sélectionner de quelles associations vous êtes membre",
+      "enter_verification_code": "Veuillez entrer le code de vérification",
+      "invalid_verification_code": "Code de vérification invalide",
+      "verification_code_failed": "Échec de la vérification du code",
+      "code_of_conduct_required": "Veuillez consentir au Code de Conduite pour continuer",
+      "failed_to_submit": "Échec de la soumission de la candidature",
+      "no_authenticated_user": "Aucun utilisateur authentifié",
+      "payment_processing_failed": "Le traitement du paiement a échoué. Veuillez réessayer.",
+      "no_paypal_url": "Aucune URL d'approbation reçue de PayPal",
+      "failed_payment_start": "Échec du démarrage du processus de paiement"
+    }
+  },
   "header": {
     "search_placeholder": "Rechercher...",
     "language_label": "Langue :",

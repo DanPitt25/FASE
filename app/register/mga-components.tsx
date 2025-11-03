@@ -1,37 +1,38 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import SearchableCountrySelect from '../../components/SearchableCountrySelect';
 
-const linesOfBusinessOptions = [
-  'Accident & Health',
-  'Aviation',
-  'Bloodstock',
-  'Casualty',
-  'Construction',
-  'Cyber',
-  'Energy',
-  'Event Cancellation',
-  'Fine Art & Specie',
-  'Legal Expenses',
-  'Life',
-  'Livestock',
-  'Marine',
-  'Management Liability (D&O, EPLI etc)',
-  'Motor, commercial',
-  'Motor, personal lines',
-  'Pet',
-  'Political Risk',
-  'Professional Indemnity / E&O',
-  'Property, commercial',
-  'Property, personal lines',
-  'Surety',
-  'Trade Credit',
-  'Travel',
-  'Warranty & Indemnity',
-  'Other',
-  'Other #2',
-  'Other #3'
+const linesOfBusinessKeys = [
+  'accident_health',
+  'aviation',
+  'bloodstock',
+  'casualty',
+  'construction',
+  'cyber',
+  'energy',
+  'event_cancellation',
+  'fine_art_specie',
+  'legal_expenses',
+  'life',
+  'livestock',
+  'marine',
+  'management_liability',
+  'motor_commercial',
+  'motor_personal',
+  'pet',
+  'political_risk',
+  'professional_indemnity',
+  'property_commercial',
+  'property_personal',
+  'surety',
+  'trade_credit',
+  'travel',
+  'warranty_indemnity',
+  'other',
+  'other_2',
+  'other_3'
 ];
 
 // MGA Portfolio Information Component
@@ -80,6 +81,7 @@ export const MGAPortfolioSection = ({
   setSelectedMarkets: (markets: string[]) => void;
   calculateTotalGWP: (gwpBillions: string, gwpMillions: string, gwpThousands: string) => number;
 }) => {
+  const t = useTranslations('register_form.portfolio');
   const [currentMarketSelection, setCurrentMarketSelection] = useState('');
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
@@ -109,16 +111,16 @@ export const MGAPortfolioSection = ({
   
   return (
     <div className="space-y-6">
-      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Portfolio Information</h4>
+      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
       
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-2">
-          Annual Gross Written Premiums *
+          {t('annual_gwp')} *
         </label>
         <div className="space-y-3">
           {/* Currency Selection */}
           <div>
-            <label className="block text-xs text-fase-black mb-1">Currency</label>
+            <label className="block text-xs text-fase-black mb-1">{t('currency_label')}</label>
             <select
               value={gwpCurrency}
               onChange={(e) => setGwpCurrency(e.target.value)}
@@ -133,7 +135,7 @@ export const MGAPortfolioSection = ({
           {/* Amount Builder - Separate inputs for each magnitude */}
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="block text-xs text-fase-black mb-1">Billions</label>
+              <label className="block text-xs text-fase-black mb-1">{t('billions')}</label>
               <input
                 type="number"
                 min="0"
@@ -153,7 +155,7 @@ export const MGAPortfolioSection = ({
             </div>
             
             <div>
-              <label className="block text-xs text-fase-black mb-1">Millions</label>
+              <label className="block text-xs text-fase-black mb-1">{t('millions')}</label>
               <input
                 type="number"
                 min="0"
@@ -173,7 +175,7 @@ export const MGAPortfolioSection = ({
             </div>
             
             <div>
-              <label className="block text-xs text-fase-black mb-1">Thousands</label>
+              <label className="block text-xs text-fase-black mb-1">{t('thousands')}</label>
               <input
                 type="number"
                 min="0"
@@ -196,7 +198,7 @@ export const MGAPortfolioSection = ({
           {/* Display Total */}
           <div className="bg-fase-cream/20 p-3 rounded-lg">
             <div className="text-sm text-fase-navy font-medium">
-              Total: {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
+              {t('total')}: {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
                 const billions = parseFloat(gwpBillions) || 0;
                 const millions = parseFloat(gwpMillions) || 0;
                 const thousands = parseFloat(gwpThousands) || 0;
@@ -213,64 +215,64 @@ export const MGAPortfolioSection = ({
         {/* Lines of Business Question */}
         <div>
           <label className="block text-sm font-medium text-fase-navy mb-3">
-            1. Which of the following lines of business are you currently underwriting? *
+            1. {t('lines_of_business_question')} *
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-            {linesOfBusinessOptions.map((line) => (
-              <label key={line} className="flex items-center space-x-2 text-sm">
+            {linesOfBusinessKeys.map((lineKey) => (
+              <label key={lineKey} className="flex items-center space-x-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={selectedLinesOfBusiness.includes(line)}
-                  onChange={() => toggleLineOfBusiness(line)}
+                  checked={selectedLinesOfBusiness.includes(t(`lines_of_business.${lineKey}`))}
+                  onChange={() => toggleLineOfBusiness(t(`lines_of_business.${lineKey}`))}
                   className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
                 />
-                <span className="text-fase-black">{line}</span>
+                <span className="text-fase-black">{t(`lines_of_business.${lineKey}`)}</span>
               </label>
             ))}
           </div>
           
           {/* Other fields */}
-          {selectedLinesOfBusiness.includes('Other') && (
+          {selectedLinesOfBusiness.includes(t('lines_of_business.other')) && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
-                Please specify &quot;Other&quot;:
+                {t('specify_other')}
               </label>
               <input
                 type="text"
                 value={otherLineOfBusiness1}
                 onChange={(e) => setOtherLineOfBusiness1(e.target.value)}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                placeholder="Please specify..."
+                placeholder={t('specify_placeholder')}
               />
             </div>
           )}
           
-          {selectedLinesOfBusiness.includes('Other #2') && (
+          {selectedLinesOfBusiness.includes(t('lines_of_business.other_2')) && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
-                Please specify &quot;Other #2&quot;:
+                {t('specify_other_2')}
               </label>
               <input
                 type="text"
                 value={otherLineOfBusiness2}
                 onChange={(e) => setOtherLineOfBusiness2(e.target.value)}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                placeholder="Please specify..."
+                placeholder={t('specify_placeholder')}
               />
             </div>
           )}
           
-          {selectedLinesOfBusiness.includes('Other #3') && (
+          {selectedLinesOfBusiness.includes(t('lines_of_business.other_3')) && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
-                Please specify &quot;Other #3&quot;:
+                {t('specify_other_3')}
               </label>
               <input
                 type="text"
                 value={otherLineOfBusiness3}
                 onChange={(e) => setOtherLineOfBusiness3(e.target.value)}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                placeholder="Please specify..."
+                placeholder={t('specify_placeholder')}
               />
             </div>
           )}
@@ -279,13 +281,13 @@ export const MGAPortfolioSection = ({
         {/* Markets Question */}
         <div>
           <label className="block text-sm font-medium text-fase-navy mb-3">
-            2. In which European markets does your organisation do business? *
+            2. {t('european_markets_question')} *
           </label>
           
           {/* Selected Markets Display */}
           {selectedMarkets.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-medium text-fase-navy mb-2">Selected markets:</p>
+              <p className="text-xs font-medium text-fase-navy mb-2">{t('selected_markets')}</p>
               <div className="flex flex-wrap gap-2">
                 {selectedMarkets.map((countryCode) => {
                   return (
@@ -311,7 +313,7 @@ export const MGAPortfolioSection = ({
           {/* Searchable Country Select */}
           <div>
             <SearchableCountrySelect
-              label="Add market"
+              label={t('add_market')}
               fieldKey="currentMarketSelection"
               value={currentMarketSelection}
               onChange={(value) => {
@@ -327,7 +329,7 @@ export const MGAPortfolioSection = ({
               europeanOnly={true}
             />
             <p className="text-xs text-fase-black mt-1">
-              Search and select European countries/markets where you do business. Selected markets will appear as tokens above.
+              {t('market_search_help')}
             </p>
           </div>
         </div>

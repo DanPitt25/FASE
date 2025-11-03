@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
@@ -21,6 +22,9 @@ import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, cal
 
 
 export default function IntegratedRegisterForm() {
+  // Translations
+  const t = useTranslations('register_form');
+  
   // URL parameter handling
   const searchParams = useSearchParams();
   const typeFromUrl = searchParams.get('type');
@@ -57,6 +61,27 @@ export default function IntegratedRegisterForm() {
       }
     }
   }, [membershipType, firstName, surname, email, members.length]);
+
+  // Update registrant member when personal info changes
+  useEffect(() => {
+    if (membershipType === 'corporate' && members.length > 0) {
+      const registrantIndex = members.findIndex(m => m.id === 'registrant');
+      if (registrantIndex !== -1) {
+        const fullName = `${firstName} ${surname}`.trim();
+        if (fullName && email) {
+          const updatedMembers = [...members];
+          updatedMembers[registrantIndex] = {
+            ...updatedMembers[registrantIndex],
+            firstName: firstName,
+            lastName: surname,
+            name: fullName,
+            email: email
+          };
+          setMembers(updatedMembers);
+        }
+      }
+    }
+  }, [firstName, surname, email, membershipType, members.length]);
 
   
   // Address fields
@@ -141,7 +166,7 @@ export default function IntegratedRegisterForm() {
     if (step === -1) {
       // Validate organization type selection
       if (!organizationType) {
-        setError("Please select an organization type to continue");
+        setError(t('errors.select_organization_type'));
         return;
       }
       
@@ -152,7 +177,7 @@ export default function IntegratedRegisterForm() {
     } else if (step === 0) {
       // Validate data notice consent
       if (!dataNoticeConsent) {
-        setError("Please consent to our data notice to continue");
+        setError(t('errors.consent_required'));
         return;
       }
       
@@ -176,22 +201,22 @@ export default function IntegratedRegisterForm() {
       );
       
       if (!hasAllAuthFields) {
-        setError("Please fill in all required fields");
+        setError(t('errors.fill_required_fields'));
         return;
       }
       
       if (password !== confirmPassword) {
-        setError("Passwords do not match");
+        setError(t('errors.passwords_dont_match'));
         return;
       }
 
       const { isValid, requirements } = validatePassword(password);
       if (!isValid) {
-        let errorMsg = "Password must include: ";
+        let errorMsg = t('errors.password_requirements_prefix');
         const missing = [];
-        if (!requirements.length) missing.push("at least 8 characters");
-        if (!requirements.capital) missing.push("one capital letter");
-        if (!requirements.special) missing.push("one special character");
+        if (!requirements.length) missing.push(t('errors.eight_characters'));
+        if (!requirements.capital) missing.push(t('errors.capital_letter'));
+        if (!requirements.special) missing.push(t('errors.special_character'));
         setError(errorMsg + missing.join(", "));
         return;
       }
@@ -203,7 +228,7 @@ export default function IntegratedRegisterForm() {
         // Check if domain already exists
         const domainExists = await checkDomainExists(email);
         if (domainExists) {
-          throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
+          throw new Error(t('errors.domain_already_registered'));
         }
         
         // Send verification code (no account creation yet)
@@ -213,7 +238,7 @@ export default function IntegratedRegisterForm() {
         setError("");
         setAttemptedNext(false);
       } catch (error: any) {
-        setError(error.message || "Failed to send verification code");
+        setError(error.message || t('errors.verification_failed'));
       } finally {
         setIsSendingVerification(false);
       }
@@ -222,40 +247,40 @@ export default function IntegratedRegisterForm() {
       const fullName = `${firstName} ${surname}`.trim();
       const orgName = membershipType === 'individual' ? fullName : organizationName;
       if (!orgName.trim()) {
-        setError("Organization name is required");
+        setError(t('errors.organization_name_required'));
         return;
       }
       
       if (membershipType === 'corporate' && !organizationType) {
-        setError("Organization type is required for corporate memberships");
+        setError(t('errors.organization_type_required'));
         return;
       }
       
       // Validate members for corporate membership
       if (membershipType === 'corporate') {
         if (members.length === 0) {
-          setError("At least one team member is required");
+          setError(t('errors.team_member_required'));
           return;
         }
         
         const hasPrimaryContact = members.some(m => m.isPrimaryContact);
         if (!hasPrimaryContact) {
-          setError("You must designate one person as the account administrator");
+          setError(t('errors.primary_contact_required'));
           return;
         }
         
         // Validate all members have required fields
         for (const member of members) {
           if (!member.firstName?.trim() || !member.lastName?.trim()) {
-            setError("All members must have a first and last name");
+            setError(t('errors.members_need_name'));
             return;
           }
           if (!member.email.trim()) {
-            setError("All members must have an email");
+            setError(t('errors.members_need_email'));
             return;
           }
           if (!member.jobTitle.trim()) {
-            setError("All members must have a job title");
+            setError(t('errors.members_need_job_title'));
             return;
           }
         }
@@ -268,23 +293,23 @@ export default function IntegratedRegisterForm() {
     } else if (step === 3) {
       // Validate address and portfolio fields before proceeding to payment
       if (!addressLine1.trim() || !city.trim() || !country) {
-        setError("Address information is required");
+        setError(t('errors.address_required'));
         return;
       }
       
       
       if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
-        setError("Gross written premiums are required for MGA memberships");
+        setError(t('errors.gwp_required'));
         return;
       }
       
       if (hasOtherAssociations === null) {
-        setError("Please specify if your organization is a member of other European MGA associations");
+        setError(t('errors.associations_specify_required'));
         return;
       }
       
       if (hasOtherAssociations && otherAssociations.length === 0) {
-        setError("Please select at least one European MGA association you are a member of");
+        setError(t('errors.associations_select_required'));
         return;
       }
       
@@ -315,7 +340,7 @@ export default function IntegratedRegisterForm() {
 
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
-      setError("Please enter the verification code");
+      setError(t('errors.enter_verification_code'));
       return;
     }
 
@@ -339,10 +364,10 @@ export default function IntegratedRegisterForm() {
           }
         }
       } else {
-        setError("Invalid verification code");
+        setError(t('errors.invalid_verification_code'));
       }
     } catch (error: any) {
-      setError(error.message || "Failed to verify code");
+      setError(error.message || t('errors.verification_code_failed'));
     } finally {
       setIsCheckingVerification(false);
     }
@@ -352,7 +377,7 @@ export default function IntegratedRegisterForm() {
     try {
       const { auth } = await import('@/lib/firebase');
       if (!auth.currentUser) {
-        throw new Error('No authenticated user');
+        throw new Error(t('errors.no_authenticated_user'));
       }
       
       // Create PayPal order
@@ -376,7 +401,7 @@ export default function IntegratedRegisterForm() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Payment processing failed (${response.status}). Please try again.`);
+        throw new Error(t('errors.payment_processing_failed'));
       }
 
       const data = await response.json();
@@ -385,10 +410,10 @@ export default function IntegratedRegisterForm() {
       if (data.approvalUrl) {
         window.location.href = data.approvalUrl;
       } else {
-        throw new Error('No approval URL received from PayPal');
+        throw new Error(t('errors.no_paypal_url'));
       }
     } catch (error: any) {
-      setPaymentError(error.message || 'Failed to start payment process');
+      setPaymentError(error.message || t('errors.failed_payment_start'));
     }
   };
 
@@ -400,7 +425,7 @@ export default function IntegratedRegisterForm() {
       await sendVerificationCode(email);
       setError("");
     } catch (error: any) {
-      setError(error.message || "Failed to send verification code");
+      setError(error.message || t('errors.verification_failed'));
     } finally {
       setIsSendingVerification(false);
     }
@@ -409,7 +434,7 @@ export default function IntegratedRegisterForm() {
 
   const handleSubmitApplication = async () => {
     if (!codeOfConductConsent) {
-      setError("Please consent to the Code of Conduct to continue");
+      setError(t('errors.code_of_conduct_required'));
       return;
     }
 
@@ -525,7 +550,7 @@ export default function IntegratedRegisterForm() {
       window.location.href = '/register/thank-you';
 
     } catch (error: any) {
-      setPaymentError(error.message || 'Failed to submit application');
+      setPaymentError(error.message || t('errors.failed_to_submit'));
     } finally {
       setProcessingPayment(false);
     }
@@ -546,16 +571,16 @@ export default function IntegratedRegisterForm() {
         </div>
         
         <div>
-          <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Verify Your Email</h2>
+          <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('verification.title')}</h2>
           <p className="text-fase-black mb-6">
-            We&apos;ve sent a 6-digit verification code to: <strong>{email}</strong>
+            {t('verification.subtitle')} <strong>{email}</strong>
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="verification-code" className="block text-sm font-medium text-fase-navy mb-2">
-              Verification Code
+              {t('verification.code_label')}
             </label>
             <input
               id="verification-code"
@@ -566,7 +591,7 @@ export default function IntegratedRegisterForm() {
                 const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                 setVerificationCode(value);
               }}
-              placeholder="Enter 6-digit code"
+              placeholder={t('verification.code_placeholder')}
               className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               maxLength={6}
             />
@@ -579,7 +604,7 @@ export default function IntegratedRegisterForm() {
             onClick={handleVerifyCode}
             disabled={isCheckingVerification || verificationCode.length !== 6}
           >
-            {isCheckingVerification ? "Verifying..." : "Verify Code"}
+            {isCheckingVerification ? t('verification.verifying') : t('verification.verify_button')}
           </Button>
           
           <Button 
@@ -589,11 +614,11 @@ export default function IntegratedRegisterForm() {
             onClick={handleSendVerificationCode}
             disabled={isSendingVerification}
           >
-            {isSendingVerification ? "Sending..." : "Resend Code"}
+            {isSendingVerification ? t('verification.sending') : t('verification.resend_code')}
           </Button>
           
           <p className="text-xs text-fase-black text-center">
-            Code expires in 20 minutes
+            {t('verification.code_expires')}
           </p>
         </div>
 
@@ -613,10 +638,9 @@ export default function IntegratedRegisterForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Registration Complete!</h2>
+        <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('registration_complete.title')}</h2>
         <p className="text-fase-black mb-6">
-          Your account has been created and your membership application submitted. 
-          You can now sign in to access your member portal.
+          {t('registration_complete.message')}
         </p>
         
         <div className="space-y-3">
@@ -632,7 +656,7 @@ export default function IntegratedRegisterForm() {
               window.location.href = '/login';
             }}
           >
-            Continue to Sign In
+            {t('registration_complete.continue_button')}
           </Button>
         </div>
       </div>
@@ -680,8 +704,8 @@ export default function IntegratedRegisterForm() {
       {step === -1 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Choose Your Organization Type</h3>
-            <p className="text-fase-black text-sm">Select the type that best describes your organization</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.organization_type.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.organization_type.subtitle')}</p>
           </div>
 
           <OrganizationTypeSelector
@@ -695,56 +719,56 @@ export default function IntegratedRegisterForm() {
       {step === 0 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Data Notice</h3>
-            <p className="text-fase-black text-sm">Please review and consent to our data usage policy</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.data_notice.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.data_notice.subtitle')}</p>
           </div>
 
           <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
             <div className="space-y-4 text-base text-fase-black">
-              <h4 className="font-semibold text-fase-navy text-lg">Data protection notice</h4>
+              <h4 className="font-semibold text-fase-navy text-lg">{t('data_notice.title')}</h4>
               
               <div className="space-y-3">
                 <p className="mb-3">
-                  <strong>Data Controller:</strong> FASE B.V., Herengracht 124, 1015 BT Amsterdam, Netherlands. Contact: admin@fasemga.com
+                  <strong>{t('data_notice.controller')}</strong>
                 </p>
                 
                 <p className="mb-3">
-                  FASE collects the personal and business information you provide to manage your membership and operate as an association for Managing General Agents and related insurance professionals.
+                  {t('data_notice.purpose')}
                 </p>
                 
                 <p className="mb-2">
-                  <strong>Legal Basis and Purpose:</strong> We process your data based on:
+                  <strong>{t('data_notice.legal_basis.title')}</strong>
                 </p>
                 <ul className="list-disc list-inside ml-4 mb-3">
-                  <li><strong>Contractual necessity:</strong> to process your membership application, provide member services, and fulfill our membership agreement</li>
-                  <li><strong>Legitimate interests:</strong> to facilitate professional networking, maintain member directories, and promote the insurance industry</li>
-                  <li><strong>Legal obligations:</strong> to meet regulatory and professional association requirements</li>
-                  <li><strong>Your consent:</strong> for marketing communications and sharing your details for networking (where you have agreed)</li>
+                  <li><strong>{t('data_notice.legal_basis.contractual')}</strong></li>
+                  <li><strong>{t('data_notice.legal_basis.legitimate')}</strong></li>
+                  <li><strong>{t('data_notice.legal_basis.legal')}</strong></li>
+                  <li><strong>{t('data_notice.legal_basis.consent')}</strong></li>
                 </ul>
                 
                 <p className="mb-3">
-                  <strong>Data Sharing and Confidentiality:</strong> FASE may share basic information about your business publicly and with other members for legitimate organisational and networking purposes. Commercially sensitive information, including financial processing data, business strategies, and proprietary information, will be held in strict confidence.
+                  <strong>{t('data_notice.sharing')}</strong>
                 </p>
                 
                 <p className="mb-3">
-                  <strong>Retention Period:</strong> We retain your data for the duration of your membership plus one year for regulatory compliance, unless you request earlier deletion or we have another legal basis to retain it.
+                  <strong>{t('data_notice.retention')}</strong>
                 </p>
                 
                 <p className="mb-3">
-                  <strong>Your Rights:</strong> Under GDPR and UK data protection law, you have the right to:
+                  <strong>{t('data_notice.rights.title')}</strong>
                 </p>
                 <ul className="list-disc list-inside ml-4 mb-3">
-                  <li>access your personal data and receive a copy</li>
-                  <li>rectify inaccurate or incomplete data</li>
-                  <li>erase your data (where legally permissible)</li>
-                  <li>restrict or object to processing</li>
-                  <li>data portability</li>
-                  <li>withdraw consent (where processing is based on consent)</li>
-                  <li>lodge a complaint with your local data protection authority</li>
+                  <li>{t('data_notice.rights.access')}</li>
+                  <li>{t('data_notice.rights.rectify')}</li>
+                  <li>{t('data_notice.rights.erase')}</li>
+                  <li>{t('data_notice.rights.restrict')}</li>
+                  <li>{t('data_notice.rights.portability')}</li>
+                  <li>{t('data_notice.rights.withdraw')}</li>
+                  <li>{t('data_notice.rights.complain')}</li>
                 </ul>
                 
                 <p className="mb-3">
-                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at admin@fasemga.com.
+                  <strong>{t('data_notice.contact')}</strong>
                 </p>
               </div>
             </div>
@@ -759,7 +783,7 @@ export default function IntegratedRegisterForm() {
                 className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
               />
               <span className="text-base text-fase-black">
-                I have read and understand the data notice above, and I consent to FASE collecting, using, and storing my personal and business information as described. *
+                {t('data_notice.consent_text')}
               </span>
             </label>
           </div>
@@ -791,18 +815,18 @@ export default function IntegratedRegisterForm() {
       {step === 2 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Membership Information</h3>
-            <p className="text-fase-black text-sm">Tell us about your organization</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.membership_info.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.membership_info.subtitle')}</p>
           </div>
 
 
           {/* Organization Information */}
           <ValidatedInput
-            label="Organization Name"
+            label={t('fields.organization_name')}
             fieldKey="organizationName"
             value={organizationName}
             onChange={setOrganizationName}
-            placeholder="Your company or organization name"
+            placeholder={t('placeholders.organization_name')}
             required
             touchedFields={touchedFields}
             attemptedNext={attemptedNext}
@@ -825,8 +849,8 @@ export default function IntegratedRegisterForm() {
       {step === 3 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Additional Details</h3>
-            <p className="text-fase-black text-sm">Complete your membership application</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.additional_details.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.additional_details.subtitle')}</p>
           </div>
 
           {/* Address Information */}
@@ -921,128 +945,63 @@ export default function IntegratedRegisterForm() {
       {step === 4 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Submit your application</h3>
-            <p className="text-fase-black text-sm">Review your information and submit your membership application</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.submit_application.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.submit_application.subtitle')}</p>
           </div>
 
           {/* Code of Conduct Consent */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Please review and consent to our code of conduct.</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('code_of_conduct.review_header')}</h4>
             
             <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm mb-4">
               <div className="text-base text-fase-black">
                 <div className="prose prose-base max-w-none">
-                  <h4 className="font-semibold text-fase-navy text-lg mb-4">FASE Code of Conduct</h4>
+                  <h4 className="font-semibold text-fase-navy text-lg mb-4">{t('code_of_conduct.intro.title')}</h4>
                   
                   <p className="mb-3">
-                    FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.
+                    {t('code_of_conduct.intro.content.paragraph1')}
                   </p>
                   
                   <p className="mb-3">
-                    Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.
+                    {t('code_of_conduct.intro.content.paragraph2')}
                   </p>
                   
                   <p className="mb-4">
-                    Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code.
+                    {t('code_of_conduct.intro.content.paragraph3')}
                   </p>
                   
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">1. Legal responsibilities</h5>
-                  <p className="mb-3">
-                    Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.
-                  </p>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.legal.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.legal.content')}
+                  </div>
                   
-                  <p className="mb-2">
-                    Members will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:
-                  </p>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.financial.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.financial.content')}
+                  </div>
                   
-                  <ul className="list-disc list-inside ml-4 mb-3">
-                    <li>A member being in breach of any regulatory requirement and</li>
-                    <li>Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities</li>
-                  </ul>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.inter_org.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.inter_org.content')}
+                  </div>
                   
-                  <p className="mb-4">
-                    Members will provide all reasonable lawful assistance to regulatory, professional and law enforcement organization in the discharge of their duties, whether in respect of themselves, another Member or a non-member.
-                  </p>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.community.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.community.content')}
+                  </div>
                   
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">2. Financial Responsibilities</h5>
-                  <p className="mb-3">
-                    Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.
-                  </p>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.insurers.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.insurers.content')}
+                  </div>
                   
-                  <p className="mb-4">
-                    Members must comply with applicable solvency or like requirements.
-                  </p>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">3. Inter-organisational Responsibilities</h5>
-                  <p className="mb-3">
-                    Members will compete fairly and honourably in the markets in which they operate.
-                  </p>
-                  
-                  <p className="mb-2">
-                    This includes, but is not limited to:
-                  </p>
-                  
-                  <ul className="list-disc list-inside ml-4 mb-4">
-                    <li>making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;</li>
-                    <li>entering into any agreement intended to diminish competition within the market.</li>
-                  </ul>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">4. Community Responsibilities</h5>
-                  <p className="mb-3">
-                    FASE members must conduct themselves in a manner befitting the privileges of membership.
-                  </p>
-                  
-                  <p className="mb-3">
-                    Members will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.
-                  </p>
-                  
-                  <p className="mb-3">
-                    Members are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.
-                  </p>
-                  
-                  <p className="mb-4">
-                    Members will encourage continuing education and training for staff.
-                  </p>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">5. Relationships with Insurers</h5>
-                  <p className="mb-2">
-                    Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:
-                  </p>
-                  
-                  <ul className="list-disc list-inside ml-4 mb-4">
-                    <li>faithfully execute the underwriting guidelines of the insurers they represent;</li>
-                    <li>act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;</li>
-                    <li>keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship.</li>
-                  </ul>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">6. Relationships with Brokers and Agents (or Insureds if operating directly)</h5>
-                  <p className="mb-2">
-                    Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:
-                  </p>
-                  
-                  <ul className="list-disc list-inside ml-4 mb-3">
-                    <li>consider at all times the financial stability of insurers with which the Member places business;</li>
-                    <li>make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.</li>
-                  </ul>
-                  
-                  <p className="mb-3">
-                    Members should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers&apos; customers&apos; business with.
-                  </p>
-                  
-                  <p className="mb-3">
-                    Effective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.
-                  </p>
-                  
-                  <p className="mb-3">
-                    FASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.
-                  </p>
-                  
-                  <p className="mb-6">
-                    Members should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed.
-                  </p>
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.brokers.title')}</h5>
+                  <div className="mb-6" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.brokers.content')}
+                  </div>
                   
                   <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
-                    All notices of potential breach made under this Code should be made to the Business Conduct Committee at conduct@fasemga.com.
+                    {t('code_of_conduct.reporting.content.paragraph1')}
                   </p>
                 </div>
               </div>
@@ -1057,7 +1016,7 @@ export default function IntegratedRegisterForm() {
                   className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
                 />
                 <span className="text-sm text-fase-black">
-                  I have read and agree to abide by the FASE Code of Conduct as a condition of my membership. I understand that failure to comply may result in membership termination. *
+                  {t('code_of_conduct.consent_text')}
                 </span>
               </label>
             </div>
@@ -1065,26 +1024,26 @@ export default function IntegratedRegisterForm() {
 
           {/* Application Summary */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application summary</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('application_summary.title')}</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-fase-navy font-medium">Organization:</span>
+                <span className="text-fase-navy font-medium">{t('application_summary.organization')}:</span>
                 <p className="text-fase-black">{membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName}</p>
               </div>
               
               <div>
-                <span className="text-fase-navy font-medium">Membership type:</span>
+                <span className="text-fase-navy font-medium">{t('application_summary.membership_type')}:</span>
                 <p className="text-fase-black">
                   {membershipType === 'individual' 
-                    ? 'Individual' 
+                    ? t('membership_types.individual') 
                     : `${organizationType.charAt(0).toUpperCase() + organizationType.slice(1)}`
                   }
                 </p>
               </div>
               
               <div>
-                <span className="text-fase-navy font-medium">Contact email:</span>
+                <span className="text-fase-navy font-medium">{t('application_summary.contact_email')}:</span>
                 <p className="text-fase-black">
                   {membershipType === 'corporate' 
                     ? members.find(m => m.isPrimaryContact)?.email || email
@@ -1094,13 +1053,13 @@ export default function IntegratedRegisterForm() {
               </div>
               
               <div>
-                <span className="text-fase-navy font-medium">Country:</span>
+                <span className="text-fase-navy font-medium">{t('application_summary.country')}:</span>
                 <p className="text-fase-black">{country}</p>
               </div>
               
               {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
                 <div className="md:col-span-2">
-                  <span className="text-fase-navy font-medium">Gross written premiums:</span>
+                  <span className="text-fase-navy font-medium">{t('application_summary.gwp')}:</span>
                   <p className="text-fase-black">
                     {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
                       const billions = parseFloat(gwpBillions) || 0;
@@ -1117,33 +1076,33 @@ export default function IntegratedRegisterForm() {
 
           {/* Pricing */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Annual membership fee (founding member)</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('pricing.title')}</h4>
             
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-fase-black">Base Fee</span>
+                <span className="text-fase-black">{t('pricing.base_fee')}</span>
                 <span className="text-fase-black">€{getCurrentMembershipFee()}</span>
               </div>
               
               {membershipType === 'corporate' && hasOtherAssociations && (
                 <div className="flex justify-between items-center text-green-600">
-                  <span>Member Discount (20%)</span>
+                  <span>{t('pricing.member_discount')}</span>
                   <span>-€{getCurrentMembershipFee() - getCurrentDiscountedFee()}</span>
                 </div>
               )}
               
               <div className="border-t border-fase-light-gold pt-2 mt-2">
                 <div className="flex justify-between items-center font-semibold text-lg">
-                  <span className="text-fase-navy">Total annual fee</span>
+                  <span className="text-fase-navy">{t('pricing.total_fee')}</span>
                   <span className="text-fase-navy">€{getCurrentDiscountedFee()}</span>
                 </div>
               </div>
             </div>
             
             <p className="text-xs text-fase-black mt-4">
-              Membership is billed annually, with notice prior to renewal.
+              {t('pricing.billing_note')}
               {membershipType === 'corporate' && hasOtherAssociations && (
-                <>* 20% discount applied for members of other European MGA associations.</>
+                <> {t('pricing.discount_note')}</>
               )}
             </p>
           </div>
@@ -1164,15 +1123,15 @@ export default function IntegratedRegisterForm() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Submitting Application...
+                  {t('buttons.submitting_application')}
                 </>
               ) : (
-                "Submit Application"
+                t('buttons.submit_application')
               )}
             </Button>
             
             <p className="text-xs text-fase-black mt-3">
-              Your application will be sent to our team for review. You will hear back from us within one business day.
+              {t('submit_note')}
             </p>
           </div>
         </div>
@@ -1185,7 +1144,7 @@ export default function IntegratedRegisterForm() {
       {/* Help Contact */}
       <div className="text-center py-4 border-t border-gray-200">
         <p className="text-sm text-gray-600">
-          Problems signing up? Please contact{' '}
+          {t('help.contact_prefix')}{' '}
           <a 
             href="mailto:help@fasemga.com" 
             className="text-fase-navy hover:text-fase-gold transition-colors"
@@ -1205,7 +1164,7 @@ export default function IntegratedRegisterForm() {
                 variant="secondary" 
                 onClick={handleBack}
               >
-                Back
+                {t('buttons.back')}
               </Button>
             ) : (
               <div></div>
@@ -1218,7 +1177,7 @@ export default function IntegratedRegisterForm() {
                 onClick={handleNext}
                 disabled={step === 1 && isSendingVerification}
               >
-                {step === 1 && isSendingVerification ? "Sending Code..." : "Next"}
+                {step === 1 && isSendingVerification ? t('buttons.sending_code') : t('buttons.next')}
               </Button>
             ) : step === 3 ? (
               <Button 
@@ -1226,7 +1185,7 @@ export default function IntegratedRegisterForm() {
                 variant="primary" 
                 onClick={handleNext}
               >
-                Review & Submit
+                {t('buttons.review_submit')}
               </Button>
             ) : null}
           </div>

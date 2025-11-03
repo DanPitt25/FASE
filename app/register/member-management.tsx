@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Member } from './registration-hooks';
 
 // Team Members Management Component
@@ -16,6 +17,7 @@ export const TeamMembersSection = ({
   surname: string;
   email: string;
 }) => {
+  const t = useTranslations('register_form.team_members');
   
   const addMember = () => {
     const newMember: Member = {
@@ -68,9 +70,9 @@ export const TeamMembersSection = ({
   return (
     <div className="space-y-6">
       <div>
-        <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members & Account Administrator</h4>
+        <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
         <p className="text-sm text-fase-black mt-2 mb-4">
-          Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events. <span className="text-fase-navy font-medium">One person must be designated as the account administrator to manage billing and settings.</span>
+          {t('description')} <span className="text-fase-navy font-medium">{t('admin_requirement')}</span>
         </p>
       </div>
 
@@ -81,10 +83,10 @@ export const TeamMembersSection = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <span className="text-sm font-medium text-fase-navy">
-                  {member.id === 'registrant' ? 'You' : `Member ${index + 1}`}
+                  {member.id === 'registrant' ? t('you_label') : `${t('member_label')} ${index + 1}`}
                   {member.isPrimaryContact && (
                     <span className="ml-2 text-xs bg-fase-navy text-white px-2 py-1 rounded">
-                      Account Administrator
+                      {t('admin_badge')}
                     </span>
                   )}
                   {!member.isPrimaryContact && (
@@ -93,7 +95,7 @@ export const TeamMembersSection = ({
                       onClick={() => setPrimaryContact(member.id)}
                       className="ml-2 text-xs bg-fase-light-gold text-fase-navy px-2 py-1 rounded hover:bg-fase-gold transition-colors"
                     >
-                      Make Administrator
+                      {t('make_admin_button')}
                     </button>
                   )}
                 </span>
@@ -104,7 +106,7 @@ export const TeamMembersSection = ({
                   onClick={() => removeMember(member.id)}
                   className="text-red-600 hover:text-red-800 text-sm"
                 >
-                  Remove
+                  {t('remove_button')}
                 </button>
               )}
             </div>
@@ -112,7 +114,7 @@ export const TeamMembersSection = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  First Name *
+                  {t('first_name_label')} *
                 </label>
                 <input
                   type="text"
@@ -124,7 +126,7 @@ export const TeamMembersSection = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Last Name *
+                  {t('last_name_label')} *
                 </label>
                 <input
                   type="text"
@@ -139,7 +141,7 @@ export const TeamMembersSection = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Email *
+                  {t('email_label')} *
                 </label>
                 <input
                   type="email"
@@ -151,7 +153,7 @@ export const TeamMembersSection = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Phone
+                  {t('phone_label')}
                 </label>
                 <input
                   type="tel"
@@ -164,7 +166,7 @@ export const TeamMembersSection = ({
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-fase-navy mb-2">
-                Job Title *
+                {t('job_title_label')} *
               </label>
               <input
                 type="text"
@@ -183,7 +185,7 @@ export const TeamMembersSection = ({
             onClick={addMember}
             className="w-full p-3 border-2 border-dashed border-fase-light-gold rounded-lg text-fase-navy hover:border-fase-navy hover:bg-fase-light-blue transition-colors"
           >
-            + Add Another Member (max 3)
+            {t('add_member_button')}
           </button>
         )}
       </div>

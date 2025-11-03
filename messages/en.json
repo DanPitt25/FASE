@@ -59,6 +59,334 @@
     "profile": "Profile",
     "admin_portal": "Admin Portal"
   },
+  "login_form": {
+    "title": "Sign In",
+    "subtitle": "Access your FASE member portal",
+    "email_label": "Email",
+    "password_label": "Password",
+    "sign_in_button": "Sign In",
+    "signing_in": "Signing In...",
+    "forgot_password": "Forgot your password?",
+    "sending": "Sending...",
+    "new_member": "New member?",
+    "sign_up_link": "Sign up",
+    "email_verified_title": "Email Verified Successfully!",
+    "email_verified_message": "Your email has been verified. You can now sign in to your account.",
+    "password_reset_sent": "Password reset email sent! Check your inbox and follow the instructions to reset your password.",
+    "enter_email_first": "Please enter your email address first"
+  },
+  "register_form": {
+    "organization_selection": {
+      "title": "Select Organization Type",
+      "subtitle": "Choose the type that best describes your organization",
+      "mga_title": "MGA",
+      "mga_description": "Managing General Agents transacting business in Europe",
+      "carrier_title": "Carrier",
+      "carrier_description": "Insurance companies and reinsurers working with MGAs",
+      "provider_title": "Service Provider", 
+      "provider_description": "Technology, legal, financial and other service providers to MGAs",
+      "continue_button": "Continue"
+    },
+    "data_consent": {
+      "title": "Data Processing Notice",
+      "consent_text": "I consent to FASE processing my personal data in accordance with our privacy policy for membership administration purposes.",
+      "continue_button": "Continue"
+    },
+    "account_info": {
+      "title": "Create Your Account",
+      "subtitle": "We'll create your account and membership application together",
+      "name_label": "Name",
+      "name_placeholder": "Your first name",
+      "surname_label": "Surname", 
+      "surname_placeholder": "Your surname",
+      "email_label": "Email",
+      "password_label": "Password",
+      "confirm_password_label": "Confirm Password",
+      "password_requirements": "Password must include:",
+      "req_length": "At least 8 characters",
+      "req_uppercase": "One capital letter (A-Z)",
+      "req_special": "One special character (!@#$%^&*...)",
+      "next_button": "Next"
+    },
+    "organization_info": {
+      "title": "Organization Information",
+      "org_name_label": "Organization Name",
+      "org_name_placeholder": "Enter your organization name",
+      "next_button": "Next"
+    },
+    "verification": {
+      "title": "Email Verification", 
+      "subtitle": "We've sent a verification code to your email",
+      "code_label": "Verification Code",
+      "code_placeholder": "Enter 6-digit code",
+      "verify_button": "Verify & Continue",
+      "verifying": "Verifying...",
+      "resend_button": "Resend Code",
+      "resending": "Resending...",
+      "resend_code": "Resend Code",
+      "code_expires": "Code expires in 10 minutes"
+    },
+    "common": {
+      "back_button": "Back",
+      "next_button": "Next",
+      "continue_button": "Continue",
+      "submit_button": "Submit Application",
+      "submitting": "Submitting...",
+      "required_field": "Required"
+    },
+    "steps": {
+      "organization_type": {
+        "title": "Choose Your Organization Type",
+        "subtitle": "Select the type that best describes your organization"
+      },
+      "data_notice": {
+        "title": "Data Notice",
+        "subtitle": "Please review and consent to our data usage policy"
+      },
+      "membership_info": {
+        "title": "Membership Information",
+        "subtitle": "Tell us about your organization"
+      },
+      "additional_details": {
+        "title": "Additional Details",
+        "subtitle": "Complete your membership application"
+      },
+      "submit_application": {
+        "title": "Submit your application",
+        "subtitle": "Review your information and submit your membership application"
+      }
+    },
+    "fields": {
+      "organization_name": "Organization Name"
+    },
+    "placeholders": {
+      "organization_name": "Your company or organization name"
+    },
+    "membership_types": {
+      "individual": "Individual"
+    },
+    "team_members": {
+      "title": "Team Members & Account Administrator",
+      "description": "Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events.",
+      "admin_requirement": "One person must be designated as the account administrator to manage billing and settings.",
+      "you_label": "You",
+      "member_label": "Member",
+      "admin_badge": "Account Administrator",
+      "make_admin_button": "Make Administrator",
+      "remove_button": "Remove",
+      "first_name_label": "First Name",
+      "last_name_label": "Last Name",
+      "email_label": "Email",
+      "phone_label": "Phone",
+      "job_title_label": "Job Title",
+      "add_member_button": "+ Add Another Member (max 3)"
+    },
+    "address": {
+      "business_title": "Business Address",
+      "personal_title": "Personal Address",
+      "address_line_1": "Address Line 1",
+      "address_line_1_placeholder": "Street address",
+      "address_line_2": "Address Line 2",
+      "address_line_2_placeholder": "Apartment, suite, etc. (optional)",
+      "city": "City",
+      "city_placeholder": "City",
+      "state_province": "State/Province",
+      "state_placeholder": "State or province",
+      "postal_code": "Postal Code",
+      "postal_code_placeholder": "Postal code",
+      "country": "Country"
+    },
+    "portfolio": {
+      "title": "Portfolio Information",
+      "annual_gwp": "Annual Gross Written Premiums",
+      "currency_label": "Currency",
+      "billions": "Billions",
+      "millions": "Millions",
+      "thousands": "Thousands",
+      "total": "Total",
+      "lines_of_business_question": "Which of the following lines of business are you currently underwriting?",
+      "lines_of_business": {
+        "accident_health": "Accident & Health",
+        "aviation": "Aviation",
+        "bloodstock": "Bloodstock",
+        "casualty": "Casualty",
+        "construction": "Construction",
+        "cyber": "Cyber",
+        "energy": "Energy",
+        "event_cancellation": "Event Cancellation",
+        "fine_art_specie": "Fine Art & Specie",
+        "legal_expenses": "Legal Expenses",
+        "life": "Life",
+        "livestock": "Livestock",
+        "marine": "Marine",
+        "management_liability": "Management Liability (D&O, EPLI etc)",
+        "motor_commercial": "Motor, commercial",
+        "motor_personal": "Motor, personal lines",
+        "pet": "Pet",
+        "political_risk": "Political Risk",
+        "professional_indemnity": "Professional Indemnity / E&O",
+        "property_commercial": "Property, commercial",
+        "property_personal": "Property, personal lines",
+        "surety": "Surety",
+        "trade_credit": "Trade Credit",
+        "travel": "Travel",
+        "warranty_indemnity": "Warranty & Indemnity",
+        "other": "Other",
+        "other_2": "Other #2",
+        "other_3": "Other #3"
+      },
+      "specify_other": "Please specify \"Other\":",
+      "specify_other_2": "Please specify \"Other #2\":",
+      "specify_other_3": "Please specify \"Other #3\":",
+      "specify_placeholder": "Please specify...",
+      "european_markets_question": "In which European markets does your organisation do business?",
+      "add_market": "Add market",
+      "selected_markets": "Selected markets:",
+      "market_search_help": "Search and select European countries/markets where you do business. Selected markets will appear as tokens above."
+    },
+    "associations": {
+      "question": "Is your organization a member of other European MGA associations?",
+      "yes": "Yes",
+      "no": "No",
+      "select_associations": "Select associations you are a member of"
+    },
+    "application_summary": {
+      "title": "Application summary",
+      "organization": "Organization",
+      "membership_type": "Membership type",
+      "contact_email": "Contact email",
+      "country": "Country",
+      "gwp": "Gross written premiums"
+    },
+    "pricing": {
+      "title": "Annual membership fee (founding member)",
+      "base_fee": "Base Fee",
+      "member_discount": "Member Discount (20%)",
+      "total_fee": "Total annual fee",
+      "billing_note": "Membership is billed annually, with notice prior to renewal.",
+      "discount_note": "* 20% discount applied for members of other European MGA associations."
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next",
+      "sending_code": "Sending Code...",
+      "review_submit": "Review & Submit",
+      "submitting_application": "Submitting Application...",
+      "submit_application": "Submit Application"
+    },
+    "registration_complete": {
+      "title": "Registration Complete!",
+      "message": "Your account has been created and your membership application submitted. You can now sign in to access your member portal.",
+      "continue_button": "Continue to Sign In"
+    },
+    "help": {
+      "contact_prefix": "Problems signing up? Please contact"
+    },
+    "submit_note": "Your application will be sent to our team for review. You will hear back from us within one business day.",
+    "data_notice": {
+      "title": "Data protection notice",
+      "controller": "Data Controller: FASE B.V., Herengracht 124, 1015 BT Amsterdam, Netherlands. Contact: admin@fasemga.com",
+      "purpose": "FASE collects the personal and business information you provide to manage your membership and operate as an association for Managing General Agents and related insurance professionals.",
+      "legal_basis": {
+        "title": "Legal Basis and Purpose: We process your data based on:",
+        "contractual": "Contractual necessity: to process your membership application, provide member services, and fulfill our membership agreement",
+        "legitimate": "Legitimate interests: to facilitate professional networking, maintain member directories, and promote the insurance industry",
+        "legal": "Legal obligations: to meet regulatory and professional association requirements",
+        "consent": "Your consent: for marketing communications and sharing your details for networking (where you have agreed)"
+      },
+      "sharing": "Data Sharing and Confidentiality: FASE may share basic information about your business publicly and with other members for legitimate organisational and networking purposes. Commercially sensitive information, including financial processing data, business strategies, and proprietary information, will be held in strict confidence.",
+      "retention": "Retention Period: We retain your data for the duration of your membership plus one year for regulatory compliance, unless you request earlier deletion or we have another legal basis to retain it.",
+      "rights": {
+        "title": "Your Rights: Under GDPR and UK data protection law, you have the right to:",
+        "access": "access your personal data and receive a copy",
+        "rectify": "rectify inaccurate or incomplete data",
+        "erase": "erase your data (where legally permissible)",
+        "restrict": "restrict or object to processing",
+        "portability": "data portability",
+        "withdraw": "withdraw consent (where processing is based on consent)",
+        "complain": "lodge a complaint with your local data protection authority"
+      },
+      "contact": "Contact: To exercise your rights or for data protection queries, contact us at admin@fasemga.com.",
+      "consent_text": "I have read and understand the data notice above, and I consent to FASE collecting, using, and storing my personal and business information as described. *"
+    },
+    "code_of_conduct": {
+      "review_header": "Please review and consent to our code of conduct.",
+      "consent_text": "I have read and agree to abide by the FASE Code of Conduct as a condition of my membership. I understand that failure to comply may result in membership termination. *",
+      "intro": {
+        "title": "FASE Code of Conduct",
+        "content": {
+          "paragraph1": "FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.",
+          "paragraph2": "Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.",
+          "paragraph3": "Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code."
+        }
+      },
+      "sections": {
+        "title": "Code of Conduct Sections",
+        "legal": {
+          "title": "1. Legal responsibilities",
+          "content": "Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.\n\nMembers will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:\n\n• A member being in breach of any regulatory requirement and\n\n• Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities\n\nMembers will provide all reasonable lawful assistance to regulatory, professional and law enforcement organisation in the discharge of their duties, whether in respect of themselves, another Member or a non-member."
+        },
+        "financial": {
+          "title": "2. Financial Responsibilities",
+          "content": "Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.\n\nMembers must comply with applicable solvency or like requirements."
+        },
+        "inter_org": {
+          "title": "3. Inter-organisational Responsibilities",
+          "content": "Members will compete fairly and honourably in the markets in which they operate.\n\nThis includes, but is not limited to:\n\n• making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;\n\n• entering into any agreement intended to diminish competition within the market."
+        },
+        "community": {
+          "title": "4. Community Responsibilities",
+          "content": "FASE members must conduct themselves in a manner befitting the privileges of membership.\n\nMembers will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.\n\nMembers are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.\n\nMembers will encourage continuing education and training for staff."
+        },
+        "insurers": {
+          "title": "5. Relationships with Insurers",
+          "content": "Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:\n\n• faithfully execute the underwriting guidelines of the insurers they represent;\n\n• act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;\n\n• keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship."
+        },
+        "brokers": {
+          "title": "6. Relationships with Brokers and Agents (or Insureds if operating directly)",
+          "content": "Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:\n\n• consider at all times the financial stability of insurers with which the Member places business;\n\n• make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.\n\nMembers should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.\n\nEffective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.\n\nFASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.\n\nMembers should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed."
+        }
+      },
+      "reporting": {
+        "title": "Reporting Breaches",
+        "content": {
+          "paragraph1": "All notices of potential breach made under this Code should be made to the Business Conduct Committee at conduct@fasemga.com."
+        }
+      }
+    },
+    "errors": {
+      "select_organization_type": "Please select an organization type",
+      "consent_required": "You must consent to the data notice to continue",
+      "fill_required_fields": "Please fill in all required fields",
+      "passwords_dont_match": "Passwords do not match",
+      "password_requirements_prefix": "Password must contain: ",
+      "eight_characters": "at least 8 characters",
+      "capital_letter": "one capital letter",
+      "special_character": "one special character",
+      "domain_already_registered": "An organization with this email domain is already registered. Please contact us if you believe this is an error.",
+      "verification_failed": "Failed to send verification code",
+      "organization_name_required": "Organization name is required",
+      "organization_type_required": "Organization type is required for corporate memberships",
+      "team_member_required": "At least one team member is required",
+      "primary_contact_required": "You must designate one person as the account administrator",
+      "members_need_name": "All members must have a first and last name",
+      "members_need_email": "All members must have an email",
+      "members_need_job_title": "All members must have a job title",
+      "address_required": "Address information is required",
+      "gwp_required": "Gross written premiums are required for MGA memberships",
+      "associations_specify_required": "Please specify if you are a member of other European MGA associations",
+      "associations_select_required": "Please select which associations you are a member of",
+      "enter_verification_code": "Please enter the verification code",
+      "invalid_verification_code": "Invalid verification code",
+      "verification_code_failed": "Failed to verify code",
+      "code_of_conduct_required": "Please consent to the Code of Conduct to continue",
+      "failed_to_submit": "Failed to submit application",
+      "no_authenticated_user": "No authenticated user",
+      "payment_processing_failed": "Payment processing failed. Please try again.",
+      "no_paypal_url": "No approval URL received from PayPal",
+      "failed_payment_start": "Failed to start payment process"
+    }
+  },
   "header": {
     "search_placeholder": "Search...",
     "language_label": "Language:",

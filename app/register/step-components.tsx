@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ValidatedInput, validatePassword } from './form-components';
 
 // Step 1: Account Information
@@ -36,20 +37,22 @@ export const AccountInformationStep = ({
   attemptedNext: boolean;
   markFieldTouched: (fieldKey: string) => void;
 }) => {
+  const t = useTranslations('register_form.account_info');
+  
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Create Your Account</h3>
-        <p className="text-fase-black text-sm">We&apos;ll create your account and membership application together</p>
+        <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('title')}</h3>
+        <p className="text-fase-black text-sm">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ValidatedInput
-          label="Name"
+          label={t('name_label')}
           fieldKey="firstName"
           value={firstName}
           onChange={setFirstName}
-          placeholder="Your first name"
+          placeholder={t('name_placeholder')}
           required
           touchedFields={touchedFields}
           attemptedNext={attemptedNext}
@@ -57,11 +60,11 @@ export const AccountInformationStep = ({
         />
         
         <ValidatedInput
-          label="Surname"
+          label={t('surname_label')}
           fieldKey="surname"
           value={surname}
           onChange={setSurname}
-          placeholder="Your surname"
+          placeholder={t('surname_placeholder')}
           required
           touchedFields={touchedFields}
           attemptedNext={attemptedNext}
@@ -70,7 +73,7 @@ export const AccountInformationStep = ({
       </div>
       
       <ValidatedInput
-        label="Email"
+        label={t('email_label')}
         fieldKey="email"
         type="email"
         value={email}
@@ -82,7 +85,7 @@ export const AccountInformationStep = ({
       />
       
       <ValidatedInput
-        label="Password"
+        label={t('password_label')}
         fieldKey="password"
         type="password"
         value={password}
@@ -101,22 +104,22 @@ export const AccountInformationStep = ({
       {/* Password Requirements */}
       {showPasswordReqs && (
         <div className="mt-2">
-          <p className="text-xs font-medium text-fase-black mb-2">Password must include:</p>
+          <p className="text-xs font-medium text-fase-black mb-2">{t('password_requirements')}</p>
           {(() => {
             const { requirements } = validatePassword(password);
             return (
               <div className="space-y-1">
                 <div className={`text-xs flex items-center ${requirements.length ? "text-green-600" : "text-fase-black"}`}>
                   <span className="mr-2">{requirements.length ? "✓" : "○"}</span>
-                  At least 8 characters
+                  {t('req_length')}
                 </div>
                 <div className={`text-xs flex items-center ${requirements.capital ? "text-green-600" : "text-fase-black"}`}>
                   <span className="mr-2">{requirements.capital ? "✓" : "○"}</span>
-                  One capital letter (A-Z)
+                  {t('req_uppercase')}
                 </div>
                 <div className={`text-xs flex items-center ${requirements.special ? "text-green-600" : "text-fase-black"}`}>
                   <span className="mr-2">{requirements.special ? "✓" : "○"}</span>
-                  One special character (!@#$%^&*...)
+                  {t('req_special')}
                 </div>
               </div>
             );
@@ -125,7 +128,7 @@ export const AccountInformationStep = ({
       )}
 
       <ValidatedInput
-        label="Confirm Password"
+        label={t('confirm_password_label')}
         fieldKey="confirmPassword"
         type="password"
         value={confirmPassword}
@@ -147,6 +150,8 @@ export const OrganizationTypeSelector = ({
   organizationType: 'MGA' | 'carrier' | 'provider';
   setOrganizationType: (type: 'MGA' | 'carrier' | 'provider') => void;
 }) => {
+  const t = useTranslations('register_form.organization_selection');
+  
   return (
     <div>
       <label className="block text-sm font-medium text-fase-navy mb-4">
@@ -161,8 +166,8 @@ export const OrganizationTypeSelector = ({
               : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
           }`}
         >
-          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">MGA</h4>
-          <p className="text-fase-black text-sm">Managing General Agents transacting business in Europe</p>
+          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('mga_title')}</h4>
+          <p className="text-fase-black text-sm">{t('mga_description')}</p>
         </button>
         <button
           onClick={() => setOrganizationType('carrier')}
@@ -172,8 +177,8 @@ export const OrganizationTypeSelector = ({
               : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
           }`}
         >
-          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Carrier</h4>
-          <p className="text-fase-black text-sm">Insurance companies and reinsurers working with MGAs</p>
+          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('carrier_title')}</h4>
+          <p className="text-fase-black text-sm">{t('carrier_description')}</p>
         </button>
         <button
           onClick={() => setOrganizationType('provider')}
@@ -183,8 +188,8 @@ export const OrganizationTypeSelector = ({
               : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
           }`}
         >
-          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Service Provider</h4>
-          <p className="text-fase-black text-sm">Technology, legal, financial and other service providers to MGAs</p>
+          <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('provider_title')}</h4>
+          <p className="text-fase-black text-sm">{t('provider_description')}</p>
         </button>
       </div>
     </div>

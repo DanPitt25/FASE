@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { signIn, sendPasswordReset, AccountPendingError, AccountNotApprovedError } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
@@ -16,6 +17,7 @@ export default function LoginForm() {
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('login_form');
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -44,7 +46,7 @@ export default function LoginForm() {
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError('Please enter your email address first');
+      setError(t('enter_email_first'));
       return;
     }
 
@@ -75,10 +77,10 @@ export default function LoginForm() {
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-green-800">
-                Email Verified Successfully!
+                {t('email_verified_title')}
               </h3>
               <p className="mt-1 text-sm text-green-700">
-                Your email has been verified. You can now sign in to your account.
+                {t('email_verified_message')}
               </p>
             </div>
           </div>
@@ -86,7 +88,7 @@ export default function LoginForm() {
       )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-fase-black">
-          Email
+          {t('email_label')}
         </label>
         <input
           id="email"
@@ -100,7 +102,7 @@ export default function LoginForm() {
       
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-fase-black">
-          Password
+          {t('password_label')}
         </label>
         <input
           id="password"
@@ -118,7 +120,7 @@ export default function LoginForm() {
 
       {resetSent && (
         <div className="text-green-600 text-sm">
-          Password reset email sent! Check your inbox and follow the instructions to reset your password.
+          {t('password_reset_sent')}
         </div>
       )}
 
@@ -129,7 +131,7 @@ export default function LoginForm() {
         className="w-full"
         disabled={loading}
       >
-        {loading ? 'Signing In...' : 'Sign In'}
+        {loading ? t('signing_in') : t('sign_in_button')}
       </Button>
 
       <div className="text-center">
@@ -139,7 +141,7 @@ export default function LoginForm() {
           disabled={resetLoading}
           className="text-sm text-fase-navy hover:text-fase-gold transition-colors underline"
         >
-          {resetLoading ? 'Sending...' : 'Forgot your password?'}
+          {resetLoading ? t('sending') : t('forgot_password')}
         </button>
       </div>
     </form>

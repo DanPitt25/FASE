@@ -1,13 +1,23 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 import LoginForm from './login-form';
+import LanguageToggle from '../../components/LanguageToggle';
 
 export default function Login() {
+  const t = useTranslations('login_form');
   return (
     <div className="flex min-h-screen w-screen items-center justify-center bg-fase-navy">
       <div className="z-10 w-full max-w-md overflow-hidden rounded-lg border border-fase-light-gold shadow-xl">
-        <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16">
+        <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16 relative">
+          {/* Language Toggle */}
+          <div className="absolute top-4 right-4">
+            <LanguageToggle />
+          </div>
+          
           <Link href="/">
             <Image 
               src="/fase-logo-rgb.png" 
@@ -17,9 +27,9 @@ export default function Login() {
               className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Sign In</h3>
+          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('title')}</h3>
           <p className="text-sm text-fase-black">
-            Access your FASE member portal
+            {t('subtitle')}
           </p>
         </div>
         <div className="bg-white px-4 py-8 sm:px-16">
@@ -28,9 +38,9 @@ export default function Login() {
           </Suspense>
           <div className="text-center text-sm text-fase-black mt-6 space-y-2">
             <p>
-              {"New member? "}
+              {t('new_member')}{" "}
               <Link href="/register" className="font-semibold text-fase-navy hover:underline">
-                Sign up
+                {t('sign_up_link')}
               </Link>
             </p>
           </div>
