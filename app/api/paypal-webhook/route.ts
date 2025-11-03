@@ -150,33 +150,56 @@ async function processPayment(customId: string, paymentMethod: string, paymentId
     throw new Error('Account not found');
   }
 
-  // Process application completion after successful payment
-  let applicationNumber = null;
+  // Send application notification to applications@fasemga.com
+  let applicationNumber = `FASE-APP-${Date.now()}`;
   try {
-    // Get draft application data
-    const draftDoc = await db.collection('draft_applications').doc(customId).get();
+    const accountData = accountDoc.data();
     
-    if (draftDoc.exists) {
-      const applicationData = draftDoc.data();
-      
-      // Import submission function dynamically
-      const authModule = await import('../../../lib/auth');
-      const { submitApplication } = authModule;
-      
-      // Submit the application now that payment is confirmed
-      const result = await submitApplication(applicationData);
-      applicationNumber = result.applicationNumber;
-      
-      // Clean up draft application
-      await db.collection('draft_applications').doc(customId).delete();
-      
-      console.log(`Application processed successfully after ${paymentMethod} payment:`, applicationNumber);
+    // Send application notification
+    const applicationEmailData = {
+      email: 'applications@fasemga.com',
+      invoiceHTML: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <h2 style="color: #2D5574;">New FASE Membership Application</h2>
+          
+          <p><strong>Organization:</strong> ${accountData.organizationName || accountData.displayName}</p>
+          <p><strong>Type:</strong> ${accountData.membershipType === 'individual' ? 'Individual' : `${accountData.organizationType} Corporate`}</p>
+          <p><strong>Contact:</strong> ${accountData.accountAdministrator?.name}</p>
+          <p><strong>Email:</strong> ${accountData.accountAdministrator?.email}</p>
+          <p><strong>Phone:</strong> ${accountData.accountAdministrator?.phone}</p>
+          <p><strong>Country:</strong> ${accountData.businessAddress?.country}</p>
+          ${accountData.portfolio?.grossWrittenPremiums ? `<p><strong>GWP Band:</strong> ${accountData.portfolio.grossWrittenPremiums}</p>` : ''}
+          <p><strong>Payment Method:</strong> PayPal</p>
+          <p><strong>Payment ID:</strong> ${paymentId}</p>
+          <p><strong>User ID:</strong> ${customId}</p>
+          
+          <p style="margin-top: 20px;"><em>Application submitted via PayPal payment method.</em></p>
+        </div>
+      `,
+      invoiceNumber: `APP-${applicationNumber}`,
+      organizationName: `New Application: ${accountData.organizationName || accountData.displayName}`,
+      totalAmount: webhookData.resource.amount?.value || 0
+    };
+
+    const notificationResponse = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: applicationEmailData
+      }),
+    });
+
+    if (notificationResponse.ok) {
+      console.log('✅ Application notification sent to applications@fasemga.com');
     } else {
-      console.warn('No draft application found for user:', customId);
+      console.error('❌ Failed to send application notification:', notificationResponse.status);
     }
+    
   } catch (appError) {
-    console.error(`Failed to process application after ${paymentMethod} payment:`, appError);
-    // Continue with payment processing even if application submission fails
+    console.error(`Failed to send application notification after ${paymentMethod} payment:`, appError);
+    // Continue with payment processing even if notification fails
   }
 
   // Prepare update data based on payment method

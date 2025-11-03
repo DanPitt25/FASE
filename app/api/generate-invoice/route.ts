@@ -683,6 +683,54 @@ export async function POST(request: NextRequest) {
       
       emailSent = true;
       console.log('✅ Invoice email sent successfully');
+      
+      // Send application notification to applications@fasemga.com
+      try {
+        const applicationEmailData = {
+          email: 'applications@fasemga.com',
+          invoiceHTML: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+              <h2 style="color: #2D5574;">New FASE Membership Application</h2>
+              
+              <p><strong>Organization:</strong> ${membershipData.organizationName}</p>
+              <p><strong>Type:</strong> ${membershipData.membershipType === 'individual' ? 'Individual' : `${membershipData.organizationType} Corporate`}</p>
+              <p><strong>Contact:</strong> ${membershipData.primaryContact.name}</p>
+              <p><strong>Email:</strong> ${membershipData.primaryContact.email}</p>
+              <p><strong>Phone:</strong> ${membershipData.primaryContact.phone}</p>
+              <p><strong>Country:</strong> ${membershipData.registeredAddress.country}</p>
+              ${membershipData.grossWrittenPremiums ? `<p><strong>GWP Band:</strong> ${membershipData.grossWrittenPremiums}</p>` : ''}
+              <p><strong>Payment Method:</strong> Invoice</p>
+              <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
+              <p><strong>Total Amount:</strong> €${totalAmount}</p>
+              <p><strong>User ID:</strong> ${userId}</p>
+              
+              <p style="margin-top: 20px;"><em>Application submitted via invoice payment method.</em></p>
+            </div>
+          `,
+          invoiceNumber: `APP-${invoiceNumber}`,
+          organizationName: `New Application: ${membershipData.organizationName}`,
+          totalAmount: totalAmount
+        };
+
+        const notificationResponse = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            data: applicationEmailData
+          }),
+        });
+
+        if (notificationResponse.ok) {
+          console.log('✅ Application notification sent to applications@fasemga.com');
+        } else {
+          console.error('❌ Failed to send application notification:', notificationResponse.status);
+        }
+      } catch (notificationError) {
+        console.error('❌ Error sending application notification:', notificationError);
+      }
+      
     } catch (error: any) {
       emailError = error;
       console.error('❌ Error sending invoice email:', error);
