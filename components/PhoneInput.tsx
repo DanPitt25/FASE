@@ -93,7 +93,7 @@ export default function PhoneInput({
   // Filter countries based on search
   const filteredCountries = countryList.filter(country =>
     country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-    country.callingCode.includes(countrySearch.replace('+', '')) ||
+    (country.callingCode && country.callingCode.includes(countrySearch.replace('+', ''))) ||
     country.code.toLowerCase().includes(countrySearch.toLowerCase())
   );
 
