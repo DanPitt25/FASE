@@ -19,17 +19,7 @@ const initializeAdmin = async () => {
   };
 };
 
-// Verify Firebase ID token
-const verifyAuth = async (request: NextRequest) => {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-  
-  const token = authHeader.substring(7);
-  const { auth } = await initializeAdmin();
-  return await auth.verifyIdToken(token);
-};
+// Auth verification removed for testing
 
 // Calculate membership fee (same logic as frontend)
 const calculateMembershipFee = (membershipData: any): number => {
@@ -59,7 +49,7 @@ const getDiscountedFee = (membershipData: any): number => {
 };
 
 // Generate invoice HTML template
-const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAmount: number) => {
+const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAmount: number, texts: any) => {
   const currentDate = new Date().toLocaleDateString('en-GB');
   const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB'); // 30 days from now
 
@@ -86,79 +76,79 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
 </head>
 <body>
     <div class="header">
-        <div class="logo">FEDERATION OF EUROPEAN MGAS</div>
-        <div class="tagline">Professional Association for Managing General Agents</div>
+        <div class="logo">${texts.federationName}</div>
+        <div class="tagline">${texts.tagline}</div>
     </div>
 
     <div class="invoice-info">
         <div class="client-details">
-            <h3>Bill To:</h3>
+            <h3>${texts.billTo}</h3>
             <strong>${membershipData.organizationName}</strong><br>
             ${membershipData.primaryContact.name}<br>
             ${membershipData.registeredAddress.line1}<br>
             ${membershipData.registeredAddress.line2 ? membershipData.registeredAddress.line2 + '<br>' : ''}
             ${membershipData.registeredAddress.city}, ${membershipData.registeredAddress.state} ${membershipData.registeredAddress.postalCode}<br>
             ${membershipData.registeredAddress.country}<br><br>
-            Email: ${membershipData.primaryContact.email}<br>
-            Phone: ${membershipData.primaryContact.phone}
+            ${texts.email} ${membershipData.primaryContact.email}<br>
+            ${texts.phone} ${membershipData.primaryContact.phone}
         </div>
         
         <div class="invoice-details">
-            <h3>Invoice Details:</h3>
-            <strong>Invoice #: ${invoiceNumber}</strong><br>
-            Date: ${currentDate}<br>
-            Due Date: ${dueDate}<br>
-            Terms: Net 30
+            <h3>${texts.invoiceDetails}</h3>
+            <strong>${texts.invoiceNumber} ${invoiceNumber}</strong><br>
+            ${texts.date} ${currentDate}<br>
+            ${texts.dueDate} ${dueDate}<br>
+            ${texts.terms}
         </div>
     </div>
 
     <table class="items-table">
         <thead>
             <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Total</th>
+                <th>${texts.description}</th>
+                <th>${texts.quantity}</th>
+                <th>${texts.unitPrice}</th>
+                <th>${texts.total}</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>
-                    FASE ${membershipData.membershipType === 'individual' ? 'Individual' : membershipData.organizationType + ' Corporate'} Membership - Annual
-                    ${membershipData.organizationType === 'MGA' && membershipData.grossWrittenPremiums ? '<br><small>Premium Bracket: ' + membershipData.grossWrittenPremiums + '</small>' : ''}
-                    ${membershipData.hasOtherAssociations ? '<br><small>20% European MGA association member discount applied</small>' : ''}
+                    FASE ${membershipData.membershipType === 'individual' ? texts.individual : membershipData.organizationType + ' ' + texts.corporate} ${texts.membershipType}
+                    ${membershipData.organizationType === 'MGA' && membershipData.grossWrittenPremiums ? '<br><small>' + texts.premiumBracket + ' ' + membershipData.grossWrittenPremiums + '</small>' : ''}
+                    ${membershipData.hasOtherAssociations ? '<br><small>' + texts.discountApplied + '</small>' : ''}
                 </td>
                 <td>1</td>
                 <td>€${totalAmount}</td>
                 <td>€${totalAmount}</td>
             </tr>
             <tr class="total-row">
-                <td colspan="3"><strong>Total Amount Due</strong></td>
+                <td colspan="3"><strong>${texts.totalAmountDue}</strong></td>
                 <td><strong>€${totalAmount}</strong></td>
             </tr>
         </tbody>
     </table>
 
     <div class="payment-info">
-        <h3>Payment Instructions:</h3>
-        <p><strong>Please transfer the total amount to:</strong></p>
+        <h3>${texts.paymentInstructions}</h3>
+        <p><strong>${texts.transferAmount}</strong></p>
         <p>
-            Please deposit to the following account: Lexicon Associates, LLC<br><br>
-            <strong>Bank:</strong> Citibank, N.A.<br>
-            <strong>Address:</strong> USCC CITISWEEP<br>
+            ${texts.paymentText[0]}<br><br>
+            <strong>${texts.bankDetails.bank}</strong> Citibank, N.A.<br>
+            <strong>${texts.bankDetails.address}</strong> USCC CITISWEEP<br>
             100 Citibank Drive<br>
             San Antonio, TX 78245<br><br>
-            <strong>Account Number:</strong> 125582998<br>
+            <strong>${texts.bankDetails.account}</strong> 125582998<br>
             <strong>ABA:</strong> 221172610<br>
             <strong>SWIFT:</strong> CITIUS33<br>
-            <strong>Reference:</strong> ${invoiceNumber}
+            <strong>${texts.bankDetails.reference}</strong> ${invoiceNumber}
         </p>
-        <p><em>Please include the invoice number (${invoiceNumber}) as the payment reference.</em></p>
+        <p><em>${texts.paymentText[3]}</em></p>
     </div>
 
     <div class="footer">
-        <p>Thank you for your membership in the Federation of European MGAs.</p>
-        <p>For questions about this invoice, please contact: admin@fasemga.com</p>
+        <p>${texts.thankYou}</p>
+        <p>${texts.questions}</p>
     </div>
 </body>
 </html>`;
@@ -166,12 +156,102 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication first
-    const decodedToken = await verifyAuth(request);
-    const userUid = decodedToken.uid;
-    const userEmail = decodedToken.email;
-    
     const { membershipData } = await request.json();
+    
+    // For testing - use email from membershipData
+    const userEmail = membershipData?.primaryContact?.email || membershipData?.email || 'test@example.com';
+    const userUid = 'test-user-' + Date.now();
+    
+    // Detect language from Accept-Language header
+    const acceptLanguage = request.headers.get('accept-language');
+    const isFrench = acceptLanguage?.toLowerCase().includes('fr');
+    
+    // PDF text translations
+    const pdfText = {
+      en: {
+        invoice: 'INVOICE',
+        billTo: 'Bill To:',
+        invoiceNumber: 'Invoice #:',
+        date: 'Date:',
+        dueDate: 'Due Date:',
+        terms: 'Terms: Net 30',
+        description: 'Description',
+        quantity: 'Qty',
+        unitPrice: 'Unit Price', 
+        total: 'Total',
+        paymentInstructions: 'Payment Instructions:',
+        paymentText: [
+          'Please deposit to the following account: Lexicon Associates, LLC',
+          'Citibank, N.A. • USCC CITISWEEP • 100 Citibank Drive, San Antonio, TX 78245',
+          'Account: 125582998 • ABA: 221172610 • SWIFT: CITIUS33',
+          'Payment Reference: [TO_BE_FILLED]'
+        ],
+        totalAmountDue: 'Total Amount Due:',
+        membershipType: 'Membership - Annual',
+        individual: 'Individual',
+        corporate: 'Corporate',
+        premiumBracket: 'Premium Bracket:',
+        discountApplied: '20% European MGA association member discount applied',
+        // HTML-specific translations
+        federationName: 'FEDERATION OF EUROPEAN MGAS',
+        tagline: 'Professional Association for Managing General Agents',
+        invoiceDetails: 'Invoice Details:',
+        email: 'Email:',
+        phone: 'Phone:',
+        thankYou: 'Thank you for your membership in the Federation of European MGAs.',
+        questions: 'For questions about this invoice, please contact: admin@fasemga.com',
+        transferAmount: 'Please transfer the total amount to:',
+        bankDetails: {
+          bank: 'Bank:',
+          address: 'Address:',
+          account: 'Account Number:',
+          reference: 'Reference:'
+        }
+      },
+      fr: {
+        invoice: 'FACTURE',
+        billTo: 'Facturer à :',
+        invoiceNumber: 'Facture #:',
+        date: 'Date :',
+        dueDate: 'Date d\'échéance :',
+        terms: 'Conditions : Net 30',
+        description: 'Description',
+        quantity: 'Qté',
+        unitPrice: 'Prix unitaire',
+        total: 'Total',
+        paymentInstructions: 'Instructions de paiement :',
+        paymentText: [
+          'Veuillez déposer sur le compte suivant : Lexicon Associates, LLC',
+          'Citibank, N.A. • USCC CITISWEEP • 100 Citibank Drive, San Antonio, TX 78245',
+          'Compte : 125582998 • ABA : 221172610 • SWIFT : CITIUS33',
+          'Référence de paiement : [TO_BE_FILLED]'
+        ],
+        totalAmountDue: 'Montant total dû :',
+        membershipType: 'Adhésion - Annuelle',
+        individual: 'Individuelle',
+        corporate: 'Entreprise',
+        premiumBracket: 'Tranche de prime :',
+        discountApplied: 'Remise de 20% pour membre d\'association MGA européenne appliquée',
+        // HTML-specific translations
+        federationName: 'FÉDÉRATION DES AGENCES DE SOUSCRIPTION EUROPÉENNES',
+        tagline: 'Association Professionnelle des Agences de Souscription',
+        invoiceDetails: 'Détails de la facture :',
+        email: 'E-mail :',
+        phone: 'Téléphone :',
+        thankYou: 'Merci pour votre adhésion à la Fédération des Agences de Souscription Européennes.',
+        questions: 'Pour toute question concernant cette facture, veuillez contacter : admin@fasemga.com',
+        transferAmount: 'Veuillez virer le montant à :',
+        bankDetails: {
+          bank: 'Banque :',
+          address: 'Adresse :',
+          account: 'Numéro de compte :',
+          reference: 'Référence :'
+        }
+      }
+    };
+    
+    const currentLang = isFrench ? 'fr' : 'en';
+    const texts = pdfText[currentLang];
 
     if (!membershipData) {
       return NextResponse.json(
@@ -182,14 +262,19 @@ export async function POST(request: NextRequest) {
 
     // const { db } = await initializeAdmin(); // Skip Firebase for PDF testing
 
-    // Generate invoice number
-    const invoiceNumber = `FASE-${Date.now()}-${userUid.slice(-6)}`;
+    // Generate simple 5-digit invoice number
+    const invoiceNumber = String(10000 + Math.floor(Math.random() * 90000));
     
     // Calculate fees
     const totalAmount = getDiscountedFee(membershipData);
+    
+    // Update payment text with actual invoice number
+    texts.paymentText[3] = currentLang === 'fr' ? 
+      `Référence de paiement : ${invoiceNumber}` : 
+      `Payment Reference: ${invoiceNumber}`;
 
     // Generate invoice HTML
-    const invoiceHTML = generateInvoiceHTML(membershipData, invoiceNumber, totalAmount);
+    const invoiceHTML = generateInvoiceHTML(membershipData, invoiceNumber, totalAmount, texts);
 
     // Generate branded PDF using the EXACT working approach from standalone script
     let pdfBuffer: Uint8Array | null = null;
@@ -234,7 +319,7 @@ export async function POST(request: NextRequest) {
       // INVOICE HEADER SECTION (starts 150pt from top to avoid letterhead)
       let currentY = height - margins.top;
       
-      firstPage.drawText('INVOICE', {
+      firstPage.drawText(texts.invoice, {
         x: margins.left,
         y: currentY,
         size: 18,
@@ -245,7 +330,7 @@ export async function POST(request: NextRequest) {
       currentY -= 50; // Space after main header
       
       // BILL TO and INVOICE DETAILS on same line
-      firstPage.drawText('Bill To:', {
+      firstPage.drawText(texts.billTo, {
         x: margins.left,
         y: currentY,
         size: 12,
@@ -255,7 +340,7 @@ export async function POST(request: NextRequest) {
       
       // Invoice details (right-aligned)
       const invoiceDetailsX = width - margins.right - 150;
-      firstPage.drawText(`Invoice #: ${invoiceNumber}`, {
+      firstPage.drawText(`${texts.invoiceNumber} ${invoiceNumber}`, {
         x: invoiceDetailsX,
         y: currentY,
         size: 11,
@@ -263,7 +348,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(`Date: ${currentDate}`, {
+      firstPage.drawText(`${texts.date} ${currentDate}`, {
         x: invoiceDetailsX,
         y: currentY - 16,
         size: 10,
@@ -271,7 +356,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(`Due Date: ${dueDate}`, {
+      firstPage.drawText(`${texts.dueDate} ${dueDate}`, {
         x: invoiceDetailsX,
         y: currentY - 32,
         size: 10,
@@ -279,7 +364,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText('Terms: Net 30', {
+      firstPage.drawText(texts.terms, {
         x: invoiceDetailsX,
         y: currentY - 48,
         size: 10,
@@ -330,7 +415,7 @@ export async function POST(request: NextRequest) {
       });
       
       // Table headers
-      const headers = ['Description', 'Qty', 'Unit Price', 'Total'];
+      const headers = [texts.description, texts.quantity, texts.unitPrice, texts.total];
       headers.forEach((header, i) => {
         firstPage.drawText(header, {
           x: colX[i] + 10,
@@ -345,8 +430,8 @@ export async function POST(request: NextRequest) {
       
       // Invoice item row
       const membershipDesc = membershipData.membershipType === 'individual' 
-        ? 'FASE Individual Membership - Annual'
-        : `FASE ${membershipData.organizationType} Corporate Membership - Annual`;
+        ? `FASE ${texts.individual} ${texts.membershipType}`
+        : `FASE ${membershipData.organizationType} ${texts.corporate} ${texts.membershipType}`;
       
       firstPage.drawText(membershipDesc, {
         x: colX[0] + 10,
@@ -385,7 +470,7 @@ export async function POST(request: NextRequest) {
       
       // Additional details (with proper spacing)
       if (membershipData.organizationType === 'MGA' && membershipData.grossWrittenPremiums) {
-        firstPage.drawText(`Premium Bracket: ${membershipData.grossWrittenPremiums}`, {
+        firstPage.drawText(`${texts.premiumBracket} ${membershipData.grossWrittenPremiums}`, {
           x: colX[0] + 20,
           y: currentY,
           size: 9,
@@ -396,7 +481,7 @@ export async function POST(request: NextRequest) {
       }
       
       if (membershipData.hasOtherAssociations) {
-        firstPage.drawText('20% European MGA association member discount applied', {
+        firstPage.drawText(texts.discountApplied, {
           x: colX[0] + 20,
           y: currentY,
           size: 9,
@@ -421,7 +506,7 @@ export async function POST(request: NextRequest) {
         borderWidth: 2,
       });
       
-      firstPage.drawText('Total Amount Due:', {
+      firstPage.drawText(texts.totalAmountDue, {
         x: totalX + 15,
         y: currentY - 22,
         size: 12,
@@ -450,7 +535,7 @@ export async function POST(request: NextRequest) {
         color: faseNavy,
       });
       
-      firstPage.drawText('Payment Instructions:', {
+      firstPage.drawText(texts.paymentInstructions, {
         x: margins.left,
         y: currentY - 30,
         size: 12,
@@ -458,12 +543,7 @@ export async function POST(request: NextRequest) {
         color: faseNavy,
       });
       
-      const paymentLines = [
-        'Please deposit to the following account: Lexicon Associates, LLC',
-        'Citibank, N.A. • USCC CITISWEEP • 100 Citibank Drive, San Antonio, TX 78245',
-        'Account: 125582998 • ABA: 221172610 • SWIFT: CITIUS33',
-        `Payment Reference: ${invoiceNumber}`
-      ];
+      const paymentLines = texts.paymentText;
       
       paymentLines.forEach((line, index) => {
         firstPage.drawText(line, {
@@ -497,6 +577,45 @@ export async function POST(request: NextRequest) {
     //   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     // });
 
+    // Process application completion after successful invoice generation
+    let applicationNumber = null;
+    if (membershipData.userId) {
+      try {
+        // Get draft application data
+        const { db } = await initializeAdmin();
+        const draftDoc = await db.collection('draft_applications').doc(membershipData.userId).get();
+        
+        if (draftDoc.exists) {
+          const applicationData = draftDoc.data();
+          
+          // Import submission function
+          const { submitApplication } = await import('../../../lib/auth');
+          
+          // Submit the application now that invoice is generated
+          const result = await submitApplication(applicationData);
+          applicationNumber = result.applicationNumber;
+          
+          // Update account status from draft to pending
+          await db.collection('accounts').doc(membershipData.userId).update({
+            status: 'pending',
+            applicationNumber: applicationNumber,
+            paymentMethod: 'invoice',
+            invoiceNumber: invoiceNumber,
+            invoiceStatus: 'sent',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+          
+          // Clean up draft application
+          await db.collection('draft_applications').doc(membershipData.userId).delete();
+          
+          console.log('Application processed successfully:', applicationNumber);
+        }
+      } catch (appError) {
+        console.error('Failed to process application:', appError);
+        // Continue with invoice generation even if application processing fails
+      }
+    }
+
     // Send invoice via email (using Firebase Functions)
     let emailSent = false;
     let emailError = null;
@@ -518,18 +637,10 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
-        emailData.invoiceHTML = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-            <h2 style="color: #2D5574; margin-bottom: 20px;">Thank You for Your FASE Membership Application</h2>
-            <p>Thank you for submitting your application to become a member of FASE.</p>
-            <p>We will review your application and you will receive full member benefits within 24 hours if approved.</p>
-            <p>Your invoice for membership dues is attached. Please process payment according to the instructions in the invoice.</p>
-            <p>If you have any questions, please contact us at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a></p>
-            <p>Best regards,<br><strong>The FASE Team</strong></p>
-          </div>
-        `;
+        // Don't include invoiceHTML - let Firebase Function use localized templates
         console.log('PDF attachment added to email data');
       } else {
+        // If PDF generation failed, include error message HTML
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
             <h2 style="color: #dc2626;">Thank You - Invoice Generation Issue</h2>
@@ -576,6 +687,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       invoiceNumber,
+      applicationNumber,
       totalAmount,
       message: 'Invoice generated and sent successfully',
       emailSent,

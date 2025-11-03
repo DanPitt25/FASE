@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateMembershipFee } from '../../register/registration-utils';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -38,31 +39,26 @@ async function getPayPalAccessToken() {
   return data.access_token;
 }
 
-// Pricing mapping based on membership type and premium brackets
-const getMembershipPrice = (membershipType: string, organizationType: string, grossWrittenPremiums?: string): number => {
+// Pricing calculation using the same logic as the registration form
+const getMembershipPrice = (
+  membershipType: string, 
+  organizationType: string, 
+  grossWrittenPremiums: string | undefined,
+  hasOtherAssociations: boolean = false
+): number => {
   // Admin test mode
   if (grossWrittenPremiums && grossWrittenPremiums.includes('test')) {
-    return 0.01; // 1 cent for testing
+    return 0.50; // 50 cents for admin testing
   }
 
-  if (membershipType === 'individual') {
-    return 500.00; // €500
-  }
-
-  if (membershipType === 'corporate' && organizationType === 'MGA' && grossWrittenPremiums) {
-    const priceMap: { [key: string]: number } = {
-      '<10m': 900.00,     // €900
-      '10-20m': 1100.00,  // €1,100
-      '20-50m': 1300.00,  // €1,300
-      '50-100m': 1500.00, // €1,500
-      '100-500m': 1700.00, // €1,700
-      '500m+': 2000.00,   // €2,000
-    };
-    return priceMap[grossWrittenPremiums] || 900.00;
-  }
-
-  // Other corporate types (carrier, provider)
-  return 900.00; // €900
+  // Use the same calculation logic as the registration form
+  return calculateMembershipFee(
+    membershipType as 'individual' | 'corporate',
+    organizationType as 'MGA' | 'carrier' | 'provider', 
+    grossWrittenPremiums || '',
+    'EUR', // Default currency for PayPal
+    hasOtherAssociations
+  );
 };
 
 export async function POST(request: NextRequest) {
@@ -76,16 +72,17 @@ export async function POST(request: NextRequest) {
       grossWrittenPremiums, 
       userEmail,
       userId,
+      hasOtherAssociations = false,
       testPayment = false
     } = requestData;
 
     // Get access token
     const accessToken = await getPayPalAccessToken();
     
-    // Calculate price
-    const basePrice = testPayment 
-      ? 0.01 
-      : getMembershipPrice(membershipType, organizationType, grossWrittenPremiums);
+    // Calculate price (including any applicable discounts)
+    const finalPrice = testPayment 
+      ? 0.50 
+      : getMembershipPrice(membershipType, organizationType, grossWrittenPremiums, hasOtherAssociations);
 
     // Get environment
     const environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
@@ -99,20 +96,20 @@ export async function POST(request: NextRequest) {
       purchase_units: [{
         amount: {
           currency_code: 'EUR',
-          value: basePrice.toFixed(2),
+          value: finalPrice.toFixed(2),
           breakdown: {
             item_total: {
               currency_code: 'EUR',
-              value: basePrice.toFixed(2)
+              value: finalPrice.toFixed(2)
             }
           }
         },
         items: [{
-          name: `FASE ${membershipType === 'individual' ? 'Individual' : `${organizationType} Corporate`} Membership`,
-          description: `Annual FASE membership for ${organizationName}`,
+          name: `FASE ${membershipType === 'individual' ? 'Individual' : `${organizationType} Corporate`} Membership${hasOtherAssociations && membershipType === 'corporate' ? ' (20% Member Discount)' : ''}`,
+          description: `Annual FASE membership for ${organizationName}${hasOtherAssociations && membershipType === 'corporate' ? ' - Discounted rate for MGA association member' : ''}`,
           unit_amount: {
             currency_code: 'EUR',
-            value: basePrice.toFixed(2)
+            value: finalPrice.toFixed(2)
           },
           quantity: '1',
           category: 'DIGITAL_GOODS'
@@ -160,7 +157,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       orderId: order.id,
       approvalUrl,
-      amount: basePrice
+      amount: finalPrice
     });
 
   } catch (error: any) {

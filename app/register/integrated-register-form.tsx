@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
@@ -24,6 +25,7 @@ import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, cal
 export default function IntegratedRegisterForm() {
   // Translations
   const t = useTranslations('register_form');
+  const locale = useLocale();
   
   // URL parameter handling
   const searchParams = useSearchParams();
@@ -131,6 +133,7 @@ export default function IntegratedRegisterForm() {
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [pendingPaymentAction] = useState<'paypal' | 'invoice' | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'invoice' | null>(null);
   
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
@@ -232,7 +235,8 @@ export default function IntegratedRegisterForm() {
         }
         
         // Send verification code (no account creation yet)
-        await sendVerificationCode(email);
+        console.log('Sending verification code with locale:', locale);
+        await sendVerificationCode(email, locale);
         
         setShowEmailVerification(true);
         setError("");
@@ -422,7 +426,7 @@ export default function IntegratedRegisterForm() {
     
     try {
       setIsSendingVerification(true);
-      await sendVerificationCode(email);
+      await sendVerificationCode(email, locale);
       setError("");
     } catch (error: any) {
       setError(error.message || t('errors.verification_failed'));
@@ -435,6 +439,11 @@ export default function IntegratedRegisterForm() {
   const handleSubmitApplication = async () => {
     if (!codeOfConductConsent) {
       setError(t('errors.code_of_conduct_required'));
+      return;
+    }
+    
+    if (!selectedPaymentMethod) {
+      setError('Please select a payment method');
       return;
     }
 
@@ -501,11 +510,8 @@ export default function IntegratedRegisterForm() {
         codeOfConductConsent,
       };
 
-      // Submit application using Firebase Function
-      const result = await submitApplication(applicationData);
-
-      // Create Firebase Auth account and Firestore record for the applicant
-      await createAccountAndMembership('pending', {
+      // Create Firebase Auth account and store draft application data
+      const draftUserId = await createAccountAndMembership('draft', {
         email,
         password,
         firstName,
@@ -539,15 +545,110 @@ export default function IntegratedRegisterForm() {
         otherRating
       });
 
-      // Store application data in sessionStorage for thank you page
-      const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
-      sessionStorage.setItem('applicationSubmission', JSON.stringify({
-        applicationNumber: result.applicationNumber,
-        applicantName: applicantName
-      }));
+      // Store full application data for later processing
+      const fullApplicationData = {
+        ...applicationData,
+        userId: draftUserId,
+        paymentMethod: selectedPaymentMethod
+      };
 
-      // Redirect to clean thank you page URL
-      window.location.href = '/register/thank-you';
+      // Handle payment method
+      if (selectedPaymentMethod === 'invoice') {
+        // Store application data for processing after invoice generation
+        const { db } = await import('../../lib/firebase');
+        const { doc, setDoc } = await import('firebase/firestore');
+        
+        await setDoc(doc(db, 'draft_applications', draftUserId), fullApplicationData);
+
+        // Generate and send invoice with application processing
+        const membershipData = {
+          primaryContact: {
+            name: `${firstName} ${surname}`.trim(),
+            email,
+            phone: membershipType === 'corporate' ? members.find(m => m.isPrimaryContact)?.phone || '' : ''
+          },
+          organizationName: membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName,
+          membershipType,
+          organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
+          registeredAddress: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city,
+            state: state,
+            postalCode,
+            country
+          },
+          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
+          hasOtherAssociations: hasOtherAssociations || false,
+          userId: draftUserId // Pass userId for application completion
+        };
+
+        // Generate invoice and process application
+        const invoiceResponse = await fetch('/api/generate-invoice', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            membershipData
+          }),
+        });
+
+        if (!invoiceResponse.ok) {
+          throw new Error('Failed to generate invoice');
+        }
+
+        const invoiceResult = await invoiceResponse.json();
+
+        // Store application completion data and redirect
+        const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+        sessionStorage.setItem('applicationSubmission', JSON.stringify({
+          applicationNumber: invoiceResult.applicationNumber || `FASE-APP-${Date.now()}`,
+          applicantName: applicantName,
+          paymentMethod: 'invoice'
+        }));
+
+        window.location.href = '/register/thank-you';
+        
+      } else if (selectedPaymentMethod === 'paypal') {
+        // Store application data for processing after PayPal payment
+        const { db } = await import('../../lib/firebase');
+        const { doc, setDoc } = await import('firebase/firestore');
+        
+        await setDoc(doc(db, 'draft_applications', draftUserId), fullApplicationData);
+
+        const orgName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+        
+        const paypalResponse = await fetch('/api/create-paypal-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            organizationName: orgName,
+            organizationType: membershipType === 'individual' ? 'individual' : organizationType,
+            membershipType,
+            grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? (convertToEUR(calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands), gwpCurrency)).toString() : undefined,
+            userEmail: email,
+            userId: draftUserId,
+            hasOtherAssociations: hasOtherAssociations || false,
+            testPayment: false
+          }),
+        });
+
+        if (!paypalResponse.ok) {
+          throw new Error('Failed to create PayPal subscription');
+        }
+
+        const paypalData = await paypalResponse.json();
+
+        // Redirect to PayPal for payment - application will be processed in webhook
+        if (paypalData.approvalUrl) {
+          window.location.href = paypalData.approvalUrl;
+        } else {
+          throw new Error('No PayPal approval URL received');
+        }
+      }
 
     } catch (error: any) {
       setPaymentError(error.message || t('errors.failed_to_submit'));
@@ -1074,65 +1175,158 @@ export default function IntegratedRegisterForm() {
             </div>
           </div>
 
-          {/* Pricing */}
+
+          {/* Continue to Payment Button */}
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="primary"
+              size="large"
+              onClick={() => {
+                if (!codeOfConductConsent) {
+                  setError(t('errors.code_of_conduct_required'));
+                  return;
+                }
+                setError("");
+                setStep(5);
+                window.scrollTo(0, 0);
+              }}
+              disabled={!codeOfConductConsent}
+              className="w-full"
+            >
+              {t('buttons.next')}
+            </Button>
+            
+          </div>
+        </div>
+      )}
+
+      {/* Step 5: Payment Method Selection */}
+      {step === 5 && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('payment.title')}</h3>
+            <p className="text-fase-black text-sm">{t('payment.subtitle')}</p>
+          </div>
+
+          {/* Pricing Details */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('pricing.title')}</h4>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-fase-black">{t('pricing.base_fee')}</span>
-                <span className="text-fase-black">€{getCurrentMembershipFee()}</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
+                <span className="text-fase-black font-medium">{t('pricing.membership_fee')}</span>
+                <span className="text-fase-navy font-semibold">€{calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, false).toLocaleString()}</span>
               </div>
               
               {membershipType === 'corporate' && hasOtherAssociations && (
-                <div className="flex justify-between items-center text-green-600">
-                  <span>{t('pricing.member_discount')}</span>
-                  <span>-€{getCurrentMembershipFee() - getCurrentDiscountedFee()}</span>
+                <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
+                  <span className="text-green-600 font-medium">{t('pricing.discount')}</span>
+                  <span className="text-green-600 font-semibold">-€{(calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, false) * 0.2).toLocaleString()}</span>
                 </div>
               )}
               
-              <div className="border-t border-fase-light-gold pt-2 mt-2">
-                <div className="flex justify-between items-center font-semibold text-lg">
-                  <span className="text-fase-navy">{t('pricing.total_fee')}</span>
-                  <span className="text-fase-navy">€{getCurrentDiscountedFee()}</span>
+              <div className="flex justify-between items-center py-3 border-t-2 border-fase-navy">
+                <span className="text-fase-navy text-lg font-bold">{t('pricing.total_annual')}</span>
+                <span className="text-fase-navy text-xl font-bold">€{getCurrentDiscountedFee()}</span>
+              </div>
+              
+              {membershipType === 'corporate' && hasOtherAssociations && (
+                <p className="text-sm text-green-600 italic">{t('pricing.discount_note')}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* PayPal Option */}
+            <div className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
+              selectedPaymentMethod === 'paypal' 
+                ? 'border-fase-navy bg-fase-navy/5' 
+                : 'border-fase-light-gold hover:border-fase-navy'
+            }`}
+            onClick={() => setSelectedPaymentMethod('paypal')}
+            >
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="paypal"
+                  checked={selectedPaymentMethod === 'paypal'}
+                  onChange={() => setSelectedPaymentMethod('paypal')}
+                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
+                />
+                <div className="flex-1">
+                  <h4 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
+                    {t('payment.paypal.title')}
+                  </h4>
+                  <p className="text-fase-black text-sm">
+                    {t('payment.paypal.description')}
+                  </p>
                 </div>
               </div>
             </div>
-            
-            <p className="text-xs text-fase-black mt-4">
-              {t('pricing.billing_note')}
-              {membershipType === 'corporate' && hasOtherAssociations && (
-                <> {t('pricing.discount_note')}</>
-              )}
-            </p>
+
+            {/* Invoice Option */}
+            <div className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
+              selectedPaymentMethod === 'invoice' 
+                ? 'border-fase-navy bg-fase-navy/5' 
+                : 'border-fase-light-gold hover:border-fase-navy'
+            }`}
+            onClick={() => setSelectedPaymentMethod('invoice')}
+            >
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="invoice"
+                  checked={selectedPaymentMethod === 'invoice'}
+                  onChange={() => setSelectedPaymentMethod('invoice')}
+                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
+                />
+                <div className="flex-1">
+                  <h4 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
+                    {t('payment.invoice.title')}
+                  </h4>
+                  <p className="text-fase-black text-sm">
+                    {t('payment.invoice.description')}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Submit Application Button */}
+
+          {/* Payment Note */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-fase-black">{t('payment.note')}</p>
+          </div>
+
+          {/* Submit Button */}
           <div className="text-center">
             <Button
               type="button"
               variant="primary"
               size="large"
               onClick={handleSubmitApplication}
-              disabled={!codeOfConductConsent || processingPayment}
+              disabled={!selectedPaymentMethod || processingPayment}
               className="w-full"
             >
               {processingPayment ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('buttons.submitting_application')}
+                  {t('payment.processing')}
                 </>
+              ) : selectedPaymentMethod === 'paypal' ? (
+                t('payment.paypal.button')
+              ) : selectedPaymentMethod === 'invoice' ? (
+                t('payment.invoice.button')
               ) : (
                 t('buttons.submit_application')
               )}
             </Button>
-            
-            <p className="text-xs text-fase-black mt-3">
-              {t('submit_note')}
-            </p>
           </div>
         </div>
       )}
@@ -1188,6 +1382,25 @@ export default function IntegratedRegisterForm() {
                 {t('buttons.review_submit')}
               </Button>
             ) : null}
+          </div>
+        </div>
+      )}
+      
+      {/* Navigation for Payment Step */}
+      {step === 5 && (
+        <div className="pt-6">
+          <div className="flex justify-between">
+            <Button 
+              type="button"
+              variant="secondary" 
+              onClick={() => {
+                setStep(4);
+                window.scrollTo(0, 0);
+              }}
+            >
+              {t('buttons.back')}
+            </Button>
+            <div></div>
           </div>
         </div>
       )}

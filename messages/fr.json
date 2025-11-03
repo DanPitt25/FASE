@@ -152,8 +152,8 @@
         "subtitle": "Complétez votre demande d'adhésion"
       },
       "submit_application": {
-        "title": "Soumettez votre candidature",
-        "subtitle": "Vérifiez vos informations et soumettez votre demande d'adhésion"
+        "title": "Confirmez votre candidature",
+        "subtitle": "Veuillez confirmer votre accord avec notre Code de Conduite"
       }
     },
     "fields": {
@@ -260,9 +260,9 @@
     },
     "pricing": {
       "title": "Cotisation annuelle d'adhésion (membre fondateur)",
-      "base_fee": "Tarif de Base",
-      "member_discount": "Remise Membre (20%)",
-      "total_fee": "Cotisation annuelle totale",
+      "membership_fee": "Tarif de Base",
+      "discount": "Remise Membre (20%)",
+      "total_annual": "Cotisation annuelle totale",
       "billing_note": "L'adhésion est facturée annuellement, avec préavis avant le renouvellement.",
       "discount_note": "* Remise de 20% appliquée pour les membres d'autres associations européennes d'agences de souscription."
     },
@@ -273,6 +273,22 @@
       "review_submit": "Vérifier et Soumettre",
       "submitting_application": "Soumission de la Candidature...",
       "submit_application": "Soumettre la Candidature"
+    },
+    "payment": {
+      "title": "Méthode de Paiement",
+      "subtitle": "Choisissez comment vous souhaitez payer votre cotisation d'adhésion",
+      "paypal": {
+        "title": "Payer avec PayPal",
+        "description": "Payez immédiatement en utilisant PayPal ou carte de crédit",
+        "button": "Payer avec PayPal"
+      },
+      "invoice": {
+        "title": "Demander une Facture",
+        "description": "Recevez une facture par email pour un paiement par virement bancaire",
+        "button": "Demander une Facture"
+      },
+      "processing": "Traitement en cours...",
+      "note": "Après avoir sélectionné votre méthode de paiement, votre candidature sera soumise pour examen."
     },
     "registration_complete": {
       "title": "Inscription Terminée !",

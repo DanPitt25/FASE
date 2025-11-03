@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { getEmailTemplate, detectUserLanguage } from "./email-templates";
 
 // Initialize Firebase Admin with default credentials
 if (admin.apps.length === 0) {
@@ -51,7 +52,7 @@ export const sendVerificationCode = functions.https.onCall({
   enforceAppCheck: false, // Allow unauthenticated calls
 }, async (request) => {
   try {
-    const { email, code } = request.data;
+    const { email, code, locale } = request.data;
     logger.info('sendVerificationCode called with email:', email);
 
     if (!email || !code) {
@@ -85,17 +86,13 @@ export const sendVerificationCode = functions.https.onCall({
 
     if (resendApiKey) {
       try {
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #1e3a8a;">Verify your FASE account</h2>
-            <p>Your verification code is:</p>
-            <div style="background: #f3f4f6; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #1e3a8a;">${code}</span>
-            </div>
-            <p style="color: #6b7280; font-size: 14px;">This code will expire in 20 minutes.</p>
-            <p style="color: #6b7280; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
-          </div>
-        `;
+        // Use provided locale or default to English
+        const userLanguage = (locale === 'fr' ? 'fr' : 'en') as 'en' | 'fr';
+        logger.info(`Language for ${email}: ${userLanguage} (from locale: ${locale})`);
+        
+        // Get localized email template
+        const template = getEmailTemplate('verificationCode', userLanguage) as { subject: string; html: (code: string) => string };
+        const emailHtml = template.html(code);
 
         logger.info('Sending email via Resend...');
         const response = await fetch('https://api.resend.com/emails', {
@@ -107,7 +104,7 @@ export const sendVerificationCode = functions.https.onCall({
           body: JSON.stringify({
             from: 'FASE <noreply@fasemga.com>',
             to: email,
-            subject: 'Verify your FASE account',
+            subject: template.subject,
             html: emailHtml,
           }),
         });
@@ -218,8 +215,8 @@ export const sendInvoiceEmail = functions.https.onCall({
     const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
     logger.info('sendInvoiceEmail called for:', email);
 
-    if (!email || !invoiceHTML || !invoiceNumber) {
-      throw new functions.https.HttpsError('invalid-argument', 'Email, invoice HTML, and invoice number are required');
+    if (!email || !invoiceNumber) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email and invoice number are required');
     }
 
     // Check for Resend API key using environment variables
@@ -230,11 +227,21 @@ export const sendInvoiceEmail = functions.https.onCall({
       try {
         logger.info('Sending invoice email via Resend...');
         
+        // Detect user's preferred language
+        const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+        logger.info(`Detected language for invoice ${email}: ${userLanguage}`);
+        
+        // Get localized email template
+        const template = getEmailTemplate('invoice', userLanguage) as { subject: (invoiceNumber: string, totalAmount: string) => string; html: (invoiceNumber: string, organizationName: string, totalAmount: string) => string };
+        
+        // Use custom HTML if provided, otherwise use localized template
+        const emailHtml = invoiceHTML || template.html(invoiceNumber, organizationName || 'Organization', totalAmount || '0');
+        
         const emailPayload: any = {
           from: 'FASE <noreply@fasemga.com>',
           to: email,
-          subject: `FASE Membership Invoice ${invoiceNumber} - €${totalAmount}`,
-          html: invoiceHTML,
+          subject: template.subject(invoiceNumber, totalAmount || '0'),
+          html: emailHtml,
         };
         
         // Add PDF attachment if provided
@@ -294,58 +301,24 @@ export const sendJoinRequestNotification = functions.https.onCall({
     const resendApiKey = process.env.RESEND_API_KEY;
     logger.info('Resend API key configured:', !!resendApiKey);
 
+    // Detect user's preferred language
+    const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+    logger.info(`Detected language for join request ${email}: ${userLanguage}`);
+
     const isApproved = status === 'approved';
-    const subject = `FASE Join Request ${isApproved ? 'Approved' : 'Update'} - ${companyName}`;
     
-    let emailHtml = '';
+    // Get localized email template
+    let emailHtml;
+    let subject;
     
     if (isApproved) {
-      emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1e3a8a;">Your join request has been approved!</h2>
-          <p>Dear ${fullName},</p>
-          <p>Great news! Your request to join <strong>${companyName}</strong> has been approved by the company administrator.</p>
-          
-          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1e3a8a; margin-top: 0;">Next Steps:</h3>
-            <p>You can now create your FASE account and access your organization's membership benefits:</p>
-            <ol>
-              <li>Visit <a href="https://fasemga.com/register" style="color: #1e3a8a;">fasemga.com/register</a></li>
-              <li>Sign up with this email address (${email})</li>
-              <li>Complete the registration process</li>
-              <li>You'll automatically be associated with ${companyName}</li>
-            </ol>
-          </div>
-          
-          ${adminNotes ? `
-          <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <strong>Message from Administrator:</strong>
-            <p style="margin: 10px 0 0 0;">${adminNotes}</p>
-          </div>
-          ` : ''}
-          
-          <p>Welcome to the Federation of European MGAs!</p>
-          <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
-        </div>
-      `;
+      const approvedTemplate = getEmailTemplate('joinRequestApproved', userLanguage) as { subject: (companyName: string) => string; html: (fullName: string, email: string, companyName: string, adminNotes?: string) => string };
+      subject = approvedTemplate.subject(companyName);
+      emailHtml = approvedTemplate.html(fullName, email, companyName, adminNotes);
     } else {
-      emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #dc2626;">Join Request Update</h2>
-          <p>Dear ${fullName},</p>
-          <p>We have an update regarding your request to join <strong>${companyName}</strong>.</p>
-          
-          <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Status:</strong> ${status === 'rejected' ? 'Not approved at this time' : status}</p>
-            ${adminNotes ? `
-            <p><strong>Message from Administrator:</strong></p>
-            <p>${adminNotes}</p>
-            ` : ''}
-          </div>
-          
-          <p>If you have any questions about this decision, please contact the company administrator directly or reach out to us at <a href="mailto:support@fasemga.com">support@fasemga.com</a></p>
-        </div>
-      `;
+      const updateTemplate = getEmailTemplate('joinRequestUpdate', userLanguage) as { subject: (companyName: string) => string; html: (fullName: string, companyName: string, status: string, adminNotes?: string) => string };
+      subject = updateTemplate.subject(companyName);
+      emailHtml = updateTemplate.html(fullName, companyName, status, adminNotes);
     }
 
     if (resendApiKey) {
@@ -445,27 +418,14 @@ export const sendPasswordReset = functions.https.onCall({
 
     if (resendApiKey) {
       try {
-        const resetUrl = `https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+        // Detect user's preferred language
+        const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+        logger.info(`Detected language for password reset ${email}: ${userLanguage}`);
         
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #1e3a8a;">Reset your FASE password</h2>
-            <p>You requested a password reset for your FASE account.</p>
-            
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p>Click the button below to reset your password:</p>
-              <div style="text-align: center; margin: 20px 0;">
-                <a href="${resetUrl}" style="background-color: #1e3a8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
-              </div>
-              <p style="font-size: 14px; color: #6b7280;">Or copy and paste this link in your browser:<br>
-              <a href="${resetUrl}" style="color: #1e3a8a; word-break: break-all;">${resetUrl}</a></p>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour.</p>
-            <p style="color: #6b7280; font-size: 14px;">If you didn't request this password reset, please ignore this email.</p>
-            <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
-          </div>
-        `;
+        // Get localized email template
+        const template = getEmailTemplate('passwordReset', userLanguage) as { subject: string; html: (resetUrl: string) => string };
+        const resetUrl = `https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+        const emailHtml = template.html(resetUrl);
 
         logger.info('Sending password reset email via Resend...');
         const response = await fetch('https://api.resend.com/emails', {
@@ -477,7 +437,7 @@ export const sendPasswordReset = functions.https.onCall({
           body: JSON.stringify({
             from: 'FASE <noreply@fasemga.com>',
             to: email,
-            subject: 'Reset your FASE password',
+            subject: template.subject,
             html: emailHtml,
           }),
         });

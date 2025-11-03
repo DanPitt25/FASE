@@ -49,7 +49,7 @@ export const checkDomainExists = async (emailAddress: string): Promise<boolean> 
 
 // Create account and membership
 export const createAccountAndMembership = async (
-  status: 'pending_payment' | 'pending_invoice' | 'pending',
+  status: 'pending_payment' | 'pending_invoice' | 'pending' | 'draft',
   formData: {
     email: string;
     password: string;
@@ -245,6 +245,9 @@ export const createAccountAndMembership = async (
       }
 
       // Welcome message creation would go here if needed
+      
+      // Return the user ID for draft storage
+      return user.uid;
       
     } catch (firestoreError) {
       // Cleanup auth account if Firestore fails

@@ -105,7 +105,7 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
 
 
 // Generate and send verification code (works without authentication)
-export const sendVerificationCode = async (email: string): Promise<void> => {
+export const sendVerificationCode = async (email: string, locale?: string): Promise<void> => {
   try {
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -115,7 +115,11 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
     const { functions } = await import('./firebase');
     
     const sendEmailFunction = httpsCallable(functions, 'sendVerificationCode');
-    const result = await sendEmailFunction({ email, code });
+    const result = await sendEmailFunction({ 
+      email, 
+      code,
+      locale: locale || 'en' // Pass the current locale
+    });
     
     if (!result.data || !(result.data as any).success) {
       throw new Error('Failed to send verification email');

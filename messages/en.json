@@ -152,8 +152,8 @@
         "subtitle": "Complete your membership application"
       },
       "submit_application": {
-        "title": "Submit your application",
-        "subtitle": "Review your information and submit your membership application"
+        "title": "Confirm your application",
+        "subtitle": "Please confirm your agreement to our Code of Conduct"
       }
     },
     "fields": {
@@ -260,9 +260,9 @@
     },
     "pricing": {
       "title": "Annual membership fee (founding member)",
-      "base_fee": "Base Fee",
-      "member_discount": "Member Discount (20%)",
-      "total_fee": "Total annual fee",
+      "membership_fee": "Base Fee",
+      "discount": "Member Discount (20%)",
+      "total_annual": "Total annual fee",
       "billing_note": "Membership is billed annually, with notice prior to renewal.",
       "discount_note": "* 20% discount applied for members of other European MGA associations."
     },
@@ -273,6 +273,22 @@
       "review_submit": "Review & Submit",
       "submitting_application": "Submitting Application...",
       "submit_application": "Submit Application"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "subtitle": "Choose how you would like to pay your membership fee",
+      "paypal": {
+        "title": "Pay with PayPal",
+        "description": "Pay immediately using PayPal or credit card",
+        "button": "Pay with PayPal"
+      },
+      "invoice": {
+        "title": "Request Invoice",
+        "description": "Receive an invoice via email for bank transfer payment",
+        "button": "Request Invoice"
+      },
+      "processing": "Processing...",
+      "note": "After selecting your payment method, your application will be submitted for review."
     },
     "registration_complete": {
       "title": "Registration Complete!",
