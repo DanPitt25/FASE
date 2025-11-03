@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db } = await initializeAdmin();
+    // const { db } = await initializeAdmin(); // Skipped - not storing invoice records
 
     // Generate simple 5-digit invoice number
     const invoiceNumber = String(10000 + Math.floor(Math.random() * 90000));
@@ -566,17 +566,17 @@ export async function POST(request: NextRequest) {
       // Continue without PDF - will send HTML email instead
     }
     
-    // Store invoice record
-    await db.collection('invoices').doc(invoiceNumber).set({
-      userId: userUid,
-      userEmail,
-      membershipData,
-      invoiceNumber,
-      totalAmount,
-      status: 'sent',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    });
+    // Store invoice record (skipped - requires admin permissions in production)
+    // await db.collection('invoices').doc(invoiceNumber).set({
+    //   userId: userUid,
+    //   userEmail,
+    //   membershipData,
+    //   invoiceNumber,
+    //   totalAmount,
+    //   status: 'sent',
+    //   createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    //   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    // });
 
     // Application processing would happen here but requires admin SDK
     // For now, just generate invoice and let the Firebase function handle the rest

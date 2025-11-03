@@ -111,6 +111,9 @@ export const createAccountAndMembership = async (
     
     await updateProfile(user, { displayName });
 
+    // Small delay to ensure auth state propagates to Firestore
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     // Step 2: Create Firestore documents
     try {
       if (formData.membershipType === 'corporate') {
@@ -135,7 +138,7 @@ export const createAccountAndMembership = async (
           status,
           personalName: '',
           isCompanyAccount: true,
-          accountAdministratorMemberId: user.uid,
+          primaryContactMemberId: user.uid,
           paymentUserId: user.uid,
           membershipType: 'corporate' as const,
           organizationName: formData.organizationName,

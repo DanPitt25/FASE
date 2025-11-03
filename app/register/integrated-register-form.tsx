@@ -557,22 +557,11 @@ export default function IntegratedRegisterForm() {
         otherRating
       });
 
-      // Store full application data for later processing (filter out undefined values)
-      const fullApplicationData = Object.fromEntries(
-        Object.entries({
-          ...applicationData,
-          userId: draftUserId,
-          paymentMethod: selectedPaymentMethod
-        }).filter(([_, value]) => value !== undefined)
-      );
+      // Account document already created by createAccountAndMembership with all necessary data
 
       // Handle payment method
       if (selectedPaymentMethod === 'invoice') {
-        // Store application data for processing after invoice generation
-        const { db } = await import('../../lib/firebase');
-        const { doc, setDoc } = await import('firebase/firestore');
-        
-        await setDoc(doc(db, 'draft_applications', draftUserId), fullApplicationData);
+        // Account document already created by createAccountAndMembership above
 
         // Generate and send invoice with application processing
         const membershipData = {
@@ -625,11 +614,7 @@ export default function IntegratedRegisterForm() {
         window.location.href = '/register/thank-you';
         
       } else if (selectedPaymentMethod === 'paypal') {
-        // Store application data for processing after PayPal payment
-        const { db } = await import('../../lib/firebase');
-        const { doc, setDoc } = await import('firebase/firestore');
-        
-        await setDoc(doc(db, 'draft_applications', draftUserId), fullApplicationData);
+        // Account document already created by createAccountAndMembership above
 
         const orgName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
         
