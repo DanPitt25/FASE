@@ -11,6 +11,7 @@ import { TeamMembersSection } from './member-management';
 import { AddressSection } from './address-components';
 import { MGAPortfolioSection } from './mga-components';
 import { CarrierInformationSection, ServiceProviderSection } from './carrier-provider-components';
+import { EuropeanAssociationsSection } from './associations-components';
 import { checkDomainExists, createAccountAndMembership } from './registration-handlers';
 import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, calculateTotalGWP } from './registration-utils';
 
@@ -867,10 +868,6 @@ export default function IntegratedRegisterForm() {
               setOtherLineOfBusiness3={setOtherLineOfBusiness3}
               selectedMarkets={selectedMarkets}
               setSelectedMarkets={setSelectedMarkets}
-              hasOtherAssociations={hasOtherAssociations}
-              setHasOtherAssociations={setHasOtherAssociations}
-              otherAssociations={otherAssociations}
-              setOtherAssociations={setOtherAssociations}
               calculateTotalGWP={calculateTotalGWP}
             />
           )}
@@ -901,6 +898,16 @@ export default function IntegratedRegisterForm() {
             <ServiceProviderSection
               servicesProvided={servicesProvided}
               setServicesProvided={setServicesProvided}
+            />
+          )}
+
+          {/* European MGA Associations - for all organization types */}
+          {membershipType === 'corporate' && (
+            <EuropeanAssociationsSection
+              hasOtherAssociations={hasOtherAssociations}
+              setHasOtherAssociations={setHasOtherAssociations}
+              otherAssociations={otherAssociations}
+              setOtherAssociations={setOtherAssociations}
             />
           )}
       </div>
