@@ -6,33 +6,33 @@ export default function EventsPage() {
   const sections = [
     {
       type: 'split' as const,
-      title: 'FASE Events',
+      title: 'FASE events',
       content: [
-        'Our flagship networking event brings together MGAs, capacity providers, and selected service providers from across Europe to foster collaboration and grow business relationships.',
+        'Our events brings together MGAs, capacity providers, brokers and key service providers from across Europe to foster collaboration and grow business relationships.',
         'FASE events create opportunities for meaningful connections that drive the European delegated underwriting market forward.'
       ],
-      image: '/seated.jpg',
+      image: '/hivan.jpg',
       imageAlt: 'European business networking event',
       imagePosition: 'right' as const
     },
     {
       type: 'cards' as const,
-      title: 'Event Features',
+      title: 'Event features',
       cards: [
         {
-          title: 'Capacity Matching',
+          title: 'Expand capacity relationships',
           description: 'Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.',
           image: '/consideration.jpg',
           imageAlt: 'Business matching'
         },
         {
-          title: 'Market Insights',
+          title: 'Market insights',
           description: 'Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.',
           image: '/training.jpg',
           imageAlt: 'Market analysis'
         },
         {
-          title: 'Professional Development',
+          title: 'Professional development',
           description: 'Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.',
           image: '/market.jpg',
           imageAlt: 'Professional development'
@@ -52,7 +52,7 @@ export default function EventsPage() {
           variant: 'primary' as const
         },
         {
-          text: 'Learn More About Rendezvous',
+          text: 'MGA Rendezvous',
           href: '/networking/rendezvous',
           variant: 'secondary' as const
         }

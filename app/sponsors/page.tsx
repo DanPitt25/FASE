@@ -39,18 +39,7 @@ export default function SponsorsPage() {
           imageAlt: 'Market analysis and research'
         }
       ]
-    },
-    {
-      type: 'split' as const,
-      title: 'Partnership Packages',
-      content: [
-        'We offer flexible partnership packages designed to meet diverse business objectives and budgets. From title sponsorship of our annual conference to targeted digital marketing opportunities.',
-        'Each partnership is tailored to provide maximum value and ROI, ensuring your organization gains meaningful exposure and connects with the right audience in European insurance markets.'
-      ],
-      image: '/market.jpg',
-      imageAlt: 'Business partnership meeting',
-      imagePosition: 'left' as const
-    },
+    }
   ];
 
   return (

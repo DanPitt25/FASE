@@ -84,7 +84,13 @@ interface PeopleSection {
   }>;
 }
 
-type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection;
+interface ContentOnlySection {
+  type: 'content';
+  title: string;
+  content: string[];
+}
+
+type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection | ContentOnlySection;
 
 interface ContentPageLayoutProps {
   title: string;
@@ -93,6 +99,7 @@ interface ContentPageLayoutProps {
   sections: ContentSection[];
   currentPage: string;
 }
+
 
 export default function ContentPageLayout({
   title,
@@ -426,7 +433,21 @@ export default function ContentPageLayout({
                         </svg>
                       </summary>
                       <div className="px-6 pb-5">
-                        <p className="text-fase-black leading-relaxed">{item.content}</p>
+                        <div className="text-fase-black leading-relaxed space-y-4">
+                          {item.content.split('\n\n').map((paragraph, pIndex) => {
+                            if (paragraph.trim().startsWith('•')) {
+                              return (
+                                <div key={pIndex} className="ml-4">
+                                  <p className="leading-relaxed">{paragraph.trim()}</p>
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <p key={pIndex} className="leading-relaxed">{paragraph.trim()}</p>
+                              );
+                            }
+                          })}
+                        </div>
                       </div>
                     </details>
                   ))}
@@ -509,11 +530,11 @@ export default function ContentPageLayout({
                       }}
                     >
                       <div className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0">
-                        <div className="w-52 h-auto mx-auto rounded-lg overflow-hidden">
+                        <div className="w-72 h-80 mx-auto rounded-lg overflow-hidden">
                           <img 
                             src={person.image} 
                             alt={person.name}
-                            className="w-full h-auto object-cover object-top"
+                            className="w-full h-full object-cover object-top"
                           />
                         </div>
                       </div>
@@ -580,19 +601,60 @@ export default function ContentPageLayout({
                           </a>
                         </div>
                         
-                        {/* Address */}
-                        <div className="flex items-start justify-center">
-                          <svg className="w-6 h-6 text-fase-navy mr-4 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <div className="text-lg text-fase-black text-center">
-                            <div>Herengracht 124</div>
-                            <div>1015 BT Amsterdam</div>
-                            <div>Netherlands</div>
-                          </div>
-                        </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+
+      case 'content':
+        return (
+          <div key={index}>
+            {/* Blue ribbon separator */}
+            <div ref={ribbonAnimations[index].elementRef} className="relative h-12">
+              <div className={`absolute ${isEven ? 'right-0' : 'left-0'} h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+                ribbonAnimations[index].isVisible ? (isEven ? 'scroll-visible-right' : 'scroll-visible-left') : (isEven ? 'scroll-hidden-right' : 'scroll-hidden-left')
+              }`} style={{ width: '61.8%' }}></div>
+            </div>
+            {/* Content Section */}
+            <section ref={animation.elementRef} className="bg-white py-24 lg:py-32 2xl:py-40">
+              <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+                <div className="max-w-4xl mx-auto">
+                  <div className={`transition-all duration-700 ${
+                    animation.isVisible ? 'scroll-visible' : 'scroll-hidden'
+                  }`}>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-noto-serif font-medium text-fase-navy mb-12 text-center">
+                      {section.title}
+                    </h2>
+                    
+                    <div className="prose prose-lg max-w-none text-fase-black">
+                      {section.content.map((paragraph, idx) => {
+                        // Check if paragraph contains an email address
+                        const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+                        const parts = paragraph.split(emailRegex);
+                        
+                        return (
+                          <p key={idx} className="mb-6 text-lg leading-relaxed">
+                            {parts.map((part, partIdx) => {
+                              if (emailRegex.test(part)) {
+                                return (
+                                  <a 
+                                    key={partIdx}
+                                    href={`mailto:${part}`}
+                                    className="text-fase-navy hover:text-fase-gold transition-colors underline"
+                                  >
+                                    {part}
+                                  </a>
+                                );
+                              }
+                              return part;
+                            })}
+                          </p>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

@@ -6,10 +6,10 @@ export default function AboutPage() {
   const sections = [
     {
       type: 'split' as const,
-      title: 'A Voice for Europe\'s Insurance Innovators',
+      title: 'A Voice for Europe\'s insurance innovators',
       content: [
-        'FASE launched as a pan-European federation to serve the needs of Europe\'s managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers.',
-        'We share best practices in a rapidly growing sector of the market, offering a wide array of informational and educational services for MGAs through webinars, bulletins and our monthly digital magazine, The Entrepreneurial Underwriter.'
+        'FASE is pan-European federation established to serve the needs of Europe\'s managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers.',
+        'We share best practices in a rapidly growing sector of the market, offering an array of informational and educational services for MGAs through webinars, bulletins and our monthly digital magazine, The Entrepreneurial Underwriter.'
       ],
       image: '/airplane.jpeg',
       imageAlt: 'European insurance innovators',
@@ -28,29 +28,18 @@ export default function AboutPage() {
     },
     {
       type: 'quote' as const,
-      quote: 'As our members look to grow their business, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.',
-      author: 'Dario Spata',
-      title: 'President, ASASE'
+      quote: 'The MGA model is gaining momentum globally, and we expect this trend to continue, particularly in Europe. Well-managed and highly professional MGA associations can play a pivotal role in contributing to sector\'s growth. We see FASE stepping into this space to enhance and strengthen the MGA ecosystem across Europe.',
+      author: 'Olaf Jonda',
+      title: 'CEO, DUAL Europe'
     },
     {
       type: 'split' as const,
-      title: 'Leadership & Governance',
-      content: [
-        'FASE is managed by an executive team guided by an advisory board comprising representatives of MGAs and national MGA associations, alongside representatives of major capacity providers.',
-        'Our advisory board includes leaders from established associations like the MGAA (UK), ASASE (Spain), and industry executives from across Europe, ensuring diverse perspectives and expertise guide our strategic direction.'
-      ],
-      image: '/seated.jpg',
-      imageAlt: 'Business leadership meeting',
-      imagePosition: 'left' as const
-    },
-    {
-      type: 'split' as const,
-      title: 'Building Connections Across Europe',
+      title: 'Building connections across Europe',
       content: [
         'MGAs bring product innovation and a very high standard of customer service to the markets they serve. But they depend on close relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – to sustain their business.',
         'FASE offers opportunities for MGAs from across Europe to broaden their relationships with capacity providers and distributors through a series of events, including the pan-European MGA Rendezvous.'
       ],
-      image: '/training.jpg',
+      image: '/gettingAlong.jpeg',
       imageAlt: 'Professional networking event',
       imagePosition: 'right' as const
     },

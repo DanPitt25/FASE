@@ -115,7 +115,7 @@ export default function Page() {
     {
       title: tHomepage('impact.networking.title'),
       description: tHomepage('impact.networking.description'),
-      image: "/conferenceWood.jpg",
+      image: "/earlyMorning.jpg",
       icon: (
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -125,7 +125,7 @@ export default function Page() {
     {
       title: tHomepage('impact.professional_development.title'),
       description: tHomepage('impact.professional_development.description'),
-      image: "/training.jpg",
+      image: "/hivan.jpg",
       icon: (
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -152,10 +152,6 @@ export default function Page() {
     {
       title: tHomepage('standards.standards_alignment.title'),
       description: tHomepage('standards.standards_alignment.description')
-    },
-    {
-      title: tHomepage('standards.peer_endorsement.title'), 
-      description: tHomepage('standards.peer_endorsement.description')
     },
     {
       title: tHomepage('standards.ongoing_review.title'),
@@ -255,7 +251,7 @@ export default function Page() {
         {/* Content */}
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
           <div className="max-w-lg xl:max-w-xl 2xl:max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-relaxed">
               {tHomepage('hero.title')}
             </h1>
             <p className="text-lg sm:text-xl text-fase-black mb-8 font-lato leading-relaxed">
@@ -519,9 +515,6 @@ export default function Page() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/join" className="inline-flex items-center px-8 py-4 bg-white text-fase-navy font-semibold  hover:bg-fase-light-blue transition-colors">
               {tHomepage('why_join.become_member')}
-            </a>
-            <a href="/events" className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold  hover:bg-white hover:text-fase-navy transition-colors">
-              {tHomepage('why_join.view_events')}
             </a>
           </div>
           

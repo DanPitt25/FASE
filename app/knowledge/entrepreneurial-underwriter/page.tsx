@@ -8,8 +8,7 @@ export default function EntrepreneurialUnderwriterPage() {
       type: 'split' as const,
       title: 'The Entrepreneurial Underwriter',
       content: [
-        'Dedicated content for MGAs and delegated underwriting professionals who drive innovation and growth in the European insurance marketplace.',
-        'Explore insights, case studies, and practical guidance specifically designed for entrepreneurial professionals shaping the future of European delegated underwriting.'
+        'Beginning in 2026, the Entrepreneurial Underwriter – our flagship publication – will gather insights and practical guidance for entrepreneurs who are shaping the future of European delegated underwriting.'
       ],
       image: '/computer.jpeg',
       imageAlt: 'Entrepreneurial underwriting insights',
@@ -41,7 +40,7 @@ export default function EntrepreneurialUnderwriterPage() {
     },
     {
       type: 'quote' as const,
-      quote: 'The entrepreneurial spirit of MGAs drives innovation across European insurance markets, creating value for capacity providers and end customers alike.',
+      quote: 'Delegated authority underwriting has become the most entrepreneurial sector of the insurance market. Our goal at FASE is to marshal the resources to help entrepreneurial underwriters succeed.',
       author: 'William Pitt',
       title: 'Executive Director, FASE'
     }

@@ -8,8 +8,7 @@ export default function WebinarsPage() {
       type: 'split' as const,
       title: 'Expert-Led Webinar Series',
       content: [
-        'Interactive learning sessions designed specifically for European MGA professionals, featuring industry experts and thought leaders.',
-        'Our webinar series covers essential topics including regulatory compliance, market development, capacity relationships, and operational excellence.'
+        'Our webinar series focusses on the most press needs of European MGA professionals featuring industry experts and thought leaders. Areas of focus will include regulatory challenges, recruitment, data management issues, and professional standards.'
       ],
       image: '/seminar.jpg',
       imageAlt: 'Online learning and webinars',
@@ -20,44 +19,22 @@ export default function WebinarsPage() {
       title: 'Upcoming Webinars',
       cards: [
         {
-          title: 'European Regulatory Update',
-          description: 'Comprehensive overview of regulatory developments affecting MGAs across European jurisdictions, with practical implementation guidance.',
+          title: 'Regulatory Hurdles',
+          description: 'Market by market analysis of the regulatory landscape for MGAs and how to overcome regulatory barriers.',
           image: '/regulatory.jpg',
           imageAlt: 'Regulatory compliance'
         },
         {
-          title: 'Capacity Relationship Management',
-          description: 'Best practices for building and maintaining strong relationships with insurance companies, reinsurers, and Lloyd\'s syndicates.',
+          title: 'Capital Structures and Incentives',
+          description: 'Advice on how to optimise alignment with capacity providers to secure durable capacity.',
           image: '/conferenceWood.jpg',
           imageAlt: 'Business relationships'
         },
         {
-          title: 'Digital Transformation in MGAs',
-          description: 'Leveraging technology to improve underwriting efficiency, customer experience, and operational performance in delegated underwriting.',
+          title: 'AI: The Promise and the Peril',
+          description: 'AI promises huge gains for MGAs in operational efficiency, risk pricing, and improving the broker and customer experience. But some use cases are more speculative than others.',
           image: '/data.jpg',
           imageAlt: 'Digital transformation'
-        }
-      ]
-    },
-    {
-      type: 'accordion' as const,
-      title: 'Webinar Information',
-      items: [
-        {
-          title: 'Who can attend?',
-          content: 'Webinars are exclusive to FASE members and cover topics specifically relevant to European MGA professionals and their capacity partners.'
-        },
-        {
-          title: 'How do I register?',
-          content: 'Members receive webinar invitations via email with registration links. All sessions are recorded for later viewing through the member portal.'
-        },
-        {
-          title: 'What topics are covered?',
-          content: 'Our curriculum includes regulatory updates, market intelligence, operational best practices, technology implementation, and capacity relationship management.'
-        },
-        {
-          title: 'Are materials provided?',
-          content: 'Yes, all attendees receive presentation materials, relevant resources, and access to recorded sessions through the FASE member portal.'
         }
       ]
     }
