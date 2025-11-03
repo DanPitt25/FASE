@@ -4,157 +4,18 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
 import Button from "../../components/Button";
-import SearchableCountrySelect from "../../components/SearchableCountrySelect";
-import { countries, europeanCountries } from "../../lib/countries";
-import { handleAuthError } from "../../lib/auth-errors";
-import { auth } from "../../lib/firebase";
+import { ValidatedInput, validatePassword } from './form-components';
+import { Member } from './registration-hooks';
+import { AccountInformationStep, OrganizationTypeSelector } from './step-components';
+import { TeamMembersSection } from './member-management';
+import { AddressSection } from './address-components';
+import { MGAPortfolioSection } from './mga-components';
+import { CarrierInformationSection, ServiceProviderSection } from './carrier-provider-components';
+import { checkDomainExists, createAccountAndMembership } from './registration-handlers';
+import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, calculateTotalGWP } from './registration-utils';
 
-// Password validation function
-const validatePassword = (password: string) => {
-  const requirements = {
-    length: password.length >= 8,
-    capital: /[A-Z]/.test(password),
-    special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-  };
-  
-  const isValid = requirements.length && requirements.capital && requirements.special;
-  return { requirements, isValid };
-};
 
-// Validated input component
-const ValidatedInput = ({ 
-  label, 
-  fieldKey, 
-  value, 
-  onChange, 
-  type = "text", 
-  placeholder, 
-  required = false,
-  className = "",
-  touchedFields,
-  attemptedNext,
-  markFieldTouched,
-  ...props 
-}: {
-  label: string;
-  fieldKey: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  placeholder?: string;
-  required?: boolean;
-  className?: string;
-  touchedFields: Record<string, boolean>;
-  attemptedNext: boolean;
-  markFieldTouched: (fieldKey: string) => void;
-  [key: string]: any;
-}) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const isValid = value.trim() !== '';
-  const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
-  const isPasswordField = type === "password";
-  const inputType = isPasswordField ? (showPassword ? "text" : "password") : type;
-  
-  return (
-    <div className={className}>
-      {label && (
-        <label className="block text-sm font-medium text-fase-navy mb-2">
-          {label} {required && '*'}
-        </label>
-      )}
-      <div className="relative">
-        <input
-          type={inputType}
-          value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            markFieldTouched(fieldKey);
-          }}
-          onBlur={() => markFieldTouched(fieldKey)}
-          placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-            shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
-          } ${props.disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''} ${
-            isPasswordField ? 'pr-10' : ''
-          }`}
-          {...props}
-        />
-        {isPasswordField && (
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-fase-navy hover:text-fase-gold transition-colors"
-          >
-            {showPassword ? (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-              </svg>
-            ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            )}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
 
-// Validated select component
-const ValidatedSelect = ({ 
-  label, 
-  fieldKey, 
-  value, 
-  onChange, 
-  options,
-  required = false,
-  className = "",
-  touchedFields,
-  attemptedNext,
-  markFieldTouched
-}: {
-  label: string;
-  fieldKey: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: Array<{value: string, label: string}>;
-  required?: boolean;
-  className?: string;
-  touchedFields: Record<string, boolean>;
-  attemptedNext: boolean;
-  markFieldTouched: (fieldKey: string) => void;
-}) => {
-  const isValid = value.trim() !== '';
-  const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
-  
-  return (
-    <div className={className}>
-      <label className="block text-sm font-medium text-fase-navy mb-2">
-        {label} {required && '*'}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          markFieldTouched(fieldKey);
-        }}
-        onBlur={() => markFieldTouched(fieldKey)}
-        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
-          shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
-        }`}
-      >
-        <option value="">Select...</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
 
 export default function IntegratedRegisterForm() {
   // URL parameter handling
@@ -169,20 +30,9 @@ export default function IntegratedRegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   
   // Membership fields
-  const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('corporate');
+  const [membershipType] = useState<'individual' | 'corporate'>('corporate');
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState(typeFromUrl || "");
-  // Corporate members management (up to 3 people)
-  interface Member {
-    id: string;
-    firstName: string;
-    lastName: string;
-    name: string; // computed field for backward compatibility
-    email: string;
-    phone: string;
-    jobTitle: string;
-    isPrimaryContact: boolean;
-  }
   
   const [members, setMembers] = useState<Member[]>([]);
   
@@ -226,47 +76,33 @@ export default function IntegratedRegisterForm() {
   const [otherLineOfBusiness2, setOtherLineOfBusiness2] = useState('');
   const [otherLineOfBusiness3, setOtherLineOfBusiness3] = useState('');
   const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
-  const [currentMarketSelection, setCurrentMarketSelection] = useState('');
   
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
   const [otherAssociations, setOtherAssociations] = useState<string[]>([]);
   
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   
-  // Helper function to calculate total GWP from magnitude inputs
-  const calculateTotalGWP = () => {
-    const billions = parseFloat(gwpBillions) || 0;
-    const millions = parseFloat(gwpMillions) || 0;
-    const thousands = parseFloat(gwpThousands) || 0;
-    
-    // Convert everything to millions for consistency with getGWPBand()
-    const totalInMillions = billions * 1000 + millions + thousands / 1000;
-    return totalInMillions;
-  };
   
   // Update grossWrittenPremiums whenever magnitude inputs change
   useEffect(() => {
-    const total = calculateTotalGWP();
-    setGrossWrittenPremiums(total.toString());
+    const total = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
+    setGrossWrittenPremiums((total / 1000000).toString()); // Convert to millions for consistency
   }, [gwpBillions, gwpMillions, gwpThousands]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const [step, setStep] = useState(typeFromUrl ? 0 : -1);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
-  const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'invoice'>('paypal');
   
   // Email verification state for after account creation
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
-  const [pendingPaymentAction, setPendingPaymentAction] = useState<'paypal' | 'invoice' | null>(null);
+  const [pendingPaymentAction] = useState<'paypal' | 'invoice' | null>(null);
   
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
@@ -289,87 +125,10 @@ export default function IntegratedRegisterForm() {
     setTouchedFields(prev => ({ ...prev, [fieldKey]: true }));
   };
 
-  const organizationTypeOptions = [
-    { value: 'MGA', label: 'Managing General Agent (MGA)' },
-    { value: 'carrier', label: 'Insurance Carrier' },
-    { value: 'provider', label: 'Service Provider' }
-  ];
-
-  // Lines of business options
-  const linesOfBusinessOptions = [
-    'Accident & Health',
-    'Aviation',
-    'Bloodstock',
-    'Casualty',
-    'Construction',
-    'Cyber',
-    'Energy',
-    'Event Cancellation',
-    'Fine Art & Specie',
-    'Legal Expenses',
-    'Life',
-    'Livestock',
-    'Marine',
-    'Management Liability (D&O, EPLI etc)',
-    'Motor, commercial',
-    'Motor, personal lines',
-    'Pet',
-    'Political Risk',
-    'Professional Indemnity / E&O',
-    'Property, commercial',
-    'Property, personal lines',
-    'Surety',
-    'Trade Credit',
-    'Travel',
-    'Warranty & Indemnity',
-    'Other',
-    'Other #2',
-    'Other #3'
-  ];
 
 
-  // Currency conversion rates (approximate modern rates)
-  const currencyRates = {
-    EUR: 1.0,
-    GBP: 1.17, // 1 GBP ≈ 1.17 EUR
-    USD: 0.92  // 1 USD ≈ 0.92 EUR
-  };
 
-  // Helper function to convert currency to EUR
-  const convertToEUR = (value: number, currency: string): number => {
-    const rate = currencyRates[currency as keyof typeof currencyRates] || 1;
-    return value * rate;
-  };
 
-  // Helper function to determine GWP band from EUR value
-  const getGWPBand = (eurValue: number): '<10m' | '10-20m' | '20-50m' | '50-100m' | '100-500m' | '500m+' => {
-    if (eurValue < 10) return '<10m';
-    if (eurValue < 20) return '10-20m';
-    if (eurValue < 50) return '20-50m';
-    if (eurValue < 100) return '50-100m';
-    if (eurValue < 500) return '100-500m';
-    return '500m+';
-  };
-
-  // Helper functions for managing selections
-  const toggleLineOfBusiness = (line: string) => {
-    setSelectedLinesOfBusiness(prev => 
-      prev.includes(line) 
-        ? prev.filter(l => l !== line)
-        : [...prev, line]
-    );
-  };
-
-  const addMarket = (countryCode: string) => {
-    if (countryCode && !selectedMarkets.includes(countryCode)) {
-      setSelectedMarkets(prev => [...prev, countryCode]);
-      setCurrentMarketSelection(''); // Reset the selection
-    }
-  };
-
-  const removeMarket = (countryCode: string) => {
-    setSelectedMarkets(prev => prev.filter(c => c !== countryCode));
-  };
 
 
 
@@ -541,332 +300,15 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const calculateMembershipFee = () => {
-    if (membershipType === 'individual') {
-      return 500;
-    } else if (membershipType === 'corporate' && organizationType === 'MGA') {
-      const gwpValue = parseFloat(grossWrittenPremiums) || 0;
-      if (gwpValue === 0) return 900; // Default if no GWP input
-      
-      // Convert to EUR for band calculation
-      const eurValue = convertToEUR(gwpValue, gwpCurrency);
-      const band = getGWPBand(eurValue);
-      
-      switch (band) {
-        case '<10m': return 900;
-        case '10-20m': return 1500;
-        case '20-50m': return 2200;
-        case '50-100m': return 2800;
-        case '100-500m': return 4200;
-        case '500m+': return 7000;
-        default: return 900;
-      }
-    } else if (membershipType === 'corporate' && organizationType === 'carrier') {
-      return 4000; // Flat rate for carriers
-    } else if (membershipType === 'corporate' && organizationType === 'provider') {
-      return 5000; // Flat rate for service providers
-    } else {
-      return 900; // Default corporate rate
-    }
+  const getCurrentMembershipFee = () => {
+    return calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency);
   };
 
-  const getDiscountedFee = () => {
-    const baseFee = calculateMembershipFee();
-    if (membershipType === 'corporate' && hasOtherAssociations) {
-      return Math.round(baseFee * 0.8); // 20% discount
-    }
-    return baseFee;
+  const getCurrentDiscountedFee = () => {
+    return getDiscountedFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, hasOtherAssociations || false);
   };
 
-  const checkDomainExists = async (emailAddress: string): Promise<boolean> => {
-    try {
-      const domain = emailAddress.split('@')[1]?.toLowerCase();
-      if (!domain) return false;
 
-      // Whitelist of common personal email domains that should be exempt from domain checks
-      const personalEmailDomains = [
-        'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.de',
-        'hotmail.com', 'hotmail.co.uk', 'hotmail.fr', 'hotmail.de', 'hotmail.it',
-        'outlook.com', 'outlook.co.uk', 'outlook.fr', 'outlook.de', 'outlook.it',
-        'live.com', 'live.co.uk', 'live.fr', 'live.de', 'live.it',
-        'msn.com', 'icloud.com', 'me.com', 'mac.com',
-        'aol.com', 'aol.co.uk', 'protonmail.com', 'proton.me',
-        'tutanota.com', 'mail.com', 'gmx.com', 'gmx.de', 'gmx.net',
-        'web.de', 'freenet.de', 't-online.de',
-        'orange.fr', 'laposte.net', 'free.fr', 'sfr.fr',
-        'libero.it', 'virgilio.it', 'alice.it',
-        'terra.com.br', 'bol.com.br', 'uol.com.br', 'globo.com',
-        'qq.com', '163.com', '126.com', 'sina.com',
-        'mail.ru', 'yandex.ru', 'rambler.ru',
-        'rediffmail.com', 'sify.com', 'indiatimes.com'
-      ];
-
-      // If it's a personal email domain, skip the domain check
-      if (personalEmailDomains.includes(domain)) {
-        return false;
-      }
-
-      const { collection, query, where, getDocs } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase');
-
-      // Check accounts collection for any email with the same domain
-      const accountsRef = collection(db, 'accounts');
-      const accountsQuery = query(accountsRef);
-      const accountsSnapshot = await getDocs(accountsQuery);
-
-      // Check if any account has an email with the same domain
-      for (const doc of accountsSnapshot.docs) {
-        const data = doc.data();
-        if (data.email) {
-          const existingDomain = data.email.split('@')[1]?.toLowerCase();
-          if (existingDomain === domain) {
-            return true;
-          }
-        }
-      }
-
-      // Also check company members subcollections
-      for (const accountDoc of accountsSnapshot.docs) {
-        const data = accountDoc.data();
-        if (data.isCompanyAccount) {
-          try {
-            const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
-            const membersSnapshot = await getDocs(membersRef);
-            
-            for (const memberDoc of membersSnapshot.docs) {
-              const memberData = memberDoc.data();
-              if (memberData.email) {
-                const memberDomain = memberData.email.split('@')[1]?.toLowerCase();
-                if (memberDomain === domain) {
-                  return true;
-                }
-              }
-            }
-          } catch (error) {
-            // Continue if we can't access members subcollection
-            console.warn('Could not check members for company:', accountDoc.id);
-          }
-        }
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Error checking domain existence:', error);
-      // If we can't check, allow the registration to proceed
-      return false;
-    }
-  };
-
-  const createAccountAndMembership = async (status: 'pending_payment' | 'pending_invoice' | 'pending') => {
-    setLoading(true);
-    setError("");
-
-    let userToCleanup: any = null;
-
-    try {
-      // Check if domain already exists before creating account
-      const domainExists = await checkDomainExists(email);
-      if (domainExists) {
-        throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
-      }
-      // Step 1: Create Firebase Auth account first (required for Storage permissions)
-      const { createUserWithEmailAndPassword, updateProfile, deleteUser } = await import('firebase/auth');
-      const { auth } = await import('@/lib/firebase');
-      
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      userToCleanup = user; // Store for potential cleanup
-      
-      // Create display name
-      const fullName = `${firstName} ${surname}`.trim();
-      const orgForAuth = membershipType === 'corporate' ? organizationName : undefined;
-      const displayName = orgForAuth && orgForAuth.trim()
-        ? `${fullName} (${orgForAuth})`
-        : fullName;
-      
-      await updateProfile(user, { displayName });
-
-
-      // Step 3: Create Firestore documents - if this fails, we'll clean up the auth account
-      try {
-        if (membershipType === 'corporate') {
-          // Use company-first structure with client-side Firestore
-          const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
-          const { db } = await import('@/lib/firebase');
-          
-          // Use Firebase Auth UID as company ID (primary contact's UID)
-          const companyId = user.uid;
-          
-          // Use a batch write to ensure atomicity of company + member creation
-          const batch = writeBatch(db);
-          
-          // Find primary contact from members
-          const primaryContactMember = members.find(m => m.isPrimaryContact);
-          if (!primaryContactMember) {
-            throw new Error("No account administrator designated");
-          }
-          
-          // Prepare company document
-          const companyRef = firestoreDoc(db, 'accounts', companyId);
-          const companyRecord = {
-            id: companyId,
-            email: user.email,
-            displayName: organizationName,
-            status,
-            personalName: '', // Empty for company accounts
-            isCompanyAccount: true,
-            accountAdministratorMemberId: user.uid,
-            paymentUserId: user.uid, // For webhook payment processing
-            membershipType: 'corporate' as const,
-            organizationName,
-            organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
-            accountAdministrator: {
-              name: primaryContactMember.name,
-              email: primaryContactMember.email,
-              phone: primaryContactMember.phone,
-              role: primaryContactMember.jobTitle
-            },
-            businessAddress: {
-              line1: addressLine1,
-              line2: addressLine2,
-              city,
-              county: state,
-              postcode: postalCode,
-              country: country
-            },
-            ...(organizationType === 'MGA' && {
-              portfolio: {
-                grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
-                grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
-                grossWrittenPremiumsCurrency: gwpCurrency,
-                grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
-                linesOfBusiness: selectedLinesOfBusiness,
-                otherLinesOfBusiness: {
-                  other1: otherLineOfBusiness1.trim(),
-                  other2: otherLineOfBusiness2.trim(),
-                  other3: otherLineOfBusiness3.trim()
-                },
-                markets: selectedMarkets
-              }
-            }),
-            hasOtherAssociations: hasOtherAssociations ?? false,
-            otherAssociations: hasOtherAssociations ? otherAssociations : [],
-            logoUrl: null,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          
-          batch.set(companyRef, companyRecord);
-          
-          // Create member documents for all members
-          for (const member of members) {
-            // For the registrant (current user), use their Firebase UID
-            // For other members, use generated IDs (they'll confirm accounts later)
-            const memberId = member.id === 'registrant' ? user.uid : member.id;
-            const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', memberId);
-            
-            const memberRecord = {
-              id: memberId,
-              email: member.email,
-              personalName: member.name,
-              jobTitle: member.jobTitle,
-              isAccountAdministrator: member.isPrimaryContact,
-              isRegistrant: member.id === 'registrant',
-              accountConfirmed: member.id === 'registrant', // Only registrant is confirmed initially
-              joinedAt: serverTimestamp(),
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp()
-            };
-            
-            batch.set(memberRef, memberRecord);
-          }
-          
-          // Commit the batch atomically
-          await batch.commit();
-          
-        } else {
-          // Traditional individual membership
-          const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          const { db } = await import('@/lib/firebase');
-          
-          const accountRef = firestoreDoc(db, 'accounts', user.uid);
-          
-          const dataToWrite = {
-            email: user.email,
-            displayName: user.displayName,
-            status,
-            membershipType,
-            personalName: fullName,
-            organizationName: fullName,
-            paymentUserId: user.uid, // For webhook payment processing
-            accountAdministrator: {
-              name: fullName,
-              email: user.email!,
-              phone: '', // Individual members don't need to provide phone during signup
-              role: 'Individual Member'
-            },
-            businessAddress: {
-              line1: addressLine1,
-              line2: addressLine2,
-              city,
-              county: state,
-              postcode: postalCode,
-              country: country
-            },
-            hasOtherAssociations: hasOtherAssociations ?? false,
-            otherAssociations: hasOtherAssociations ? otherAssociations : [],
-            logoUrl: null,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          
-          await setDoc(accountRef, dataToWrite);
-        }
-        
-        // If we reach here, both auth and firestore succeeded
-        userToCleanup = null; // Don't clean up on success
-        
-        // Create welcome message for new user (async, don't wait for completion)
-        try {
-          const { createWelcomeMessage } = await import('../../lib/unified-messaging');
-          createWelcomeMessage(user.uid).catch(error => {
-            console.error('Failed to create welcome message:', error);
-          });
-        } catch (error) {
-          console.error('Failed to import welcome message function:', error);
-        }
-        
-      } catch (firestoreError) {
-        // Firestore failed after auth succeeded - clean up auth account
-        console.error('Firestore operation failed, cleaning up auth account:', firestoreError);
-        
-        if (userToCleanup) {
-          try {
-            await deleteUser(userToCleanup);
-            console.log('Successfully cleaned up orphaned auth account');
-          } catch (cleanupError) {
-            console.error('Failed to clean up auth account:', cleanupError);
-            // Continue with the original error
-          }
-        }
-        
-        throw firestoreError;
-      }
-      
-    } catch (error: any) {
-      // Check for network/connection errors that might be caused by ad blockers
-      if (error.message?.includes('ERR_BLOCKED_BY_CLIENT') || 
-          error.message?.includes('network') || 
-          error.code === 'unavailable') {
-        setError("Connection blocked. Please disable any ad blockers or try using a different browser.");
-      } else {
-        setError(handleAuthError(error));
-      }
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
@@ -963,26 +405,6 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const handlePayment = async () => {
-    if (processingPayment) return;
-    
-    setProcessingPayment(true);
-    setPaymentError("");
-
-    try {
-      // Create the account and membership record
-      await createAccountAndMembership('pending_payment');
-      
-      // Go directly to PayPal payment (email already verified)
-      await continueWithPayPalPayment();
-      
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      setPaymentError(error.message || 'Failed to start payment process');
-    } finally {
-      setProcessingPayment(false);
-    }
-  };
 
   const handleSubmitApplication = async () => {
     if (!codeOfConductConsent) {
@@ -1058,7 +480,39 @@ export default function IntegratedRegisterForm() {
       console.log('Application submitted successfully:', result);
 
       // Create Firebase Auth account and Firestore record for the applicant
-      await createAccountAndMembership('pending');
+      await createAccountAndMembership('pending', {
+        email,
+        password,
+        firstName,
+        surname,
+        membershipType,
+        organizationName,
+        organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
+        members,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        postalCode,
+        country,
+        grossWrittenPremiums,
+        gwpCurrency,
+        selectedLinesOfBusiness,
+        otherLineOfBusiness1,
+        otherLineOfBusiness2,
+        otherLineOfBusiness3,
+        selectedMarkets,
+        hasOtherAssociations,
+        otherAssociations,
+        servicesProvided,
+        isDelegatingInEurope,
+        numberOfMGAs,
+        delegatingCountries,
+        frontingOptions,
+        considerStartupMGAs,
+        amBestRating,
+        otherRating
+      });
 
       // Store application data in sessionStorage for thank you page
       const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
@@ -1078,264 +532,7 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const handleInvoiceRequest = async () => {
-    if (processingPayment) return;
-    
-    setProcessingPayment(true);
-    setPaymentError("");
 
-    try {
-      // First, generate PDF and send invoice using the API route (which does EVERYTHING)
-      const { auth } = await import('@/lib/firebase');
-      if (!auth.currentUser) {
-        throw new Error('User must be authenticated');
-      }
-
-      const fullName = `${firstName} ${surname}`.trim();
-      const token = await auth.currentUser.getIdToken();
-
-      const response = await fetch('/api/generate-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          membershipData: {
-            membershipType,
-            organizationName: membershipType === 'corporate' ? organizationName : fullName,
-            organizationType: membershipType === 'corporate' ? organizationType : 'individual',
-            grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
-            primaryContact: (() => {
-              if (membershipType === 'corporate') {
-                const primaryMember = members.find(m => m.isPrimaryContact);
-                return primaryMember ? {
-                  name: primaryMember.name,
-                  email: primaryMember.email,
-                  phone: primaryMember.phone,
-                  role: primaryMember.jobTitle
-                } : {
-                  name: fullName,
-                  email: email,
-                  phone: '',
-                  role: 'Account Administrator'
-                };
-              } else {
-                return {
-                  name: fullName,
-                  email: email,
-                  phone: '',
-                  role: 'Individual Member'
-                };
-              }
-            })(),
-            registeredAddress: {
-              line1: addressLine1,
-              line2: addressLine2,
-              city,
-              state,
-              postalCode,
-              country: country
-            },
-            hasOtherAssociations: hasOtherAssociations ?? false,
-            otherAssociations: hasOtherAssociations ? otherAssociations : []
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to generate invoice: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      if (!result.success || !result.emailSent) {
-        throw new Error(result.emailError?.message || 'Failed to send invoice email');
-      }
-      
-      // Only create the account if invoice sending succeeded
-      await createAccountAndMembership('pending_invoice');
-      
-      // Go directly to success (email already verified)
-      setRegistrationComplete(true);
-      
-    } catch (error: any) {
-      console.error('Invoice request error:', error);
-      setPaymentError(error.message || 'Failed to process invoice request');
-    } finally {
-      setProcessingPayment(false);
-    }
-  };
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (loading) return;
-    
-    setLoading(true);
-    setError("");
-
-    try {
-      const { auth } = await import('@/lib/firebase');
-      
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user');
-      }
-      
-      // Handle company-first vs traditional structure
-      if (membershipType === 'corporate') {
-        // Use company-first structure with atomic batch write
-        const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
-        const { db } = await import('@/lib/firebase');
-        
-        // Use Firebase Auth UID as company ID (primary contact's UID)
-        const companyId = auth.currentUser.uid;
-        
-        // Use a batch write to ensure atomicity of company + member creation
-        const batch = writeBatch(db);
-        
-        // Prepare company document
-        const companyRef = firestoreDoc(db, 'accounts', companyId);
-        const companyRecord = {
-          id: companyId,
-          email: auth.currentUser.email,
-          displayName: organizationName,
-          status: 'pending_payment',
-          personalName: '', // Empty for company accounts
-          isCompanyAccount: true,
-          accountAdministratorMemberId: auth.currentUser.uid,
-          paymentUserId: auth.currentUser.uid, // For webhook payment processing
-          membershipType: 'corporate' as const,
-          organizationName,
-          organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
-          accountAdministrator: (() => {
-            const primaryMember = members.find(m => m.isPrimaryContact);
-            return primaryMember ? {
-              name: primaryMember.name,
-              email: primaryMember.email,
-              phone: primaryMember.phone,
-              role: primaryMember.jobTitle
-            } : {
-              name: `${firstName} ${surname}`.trim(),
-              email: auth.currentUser?.email || '',
-              phone: '',
-              role: 'Account Administrator'
-            };
-          })(),
-          businessAddress: {
-            line1: addressLine1,
-            line2: addressLine2,
-            city,
-            county: state,
-            postcode: postalCode,
-            country: country
-          },
-          ...(organizationType === 'MGA' && {
-            portfolio: {
-              grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
-              grossWrittenPremiumsValue: parseFloat(grossWrittenPremiums) || 0,
-              grossWrittenPremiumsCurrency: gwpCurrency,
-              grossWrittenPremiumsEUR: convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency),
-              linesOfBusiness: selectedLinesOfBusiness,
-              otherLinesOfBusiness: {
-                other1: otherLineOfBusiness1.trim(),
-                other2: otherLineOfBusiness2.trim(),
-                other3: otherLineOfBusiness3.trim()
-              },
-              markets: selectedMarkets
-            }
-          }),
-          hasOtherAssociations: hasOtherAssociations ?? false,
-          otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        
-        batch.set(companyRef, companyRecord);
-        
-        // Create member documents for all members
-        for (const member of members) {
-          // For the registrant (current user), use their Firebase UID
-          // For other members, use generated IDs (they'll confirm accounts later)
-          const memberId = member.id === 'registrant' ? auth.currentUser.uid : member.id;
-          const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', memberId);
-          
-          const memberRecord = {
-            id: memberId,
-            email: member.email,
-            personalName: member.name,
-            jobTitle: member.jobTitle,
-            isPrimaryContact: member.isPrimaryContact,
-            isRegistrant: member.id === 'registrant',
-            accountConfirmed: member.id === 'registrant', // Only registrant is confirmed initially
-            joinedAt: serverTimestamp(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          
-          batch.set(memberRef, memberRecord);
-        }
-        
-        // Commit the batch atomically
-        await batch.commit();
-        
-      } else {
-        // Traditional individual membership - use merge to update existing document
-        const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-        const { db } = await import('@/lib/firebase');
-        
-        const accountRef = firestoreDoc(db, 'accounts', auth.currentUser.uid);
-        
-        const fullName = `${firstName} ${surname}`.trim();
-        const dataToWrite = {
-          // Keep existing fields and add new ones
-          email: auth.currentUser.email,
-          displayName: auth.currentUser.displayName,
-          status: 'pending_payment',
-          membershipType,
-          personalName: fullName,
-          organizationName: fullName,
-          paymentUserId: auth.currentUser.uid, // For webhook payment processing
-          accountAdministrator: (() => {
-            const primaryMember = members.find(m => m.isPrimaryContact);
-            return primaryMember ? {
-              name: primaryMember.name,
-              email: primaryMember.email,
-              phone: primaryMember.phone,
-              role: primaryMember.jobTitle
-            } : {
-              name: `${firstName} ${surname}`.trim(),
-              email: auth.currentUser?.email || '',
-              phone: '',
-              role: 'Account Administrator'
-            };
-          })(),
-          businessAddress: {
-            line1: addressLine1,
-            line2: addressLine2,
-            city,
-            county: state,
-            postcode: postalCode,
-            country: country
-          },
-          hasOtherAssociations: hasOtherAssociations ?? false,
-          otherAssociations: hasOtherAssociations ? otherAssociations : [],
-          logoUrl: null,
-          updatedAt: serverTimestamp()
-        };
-        
-        await setDoc(accountRef, dataToWrite, { merge: true });
-      }
-      
-      setStep(4); // Go to payment step
-      window.scrollTo(0, 0);
-      
-    } catch (error: any) {
-      setError(handleAuthError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
 
@@ -1482,43 +679,10 @@ export default function IntegratedRegisterForm() {
             <p className="text-fase-black text-sm">Select the type that best describes your organization</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <button
-              onClick={() => setOrganizationType('MGA')}
-              className={`p-6 border-2 rounded-lg transition-colors text-left ${
-                organizationType === 'MGA' 
-                  ? 'border-fase-navy bg-fase-cream' 
-                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
-              }`}
-            >
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">MGA</h4>
-              <p className="text-fase-black text-sm">Managing General Agents transacting business in Europe</p>
-            </button>
-
-            <button
-              onClick={() => setOrganizationType('carrier')}
-              className={`p-6 border-2 rounded-lg transition-colors text-left ${
-                organizationType === 'carrier' 
-                  ? 'border-fase-navy bg-fase-cream' 
-                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
-              }`}
-            >
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Carrier</h4>
-              <p className="text-fase-black text-sm">Insurance or reinsurance companies working with MGAs</p>
-            </button>
-
-            <button
-              onClick={() => setOrganizationType('provider')}
-              className={`p-6 border-2 rounded-lg transition-colors text-left ${
-                organizationType === 'provider' 
-                  ? 'border-fase-navy bg-fase-cream' 
-                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
-              }`}
-            >
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Service Provider</h4>
-              <p className="text-fase-black text-sm">Service providers active within the MGA ecosystem</p>
-            </button>
-          </div>
+          <OrganizationTypeSelector
+            organizationType={organizationType as 'MGA' | 'carrier' | 'provider'}
+            setOrganizationType={setOrganizationType}
+          />
         </div>
       )}
 
@@ -1599,105 +763,23 @@ export default function IntegratedRegisterForm() {
 
       {/* Step 1: Account Information */}
       {step === 1 && (
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Create Your Account</h3>
-            <p className="text-fase-black text-sm">We&apos;ll create your account and membership application together</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ValidatedInput
-              label="Name"
-              fieldKey="firstName"
-              value={firstName}
-              onChange={setFirstName}
-              placeholder="Your first name"
-              required
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-            <ValidatedInput
-              label="Surname"
-              fieldKey="surname"
-              value={surname}
-              onChange={setSurname}
-              placeholder="Your surname"
-              required
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-          </div>
-          
-          <ValidatedInput
-            label="Email"
-            fieldKey="email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            required
-            touchedFields={touchedFields}
-            attemptedNext={attemptedNext}
-            markFieldTouched={markFieldTouched}
-          />
-          
-          <ValidatedInput
-            label="Password"
-            fieldKey="password"
-            type="password"
-            value={password}
-            onChange={(value) => {
-              setPassword(value);
-              setShowPasswordReqs(value.length > 0);
-            }}
-            onFocus={() => setShowPasswordReqs(true)}
-            onBlur={() => setShowPasswordReqs(password.length > 0)}
-            required
-            touchedFields={touchedFields}
-            attemptedNext={attemptedNext}
-            markFieldTouched={markFieldTouched}
-          />
-          
-          {/* Password Requirements */}
-          {showPasswordReqs && (
-            <div className="mt-2">
-              <p className="text-xs font-medium text-fase-black mb-2">Password must include:</p>
-              {(() => {
-                const { requirements } = validatePassword(password);
-                return (
-                  <div className="space-y-1">
-                    <div className={`text-xs flex items-center ${requirements.length ? "text-green-600" : "text-fase-black"}`}>
-                      <span className="mr-2">{requirements.length ? "✓" : "○"}</span>
-                      At least 8 characters
-                    </div>
-                    <div className={`text-xs flex items-center ${requirements.capital ? "text-green-600" : "text-fase-black"}`}>
-                      <span className="mr-2">{requirements.capital ? "✓" : "○"}</span>
-                      One capital letter (A-Z)
-                    </div>
-                    <div className={`text-xs flex items-center ${requirements.special ? "text-green-600" : "text-fase-black"}`}>
-                      <span className="mr-2">{requirements.special ? "✓" : "○"}</span>
-                      One special character (!@#$%^&*...)
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-
-          <ValidatedInput
-            label="Confirm Password"
-            fieldKey="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={setConfirmPassword}
-            required
-            touchedFields={touchedFields}
-            attemptedNext={attemptedNext}
-            markFieldTouched={markFieldTouched}
-          />
-        </div>
+        <AccountInformationStep
+          firstName={firstName}
+          setFirstName={setFirstName}
+          surname={surname}
+          setSurname={setSurname}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          showPasswordReqs={showPasswordReqs}
+          setShowPasswordReqs={setShowPasswordReqs}
+          touchedFields={touchedFields}
+          attemptedNext={attemptedNext}
+          markFieldTouched={markFieldTouched}
+        />
       )}
 
       {/* Step 2: Membership Information */}
@@ -1724,194 +806,13 @@ export default function IntegratedRegisterForm() {
 
 
           {/* Team Members Section */}
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members & Account Administrator</h4>
-                <p className="text-sm text-fase-black mt-2 mb-4">
-                  Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events. One person must be designated as the account administrator to manage billing and settings. <span className="text-fase-navy font-medium">You can add more seats after completing your registration.</span>
-                </p>
-              </div>
-
-              {/* Members List */}
-              <div className="space-y-4">
-                {members.map((member, index) => (
-                  <div key={member.id} className="p-4 border border-fase-light-gold rounded-lg bg-fase-cream">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium text-fase-navy">
-                          {member.id === 'registrant' ? 'You' : `Member ${index + 1}`}
-                          {member.isPrimaryContact && (
-                            <span className="ml-2 text-xs bg-fase-navy text-white px-2 py-1 rounded">
-                              Account Administrator
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      {member.id !== 'registrant' && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newMembers = members.filter(m => m.id !== member.id);
-                            // If we removed the account administrator, make the first member administrator
-                            if (member.isPrimaryContact && newMembers.length > 0) {
-                              newMembers[0].isPrimaryContact = true;
-                            }
-                            setMembers(newMembers);
-                          }}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          First Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={member.firstName}
-                          onChange={(e) => {
-                            const newMembers = [...members];
-                            const updatedMember = { 
-                              ...member, 
-                              firstName: e.target.value,
-                              name: `${e.target.value} ${member.lastName}`.trim()
-                            };
-                            newMembers[index] = updatedMember;
-                            setMembers(newMembers);
-                          }}
-                          placeholder="First name"
-                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          disabled={member.id === 'registrant'}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Last Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={member.lastName}
-                          onChange={(e) => {
-                            const newMembers = [...members];
-                            const updatedMember = { 
-                              ...member, 
-                              lastName: e.target.value,
-                              name: `${member.firstName} ${e.target.value}`.trim()
-                            };
-                            newMembers[index] = updatedMember;
-                            setMembers(newMembers);
-                          }}
-                          placeholder="Last name"
-                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          disabled={member.id === 'registrant'}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Job Title *
-                        </label>
-                        <input
-                          type="text"
-                          value={member.jobTitle}
-                          onChange={(e) => {
-                            const newMembers = [...members];
-                            newMembers[index] = { ...member, jobTitle: e.target.value };
-                            setMembers(newMembers);
-                          }}
-                          placeholder="e.g. CEO, Manager"
-                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Email *
-                        </label>
-                        <input
-                          type="email"
-                          value={member.email}
-                          onChange={(e) => {
-                            const newMembers = [...members];
-                            newMembers[index] = { ...member, email: e.target.value };
-                            setMembers(newMembers);
-                          }}
-                          placeholder="email@company.com"
-                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          disabled={member.id === 'registrant'}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-fase-navy mb-2">
-                          Phone
-                        </label>
-                        <input
-                          type="tel"
-                          value={member.phone}
-                          onChange={(e) => {
-                            const newMembers = [...members];
-                            newMembers[index] = { ...member, phone: e.target.value };
-                            setMembers(newMembers);
-                          }}
-                          placeholder="+44 20 1234 5678"
-                          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Account Administrator Toggle */}
-                    <div className="mt-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="accountAdministrator"
-                          checked={member.isPrimaryContact}
-                          onChange={() => {
-                            const newMembers = members.map(m => ({
-                              ...m,
-                              isPrimaryContact: m.id === member.id
-                            }));
-                            setMembers(newMembers);
-                          }}
-                          className="mr-2"
-                        />
-                        <span className="text-sm text-fase-navy">Make this person the account administrator</span>
-                      </label>
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-
-              {/* Add Member Button */}
-              {members.length < 3 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newMember: Member = {
-                      id: `member_${Date.now()}`,
-                      firstName: '',
-                      lastName: '',
-                      name: '',
-                      email: '',
-                      phone: '',
-                      jobTitle: '',
-                      isPrimaryContact: false
-                    };
-                    setMembers([...members, newMember]);
-                  }}
-                  className="w-full p-3 border-2 border-dashed border-fase-light-gold rounded-lg text-fase-navy hover:border-fase-navy hover:bg-fase-light-blue transition-colors"
-                >
-                  + Add Another Member (max 3)
-                </button>
-              )}
-            </div>
+          <TeamMembersSection
+            members={members}
+            setMembers={setMembers}
+            firstName={firstName}
+            surname={surname}
+            email={email}
+          />
         </div>
       )}
 
@@ -1924,617 +825,85 @@ export default function IntegratedRegisterForm() {
           </div>
 
           {/* Address Information */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              {membershipType === 'individual' ? 'Personal Address' : 'Business Address'}
-            </h4>
-            
-            <ValidatedInput
-              label="Address Line 1"
-              fieldKey="addressLine1"
-              value={addressLine1}
-              onChange={setAddressLine1}
-              placeholder="Street address"
-              required
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-            <ValidatedInput
-              label="Address Line 2"
-              fieldKey="addressLine2"
-              value={addressLine2}
-              onChange={setAddressLine2}
-              placeholder="Apartment, suite, etc. (optional)"
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ValidatedInput
-                label="City"
-                fieldKey="city"
-                value={city}
-                onChange={setCity}
-                placeholder="City"
-                required
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-              
-              <ValidatedInput
-                label="State/Province"
-                fieldKey="state"
-                value={state}
-                onChange={setState}
-                placeholder="State or province"
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-              
-              <ValidatedInput
-                label="Postal Code"
-                fieldKey="postalCode"
-                value={postalCode}
-                onChange={setPostalCode}
-                placeholder="Postal code"
-                touchedFields={touchedFields}
-                attemptedNext={attemptedNext}
-                markFieldTouched={markFieldTouched}
-              />
-            </div>
-            
-            <SearchableCountrySelect
-              label="Country"
-              fieldKey="country"
-              value={country}
-              onChange={setCountry}
-              required
-              touchedFields={touchedFields}
-              attemptedNext={attemptedNext}
-              markFieldTouched={markFieldTouched}
-            />
-            
-          </div>
+          <AddressSection
+            addressLine1={addressLine1}
+            setAddressLine1={setAddressLine1}
+            addressLine2={addressLine2}
+            setAddressLine2={setAddressLine2}
+            city={city}
+            setCity={setCity}
+            state={state}
+            setState={setState}
+            postalCode={postalCode}
+            setPostalCode={setPostalCode}
+            country={country}
+            setCountry={setCountry}
+            touchedFields={touchedFields}
+            attemptedNext={attemptedNext}
+            markFieldTouched={markFieldTouched}
+            membershipType={membershipType}
+          />
 
           {/* Portfolio Information for MGAs */}
           {membershipType === 'corporate' && organizationType === 'MGA' && (
-            <div className="space-y-4">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Portfolio Information</h4>
-              
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Annual Gross Written Premiums *
-                </label>
-                <div className="space-y-3">
-                  {/* Currency Selection */}
-                  <div>
-                    <label className="block text-xs text-fase-black mb-1">Currency</label>
-                    <select
-                      value={gwpCurrency}
-                      onChange={(e) => setGwpCurrency(e.target.value)}
-                      className="w-32 px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    >
-                      <option value="EUR">EUR (€)</option>
-                      <option value="GBP">GBP (£)</option>
-                      <option value="USD">USD ($)</option>
-                    </select>
-                  </div>
-                  
-                  {/* Amount Builder - Separate inputs for each magnitude */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs text-fase-black mb-1">Billions</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="99"
-                        step="1"
-                        value={gwpBillions}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 99)) {
-                            setGwpBillions(value);
-                            markFieldTouched('grossWrittenPremiums');
-                          }
-                        }}
-                        placeholder="0"
-                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs text-fase-black mb-1">Millions</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="999"
-                        step="1"
-                        value={gwpMillions}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
-                            setGwpMillions(value);
-                            markFieldTouched('grossWrittenPremiums');
-                          }
-                        }}
-                        placeholder="0"
-                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs text-fase-black mb-1">Thousands</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="999"
-                        step="1"
-                        value={gwpThousands}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || (!isNaN(parseFloat(value)) && parseFloat(value) >= 0 && parseFloat(value) <= 999)) {
-                            setGwpThousands(value);
-                            markFieldTouched('grossWrittenPremiums');
-                          }
-                        }}
-                        placeholder="0"
-                        className="w-full px-2 py-2 text-sm border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Display Total */}
-                  <div className="bg-fase-cream/20 p-3 rounded-lg">
-                    <div className="text-sm text-fase-navy font-medium">
-                      Total: {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
-                        const billions = parseFloat(gwpBillions) || 0;
-                        const millions = parseFloat(gwpMillions) || 0;
-                        const thousands = parseFloat(gwpThousands) || 0;
-                        const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
-                        return total.toLocaleString('en-US');
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Business Details Questions - Structured */}
-              <div className="space-y-6">
-                {/* Lines of Business Question */}
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-3">
-                    1. Which of the following lines of business are you currently underwriting? *
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-                    {linesOfBusinessOptions.map((line) => (
-                      <label key={line} className="flex items-center space-x-2 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={selectedLinesOfBusiness.includes(line)}
-                          onChange={() => toggleLineOfBusiness(line)}
-                          className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                        />
-                        <span className="text-fase-black">{line}</span>
-                      </label>
-                    ))}
-                  </div>
-                  
-                  {/* Other fields */}
-                  {selectedLinesOfBusiness.includes('Other') && (
-                    <div className="mt-3">
-                      <label className="block text-xs font-medium text-fase-navy mb-1">
-                        Please specify &quot;Other&quot;:
-                      </label>
-                      <input
-                        type="text"
-                        value={otherLineOfBusiness1}
-                        onChange={(e) => setOtherLineOfBusiness1(e.target.value)}
-                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                        placeholder="Please specify..."
-                      />
-                    </div>
-                  )}
-                  
-                  {selectedLinesOfBusiness.includes('Other #2') && (
-                    <div className="mt-3">
-                      <label className="block text-xs font-medium text-fase-navy mb-1">
-                        Please specify &quot;Other #2&quot;:
-                      </label>
-                      <input
-                        type="text"
-                        value={otherLineOfBusiness2}
-                        onChange={(e) => setOtherLineOfBusiness2(e.target.value)}
-                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                        placeholder="Please specify..."
-                      />
-                    </div>
-                  )}
-                  
-                  {selectedLinesOfBusiness.includes('Other #3') && (
-                    <div className="mt-3">
-                      <label className="block text-xs font-medium text-fase-navy mb-1">
-                        Please specify &quot;Other #3&quot;:
-                      </label>
-                      <input
-                        type="text"
-                        value={otherLineOfBusiness3}
-                        onChange={(e) => setOtherLineOfBusiness3(e.target.value)}
-                        className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-                        placeholder="Please specify..."
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Markets Question */}
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-3">
-                    2. In which European markets does your organisation do business? *
-                  </label>
-                  
-                  {/* Selected Markets Display */}
-                  {selectedMarkets.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-xs font-medium text-fase-navy mb-2">Selected markets:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedMarkets.map((countryCode) => {
-                          const country = europeanCountries.find(c => c.value === countryCode);
-                          return (
-                            <span
-                              key={countryCode}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-fase-navy text-white"
-                            >
-                              {country?.label}
-                              <button
-                                type="button"
-                                onClick={() => removeMarket(countryCode)}
-                                className="ml-2 text-white hover:text-gray-200"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Searchable Country Select */}
-                  <div>
-                    <SearchableCountrySelect
-                      label="Add market"
-                      fieldKey="currentMarketSelection"
-                      value={currentMarketSelection}
-                      onChange={(value) => {
-                        setCurrentMarketSelection(value);
-                        if (value) {
-                          addMarket(value);
-                        }
-                      }}
-                      touchedFields={touchedFields}
-                      attemptedNext={attemptedNext}
-                      markFieldTouched={markFieldTouched}
-                      className="text-sm"
-                      europeanOnly={true}
-                    />
-                    <p className="text-xs text-fase-black mt-1">
-                      Search and select European countries/markets where you do business. Selected markets will appear as tokens above.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MGAPortfolioSection
+              grossWrittenPremiums={grossWrittenPremiums}
+              setGrossWrittenPremiums={setGrossWrittenPremiums}
+              gwpCurrency={gwpCurrency}
+              setGwpCurrency={setGwpCurrency}
+              gwpBillions={gwpBillions}
+              setGwpBillions={setGwpBillions}
+              gwpMillions={gwpMillions}
+              setGwpMillions={setGwpMillions}
+              gwpThousands={gwpThousands}
+              setGwpThousands={setGwpThousands}
+              selectedLinesOfBusiness={selectedLinesOfBusiness}
+              setSelectedLinesOfBusiness={setSelectedLinesOfBusiness}
+              otherLineOfBusiness1={otherLineOfBusiness1}
+              setOtherLineOfBusiness1={setOtherLineOfBusiness1}
+              otherLineOfBusiness2={otherLineOfBusiness2}
+              setOtherLineOfBusiness2={setOtherLineOfBusiness2}
+              otherLineOfBusiness3={otherLineOfBusiness3}
+              setOtherLineOfBusiness3={setOtherLineOfBusiness3}
+              selectedMarkets={selectedMarkets}
+              setSelectedMarkets={setSelectedMarkets}
+              hasOtherAssociations={hasOtherAssociations}
+              setHasOtherAssociations={setHasOtherAssociations}
+              otherAssociations={otherAssociations}
+              setOtherAssociations={setOtherAssociations}
+              calculateTotalGWP={calculateTotalGWP}
+            />
           )}
 
-          {/* Additional Questions */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-3">
-                Is your organization a member of other European MGA associations? *
-              </label>
-              <div className="flex space-x-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHasOtherAssociations(true);
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    hasOtherAssociations === true
-                      ? 'bg-fase-navy text-white border-fase-navy'
-                      : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
-                  }`}
-                >
-                  Yes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHasOtherAssociations(false);
-                    setOtherAssociations([]);
-                  }}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
-                    hasOtherAssociations === false
-                      ? 'bg-fase-navy text-white border-fase-navy'
-                      : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
-                  }`}
-                >
-                  No
-                </button>
-              </div>
-
-              {hasOtherAssociations && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-fase-navy mb-2">
-                    Select associations you are a member of *
-                  </label>
-                  <div className="space-y-2">
-                    {[
-                      { value: 'ASASE', label: 'ASASE' },
-                      { value: 'AIMGA', label: 'AIMGA' },
-                      { value: 'BAUA', label: 'BAUA' },
-                      { value: 'MGAA', label: 'MGAA' },
-                      { value: 'NVGA', label: 'NVGA' }
-                    ].map((association) => (
-                      <label key={association.value} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          value={association.value}
-                          checked={otherAssociations.includes(association.value)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setOtherAssociations([...otherAssociations, association.value]);
-                            } else {
-                              setOtherAssociations(otherAssociations.filter(a => a !== association.value));
-                            }
-                          }}
-                          className="mr-2 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                        />
-                        <span className="text-sm text-fase-black">{association.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
 
           {/* Carrier-specific Information */}
           {membershipType === 'corporate' && organizationType === 'carrier' && (
-            <div className="space-y-4">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Carrier Information</h4>
-              
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  Is your company currently writing delegated authority business through MGAs in Europe? (Continental Europe and/or the UK and/or Ireland) *
-                </label>
-                <div className="text-xs text-fase-black mb-3">
-                  Note: This is not a qualification for membership. Carriers that are planning to delegate authority to MGAs in Europe are also eligible for FASE membership.
-                </div>
-                <div className="flex space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsDelegatingInEurope('Yes')}
-                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      isDelegatingInEurope === 'Yes' 
-                        ? 'border-fase-navy bg-fase-navy text-white' 
-                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                    }`}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsDelegatingInEurope('No')}
-                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      isDelegatingInEurope === 'No' 
-                        ? 'border-fase-navy bg-fase-navy text-white' 
-                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                    }`}
-                  >
-                    No
-                  </button>
-                </div>
-              </div>
-
-              {isDelegatingInEurope === 'Yes' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-fase-navy mb-3">
-                      How many MGAs do you currently work with in Europe? *
-                    </label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {['1','2-5', '6-10', '11-25', '25+'].map((range) => (
-                        <button
-                          key={range}
-                          type="button"
-                          onClick={() => setNumberOfMGAs(range)}
-                          className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                            numberOfMGAs === range 
-                              ? 'border-fase-navy bg-fase-navy text-white' 
-                              : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                          }`}
-                        >
-                          {range}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-fase-navy mb-3">
-                      In which European countries are you currently delegating underwriting authority to MGAs? *
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-fase-light-gold rounded-lg p-3">
-                      {europeanCountries.map((country) => (
-                        <label key={country.value} className="flex items-center text-sm">
-                          <input
-                            type="checkbox"
-                            checked={delegatingCountries.includes(country.value)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setDelegatingCountries([...delegatingCountries, country.value]);
-                              } else {
-                                setDelegatingCountries(delegatingCountries.filter(c => c !== country.value));
-                              }
-                            }}
-                            className="mr-2 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                          />
-                          <span className="text-fase-black">{country.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  Do you offer fronting options? *
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {['None', 'Pure', 'Hybrid', 'Both'].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setFrontingOptions(option)}
-                      className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                        frontingOptions === option 
-                          ? 'border-fase-navy bg-fase-navy text-white' 
-                          : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  Do you consider startup MGAs? *
-                </label>
-                <div className="flex space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setConsiderStartupMGAs('Yes')}
-                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      considerStartupMGAs === 'Yes' 
-                        ? 'border-fase-navy bg-fase-navy text-white' 
-                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                    }`}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConsiderStartupMGAs('No')}
-                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      considerStartupMGAs === 'No' 
-                        ? 'border-fase-navy bg-fase-navy text-white' 
-                        : 'border-gray-300 text-gray-700 hover:border-fase-navy'
-                    }`}
-                  >
-                    No
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  AM Best rating (if rated)
-                </label>
-                <select
-                  value={amBestRating}
-                  onChange={(e) => setAmBestRating(e.target.value)}
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="">Select rating</option>
-                  <option value="A++">A++</option>
-                  <option value="A+">A+</option>
-                  <option value="A">A</option>
-                  <option value="A-">A-</option>
-                  <option value="B++">B++</option>
-                  <option value="B+">B+</option>
-                  <option value="B">B</option>
-                  <option value="B-">B-</option>
-                  <option value="C++">C++</option>
-                  <option value="C">C</option>
-                  <option value="C-">C-</option>
-                  <option value="D">D</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Additional / Other rating (Please specify)
-                </label>
-                <input
-                  type="text"
-                  value={otherRating}
-                  onChange={(e) => setOtherRating(e.target.value)}
-                  placeholder="Please specify other rating if applicable"
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                />
-              </div>
-            </div>
+            <CarrierInformationSection
+              isDelegatingInEurope={isDelegatingInEurope}
+              setIsDelegatingInEurope={setIsDelegatingInEurope}
+              numberOfMGAs={numberOfMGAs}
+              setNumberOfMGAs={setNumberOfMGAs}
+              delegatingCountries={delegatingCountries}
+              setDelegatingCountries={setDelegatingCountries}
+              frontingOptions={frontingOptions}
+              setFrontingOptions={setFrontingOptions}
+              considerStartupMGAs={considerStartupMGAs}
+              setConsiderStartupMGAs={setConsiderStartupMGAs}
+              amBestRating={amBestRating}
+              setAmBestRating={setAmBestRating}
+              otherRating={otherRating}
+              setOtherRating={setOtherRating}
+            />
           )}
 
           {/* Service Provider Information */}
           {membershipType === 'corporate' && organizationType === 'provider' && (
-            <div className="space-y-4">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Service Provider Information</h4>
-              
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-3">
-                  Which of the following services do you provide? *
-                </label>
-                <div className="space-y-2">
-                  {[
-                    'Actuarial Services',
-                    'Back-office/Underwriting Outsourcing',
-                    'Business Consulting/Marketing',
-                    'Capital/Financial Provider',
-                    'Claims Management',
-                    'Client/Policy Management Technology',
-                    'Data Solutions',
-                    'Financial Services',
-                    'M&A Advisory',
-                    'Program/Product Development',
-                    'Rating and Issuing Technology',
-                    'Regulatory Compliance/Licensing',
-                    'Reinsurance Intermediary',
-                    'Risk Management/Risk Control',
-                    'Talent/Staffing/Personnel',
-                    'Technology - Other'
-                  ].map((service) => (
-                    <label key={service} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={servicesProvided.includes(service)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setServicesProvided([...servicesProvided, service]);
-                          } else {
-                            setServicesProvided(servicesProvided.filter(s => s !== service));
-                          }
-                        }}
-                        className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-fase-black">{service}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <ServiceProviderSection
+              servicesProvided={servicesProvided}
+              setServicesProvided={setServicesProvided}
+            />
           )}
-            
-
-          </div>
-        </div>
+      </div>
       )}
 
       {/* Step 4: Final Review & Submit Application */}
@@ -2742,20 +1111,20 @@ export default function IntegratedRegisterForm() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-fase-black">Base Fee</span>
-                <span className="text-fase-black">€{calculateMembershipFee()}</span>
+                <span className="text-fase-black">€{getCurrentMembershipFee()}</span>
               </div>
               
               {membershipType === 'corporate' && hasOtherAssociations && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Member Discount (20%)</span>
-                  <span>-€{calculateMembershipFee() - getDiscountedFee()}</span>
+                  <span>-€{getCurrentMembershipFee() - getCurrentDiscountedFee()}</span>
                 </div>
               )}
               
               <div className="border-t border-fase-light-gold pt-2 mt-2">
                 <div className="flex justify-between items-center font-semibold text-lg">
                   <span className="text-fase-navy">Total annual fee</span>
-                  <span className="text-fase-navy">€{getDiscountedFee()}</span>
+                  <span className="text-fase-navy">€{getCurrentDiscountedFee()}</span>
                 </div>
               </div>
             </div>
@@ -2816,7 +1185,7 @@ export default function IntegratedRegisterForm() {
       </div>
 
       {/* Navigation Buttons */}
-      {step < 5 && (
+      {step < 4 && (
         <div className="pt-6">
           <div className="flex justify-between">
             {step > (typeFromUrl ? 0 : -1) ? (
@@ -2831,7 +1200,7 @@ export default function IntegratedRegisterForm() {
               <div></div>
             )}
             
-            {step < 3 ? (
+            {step < 4 ? (
               <Button 
                 type="button"
                 variant="primary" 
