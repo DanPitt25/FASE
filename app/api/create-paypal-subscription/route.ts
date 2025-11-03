@@ -139,16 +139,19 @@ export async function POST(request: NextRequest) {
       userEmail,
       userId,
       hasOtherAssociations = false,
+      exactTotalAmount,
       testPayment = false
     } = requestData;
 
     // Get access token
     const accessToken = await getPayPalAccessToken();
     
-    // Calculate price (including any applicable discounts)
+    // Use exact amount from frontend if provided, otherwise calculate
     let finalPrice;
     if (testPayment || (grossWrittenPremiums && grossWrittenPremiums.includes('test'))) {
       finalPrice = 0.50; // 50 cents for testing
+    } else if (exactTotalAmount) {
+      finalPrice = exactTotalAmount; // Use exact amount from final screen
     } else {
       finalPrice = calculateMembershipFee(
         membershipType as 'individual' | 'corporate',
