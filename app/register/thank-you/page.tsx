@@ -74,13 +74,6 @@ export default function ThankYouPage() {
             {t('application_submitted')}
           </p>
 
-          {/* Application number */}
-          {applicationNumber && (
-            <div className="bg-fase-cream border border-fase-light-gold rounded-lg p-4 mb-6">
-              <p className="text-sm text-fase-navy font-medium mb-1">{t('application_reference')}</p>
-              <p className="text-lg font-mono text-fase-navy font-bold">{applicationNumber}</p>
-            </div>
-          )}
 
           {/* Next steps */}
           <div className="text-left bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">

@@ -159,6 +159,7 @@ export const TeamMembersSection = ({
                   type="tel"
                   value={member.phone}
                   onChange={(e) => updateMember(member.id, { phone: e.target.value })}
+                  placeholder="+44 20 1234 5678"
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
               </div>

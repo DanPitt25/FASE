@@ -174,6 +174,18 @@ export const createAccountAndMembership = async (
           }),
           hasOtherAssociations: formData.hasOtherAssociations ?? false,
           otherAssociations: formData.hasOtherAssociations ? formData.otherAssociations : [],
+          // Carrier-specific fields
+          ...(formData.organizationType === 'carrier' && {
+            carrierInfo: {
+              isDelegatingInEurope: formData.isDelegatingInEurope,
+              numberOfMGAs: formData.numberOfMGAs,
+              delegatingCountries: formData.delegatingCountries || [],
+              frontingOptions: formData.frontingOptions,
+              considerStartupMGAs: formData.considerStartupMGAs,
+              amBestRating: formData.amBestRating,
+              otherRating: formData.otherRating
+            }
+          }),
           // Service provider specific fields
           ...(formData.organizationType === 'provider' && {
             servicesProvided: formData.servicesProvided

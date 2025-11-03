@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Locale = 'en' | 'fr';
+type Locale = 'en' | 'fr' | 'de';
 
 interface GeolocationData {
   country?: string;
@@ -10,11 +10,18 @@ interface GeolocationData {
   detectedLanguage?: Locale;
 }
 
+// German-speaking countries
+const GERMAN_SPEAKING_COUNTRIES = [
+  'DE', // Germany
+  'AT', // Austria
+  'CH', // Switzerland (also German-speaking)
+  'LI', // Liechtenstein
+];
+
 // French-speaking countries
 const FRENCH_SPEAKING_COUNTRIES = [
   'FR', // France
   'BE', // Belgium
-  'CH', // Switzerland
   'CA', // Canada
   'LU', // Luxembourg
   'MC', // Monaco
@@ -71,7 +78,12 @@ export function useGeolocation(): GeolocationData {
               
               if (countryCode) {
                 countryCode = countryCode.toUpperCase();
-                const detectedLanguage = FRENCH_SPEAKING_COUNTRIES.includes(countryCode) ? 'fr' : 'en';
+                let detectedLanguage: Locale = 'en';
+                if (GERMAN_SPEAKING_COUNTRIES.includes(countryCode)) {
+                  detectedLanguage = 'de';
+                } else if (FRENCH_SPEAKING_COUNTRIES.includes(countryCode)) {
+                  detectedLanguage = 'fr';
+                }
                 
                 setGeolocationData({
                   country: data.country_name || data.country,
@@ -91,10 +103,15 @@ export function useGeolocation(): GeolocationData {
         // Fallback to browser language detection
         const browserLang = navigator.language || navigator.languages?.[0];
         if (browserLang) {
+          const germanRegions = ['de', 'de-DE', 'de-AT', 'de-CH'];
           const frenchRegions = ['fr', 'fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'];
-          const detectedLanguage = frenchRegions.some(region => 
-            browserLang.toLowerCase().startsWith(region.toLowerCase())
-          ) ? 'fr' : 'en';
+          
+          let detectedLanguage: Locale = 'en';
+          if (germanRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+            detectedLanguage = 'de';
+          } else if (frenchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+            detectedLanguage = 'fr';
+          }
           
           setGeolocationData({ detectedLanguage });
         }

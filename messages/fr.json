@@ -6,6 +6,7 @@
     "language_label": "Langue :",
     "english": "English",
     "french": "Français",
+    "german": "Allemand",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
@@ -199,7 +200,11 @@
       "state_placeholder": "État ou province",
       "postal_code": "Code Postal",
       "postal_code_placeholder": "Code postal",
-      "country": "Pays"
+      "country": "Pays",
+      "select_country_placeholder": "Sélectionner un pays...",
+      "search_countries_placeholder": "Rechercher des pays...",
+      "no_countries_found": "Aucun pays trouvé",
+      "please_select_country": "Veuillez sélectionner un pays"
     },
     "portfolio": {
       "title": "Informations de Portefeuille",

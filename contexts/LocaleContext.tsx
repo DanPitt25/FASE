@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 
-type Locale = 'en' | 'fr';
+type Locale = 'en' | 'fr' | 'de';
 
 interface LocaleContextType {
   locale: Locale;
@@ -18,6 +18,12 @@ const detectBrowserLanguage = (): Locale => {
   
   const browserLang = navigator.language || navigator.languages?.[0];
   if (browserLang) {
+    // German-speaking regions
+    const germanRegions = ['de', 'de-DE', 'de-AT', 'de-CH'];
+    if (germanRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+      return 'de';
+    }
+    
     // French-speaking regions
     const frenchRegions = ['fr', 'fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'];
     if (frenchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
@@ -33,7 +39,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     // Priority order: localStorage > browser language > default
     if (typeof window !== 'undefined') {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
-      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr')) {
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de')) {
         return savedLocale;
       }
       

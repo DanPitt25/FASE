@@ -25,10 +25,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Load both message sets for dynamic switching
+  // Load all message sets for dynamic switching
   const enMessages = (await import('../messages/en.json')).default;
   const frMessages = (await import('../messages/fr.json')).default;
-  const allMessages = { en: enMessages, fr: frMessages };
+  const deMessages = (await import('../messages/de.json')).default;
+  const allMessages = { en: enMessages, fr: frMessages, de: deMessages };
   
   return (
     <html lang="en">

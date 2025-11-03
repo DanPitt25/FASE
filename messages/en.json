@@ -6,6 +6,7 @@
     "language_label": "Language:",
     "english": "English",
     "french": "Français",
+    "german": "Deutsch",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -199,7 +200,11 @@
       "state_placeholder": "State or province",
       "postal_code": "Postal Code",
       "postal_code_placeholder": "Postal code",
-      "country": "Country"
+      "country": "Country",
+      "select_country_placeholder": "Select a country...",
+      "search_countries_placeholder": "Search countries...",
+      "no_countries_found": "No countries found",
+      "please_select_country": "Please select a country"
     },
     "portfolio": {
       "title": "Portfolio Information",

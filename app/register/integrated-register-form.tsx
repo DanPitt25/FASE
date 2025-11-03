@@ -124,15 +124,17 @@ export default function IntegratedRegisterForm() {
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
-  
-  // Remove email verification state - no longer needed
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'invoice' | null>(null);
+  // Payment state variables - SUPPRESSED BUT KEPT FOR FUTURE USE
+  // const [processingPayment, setProcessingPayment] = useState(false);
+  // const [paymentError, setPaymentError] = useState("");
+  // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'invoice' | null>(null);
   
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
   const [codeOfConductConsent, setCodeOfConductConsent] = useState(false);
+  
+  // Application submission state
+  const [submittingApplication, setSubmittingApplication] = useState(false);
 
   // New carrier-specific fields
   const [isDelegatingInEurope, setIsDelegatingInEurope] = useState('');
@@ -339,8 +341,8 @@ export default function IntegratedRegisterForm() {
 
 
 
-  // handleVerifyCode function removed - no longer needed
-
+  // PAYMENT FUNCTIONS - SUPPRESSED BUT KEPT FOR FUTURE USE
+  /*
   const continueWithPayPalPayment = async () => {
     try {
       const { auth } = await import('@/lib/firebase');
@@ -384,10 +386,13 @@ export default function IntegratedRegisterForm() {
       setPaymentError(error.message || t('errors.failed_payment_start'));
     }
   };
+  */
 
   // handleSendVerificationCode function removed - no longer needed
 
 
+  // PAYMENT SUBMISSION FUNCTION - SUPPRESSED BUT KEPT FOR FUTURE USE
+  /*
   const handleSubmitApplication = async () => {
     if (!codeOfConductConsent) {
       setError(t('errors.code_of_conduct_required'));
@@ -571,6 +576,7 @@ export default function IntegratedRegisterForm() {
       setProcessingPayment(false);
     }
   };
+  */
 
 
 
@@ -613,7 +619,7 @@ export default function IntegratedRegisterForm() {
 
   return (
     <div className="space-y-6">
-      {/* Progress indicator */}
+      {/* Progress indicator - Updated to show 4 steps */}
       <div className="flex items-center justify-center mb-8">
         <div className="flex items-center space-x-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -638,12 +644,6 @@ export default function IntegratedRegisterForm() {
             step >= 3 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             4
-          </div>
-          <div className={`w-8 h-1 ${step >= 4 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 4 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
-          }`}>
-            5
           </div>
         </div>
       </div>
@@ -1023,40 +1023,7 @@ export default function IntegratedRegisterForm() {
           </div>
 
 
-          {/* Continue to Payment Button */}
-          <div className="text-center">
-            <Button
-              type="button"
-              variant="primary"
-              size="large"
-              onClick={() => {
-                if (!codeOfConductConsent) {
-                  setError(t('errors.code_of_conduct_required'));
-                  return;
-                }
-                setError("");
-                setStep(5);
-                window.scrollTo(0, 0);
-              }}
-              disabled={!codeOfConductConsent}
-              className="w-full"
-            >
-              {t('buttons.next')}
-            </Button>
-            
-          </div>
-        </div>
-      )}
-
-      {/* Step 5: Payment Method Selection */}
-      {step === 5 && (
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('payment.title')}</h3>
-            <p className="text-fase-black text-sm">{t('payment.subtitle')}</p>
-          </div>
-
-          {/* Pricing Details */}
+          {/* Pricing Summary */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('pricing.title')}</h4>
             <div className="space-y-3">
@@ -1083,93 +1050,122 @@ export default function IntegratedRegisterForm() {
             </div>
           </div>
 
-          {/* Payment Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* PayPal Option */}
-            <div className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
-              selectedPaymentMethod === 'paypal' 
-                ? 'border-fase-navy bg-fase-navy/5' 
-                : 'border-fase-light-gold hover:border-fase-navy'
-            }`}
-            onClick={() => setSelectedPaymentMethod('paypal')}
-            >
-              <div className="flex items-start space-x-3">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="paypal"
-                  checked={selectedPaymentMethod === 'paypal'}
-                  onChange={() => setSelectedPaymentMethod('paypal')}
-                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
-                />
-                <div className="flex-1">
-                  <h4 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
-                    {t('payment.paypal.title')}
-                  </h4>
-                  <p className="text-fase-black text-sm">
-                    {t('payment.paypal.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Invoice Option */}
-            <div className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
-              selectedPaymentMethod === 'invoice' 
-                ? 'border-fase-navy bg-fase-navy/5' 
-                : 'border-fase-light-gold hover:border-fase-navy'
-            }`}
-            onClick={() => setSelectedPaymentMethod('invoice')}
-            >
-              <div className="flex items-start space-x-3">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="invoice"
-                  checked={selectedPaymentMethod === 'invoice'}
-                  onChange={() => setSelectedPaymentMethod('invoice')}
-                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
-                />
-                <div className="flex-1">
-                  <h4 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
-                    {t('payment.invoice.title')}
-                  </h4>
-                  <p className="text-fase-black text-sm">
-                    {t('payment.invoice.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-          {/* Payment Note */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-fase-black">{t('payment.note')}</p>
-          </div>
-
-          {/* Submit Button */}
+          {/* Submit Application Button */}
           <div className="text-center">
             <Button
               type="button"
               variant="primary"
               size="large"
-              onClick={handleSubmitApplication}
-              disabled={!selectedPaymentMethod || processingPayment}
+              onClick={async () => {
+                if (!codeOfConductConsent) {
+                  setError(t('errors.code_of_conduct_required'));
+                  return;
+                }
+                
+                setSubmittingApplication(true);
+                setError("");
+                
+                try {
+                  // Create account using the exact same function as payment flow
+                  const userId = await createAccountAndMembership('pending', {
+                    email,
+                    password,
+                    firstName,
+                    surname,
+                    membershipType,
+                    organizationName,
+                    organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
+                    members,
+                    addressLine1,
+                    addressLine2,
+                    city,
+                    state,
+                    postalCode,
+                    country,
+                    grossWrittenPremiums,
+                    gwpCurrency,
+                    selectedLinesOfBusiness,
+                    otherLineOfBusiness1,
+                    otherLineOfBusiness2,
+                    otherLineOfBusiness3,
+                    selectedMarkets,
+                    hasOtherAssociations,
+                    otherAssociations,
+                    servicesProvided,
+                    isDelegatingInEurope,
+                    numberOfMGAs,
+                    delegatingCountries,
+                    frontingOptions,
+                    considerStartupMGAs,
+                    amBestRating,
+                    otherRating
+                  });
+
+                  // Generate application number and send email
+                  const applicationNumber = `FASE-APP-${Date.now()}-${Date.now().toString().slice(-6)}`;
+                  const membershipFee = getCurrentDiscountedFee();
+                  
+                  // Send application email via simple API
+                  const response = await fetch('/api/submit-application', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                      applicationNumber,
+                      membershipFee,
+                      email,
+                      firstName,
+                      surname,
+                      organizationName,
+                      membershipType,
+                      organizationType,
+                      hasOtherAssociations,
+                      addressLine1,
+                      addressLine2,
+                      city,
+                      state,
+                      postalCode,
+                      country,
+                      grossWrittenPremiums,
+                      gwpCurrency,
+                      selectedLinesOfBusiness,
+                      selectedMarkets,
+                      members
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to submit application');
+                  }
+                  
+                  // Store application data for thank you page
+                  const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+                  sessionStorage.setItem('applicationSubmission', JSON.stringify({
+                    applicationNumber: applicationNumber,
+                    applicantName: applicantName,
+                    paymentMethod: 'application' // Indicates this was application-only
+                  }));
+                  
+                  // Redirect to thank you page
+                  window.location.href = '/register/thank-you';
+                  
+                } catch (error: any) {
+                  setError(error.message || t('errors.failed_to_submit'));
+                  setSubmittingApplication(false);
+                }
+              }}
+              disabled={!codeOfConductConsent || submittingApplication}
               className="w-full"
             >
-              {processingPayment ? (
+              {submittingApplication ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('payment.processing')}
+                  {t('buttons.submitting_application')}
                 </>
-              ) : selectedPaymentMethod === 'paypal' ? (
-                t('payment.paypal.button')
-              ) : selectedPaymentMethod === 'invoice' ? (
-                t('payment.invoice.button')
               ) : (
                 t('buttons.submit_application')
               )}
@@ -1178,8 +1174,16 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {(error || paymentError) && (
-        <div className="text-red-600 text-sm">{error || paymentError}</div>
+      {/* 
+        STEP 5: PAYMENT METHOD SELECTION - SUPPRESSED
+        
+        This entire step has been removed to convert the form to application-only.
+        Payment functionality including PayPal and Invoice options has been 
+        suppressed but remains available in the codebase for future restoration.
+      */}
+
+      {error && (
+        <div className="text-red-600 text-sm">{error}</div>
       )}
 
       {/* Help Contact */}
@@ -1195,8 +1199,8 @@ export default function IntegratedRegisterForm() {
         </p>
       </div>
 
-      {/* Navigation Buttons */}
-      {step < 4 && (
+      {/* Navigation Buttons - Updated for 4-step flow */}
+      {step < 3 && (
         <div className="pt-6">
           <div className="flex justify-between">
             {step > (typeFromUrl ? 0 : -1) ? (
@@ -1211,38 +1215,47 @@ export default function IntegratedRegisterForm() {
               <div></div>
             )}
             
-            {step < 4 ? (
-              <Button 
-                type="button"
-                variant="primary" 
-                onClick={handleNext}
-              >
-                {t('buttons.next')}
-              </Button>
-            ) : step === 3 ? (
-              <Button 
-                type="button"
-                variant="primary" 
-                onClick={handleNext}
-              >
-                {t('buttons.review_submit')}
-              </Button>
-            ) : null}
+            <Button 
+              type="button"
+              variant="primary" 
+              onClick={handleNext}
+            >
+              {t('buttons.next')}
+            </Button>
           </div>
         </div>
       )}
       
-      {/* Navigation for Payment Step */}
-      {step === 5 && (
+      {/* Navigation for step 3 - final next button */}
+      {step === 3 && (
         <div className="pt-6">
           <div className="flex justify-between">
             <Button 
               type="button"
               variant="secondary" 
-              onClick={() => {
-                setStep(4);
-                window.scrollTo(0, 0);
-              }}
+              onClick={handleBack}
+            >
+              {t('buttons.back')}
+            </Button>
+            <Button 
+              type="button"
+              variant="primary" 
+              onClick={handleNext}
+            >
+              {t('buttons.review_submit')}
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Navigation for final step (4) - only back button since submit is inline */}
+      {step === 4 && (
+        <div className="pt-6">
+          <div className="flex justify-between">
+            <Button 
+              type="button"
+              variant="secondary" 
+              onClick={handleBack}
             >
               {t('buttons.back')}
             </Button>

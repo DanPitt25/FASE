@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { countries, europeanCountries } from '../lib/countries';
 
 interface SearchableCountrySelectProps {
@@ -28,6 +29,7 @@ export default function SearchableCountrySelect({
   markFieldTouched,
   europeanOnly = false
 }: SearchableCountrySelectProps) {
+  const t = useTranslations('register_form.address');
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const countryList = europeanOnly ? europeanCountries : countries;
@@ -92,7 +94,7 @@ export default function SearchableCountrySelect({
           {selectedCountry ? (
             <span className="text-fase-black">{selectedCountry.label}</span>
           ) : (
-            <span className="text-gray-400">Select a country...</span>
+            <span className="text-gray-400">{t('select_country_placeholder')}</span>
           )}
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +110,7 @@ export default function SearchableCountrySelect({
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchChange}
-                placeholder="Search countries..."
+                placeholder={t('search_countries_placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 autoFocus
               />
@@ -130,7 +132,7 @@ export default function SearchableCountrySelect({
                 ))
               ) : (
                 <div className="px-3 py-2 text-gray-500 text-center">
-                  No countries found
+                  {t('no_countries_found')}
                 </div>
               )}
             </div>
@@ -139,7 +141,7 @@ export default function SearchableCountrySelect({
       </div>
       
       {shouldShowValidation && (
-        <p className="mt-1 text-sm text-red-600">Please select a country</p>
+        <p className="mt-1 text-sm text-red-600">{t('please_select_country')}</p>
       )}
     </div>
   );
