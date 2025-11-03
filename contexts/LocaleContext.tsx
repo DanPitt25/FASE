@@ -29,19 +29,20 @@ const detectBrowserLanguage = (): Locale => {
 };
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(() => {
-    // Priority order: localStorage > browser language > default
+  const [locale, setLocale] = useState<Locale>('en'); // Always start with English to avoid hydration mismatch
+
+  // Set locale after hydration to avoid mismatch
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
       if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr')) {
-        return savedLocale;
+        setLocale(savedLocale);
+      } else {
+        // No saved preference, detect based on browser language
+        setLocale(detectBrowserLanguage());
       }
-      
-      // If no saved preference, detect based on browser language immediately
-      return detectBrowserLanguage();
     }
-    return 'en';
-  });
+  }, []);
 
   const geolocationData = useGeolocation();
 

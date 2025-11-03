@@ -333,12 +333,21 @@ export default function IntegratedRegisterForm() {
     }
   };
 
+  const getActualGWPTotal = () => {
+    const billions = parseFloat(gwpBillions) || 0;
+    const millions = parseFloat(gwpMillions) || 0;
+    const thousands = parseFloat(gwpThousands) || 0;
+    return (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
+  };
+
   const getCurrentMembershipFee = () => {
-    return calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency);
+    const actualTotal = getActualGWPTotal();
+    return calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency);
   };
 
   const getCurrentDiscountedFee = () => {
-    return getDiscountedFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, hasOtherAssociations || false);
+    const actualTotal = getActualGWPTotal();
+    return getDiscountedFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
   };
 
 
@@ -1251,19 +1260,19 @@ export default function IntegratedRegisterForm() {
             <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
                 <span className="text-fase-black font-medium">{t('pricing.membership_fee')}</span>
-                <span className="text-fase-navy font-semibold">€{calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, false).toLocaleString()}</span>
+                <span className="text-fase-navy font-semibold">€{getCurrentMembershipFee().toLocaleString()}</span>
               </div>
               
               {membershipType === 'corporate' && hasOtherAssociations && (
                 <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
                   <span className="text-green-600 font-medium">{t('pricing.discount')}</span>
-                  <span className="text-green-600 font-semibold">-€{(calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', grossWrittenPremiums, gwpCurrency, false) * 0.2).toLocaleString()}</span>
+                  <span className="text-green-600 font-semibold">-€{(getCurrentMembershipFee() - getCurrentDiscountedFee()).toLocaleString()}</span>
                 </div>
               )}
               
               <div className="flex justify-between items-center py-3 border-t-2 border-fase-navy">
                 <span className="text-fase-navy text-lg font-bold">{t('pricing.total_annual')}</span>
-                <span className="text-fase-navy text-xl font-bold">€{getCurrentDiscountedFee()}</span>
+                <span className="text-fase-navy text-xl font-bold">€{getCurrentDiscountedFee().toLocaleString()}</span>
               </div>
               
               {membershipType === 'corporate' && hasOtherAssociations && (
