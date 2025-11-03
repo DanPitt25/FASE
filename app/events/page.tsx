@@ -53,7 +53,7 @@ export default function EventsPage() {
         },
         {
           text: 'MGA Rendezvous',
-          href: '/networking/rendezvous',
+          href: '/rendezvous',
           variant: 'secondary' as const
         }
       ]

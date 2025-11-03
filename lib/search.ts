@@ -208,7 +208,7 @@ const searchablePages: SearchableContent[] = [
     title: 'Networking Rendezvous',
     description: 'Regular networking events for members',
     content: 'Networking rendezvous meetups social events professional networking business development relationship building member events',
-    url: '/networking/rendezvous',
+    url: '/rendezvous',
     category: 'Events',
     keywords: ['networking', 'rendezvous', 'meetups', 'social', 'relationships']
   },

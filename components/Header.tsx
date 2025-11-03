@@ -326,7 +326,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <a href="/events" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Events</a>
-              <a href="/networking/rendezvous" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+              <a href="/rendezvous" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>MGA Rendezvous</a>
             </div>
