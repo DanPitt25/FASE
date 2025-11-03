@@ -453,6 +453,8 @@ export default function IntegratedRegisterForm() {
     setProcessingPayment(true);
     setPaymentError("");
 
+    let draftUserId: string | null = null;
+
     try {
       // Prepare application data
       const applicationData = {
@@ -512,7 +514,7 @@ export default function IntegratedRegisterForm() {
       };
 
       // Create Firebase Auth account and store draft application data
-      const draftUserId = await createAccountAndMembership('draft', {
+      draftUserId = await createAccountAndMembership('draft', {
         email,
         password,
         firstName,
@@ -546,12 +548,14 @@ export default function IntegratedRegisterForm() {
         otherRating
       });
 
-      // Store full application data for later processing
-      const fullApplicationData = {
-        ...applicationData,
-        userId: draftUserId,
-        paymentMethod: selectedPaymentMethod
-      };
+      // Store full application data for later processing (filter out undefined values)
+      const fullApplicationData = Object.fromEntries(
+        Object.entries({
+          ...applicationData,
+          userId: draftUserId,
+          paymentMethod: selectedPaymentMethod
+        }).filter(([_, value]) => value !== undefined)
+      );
 
       // Handle payment method
       if (selectedPaymentMethod === 'invoice') {
@@ -652,6 +656,37 @@ export default function IntegratedRegisterForm() {
       }
 
     } catch (error: any) {
+      // Cleanup account if payment fails
+      if (draftUserId) {
+        try {
+          // Delete the user account that was just created
+          const { auth } = await import('../../lib/firebase');
+          const { deleteUser } = await import('firebase/auth');
+          
+          if (auth.currentUser && auth.currentUser.uid === draftUserId) {
+            await deleteUser(auth.currentUser);
+          }
+          
+          // Also cleanup any Firestore documents
+          const { db } = await import('../../lib/firebase');
+          const { doc, deleteDoc } = await import('firebase/firestore');
+          
+          // Delete account document
+          await deleteDoc(doc(db, 'accounts', draftUserId));
+          
+          // Delete draft application if it exists
+          try {
+            await deleteDoc(doc(db, 'draft_applications', draftUserId));
+          } catch (draftError) {
+            // Draft might not exist yet, ignore
+          }
+          
+          console.log('Account cleanup completed after payment error');
+        } catch (cleanupError) {
+          console.error('Failed to cleanup account after payment error:', cleanupError);
+        }
+      }
+      
       setPaymentError(error.message || t('errors.failed_to_submit'));
     } finally {
       setProcessingPayment(false);
