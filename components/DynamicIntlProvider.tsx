@@ -12,13 +12,18 @@ interface DynamicIntlProviderProps {
 export default function DynamicIntlProvider({ children, allMessages }: DynamicIntlProviderProps) {
   const { locale } = useLocale();
   const [mounted, setMounted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Small delay to ensure localStorage has been read
+    const timer = setTimeout(() => setIsReady(true), 50);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Use default locale during SSR to prevent hydration mismatch
-  const currentLocale = mounted ? locale : 'en';
+  // Use the actual locale as early as possible to minimize flash
+  // During SSR, we'll use 'en' but switch immediately on hydration
+  const currentLocale = locale;
   
   return (
     <NextIntlClientProvider 
