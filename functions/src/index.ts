@@ -238,7 +238,7 @@ export const sendInvoiceEmail = functions.https.onCall({
         const emailHtml = invoiceHTML || template.html(invoiceNumber, organizationName || 'Organization', totalAmount || '0');
         
         const emailPayload: any = {
-          from: 'FASE <noreply@fasemga.com>',
+          from: 'FASE <admin@fasemga.com>',
           to: email,
           subject: template.subject(invoiceNumber, totalAmount || '0'),
           html: emailHtml,
