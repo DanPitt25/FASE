@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import PhoneInputComponent from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the phone input to avoid SSR issues
+const PhoneInputComponent = dynamic(() => import('react-phone-number-input'), {
+  ssr: false,
+  loading: () => <div className="h-12 bg-gray-100 animate-pulse rounded-lg"></div>
+});
 
 interface PhoneInputProps {
   label: string;
@@ -31,11 +36,31 @@ export default function PhoneInput({
   disabled = false
 }: PhoneInputProps) {
   const t = useTranslations('register_form.team_members');
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    // Import CSS only on client-side
+    import('react-phone-number-input/style.css');
+  }, []);
   
   const isValid = !required || value.trim() !== '';
   const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
 
   console.log('PhoneInput value:', value, 'type:', typeof value);
+
+  if (!mounted) {
+    return (
+      <div className={className}>
+        {label && (
+          <label className="block text-sm font-medium text-fase-navy mb-2">
+            {label} {required && '*'}
+          </label>
+        )}
+        <div className="h-12 bg-gray-100 animate-pulse rounded-lg"></div>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
