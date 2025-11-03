@@ -6,6 +6,8 @@ import { amBestRatings } from './registration-utils';
 
 // Carrier Information Component
 export const CarrierInformationSection = ({
+  carrierOrganizationType,
+  setCarrierOrganizationType,
   isDelegatingInEurope,
   setIsDelegatingInEurope,
   numberOfMGAs,
@@ -21,6 +23,8 @@ export const CarrierInformationSection = ({
   otherRating,
   setOtherRating
 }: {
+  carrierOrganizationType: string;
+  setCarrierOrganizationType: (value: string) => void;
   isDelegatingInEurope: string;
   setIsDelegatingInEurope: (value: string) => void;
   numberOfMGAs: string;
@@ -42,6 +46,25 @@ export const CarrierInformationSection = ({
   return (
     <div className="space-y-6">
       <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
+      
+      {/* Organization Type */}
+      <div>
+        <label className="block text-sm font-medium text-fase-navy mb-3">
+          {t('organization_type_question')} *
+        </label>
+        <select
+          value={carrierOrganizationType}
+          onChange={(e) => setCarrierOrganizationType(e.target.value)}
+          className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+        >
+          <option value="">{tCommon('select')}</option>
+          <option value="insurance_company">{t('organization_types.insurance_company')}</option>
+          <option value="reinsurance_company">{t('organization_types.reinsurance_company')}</option>
+          <option value="lloyds_managing_agency">{t('organization_types.lloyds_managing_agency')}</option>
+          <option value="insurance_broker">{t('organization_types.insurance_broker')}</option>
+          <option value="reinsurance_broker">{t('organization_types.reinsurance_broker')}</option>
+        </select>
+      </div>
       
       {/* Delegating Authority */}
       <div>

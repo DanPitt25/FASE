@@ -76,6 +76,7 @@ export const createAccountAndMembership = async (
     otherAssociations: string[];
     servicesProvided: string[];
     // Carrier-specific fields (optional)
+    carrierOrganizationType?: string;
     isDelegatingInEurope?: string;
     numberOfMGAs?: string;
     delegatingCountries?: string[];
@@ -177,6 +178,7 @@ export const createAccountAndMembership = async (
           // Carrier-specific fields
           ...(formData.organizationType === 'carrier' && {
             carrierInfo: {
+              organizationType: formData.carrierOrganizationType,
               isDelegatingInEurope: formData.isDelegatingInEurope,
               numberOfMGAs: formData.numberOfMGAs,
               delegatingCountries: formData.delegatingCountries || [],

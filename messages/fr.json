@@ -85,8 +85,8 @@
       "subtitle": "Choisissez le type qui décrit le mieux votre organisation",
       "mga_title": "MGA",
       "mga_description": "Agences de souscription générales effectuant des transactions commerciales en Europe",
-      "carrier_title": "Assureur",
-      "carrier_description": "Compagnies d'assurance et réassureurs travaillant avec des agences de souscription",
+      "carrier_title": "Assureur / Courtier",
+      "carrier_description": "Compagnie d'(ré)assurance, agence de gestion Lloyd's, ou courtier en (ré)assurance traitant avec des agences de souscription",
       "provider_title": "Prestataire de Services",
       "provider_description": "Technologie, juridique, financier et autres prestataires de services aux agences de souscription",
       "continue_button": "Continuer",
@@ -184,6 +184,8 @@
       "last_name_label": "Nom de famille",
       "email_label": "E-mail",
       "phone_label": "Téléphone",
+      "phone_placeholder": "Entrez le numéro de téléphone",
+      "phone_required": "Le numéro de téléphone est requis",
       "job_title_label": "Titre du Poste",
       "add_member_button": "+ Ajouter un Autre Membre (max 3)"
     },
@@ -417,7 +419,15 @@
       "failed_payment_start": "Échec du démarrage du processus de paiement"
     },
     "carrier": {
-      "title": "Informations sur l'Assureur",
+      "title": "Informations sur l'Assureur / Courtier",
+      "organization_type_question": "Quel type d'organisation êtes-vous ?",
+      "organization_types": {
+        "insurance_company": "Compagnie d'Assurance",
+        "reinsurance_company": "Compagnie de Réassurance",
+        "lloyds_managing_agency": "Agence de Gestion Lloyd's",
+        "insurance_broker": "Courtier en Assurance",
+        "reinsurance_broker": "Courtier en Réassurance"
+      },
       "delegating_question": "Votre compagnie délègue-t-elle actuellement des pouvoirs de souscription aux AGS en Europe ? (Europe continentale et/ou Royaume-Uni et/ou Irlande)",
       "delegating_note": "Ce n'est pas une condition d'adhésion. Les assureurs qui prévoient de déléguer des pouvoirs aux AGS en Europe sont également éligibles à l'adhésion FASE.",
       "mga_count_question": "Avec combien d'AGS travaillez-vous actuellement en Europe ?",
@@ -926,9 +936,9 @@
       },
       "carrier": {
         "title": "Assureur / Courtier",
-        "description": "Compagnies d'assurance ou de réassurance ou Agences de Gestion de Lloyd's faisant affaire avec des agences de souscription.",
+        "description": "Compagnie d'(ré)assurance, agence de gestion Lloyd's, ou courtier en (ré)assurance traitant avec des agences de souscription.",
         "image_alt": "Analyse de marché et données",
-        "action_text": "Postuler comme Assureur"
+        "action_text": "Postuler comme Assureur / Courtier"
       },
       "service_provider": {
         "title": "Prestataire de services",

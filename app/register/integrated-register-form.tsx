@@ -137,6 +137,7 @@ export default function IntegratedRegisterForm() {
   const [submittingApplication, setSubmittingApplication] = useState(false);
 
   // New carrier-specific fields
+  const [carrierOrganizationType, setCarrierOrganizationType] = useState('');
   const [isDelegatingInEurope, setIsDelegatingInEurope] = useState('');
   const [numberOfMGAs, setNumberOfMGAs] = useState('');
   const [delegatingCountries, setDelegatingCountries] = useState<string[]>([]);
@@ -440,6 +441,7 @@ export default function IntegratedRegisterForm() {
         hasOtherAssociations,
         otherAssociations,
         servicesProvided,
+        carrierOrganizationType,
         isDelegatingInEurope,
         numberOfMGAs,
         delegatingCountries,
@@ -852,6 +854,8 @@ export default function IntegratedRegisterForm() {
           {/* Carrier-specific Information */}
           {membershipType === 'corporate' && organizationType === 'carrier' && (
             <CarrierInformationSection
+              carrierOrganizationType={carrierOrganizationType}
+              setCarrierOrganizationType={setCarrierOrganizationType}
               isDelegatingInEurope={isDelegatingInEurope}
               setIsDelegatingInEurope={setIsDelegatingInEurope}
               numberOfMGAs={numberOfMGAs}
@@ -1092,6 +1096,7 @@ export default function IntegratedRegisterForm() {
                     hasOtherAssociations,
                     otherAssociations,
                     servicesProvided,
+                    carrierOrganizationType,
                     isDelegatingInEurope,
                     numberOfMGAs,
                     delegatingCountries,

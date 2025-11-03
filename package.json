@@ -25,6 +25,7 @@
     "puppeteer": "^24.26.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-phone-number-input": "^3.4.13",
     "sharp": "^0.34.4",
     "stripe": "^18.5.0"
   },

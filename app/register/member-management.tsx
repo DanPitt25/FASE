@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Member } from './registration-hooks';
+import PhoneInput from '../../components/PhoneInput';
 
 // Team Members Management Component
 export const TeamMembersSection = ({
@@ -151,18 +152,16 @@ export const TeamMembersSection = ({
                   disabled={member.id === 'registrant'}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-2">
-                  {t('phone_label')}
-                </label>
-                <input
-                  type="tel"
-                  value={member.phone}
-                  onChange={(e) => updateMember(member.id, { phone: e.target.value })}
-                  placeholder="+44 20 1234 5678"
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                />
-              </div>
+              <PhoneInput
+                label={t('phone_label')}
+                value={member.phone}
+                onChange={(value) => updateMember(member.id, { phone: value })}
+                fieldKey={`member-${member.id}-phone`}
+                touchedFields={{}}
+                attemptedNext={false}
+                markFieldTouched={() => {}}
+                disabled={member.id === 'registrant'}
+              />
             </div>
 
             <div className="mt-4">

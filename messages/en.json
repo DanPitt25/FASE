@@ -85,8 +85,8 @@
       "subtitle": "Choose the type that best describes your organization",
       "mga_title": "MGA",
       "mga_description": "Managing General Agents transacting business in Europe",
-      "carrier_title": "Carrier",
-      "carrier_description": "Insurance companies and reinsurers working with MGAs",
+      "carrier_title": "Carrier / Broker",
+      "carrier_description": "(Re)insurance company, Lloyd's managing agency, or (re)insurance broker transacting business with MGAs",
       "provider_title": "Service Provider", 
       "provider_description": "Technology, legal, financial and other service providers to MGAs",
       "continue_button": "Continue",
@@ -184,6 +184,8 @@
       "last_name_label": "Last Name",
       "email_label": "Email",
       "phone_label": "Phone",
+      "phone_placeholder": "Enter phone number",
+      "phone_required": "Phone number is required",
       "job_title_label": "Job Title",
       "add_member_button": "+ Add Another Member (max 3)"
     },
@@ -452,7 +454,15 @@
       }
     },
     "carrier": {
-      "title": "Carrier Information",
+      "title": "Carrier / Broker Information",
+      "organization_type_question": "What type of organization are you?",
+      "organization_types": {
+        "insurance_company": "Insurance Company",
+        "reinsurance_company": "Reinsurance Company",
+        "lloyds_managing_agency": "Lloyd's Managing Agency",
+        "insurance_broker": "Insurance Broker",
+        "reinsurance_broker": "Reinsurance Broker"
+      },
       "delegating_question": "Do you currently delegate underwriting authority to MGAs in Europe?",
       "delegating_note": "This includes any form of binding authority, coverholder agreements, or similar arrangements where MGAs can underwrite on your behalf.",
       "mga_count_question": "How many MGAs do you currently work with in Europe?",
@@ -939,9 +949,9 @@
       },
       "carrier": {
         "title": "Carrier / Broker",
-        "description": "Insurance or reinsurance companies or Lloyd's Managing Agencies transacting business with MGAs.",
+        "description": "(Re)insurance company, Lloyd's managing agency, or (re)insurance broker transacting business with MGAs.",
         "image_alt": "Market analysis and data",
-        "action_text": "Apply as Carrier"
+        "action_text": "Apply as Carrier / Broker"
       },
       "service_provider": {
         "title": "Service provider",

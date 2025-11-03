@@ -85,8 +85,8 @@
       "subtitle": "Wählen Sie den Typ, der Ihre Organisation am besten beschreibt",
       "mga_title": "MGA",
       "mga_description": "Managing General Agents mit Geschäftstätigkeit in Europa",
-      "carrier_title": "Versicherer",
-      "carrier_description": "Versicherungsunternehmen und Rückversicherer, die mit MGAs arbeiten",
+      "carrier_title": "Versicherer / Makler",
+      "carrier_description": "(Rück)Versicherungsunternehmen, Lloyd's Managing Agency oder (Rück)Versicherungsmakler mit Geschäftstätigkeit mit MGAs",
       "provider_title": "Dienstleister",
       "provider_description": "Technologie-, Rechts-, Finanz- und andere Dienstleister für MGAs",
       "continue_button": "Weiter",
@@ -184,6 +184,8 @@
       "last_name_label": "Nachname",
       "email_label": "E-Mail",
       "phone_label": "Telefon",
+      "phone_placeholder": "Telefonnummer eingeben",
+      "phone_required": "Telefonnummer ist erforderlich",
       "job_title_label": "Berufsbezeichnung",
       "add_member_button": "+ Weiteres Mitglied hinzufügen (max. 3)"
     },
@@ -417,7 +419,15 @@
       "failed_payment_start": "Start des Zahlungsprozesses fehlgeschlagen"
     },
     "carrier": {
-      "title": "Versicherer-Informationen",
+      "title": "Versicherer / Makler-Informationen",
+      "organization_type_question": "Welche Art von Organisation sind Sie?",
+      "organization_types": {
+        "insurance_company": "Versicherungsunternehmen",
+        "reinsurance_company": "Rückversicherungsunternehmen",
+        "lloyds_managing_agency": "Lloyd's Managing Agency",
+        "insurance_broker": "Versicherungsmakler",
+        "reinsurance_broker": "Rückversicherungsmakler"
+      },
       "delegating_question": "Delegiert Ihr Unternehmen derzeit Zeichnungsvollmacht an MGAs in Europa?",
       "delegating_note": "Dies umfasst jede Form von Bindungsvollmacht, Deckungsinhaber-Vereinbarungen oder ähnliche Arrangements, bei denen MGAs in Ihrem Namen zeichnen können.",
       "mga_count_question": "Mit wie vielen MGAs arbeiten Sie derzeit in Europa?",
@@ -926,9 +936,9 @@
       },
       "carrier": {
         "title": "Versicherer / Makler",
-        "description": "Versicherungs- oder Rückversicherungsunternehmen oder Lloyd's Managing Agencies mit Geschäftstätigkeit mit MGAs.",
+        "description": "(Rück)Versicherungsunternehmen, Lloyd's Managing Agency oder (Rück)Versicherungsmakler mit Geschäftstätigkeit mit MGAs.",
         "image_alt": "Marktanalyse und Daten",
-        "action_text": "Als Versicherer bewerben"
+        "action_text": "Als Versicherer / Makler bewerben"
       },
       "service_provider": {
         "title": "Dienstleister",

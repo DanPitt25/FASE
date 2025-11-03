@@ -10,3 +10,10 @@ node_modules/
 # Environment files
 .env.local
 .env
+
+# Firebase debug logs (contain sensitive environment variables)
+*.log
+firebase-debug.log*
+ui-debug.log
+functions-debug.log*
+firestore-debug.log*
