@@ -665,32 +665,22 @@ export default function IntegratedRegisterForm() {
       }
 
     } catch (error: any) {
-      // Cleanup account if payment fails
+      // Cleanup account if payment fails - call server-side API to avoid permissions issues
       if (draftUserId) {
         try {
-          // Delete the user account that was just created
-          const { auth } = await import('../../lib/firebase');
-          const { deleteUser } = await import('firebase/auth');
-          
-          if (auth.currentUser && auth.currentUser.uid === draftUserId) {
-            await deleteUser(auth.currentUser);
+          const cleanupResponse = await fetch('/api/cleanup-account', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: draftUserId }),
+          });
+
+          if (cleanupResponse.ok) {
+            console.log('Account cleanup completed after payment error');
+          } else {
+            console.error('Failed to cleanup account:', await cleanupResponse.text());
           }
-          
-          // Also cleanup any Firestore documents
-          const { db } = await import('../../lib/firebase');
-          const { doc, deleteDoc } = await import('firebase/firestore');
-          
-          // Delete account document
-          await deleteDoc(doc(db, 'accounts', draftUserId));
-          
-          // Delete draft application if it exists
-          try {
-            await deleteDoc(doc(db, 'draft_applications', draftUserId));
-          } catch (draftError) {
-            // Draft might not exist yet, ignore
-          }
-          
-          console.log('Account cleanup completed after payment error');
         } catch (cleanupError) {
           console.error('Failed to cleanup account after payment error:', cleanupError);
         }

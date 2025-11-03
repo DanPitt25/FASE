@@ -247,12 +247,9 @@ export const resetPassword = async (email: string, token: string, newPassword: s
   }
 };
 
-// Submit application via Firebase Function (using existing sendInvoiceEmail)
+// Submit application via Firebase Function - calls Firebase Function directly via HTTP to avoid auth context issues
 export const submitApplication = async (applicationData: any): Promise<{ applicationNumber: string }> => {
   try {
-    const { httpsCallable } = await import('firebase/functions');
-    const { functions } = await import('./firebase');
-    
     // Generate application number
     const applicationNumber = `FASE-APP-${Date.now()}-${Date.now().toString().slice(-6)}`;
     
@@ -262,17 +259,29 @@ export const submitApplication = async (applicationData: any): Promise<{ applica
     // Generate application email HTML
     const emailContent = generateApplicationEmailHTML(applicationData, applicationNumber, membershipFee);
     
-    // Use existing sendInvoiceEmail function to send application
-    const sendEmailFunction = httpsCallable(functions, 'sendInvoiceEmail');
-    const result = await sendEmailFunction({
-      email: 'applications@fasemga.com',
-      invoiceHTML: emailContent,
-      invoiceNumber: applicationNumber,
-      organizationName: applicationData.organizationName || `${applicationData.firstName} ${applicationData.surname}`,
-      totalAmount: membershipFee
+    // Call Firebase Function directly via HTTP (server-side) to avoid requiring client auth context
+    const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: {
+          email: 'applications@fasemga.com',
+          invoiceHTML: emailContent,
+          invoiceNumber: applicationNumber,
+          organizationName: applicationData.organizationName || `${applicationData.firstName} ${applicationData.surname}`,
+          totalAmount: membershipFee
+        }
+      }),
     });
-    
-    if (!result.data || !(result.data as any).success) {
+
+    if (!response.ok) {
+      throw new Error(`Firebase Function error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (!result.result || !result.result.success) {
       throw new Error('Failed to send application email');
     }
     
