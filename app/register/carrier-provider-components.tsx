@@ -125,7 +125,7 @@ export const CarrierInformationSection = ({
           {t('fronting_question')} *
         </label>
         <div className="space-y-2">
-          {Object.entries(t.raw('fronting_options')).map(([key, label]) => (
+          {Object.entries(t.raw('fronting_options') as Record<string, string>).map(([key, label]) => (
             <label key={key} className="flex items-center">
               <input
                 type="radio"
@@ -216,7 +216,7 @@ export const ServiceProviderSection = ({
           {t('services_question')} *
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {Object.entries(t.raw('categories')).map(([key, label]) => (
+          {Object.entries(t.raw('categories') as Record<string, string>).map(([key, label]) => (
             <label key={key} className="flex items-center">
               <input
                 type="checkbox"
