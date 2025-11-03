@@ -2,9 +2,12 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Button from '../../components/Button';
 
 function SubscriptionSuccessContent() {
+  const t = useTranslations('subscription_success');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,7 +20,7 @@ function SubscriptionSuccessContent() {
       // For PayPal subscriptions, the webhook should handle the processing
       setLoading(false);
     } else {
-      setError('Invalid subscription session');
+      setError(t('invalid_session'));
       setLoading(false);
     }
   }, [provider, subscriptionId]);
@@ -27,7 +30,7 @@ function SubscriptionSuccessContent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto mb-4"></div>
-          <p className="text-fase-black">Processing your subscription...</p>
+          <p className="text-fase-black">{t('processing_subscription')}</p>
         </div>
       </div>
     );
@@ -42,13 +45,13 @@ function SubscriptionSuccessContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h1 className="text-2xl font-noto-serif font-bold text-gray-900 mb-4">Subscription Error</h1>
+          <h1 className="text-2xl font-noto-serif font-bold text-gray-900 mb-4">{t('error_title')}</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button 
             variant="primary" 
             onClick={() => window.location.href = '/register'}
           >
-            Return to Registration
+            {t('return_to_registration')}
           </Button>
         </div>
       </div>
@@ -65,20 +68,20 @@ function SubscriptionSuccessContent() {
         </div>
         
         <h1 className="text-2xl font-noto-serif font-bold text-gray-900 mb-4">
-          Subscription Activated!
+          {t('title')}
         </h1>
         
         <p className="text-gray-600 mb-6">
-          Your FASE membership subscription is now active! You&apos;ll be billed annually and your membership will automatically renew each year.
+          {t('message')}
         </p>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-blue-800">
-            <strong>What happens next:</strong><br/>
-            • Your membership application is being processed<br/>
-            • You&apos;ll receive a confirmation email shortly<br/>
-            • Annual renewals will be automatic<br/>
-            • You can manage your subscription in PayPal
+            <strong>{t('what_happens_next')}</strong><br/>
+            • {t('steps.processing')}<br/>
+            • {t('steps.email')}<br/>
+            • {t('steps.renewals')}<br/>
+            • {t('steps.manage')}
           </p>
         </div>
         
@@ -88,7 +91,7 @@ function SubscriptionSuccessContent() {
             onClick={() => window.location.href = '/member-portal'}
             className="w-full"
           >
-            Go to Member Portal
+            {t('buttons.member_portal')}
           </Button>
           
           <Button 
@@ -96,13 +99,13 @@ function SubscriptionSuccessContent() {
             onClick={() => window.location.href = '/'}
             className="w-full"
           >
-            Return to Home
+            {t('buttons.return_home')}
           </Button>
         </div>
         
         <p className="text-xs text-gray-500 mt-6">
-          Subscription ID: {subscriptionId}<br/>
-          You can cancel anytime through your PayPal account.
+          {t('subscription_id')} {subscriptionId}<br/>
+          {t('cancel_note')}
         </p>
       </div>
     </div>

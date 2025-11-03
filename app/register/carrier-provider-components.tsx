@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { europeanCountries } from '../../lib/countries';
 import { frontingOptions, amBestRatings, serviceProviderCategories } from './registration-utils';
 
@@ -35,20 +36,23 @@ export const CarrierInformationSection = ({
   otherRating: string;
   setOtherRating: (value: string) => void;
 }) => {
+  const t = useTranslations('register_form.carrier');
+  const tCommon = useTranslations('common');
+  
   return (
     <div className="space-y-6">
-      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Carrier Information</h4>
+      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
       
       {/* Delegating Authority */}
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
-          Is your company currently writing delegated authority business through MGAs in Europe? (Continental Europe and/or the UK and/or Ireland) *
+          {t('delegating_question')} *
         </label>
         <div className="text-xs text-fase-black mb-3 italic">
-          This is not a qualification for membership. Carriers that are planning to delegate authority to MGAs in Europe are also eligible for FASE membership.
+          {t('delegating_note')}
         </div>
         <div className="space-y-2">
-          {['Yes', 'No'].map((option) => (
+          {[tCommon('yes'), tCommon('no')].map((option) => (
             <label key={option} className="flex items-center">
               <input
                 type="radio"
@@ -63,11 +67,11 @@ export const CarrierInformationSection = ({
           ))}
         </div>
 
-        {isDelegatingInEurope === 'Yes' && (
+        {isDelegatingInEurope === tCommon('yes') && (
           <div className="mt-4 space-y-4">
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-3">
-                How many MGAs do you currently work with in Europe? *
+                {t('mga_count_question')} *
               </label>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {['1', '2-5', '6-10', '11-25', '25+'].map((option) => (
@@ -89,7 +93,7 @@ export const CarrierInformationSection = ({
 
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-3">
-                In which European countries are you currently delegating underwriting authority to MGAs? *
+                {t('countries_question')} *
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
                 {europeanCountries.map((country) => (
@@ -118,7 +122,7 @@ export const CarrierInformationSection = ({
       {/* Fronting Options */}
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
-          Do you offer fronting options? *
+          {t('fronting_question')} *
         </label>
         <div className="space-y-2">
           {frontingOptions.map((option) => (
@@ -140,10 +144,10 @@ export const CarrierInformationSection = ({
       {/* Startup MGAs */}
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
-          Do you consider startup MGAs? *
+          {t('startup_question')} *
         </label>
         <div className="space-y-2">
-          {['Yes', 'No'].map((option) => (
+          {[tCommon('yes'), tCommon('no')].map((option) => (
             <label key={option} className="flex items-center">
               <input
                 type="radio"
@@ -163,14 +167,14 @@ export const CarrierInformationSection = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-fase-navy mb-2">
-            AM Best rating (if rated)
+            {t('am_best_rating')}
           </label>
           <select
             value={amBestRating}
             onChange={(e) => setAmBestRating(e.target.value)}
             className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
-            <option value="">Select rating</option>
+            <option value="">{t('select_rating')}</option>
             {amBestRatings.map((rating) => (
               <option key={rating} value={rating}>{rating}</option>
             ))}
@@ -178,13 +182,13 @@ export const CarrierInformationSection = ({
         </div>
         <div>
           <label className="block text-sm font-medium text-fase-navy mb-2">
-            Additional / Other rating (Please specify)
+            {t('other_rating')}
           </label>
           <input
             type="text"
             value={otherRating}
             onChange={(e) => setOtherRating(e.target.value)}
-            placeholder="Please specify other rating if applicable"
+            placeholder={t('other_rating_placeholder')}
             className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           />
         </div>
@@ -201,13 +205,15 @@ export const ServiceProviderSection = ({
   servicesProvided: string[];
   setServicesProvided: (services: string[]) => void;
 }) => {
+  const t = useTranslations('register_form.service_provider');
+  
   return (
     <div className="space-y-6">
-      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Service Provider Information</h4>
+      <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
       
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
-          Which of the following services do you provide? *
+          {t('services_question')} *
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {serviceProviderCategories.map((service) => (

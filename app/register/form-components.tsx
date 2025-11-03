@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 
 // Password validation function
 export const validatePassword = (password: string) => {
@@ -119,6 +120,7 @@ export const ValidatedSelect = ({
   attemptedNext: boolean;
   markFieldTouched: (fieldKey: string) => void;
 }) => {
+  const tCommon = useTranslations('common');
   const isValid = value.trim() !== '';
   const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
   
@@ -138,7 +140,7 @@ export const ValidatedSelect = ({
           shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
         }`}
       >
-        <option value="">Select...</option>
+        <option value="">{tCommon('select')}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

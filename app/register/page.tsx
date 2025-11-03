@@ -1,10 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 import IntegratedRegisterForm from './integrated-register-form';
 import LanguageToggle from '../../components/LanguageToggle';
 
 export default function Register() {
+  const tCommon = useTranslations('common');
+  
   return (
     <div className="min-h-screen bg-fase-navy py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -26,7 +31,7 @@ export default function Register() {
             </Link>
           </div>
           <div className="bg-white px-6 py-8">
-            <Suspense fallback={<div className="flex justify-center items-center py-8">Loading...</div>}>
+            <Suspense fallback={<div className="flex justify-center items-center py-8">{tCommon('loading')}</div>}>
               <IntegratedRegisterForm />
             </Suspense>
           </div>

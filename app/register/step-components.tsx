@@ -155,7 +155,7 @@ export const OrganizationTypeSelector = ({
   return (
     <div>
       <label className="block text-sm font-medium text-fase-navy mb-4">
-        Organization Type *
+        {t('organization_type')} *
       </label>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <button

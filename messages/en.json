@@ -8,7 +8,10 @@
     "french": "Français",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No",
+    "select": "Select..."
   },
   "navigation": {
     "main_menu": "Main Menu",
@@ -85,7 +88,8 @@
       "carrier_description": "Insurance companies and reinsurers working with MGAs",
       "provider_title": "Service Provider", 
       "provider_description": "Technology, legal, financial and other service providers to MGAs",
-      "continue_button": "Continue"
+      "continue_button": "Continue",
+      "organization_type": "Organization Type"
     },
     "data_consent": {
       "title": "Data Processing Notice",
@@ -397,10 +401,31 @@
       "verification_code_failed": "Failed to verify code",
       "code_of_conduct_required": "Please consent to the Code of Conduct to continue",
       "failed_to_submit": "Failed to submit application",
+      "select_payment_method": "Please select a payment method",
+      "failed_generate_invoice": "Failed to generate invoice",
+      "failed_create_paypal_subscription": "Failed to create PayPal subscription",
+      "no_paypal_approval_url": "No PayPal approval URL received",
       "no_authenticated_user": "No authenticated user",
       "payment_processing_failed": "Payment processing failed. Please try again.",
       "no_paypal_url": "No approval URL received from PayPal",
       "failed_payment_start": "Failed to start payment process"
+    },
+    "carrier": {
+      "title": "Carrier Information",
+      "delegating_question": "Is your company currently writing delegated authority business through MGAs in Europe? (Continental Europe and/or the UK and/or Ireland)",
+      "delegating_note": "This is not a qualification for membership. Carriers that are planning to delegate authority to MGAs in Europe are also eligible for FASE membership.",
+      "mga_count_question": "How many MGAs do you currently work with in Europe?",
+      "countries_question": "In which European countries are you currently delegating underwriting authority to MGAs?",
+      "fronting_question": "Do you offer fronting options?",
+      "startup_question": "Do you consider startup MGAs?",
+      "am_best_rating": "AM Best rating (if rated)",
+      "select_rating": "Select rating",
+      "other_rating": "Additional / Other rating (Please specify)",
+      "other_rating_placeholder": "Please specify other rating if applicable"
+    },
+    "service_provider": {
+      "title": "Service Provider Information",
+      "services_question": "Which of the following services do you provide?"
     }
   },
   "header": {
@@ -1030,5 +1055,26 @@
       "title": "Marketing Cookies",
       "description": "These cookies are used to track visitors across websites to display relevant advertisements and measure campaign effectiveness."
     }
+  },
+  "subscription_success": {
+    "title": "Subscription Activated!",
+    "message": "Your FASE membership subscription is now active! You'll be billed annually and your membership will automatically renew each year.",
+    "what_happens_next": "What happens next:",
+    "steps": {
+      "processing": "Your membership application is being processed",
+      "email": "You'll receive a confirmation email shortly",
+      "renewals": "Annual renewals will be automatic",
+      "manage": "You can manage your subscription in PayPal"
+    },
+    "buttons": {
+      "member_portal": "Go to Member Portal",
+      "return_home": "Return to Home"
+    },
+    "subscription_id": "Subscription ID:",
+    "cancel_note": "You can cancel anytime through your PayPal account.",
+    "error_title": "Subscription Error",
+    "invalid_session": "Invalid subscription session",
+    "return_to_registration": "Return to Registration",
+    "processing_subscription": "Processing your subscription..."
   }
 }

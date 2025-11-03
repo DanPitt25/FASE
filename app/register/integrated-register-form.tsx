@@ -25,6 +25,7 @@ import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, cal
 export default function IntegratedRegisterForm() {
   // Translations
   const t = useTranslations('register_form');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   
   // URL parameter handling
@@ -443,7 +444,7 @@ export default function IntegratedRegisterForm() {
     }
     
     if (!selectedPaymentMethod) {
-      setError('Please select a payment method');
+      setError(t('errors.select_payment_method'));
       return;
     }
 
@@ -492,8 +493,8 @@ export default function IntegratedRegisterForm() {
         // Carrier specific
         ...(membershipType === 'corporate' && organizationType === 'carrier' && {
           isDelegatingInEurope,
-          numberOfMGAs: isDelegatingInEurope === 'Yes' ? numberOfMGAs : undefined,
-          delegatingCountries: isDelegatingInEurope === 'Yes' ? delegatingCountries : undefined,
+          numberOfMGAs: isDelegatingInEurope === tCommon('yes') ? numberOfMGAs : undefined,
+          delegatingCountries: isDelegatingInEurope === tCommon('yes') ? delegatingCountries : undefined,
           frontingOptions,
           considerStartupMGAs,
           amBestRating,
@@ -595,7 +596,7 @@ export default function IntegratedRegisterForm() {
         });
 
         if (!invoiceResponse.ok) {
-          throw new Error('Failed to generate invoice');
+          throw new Error(t('errors.failed_generate_invoice'));
         }
 
         const invoiceResult = await invoiceResponse.json();
@@ -637,7 +638,7 @@ export default function IntegratedRegisterForm() {
         });
 
         if (!paypalResponse.ok) {
-          throw new Error('Failed to create PayPal subscription');
+          throw new Error(t('errors.failed_create_paypal_subscription'));
         }
 
         const paypalData = await paypalResponse.json();
@@ -646,7 +647,7 @@ export default function IntegratedRegisterForm() {
         if (paypalData.approvalUrl) {
           window.location.href = paypalData.approvalUrl;
         } else {
-          throw new Error('No PayPal approval URL received');
+          throw new Error(t('errors.no_paypal_approval_url'));
         }
       }
 
