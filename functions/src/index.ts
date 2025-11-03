@@ -102,7 +102,7 @@ export const sendVerificationCode = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <noreply@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: template.subject,
             html: emailHtml,
@@ -332,7 +332,7 @@ export const sendJoinRequestNotification = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <noreply@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -435,7 +435,7 @@ export const sendPasswordReset = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <noreply@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: template.subject,
             html: emailHtml,

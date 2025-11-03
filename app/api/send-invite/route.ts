@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <noreply@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: `Invitation to join ${companyName} on FASE`,
             html: emailHtml,
