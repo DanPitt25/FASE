@@ -21,8 +21,8 @@ export default function NewsPage() {
       cards: [
         {
           title: 'FASE Foundation',
-          description: 'William Pitt establishes FASE to serve the rapidly growing European MGA sector, addressing the need for pan-European representation and collaboration.',
-          image: '/seated.jpg',
+          description: 'FASE is established to serve the rapidly growing European MGA sector, addressing the need for pan-European representation and collaboration.',
+          image: '/motorcycle.jpeg',
           imageAlt: 'FASE foundation announcement'
         },
         {
@@ -34,7 +34,7 @@ export default function NewsPage() {
         {
           title: 'Membership Platform Launch',
           description: 'FASE member portal goes live, providing registration, directory services, and exclusive resources for European MGA professionals.',
-          image: '/training.jpg',
+          image: '/conference.jpeg',
           imageAlt: 'Platform launch'
         }
       ]

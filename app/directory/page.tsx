@@ -155,7 +155,7 @@ export default function DirectoryPage() {
                   </h2>
                   
                   <p className="text-xl text-fase-black mb-8 leading-relaxed">
-                    The FASE Member Directory will launch on <strong>November 17th, 2024</strong>, providing a comprehensive view of our European MGA community.
+                    The FASE Member Directory will launch on <strong>November 17th, 2025</strong>, providing a comprehensive view of our European MGA community.
                   </p>
                   
                   <div className="bg-fase-cream/50 border border-fase-light-gold rounded-lg p-6 mb-8">
@@ -190,12 +190,6 @@ export default function DirectoryPage() {
                       className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-navy/90 transition-colors duration-200"
                     >
                       Become a Member
-                    </a>
-                    <a 
-                      href="/member-portal"
-                      className="inline-flex items-center justify-center px-6 py-3 border border-fase-navy text-base font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
-                    >
-                      Member Portal
                     </a>
                   </div>
                 </div>

@@ -34,7 +34,6 @@ export default function LoginForm() {
       await signIn(email, password);
       router.push('/member-portal');
     } catch (error: any) {
-      console.error('Login error:', error);
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
       
@@ -56,7 +55,6 @@ export default function LoginForm() {
       await sendPasswordReset(email);
       setResetSent(true);
     } catch (error: any) {
-      console.error('Password reset error:', error);
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
     } finally {

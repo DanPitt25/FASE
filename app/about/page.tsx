@@ -16,17 +16,6 @@ export default function AboutPage() {
       imagePosition: 'right' as const
     },
     {
-      type: 'split' as const,
-      title: 'Our Mission & Market Impact',
-      content: [
-        'FASE represents the interests of MGAs doing business across Europe, including the European Economic Area, the United Kingdom, Switzerland, eastern European countries not currently within the EEA, and Turkey. Our mission is to provide a forum for MGAs to expand relationships with capacity providers, distributors, investors, and service providers.',
-        'More than 600 MGAs currently do business in Europe, transacting at least €18 billion in annual premium and growing at double digit rates. In recent years, many large MGAs have attracted substantial private equity investments, drawn by their fee-based revenue model, advanced risk pricing capabilities, and strong growth potential in underserved insurance markets.'
-      ],
-      image: '/consideration.jpg',
-      imageAlt: 'European market growth and investment',
-      imagePosition: 'left' as const
-    },
-    {
       type: 'quote' as const,
       quote: 'The MGA model is gaining momentum globally, and we expect this trend to continue, particularly in Europe. Well-managed and highly professional MGA associations can play a pivotal role in contributing to sector\'s growth. We see FASE stepping into this space to enhance and strengthen the MGA ecosystem across Europe.',
       author: 'Olaf Jonda',

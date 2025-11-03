@@ -52,8 +52,6 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       // If no unified member exists, create one with basic data
       // BUT don't overwrite existing accounts that might have been created during registration
       if (!memberData) {
-        console.log('No unified member found for user:', firebaseUser.uid);
-        console.log('This might be expected if user is in the middle of registration process');
         // Don't create a basic profile - let the registration process handle account creation
         return;
       }
@@ -66,23 +64,14 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         checkMemberClaim()
       ]);
       
-      // Debug: Log the actual token claims
-      if (firebaseUser) {
-        const idTokenResult = await firebaseUser.getIdTokenResult();
-        console.log('Token claims:', idTokenResult.claims);
-        console.log('Admin claim from token:', idTokenResult.claims.admin);
-      }
       
       // Bootstrap: If user has admin status in database but no custom claim, set the claim
       if (memberData.status === 'admin' && !adminClaim) {
         try {
-          console.log('Bootstrapping admin claim for user:', firebaseUser.uid);
           await setAdminClaim(firebaseUser.uid);
-          console.log('Admin claim set successfully');
           // Reload the user to get the new claims
           await firebaseUser.reload();
         } catch (error) {
-          console.error('Failed to bootstrap admin claim:', error);
         }
       }
       
@@ -90,7 +79,6 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       setHasMemberAccess(memberClaim || ['approved', 'admin'].includes(memberData.status));
       
     } catch (error) {
-      console.error('Error loading member data:', error);
       setMember(null);
       setIsAdmin(false);
       setHasMemberAccess(false);

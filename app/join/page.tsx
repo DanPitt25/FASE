@@ -57,7 +57,7 @@ export default function JoinPage() {
         {
           title: 'MGA',
           description: 'MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.',
-          image: '/seated.jpg',
+          image: '/gettingAlong.jpeg',
           imageAlt: 'MGA business meeting',
           href: '/register?type=MGA',
           actionText: 'Apply as MGA'
@@ -65,7 +65,7 @@ export default function JoinPage() {
         {
           title: 'Carrier',
           description: 'Insurance or reinsurance companies or Lloyd\'s Managing Agencies transacting business with MGAs.',
-          image: '/consideration.jpg',
+          image: '/conference.jpeg',
           imageAlt: 'Market analysis and data',
           href: '/register?type=carrier',
           actionText: 'Apply as Carrier'
@@ -73,7 +73,7 @@ export default function JoinPage() {
         {
           title: 'Service provider',
           description: 'Service providers active within the MGA ecosystem.',
-          image: '/training.jpg',
+          image: '/glass.jpg',
           imageAlt: 'Service provider collaboration',
           href: '/register?type=provider',
           actionText: 'Apply as Service Provider'
@@ -87,7 +87,7 @@ export default function JoinPage() {
         'To begin your application, complete our membership form with your organisation details and business information.',
         'Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives.'
       ],
-      image: '/training.jpg',
+      image: '/motorcycle.jpeg',
       imageAlt: 'Application process',
       imagePosition: 'left' as const,
       buttons: [

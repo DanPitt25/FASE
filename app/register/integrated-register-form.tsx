@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
 import Button from "../../components/Button";
 import { ValidatedInput, validatePassword } from './form-components';
@@ -374,7 +376,6 @@ export default function IntegratedRegisterForm() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('PayPal API error:', response.status, errorText);
         throw new Error(`Payment processing failed (${response.status}). Please try again.`);
       }
 
@@ -387,7 +388,6 @@ export default function IntegratedRegisterForm() {
         throw new Error('No approval URL received from PayPal');
       }
     } catch (error: any) {
-      console.error('Payment error:', error);
       setPaymentError(error.message || 'Failed to start payment process');
     }
   };
@@ -478,7 +478,6 @@ export default function IntegratedRegisterForm() {
 
       // Submit application using Firebase Function
       const result = await submitApplication(applicationData);
-      console.log('Application submitted successfully:', result);
 
       // Create Firebase Auth account and Firestore record for the applicant
       await createAccountAndMembership('pending', {
@@ -526,7 +525,6 @@ export default function IntegratedRegisterForm() {
       window.location.href = '/register/thank-you';
 
     } catch (error: any) {
-      console.error('Application submission error:', error);
       setPaymentError(error.message || 'Failed to submit application');
     } finally {
       setProcessingPayment(false);
@@ -626,7 +624,13 @@ export default function IntegratedRegisterForm() {
             variant="primary" 
             size="large" 
             className="w-full"
-            onClick={() => window.location.href = '/login'}
+            onClick={async () => {
+              try {
+                await signOut(auth);
+              } catch (error) {
+              }
+              window.location.href = '/login';
+            }}
           >
             Continue to Sign In
           </Button>
@@ -740,7 +744,7 @@ export default function IntegratedRegisterForm() {
                 </ul>
                 
                 <p className="mb-3">
-                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at admin@fasemga.com or write to FASE Data Protection, Herengracht 124, 1015 BT Amsterdam, Netherlands.
+                  <strong>Contact:</strong> To exercise your rights or for data protection queries, contact us at admin@fasemga.com.
                 </p>
               </div>
             </div>

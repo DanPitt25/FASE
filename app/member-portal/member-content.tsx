@@ -34,53 +34,23 @@ export default function MemberContent() {
   useEffect(() => {
     const loadData = async () => {
       if (!user || !member) {
-        console.log('[DEBUG] Missing user or member data:', { user: !!user, member: !!member });
         return;
       }
       
-      console.log('[DEBUG] Loading messages for member:', {
-        memberId: member.id,
-        memberEmail: member.email,
-        membershipType: member.membershipType,
-        organizationType: member.organizationType,
-        status: member.status
-      });
       
       try {
         setLoadingAlerts(true);
         setLoadingMessages(true);
         
-        console.log('[DEBUG] Calling getUserMessages with ID:', member.id);
         const [userAlerts, userMessages] = await Promise.all([
           getUserAlerts(member.id), // Use Firestore account ID
           getUserMessages(member.id) // Use Firestore account ID
         ]);
         
-        console.log('[DEBUG] getUserMessages returned:', {
-          messageCount: userMessages.length,
-          messages: userMessages.map(msg => ({
-            id: msg.id,
-            subject: msg.subject,
-            messageId: msg.messageId,
-            userId: msg.userId,
-            isRead: msg.isRead
-          }))
-        });
-        
-        console.log('[DEBUG] getUserAlerts returned:', {
-          alertCount: userAlerts.length,
-          alerts: userAlerts.map(alert => ({
-            id: alert.id,
-            title: alert.title,
-            userId: alert.userId,
-            isRead: alert.isRead
-          }))
-        });
         
         setAlerts(userAlerts);
         setMessages(userMessages);
       } catch (error) {
-        console.error('[DEBUG] Error loading alerts/messages:', error);
       } finally {
         setLoadingAlerts(false);
         setLoadingMessages(false);
@@ -107,7 +77,6 @@ export default function MemberContent() {
         alert.id === alertId ? { ...alert, isRead: true } : alert
       ));
     } catch (error) {
-      console.error('Error marking alert as read:', error);
     }
   };
 
@@ -116,7 +85,6 @@ export default function MemberContent() {
       await dismissAlert(alertId);
       setAlerts(prev => prev.filter(alert => alert.id !== alertId));
     } catch (error) {
-      console.error('Error dismissing alert:', error);
     }
   };
 
@@ -128,7 +96,6 @@ export default function MemberContent() {
         message.id === userMessageId ? { ...message, isRead: true } : message
       ));
     } catch (error) {
-      console.error('Error marking message as read:', error);
     }
   };
 
@@ -137,7 +104,6 @@ export default function MemberContent() {
       await deleteMessageForUser(userMessageId);
       setMessages(prev => prev.filter(message => message.id !== userMessageId));
     } catch (error) {
-      console.error('Error deleting message:', error);
     }
   };
 
@@ -151,7 +117,6 @@ export default function MemberContent() {
       setPasswordResetSent(true);
       setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
     } catch (error) {
-      console.error('Error sending password reset:', error);
       alert('Failed to send password reset email. Please try again.');
     } finally {
       setSendingPasswordReset(false);
@@ -180,7 +145,6 @@ export default function MemberContent() {
       setEditingProfile(false);
       alert('Profile updated successfully!');
     } catch (error) {
-      console.error('Error updating profile:', error);
       alert('Failed to update profile. Please try again.');
     } finally {
       setSavingProfile(false);

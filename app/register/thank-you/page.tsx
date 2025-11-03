@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../../lib/firebase';
 
 export default function ThankYouPage() {
   const [applicationNumber, setApplicationNumber] = useState<string | null>(null);
@@ -116,12 +117,19 @@ export default function ThankYouPage() {
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/"
+            <button
+              onClick={async () => {
+                try {
+                  await signOut(auth);
+                } catch (error) {
+                  console.error('Error signing out:', error);
+                }
+                window.location.href = '/';
+              }}
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
             >
               Return to Homepage
-            </Link>
+            </button>
           </div>
           </div>
         </div>

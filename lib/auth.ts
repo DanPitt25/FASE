@@ -68,7 +68,6 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
         throw statusError;
       }
       // For other errors (e.g., member data not found), allow login to proceed
-      console.warn('Could not check member status:', statusError);
     }
     
     return {
@@ -125,8 +124,6 @@ export const sendVerificationCode = async (email: string): Promise<void> => {
       throw new Error('Failed to send verification email');
     }
   } catch (error: any) {
-    console.error('Error sending verification code:', error);
-    console.error('Error details:', error.message, error.code);
     throw new Error('Failed to send verification code');
   }
 };
@@ -170,7 +167,6 @@ export const verifyCode = async (email: string, code: string): Promise<boolean> 
     
     return true;
   } catch (error: any) {
-    console.error('Error verifying code:', error);
     throw new Error(error.message || 'Failed to verify code');
   }
 };
@@ -183,9 +179,7 @@ export const setAdminClaim = async (targetUserId: string): Promise<void> => {
     const setAdminClaimFunction = httpsCallable(functions, 'setAdminClaim');
     
     const result = await setAdminClaimFunction({ targetUserId });
-    console.log('Admin claim set:', result.data);
   } catch (error: any) {
-    console.error('Error setting admin claim:', error);
     throw new Error(error.message || 'Failed to set admin claim');
   }
 };
@@ -198,9 +192,7 @@ export const removeAdminClaim = async (targetUserId: string): Promise<void> => {
     const removeAdminClaimFunction = httpsCallable(functions, 'removeAdminClaim');
     
     const result = await removeAdminClaimFunction({ targetUserId });
-    console.log('Admin claim removed:', result.data);
   } catch (error: any) {
-    console.error('Error removing admin claim:', error);
     throw new Error(error.message || 'Failed to remove admin claim');
   }
 };
@@ -218,7 +210,6 @@ export const sendPasswordReset = async (email: string): Promise<void> => {
       throw new Error('Failed to send password reset email');
     }
   } catch (error: any) {
-    console.error('Error sending password reset:', error);
     throw error;
   }
 };
@@ -234,7 +225,6 @@ export const validatePasswordResetToken = async (email: string, token: string): 
     
     return !!(result.data as any)?.success;
   } catch (error: any) {
-    console.error('Error validating password reset token:', error);
     return false;
   }
 };
@@ -252,7 +242,6 @@ export const resetPassword = async (email: string, token: string, newPassword: s
       throw new Error('Failed to reset password');
     }
   } catch (error: any) {
-    console.error('Error resetting password:', error);
     throw error;
   }
 };
@@ -288,34 +277,37 @@ export const submitApplication = async (applicationData: any): Promise<{ applica
     
     return { applicationNumber };
   } catch (error: any) {
-    console.error('Error submitting application:', error);
     throw new Error(error.message || 'Failed to submit application');
   }
 };
 
-// Calculate membership fee (replicated from form logic)
+// Calculate membership fee with proper discount logic
 const calculateMembershipFee = (applicationData: any): number => {
-  if (applicationData.membershipType === 'individual') {
-    return 500;
-  } else if (applicationData.membershipType === 'corporate' && applicationData.organizationType === 'MGA') {
-    // Use the GWP band to determine fee
-    const band = applicationData.grossWrittenPremiums;
-    switch (band) {
-      case '<10m': return 900;
-      case '10-20m': return 1500;
-      case '20-50m': return 2200;
-      case '50-100m': return 2800;
-      case '100-500m': return 4200;
-      case '500m+': return 7000;
-      default: return 900;
+  // Import the proper fee calculation functions
+  const { getDiscountedFee } = require('../app/register/registration-utils');
+  
+  // For MGAs, we need to convert the GWP band back to a numeric value
+  let gwpValue = '0';
+  if (applicationData.membershipType === 'corporate' && applicationData.organizationType === 'MGA' && applicationData.grossWrittenPremiums) {
+    // Convert GWP band back to a representative value for calculation
+    switch (applicationData.grossWrittenPremiums) {
+      case '<10m': gwpValue = '5000000'; break;  // 5M as representative
+      case '10-20m': gwpValue = '15000000'; break; // 15M as representative
+      case '20-50m': gwpValue = '35000000'; break; // 35M as representative
+      case '50-100m': gwpValue = '75000000'; break; // 75M as representative
+      case '100-500m': gwpValue = '300000000'; break; // 300M as representative
+      case '500m+': gwpValue = '1000000000'; break; // 1B as representative
+      default: gwpValue = '0';
     }
-  } else if (applicationData.membershipType === 'corporate' && applicationData.organizationType === 'carrier') {
-    return 4000;
-  } else if (applicationData.membershipType === 'corporate' && applicationData.organizationType === 'provider') {
-    return 5000;
-  } else {
-    return 900; // Default corporate rate
   }
+  
+  return getDiscountedFee(
+    applicationData.membershipType,
+    applicationData.organizationType,
+    gwpValue,
+    applicationData.gwpCurrency || 'EUR',
+    applicationData.hasOtherAssociations
+  );
 };
 
 // Generate application email HTML
@@ -470,6 +462,13 @@ const generateApplicationEmailHTML = (applicationData: any, applicationNumber: s
 
     <div class="content">
         ${applicationDetails}
+    </div>
+
+    <div class="application-info">
+        <h3>Membership Fee Information</h3>
+        <p><strong>Calculated Membership Fee:</strong> €${membershipFee.toLocaleString()}</p>
+        ${applicationData.hasOtherAssociations ? '<p><strong>Discount Applied:</strong> 20% discount for membership in other European MGA associations</p>' : ''}
+        ${applicationData.hasOtherAssociations && applicationData.otherAssociations?.length > 0 ? `<p><strong>Other Associations:</strong> ${applicationData.otherAssociations.join(', ')}</p>` : ''}
     </div>
 
     <div class="footer">

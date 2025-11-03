@@ -70,7 +70,7 @@ export const TeamMembersSection = ({
       <div>
         <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Team Members & Account Administrator</h4>
         <p className="text-sm text-fase-black mt-2 mb-4">
-          Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events. One person must be designated as the account administrator to manage billing and settings. <span className="text-fase-navy font-medium">You can add more seats after completing your registration.</span>
+          Add the people from your organization who will receive FASE membership benefits - including access to industry insights, networking opportunities, professional development resources, and member-only events. <span className="text-fase-navy font-medium">One person must be designated as the account administrator to manage billing and settings.</span>
         </p>
       </div>
 
@@ -86,6 +86,15 @@ export const TeamMembersSection = ({
                     <span className="ml-2 text-xs bg-fase-navy text-white px-2 py-1 rounded">
                       Account Administrator
                     </span>
+                  )}
+                  {!member.isPrimaryContact && (
+                    <button
+                      type="button"
+                      onClick={() => setPrimaryContact(member.id)}
+                      className="ml-2 text-xs bg-fase-light-gold text-fase-navy px-2 py-1 rounded hover:bg-fase-gold transition-colors"
+                    >
+                      Make Administrator
+                    </button>
                   )}
                 </span>
               </div>
@@ -165,19 +174,6 @@ export const TeamMembersSection = ({
               />
             </div>
 
-            {/* Account Administrator Toggle */}
-            <div className="mt-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="accountAdministrator"
-                  checked={member.isPrimaryContact}
-                  onChange={() => setPrimaryContact(member.id)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-fase-navy">Make this person the account administrator</span>
-              </label>
-            </div>
           </div>
         ))}
 

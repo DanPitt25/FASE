@@ -37,14 +37,12 @@ export const checkDomainExists = async (emailAddress: string): Promise<boolean> 
               return true;
             }
           } catch (error) {
-            console.warn('Could not check members for company:', accountDoc.id);
           }
         }
       }
     }
     return false;
   } catch (error) {
-    console.error('Error checking domain existence:', error);
     return false;
   }
 };
@@ -247,18 +245,14 @@ export const createAccountAndMembership = async (
       }
 
       // Welcome message creation would go here if needed
-      console.log('Account created successfully for user:', user.uid);
       
     } catch (firestoreError) {
       // Cleanup auth account if Firestore fails
-      console.error('Firestore operation failed, cleaning up auth account:', firestoreError);
       
       if (userToCleanup) {
         try {
           await deleteUser(userToCleanup);
-          console.log('Successfully cleaned up orphaned auth account');
         } catch (cleanupError) {
-          console.error('Failed to clean up auth account:', cleanupError);
         }
       }
       
@@ -306,7 +300,6 @@ export const continueWithPayPalPayment = async (formData: any) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('PayPal API error:', response.status, errorText);
       throw new Error(`Payment processing failed (${response.status}). Please try again.`);
     }
 
@@ -319,7 +312,6 @@ export const continueWithPayPalPayment = async (formData: any) => {
       throw new Error('No approval URL received from PayPal');
     }
   } catch (error: any) {
-    console.error('Payment error:', error);
     throw new Error(error.message || 'Failed to start payment process');
   }
 };

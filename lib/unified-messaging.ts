@@ -95,7 +95,6 @@ export const sendMessage = async (messageData: Omit<Message, 'id' | 'createdAt' 
     
     return messageDoc.id;
   } catch (error) {
-    console.error('Error sending message:', error);
     throw error;
   }
 };
@@ -158,9 +157,7 @@ const createUserMessagesForRecipientsUnified = async (
     });
     
     await Promise.all(userMessagePromises);
-    console.log(`Created user messages for ${recipientUIDs.length} Firebase Auth UIDs`);
   } catch (error) {
-    console.error('Error creating user messages for recipients:', error);
     throw error;
   }
 };
@@ -189,7 +186,6 @@ export const createAlert = async (alertData: Omit<Alert, 'id' | 'createdAt' | 'u
     
     return alertDoc.id;
   } catch (error) {
-    console.error('Error creating alert:', error);
     throw error;
   }
 };
@@ -247,9 +243,7 @@ const createUserAlertsForAudienceUnified = async (
     });
     
     await Promise.all(userAlertPromises);
-    console.log(`Created user alerts for ${recipientUIDs.length} Firebase Auth UIDs`);
   } catch (error) {
-    console.error('Error creating user alerts for audience:', error);
     throw error;
   }
 };
@@ -271,7 +265,6 @@ const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
     
     await Promise.all(userAlertPromises);
   } catch (error) {
-    console.error('Error creating user alerts for specific users:', error);
     throw error;
   }
 };
@@ -308,7 +301,6 @@ export const getUserMessages = async (userId: string): Promise<(Message & UserMe
     
     return messagesWithDetails.filter(message => message !== null) as (Message & UserMessage)[];
   } catch (error) {
-    console.error('Error getting user messages:', error);
     return [];
   }
 };
@@ -344,7 +336,6 @@ export const getUserAlerts = async (userId: string): Promise<(Alert & UserAlert)
     
     return alertsWithDetails.filter(alert => alert !== null) as (Alert & UserAlert)[];
   } catch (error) {
-    console.error('Error getting user alerts:', error);
     return [];
   }
 };
@@ -358,7 +349,6 @@ export const markMessageAsRead = async (userMessageId: string): Promise<void> =>
       readAt: serverTimestamp()
     });
   } catch (error) {
-    console.error('Error marking message as read:', error);
     throw error;
   }
 };
@@ -372,7 +362,6 @@ export const deleteMessageForUser = async (userMessageId: string): Promise<void>
       deletedAt: serverTimestamp()
     });
   } catch (error) {
-    console.error('Error deleting message:', error);
     throw error;
   }
 };
@@ -386,7 +375,6 @@ export const markAlertAsRead = async (userAlertId: string): Promise<void> => {
       readAt: serverTimestamp()
     });
   } catch (error) {
-    console.error('Error marking alert as read:', error);
     throw error;
   }
 };
@@ -400,7 +388,6 @@ export const dismissAlert = async (userAlertId: string): Promise<void> => {
       dismissedAt: serverTimestamp()
     });
   } catch (error) {
-    console.error('Error dismissing alert:', error);
     throw error;
   }
 };
@@ -416,7 +403,6 @@ export const getAllAlerts = async (): Promise<Alert[]> => {
       ...doc.data()
     })) as Alert[];
   } catch (error) {
-    console.error('Error getting all alerts:', error);
     return [];
   }
 };
@@ -430,7 +416,6 @@ export const updateAlert = async (alertId: string, updates: Partial<Alert>): Pro
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    console.error('Error updating alert:', error);
     throw error;
   }
 };
@@ -444,7 +429,6 @@ export const getSentMessages = async (senderId: string): Promise<Message[]> => {
     
     return sentMessages.docs.map(doc => doc.data() as Message);
   } catch (error) {
-    console.error('Error getting sent messages:', error);
     throw error;
   }
 };
@@ -452,7 +436,6 @@ export const getSentMessages = async (senderId: string): Promise<Message[]> => {
 // Create welcome message for new account signups
 export const createWelcomeMessage = async (newUserId: string): Promise<void> => {
   try {
-    console.log('Creating welcome message for new user:', newUserId);
     
     const welcomeMessage = {
       subject: 'Welcome to FASE - Fédération des agences de souscription',
@@ -485,9 +468,7 @@ The FASE Team`,
 
     // Send the welcome message
     await sendMessage(welcomeMessage);
-    console.log('Welcome message created successfully for user:', newUserId);
   } catch (error) {
-    console.error('Error creating welcome message:', error);
     // Don't throw error to avoid breaking account creation
   }
 };

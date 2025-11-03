@@ -148,6 +148,9 @@ export interface MemberApplication {
     ownership?: string;
   };
   
+  // Service provider specific fields
+  servicesProvided?: string[];
+  
   // Terms agreement
   termsAgreed: boolean;
   
@@ -191,7 +194,6 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
     }
     return null;
   } catch (error) {
-    console.error('Error getting user profile:', error);
     return null;
   }
 };
@@ -250,10 +252,8 @@ export const createMemberApplication = async (
     };
     
     await setDoc(applicationRef, memberApplication);
-    console.log('Member application created with ID:', applicationId);
     return applicationId;
   } catch (error) {
-    console.error('Error creating member application:', error);
     throw error;
   }
 };
@@ -383,10 +383,8 @@ export const createMemberApplicationSimple = async (
     };
     
     await setDoc(applicationRef, memberApplication);
-    console.log('Member application created with ID:', applicationId);
     return applicationId;
   } catch (error) {
-    console.error('Error creating member application:', error);
     throw error;
   }
 };
@@ -402,7 +400,6 @@ export const getMemberApplication = async (applicationId: string): Promise<Membe
     }
     return null;
   } catch (error) {
-    console.error('Error getting member application:', error);
     return null;
   }
 };
@@ -416,7 +413,6 @@ export const getMemberApplicationsByUserId = async (uid: string): Promise<Member
     
     return querySnapshot.docs.map(doc => doc.data() as MemberApplication);
   } catch (error) {
-    console.error('Error getting member applications by user ID:', error);
     return [];
   }
 };
@@ -432,9 +428,7 @@ export const updateMemberApplicationStatus = async (
       status,
       updatedAt: serverTimestamp()
     });
-    console.log('Member application status updated:', applicationId, status);
   } catch (error) {
-    console.error('Error updating member application status:', error);
     throw error;
   }
 };
@@ -447,7 +441,6 @@ export const getAllMemberApplications = async (): Promise<MemberApplication[]> =
     
     return querySnapshot.docs.map(doc => doc.data() as MemberApplication);
   } catch (error) {
-    console.error('Error getting all member applications:', error);
     return [];
   }
 };
@@ -461,7 +454,6 @@ export const getMemberApplicationsByStatus = async (status: MemberApplication['s
     
     return querySnapshot.docs.map(doc => doc.data() as MemberApplication);
   } catch (error) {
-    console.error('Error getting member applications by status:', error);
     return [];
   }
 };
@@ -511,7 +503,6 @@ export const getApprovedMembersForDirectory = async (): Promise<DirectoryMember[
     // Sort by organization name
     return directoryMembers.sort((a, b) => a.organizationName.localeCompare(b.organizationName));
   } catch (error) {
-    console.error('Error getting approved members for directory:', error);
     return [];
   }
 };
@@ -537,12 +528,9 @@ export const updateMemberApplicationPaymentStatus = async (
         paymentId: paymentId || null,
         updatedAt: new Date()
       });
-      console.log('Payment status updated for member:', userId);
     } else {
-      console.log('No member found with uid:', userId);
     }
   } catch (error) {
-    console.error('Error updating payment status:', error);
     throw error;
   }
 };
@@ -598,7 +586,6 @@ export const getMembersByOrganizationType = async (organizationType: 'MGA' | 'ca
     
     return members.docs.map(doc => doc.data() as MemberApplication);
   } catch (error) {
-    console.error('Error getting members by organization type:', error);
     throw error;
   }
 };
@@ -619,7 +606,6 @@ export const searchMembersByOrganizationName = async (searchTerm: string): Promi
     
     return filteredMembers;
   } catch (error) {
-    console.error('Error searching members by organization name:', error);
     throw error;
   }
 };
@@ -651,7 +637,6 @@ export const getUserIdsForMemberCriteria = async (criteria: {
     
     return members.map(member => member.uid);
   } catch (error) {
-    console.error('Error getting user IDs for member criteria:', error);
     throw error;
   }
 };

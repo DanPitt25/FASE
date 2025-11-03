@@ -56,17 +56,10 @@ export default function LeadershipPage() {
         },
         {
           name: 'Darío Spata',
-          role: 'CEO & President of ASASE',
-          company: 'Iberian Insurance Group',
+          role: 'President',
+          company: 'ASASE',
           bio: 'Darío is president of ASASE (Asociación de Agencias de Suscripción de España), the Spanish MGA association, a role he has held since April 2023.\n\nHe is founding partner of Iberian Insurance Group, one of the largest underwriting agencies in Spain. He has served as CEO of Iberian since November 2014.\n\nDarío was named 40 under 40 of the insurance sector in 2020, 2021 and 2022.',
           image: '/cropped_Dario_Spata_b&w.jpg'
-        },
-        {
-          name: 'Martin Mankabady',
-          role: 'M&A Partner',
-          company: 'Eversheds Sutherland',
-          bio: 'Martin Mankabady is a mergers & acquisitions partner within Eversheds Sutherland\'s Company Commercial Group. He advises clients in the financial services sector, in particular insurance.\n\nMartin advises on reorganisations, joint ventures, start-ups, commercial, and regulatory matters, as well as insurance products (including W&I and credit insurance).',
-          image: '/cropped_Martin_Mankabady_b&w.jpg'
         },
         {
           name: 'Enrico Bertagna',
@@ -74,6 +67,13 @@ export default function LeadershipPage() {
           company: 'Bowood Europe',
           bio: 'Enrico Bertagna, an insurance executive with over 30 years of experience in the European P&C industry, is managing director of Bowood Europe, Howden\'s specialist binding authority/MGA division.\n\nOver the years he has had the opportunity to build enterprise value in a variety of positions in Lloyd\'s and the company market with particular focus on setting-up and running operations, managing broker/MGA/customer relationships and developing a network of professional connections at a global level. In these roles he has been responsible for managing and restructuring operations, leading the development/implementation of bespoke IT systems, developing human resources, building distribution networks and dealing with regulators. He also initiated, negotiated and closed a variety of business deals.\n\nEnrico\'s experience includes starting his career as a broker at Richards Longstaff in London and senior roles at Lloyd\'s of London, Allied World and Zurich Insurance.',
           image: '/enrico_bertagna.jpg'
+        },
+        {
+          name: 'Martin Mankabady',
+          role: 'M&A Partner',
+          company: 'Eversheds Sutherland',
+          bio: 'Martin Mankabady is a mergers & acquisitions partner within Eversheds Sutherland\'s Company Commercial Group. He advises clients in the financial services sector, in particular insurance.\n\nMartin advises on reorganisations, joint ventures, start-ups, commercial, and regulatory matters, as well as insurance products (including W&I and credit insurance).',
+          image: '/cropped_Martin_Mankabady_b&w.jpg'
         }
       ]
     }
