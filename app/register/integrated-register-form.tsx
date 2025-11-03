@@ -693,6 +693,10 @@ export default function IntegratedRegisterForm() {
           <p className="text-xs text-fase-black text-center">
             {t('verification.code_expires')}
           </p>
+          
+          <p className="text-sm text-fase-black text-center bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+            {t('verification.spam_check')}
+          </p>
         </div>
 
         {error && (

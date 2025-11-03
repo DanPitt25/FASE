@@ -128,7 +128,8 @@
       "resend_button": "Renvoyer le Code",
       "resending": "Renvoi en cours...",
       "resend_code": "Renvoyer le Code",
-      "code_expires": "Le code expire dans 10 minutes"
+      "code_expires": "Le code expire dans 10 minutes",
+      "spam_check": "Vous n'avez pas reçu le code ? Vérifiez votre dossier spam/courrier indésirable ou cliquez sur renvoyer."
     },
     "common": {
       "back_button": "Retour",

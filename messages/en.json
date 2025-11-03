@@ -128,7 +128,8 @@
       "resend_button": "Resend Code",
       "resending": "Resending...",
       "resend_code": "Resend Code",
-      "code_expires": "Code expires in 10 minutes"
+      "code_expires": "Code expires in 10 minutes",
+      "spam_check": "Didn't receive the code? Check your spam/junk folder or click resend."
     },
     "common": {
       "back_button": "Back",
