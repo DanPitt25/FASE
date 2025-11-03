@@ -1,41 +1,43 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ContentPageLayout from '../../../components/ContentPageLayout';
 
 export default function NewsPage() {
+  const t = useTranslations('news');
   const sections = [
     {
       type: 'split' as const,
-      title: 'FASE News & Updates',
+      title: t('intro.title'),
       content: [
-        'Stay informed about FASE developments, industry insights, and opportunities for professional growth and collaboration across the European MGA community.',
-        'Our news platform serves as your primary source for European delegated underwriting industry information, regulatory updates, and organizational announcements.'
+        t('intro.content.paragraph1'),
+        t('intro.content.paragraph2')
       ],
       image: '/market.jpg',
-      imageAlt: 'Industry news and updates',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'left' as const
     },
     {
       type: 'cards' as const,
-      title: 'Latest Updates',
+      title: t('latest_updates.title'),
       cards: [
         {
-          title: 'FASE Foundation',
-          description: 'FASE is established to serve the rapidly growing European MGA sector, addressing the need for pan-European representation and collaboration.',
+          title: t('latest_updates.cards.foundation.title'),
+          description: t('latest_updates.cards.foundation.description'),
           image: '/motorcycle.jpeg',
-          imageAlt: 'FASE foundation announcement'
+          imageAlt: t('latest_updates.cards.foundation.image_alt')
         },
         {
-          title: 'Advisory Board Formation',
-          description: 'Distinguished industry leaders join FASE advisory board to guide strategic direction and represent diverse MGA community interests.',
+          title: t('latest_updates.cards.advisory_board.title'),
+          description: t('latest_updates.cards.advisory_board.description'),
           image: '/consideration.jpg',
-          imageAlt: 'Advisory board formation'
+          imageAlt: t('latest_updates.cards.advisory_board.image_alt')
         },
         {
-          title: 'Membership Platform Launch',
-          description: 'FASE member portal goes live, providing registration, directory services, and exclusive resources for European MGA professionals.',
+          title: t('latest_updates.cards.platform_launch.title'),
+          description: t('latest_updates.cards.platform_launch.description'),
           image: '/conference.jpeg',
-          imageAlt: 'Platform launch'
+          imageAlt: t('latest_updates.cards.platform_launch.image_alt')
         }
       ]
     }
@@ -43,9 +45,9 @@ export default function NewsPage() {
 
   return (
     <ContentPageLayout
-      title="News"
+      title={t('page.title')}
       bannerImage="/conferenceWood.jpg"
-      bannerImageAlt="FASE news and updates"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="news"
     />

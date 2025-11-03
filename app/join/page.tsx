@@ -1,103 +1,71 @@
 'use client';
 
 import ContentPageLayout from '../../components/ContentPageLayout';
+import { useTranslations } from 'next-intl';
 
 export default function JoinPage() {
+  const t = useTranslations('join');
+  
   const sections = [
     {
       type: 'split' as const,
-      title: 'Membership applications',
-      content: [
-        'FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium.',
-        'Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.'
-      ],
+      title: t('membership_applications.title'),
+      content: t.raw('membership_applications.content'),
       image: '/seated.jpg',
-      imageAlt: 'European business meeting',
+      imageAlt: t('membership_applications.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'accordion' as const,
-      title: 'FASE member benefits',
-      items: [
-        {
-          title: 'Pan-European representation',
-          content: 'Join a unified voice advocating for MGAs and delegated underwriting across Europe.'
-        },
-        {
-          title: 'Networking & collaboration',
-          content: 'Connect with MGA leaders, insurers, reinsurers, and service providers throughout Europe and beyond.'
-        },
-        {
-          title: 'Annual MGA Rendezvous',
-          content: 'Exclusive access to our flagship event — bringing together MGA professionals, market influencers, and partners from around the world.'
-        },
-        {
-          title: 'Educational & insight sessions',
-          content: 'Participate in workshops, webinars, and panels on regulatory trends, innovation, and best practices.'
-        },
-        {
-          title: 'Industry intelligence',
-          content: 'Receive regular updates on European MGA market developments, opportunities, and challenges.'
-        },
-        {
-          title: 'Recognition & credibility',
-          content: 'Strengthen your market reputation as part of a respected, forward-looking MGA association.'
-        },
-        {
-          title: 'Opportunities for collaboration',
-          content: 'Shape the future of delegated underwriting through working groups and cross-border initiatives.'
-        }
-      ]
+      title: t('member_benefits.title'),
+      items: t.raw('member_benefits.items')
     },
     {
       type: 'cards' as const,
-      title: 'Membership categories',
-      subtitle: 'Three distinct membership types reflect the diversity of the MGA ecosystem.',
+      title: t('membership_categories.title'),
+      subtitle: t('membership_categories.subtitle'),
       cards: [
         {
-          title: 'MGA',
-          description: 'MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.',
+          title: t('membership_categories.mga.title'),
+          description: t('membership_categories.mga.description'),
           image: '/gettingAlong.jpeg',
-          imageAlt: 'MGA business meeting',
+          imageAlt: t('membership_categories.mga.image_alt'),
           href: '/register?type=MGA',
-          actionText: 'Apply as MGA'
+          actionText: t('membership_categories.mga.action_text')
         },
         {
-          title: 'Carrier',
-          description: 'Insurance or reinsurance companies or Lloyd\'s Managing Agencies transacting business with MGAs.',
+          title: t('membership_categories.carrier.title'),
+          description: t('membership_categories.carrier.description'),
           image: '/conference.jpeg',
-          imageAlt: 'Market analysis and data',
+          imageAlt: t('membership_categories.carrier.image_alt'),
           href: '/register?type=carrier',
-          actionText: 'Apply as Carrier'
+          actionText: t('membership_categories.carrier.action_text')
         },
         {
-          title: 'Service provider',
-          description: 'Service providers active within the MGA ecosystem.',
+          title: t('membership_categories.service_provider.title'),
+          description: t('membership_categories.service_provider.description'),
           image: '/glass.jpg',
-          imageAlt: 'Service provider collaboration',
+          imageAlt: t('membership_categories.service_provider.image_alt'),
           href: '/register?type=provider',
-          actionText: 'Apply as Service Provider'
+          actionText: t('membership_categories.service_provider.action_text')
         }
       ]
     },
     {
       type: 'split' as const,
-      title: 'Application process',
-      content: [
-        'To begin your application, complete our membership form with your organisation details and business information.',
-        'Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives.'
-      ],
+      title: t('application_process.title'),
+      content: t.raw('application_process.content'),
       image: '/motorcycle.jpeg',
-      imageAlt: 'Application process',
+      imageAlt: t('application_process.image_alt'),
       imagePosition: 'left' as const,
       buttons: [
         {
-          text: 'Join',
+          text: t('application_process.buttons.join'),
           href: '/register',
           variant: 'primary' as const
         },
         {
-          text: 'Contact Us',
+          text: t('application_process.buttons.contact_us'),
           href: '/contact',
           variant: 'secondary' as const
         }
@@ -107,9 +75,9 @@ export default function JoinPage() {
 
   return (
     <ContentPageLayout
-      title="Join FASE"
+      title={t('page.title')}
       bannerImage="/conference.jpeg"
-      bannerImageAlt="Join FASE membership"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="join"
     />

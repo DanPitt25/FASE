@@ -1,56 +1,57 @@
 'use client';
 
 import ContentPageLayout from '../../../components/ContentPageLayout';
+import { useTranslations } from 'next-intl';
 
 export default function EntrepreneurialUnderwriterPage() {
+  const t = useTranslations('entrepreneurial_underwriter');
+  
   const sections = [
     {
       type: 'split' as const,
-      title: 'The Entrepreneurial Underwriter',
-      content: [
-        'Beginning in 2026, the Entrepreneurial Underwriter – our flagship publication – will gather insights and practical guidance for entrepreneurs who are shaping the future of European delegated underwriting.'
-      ],
+      title: t('intro.title'),
+      content: t.raw('intro.content'),
       image: '/computer.jpeg',
-      imageAlt: 'Entrepreneurial underwriting insights',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'left' as const
     },
     {
       type: 'cards' as const,
-      title: 'Featured Content',
+      title: t('featured_content.title'),
       cards: [
         {
-          title: 'Market Analysis',
-          description: 'In-depth analysis of European delegated underwriting trends, regulatory developments, and emerging opportunities for MGAs.',
+          title: t('featured_content.market_analysis.title'),
+          description: t('featured_content.market_analysis.description'),
           image: '/market.jpg',
-          imageAlt: 'Market analysis'
+          imageAlt: t('featured_content.market_analysis.image_alt')
         },
         {
-          title: 'Case Studies',
-          description: 'Real-world examples of successful MGA strategies, innovative underwriting approaches, and effective capacity relationships.',
+          title: t('featured_content.case_studies.title'),
+          description: t('featured_content.case_studies.description'),
           image: '/consideration.jpg',
-          imageAlt: 'Business case studies'
+          imageAlt: t('featured_content.case_studies.image_alt')
         },
         {
-          title: 'Expert Insights',
-          description: 'Perspectives from industry leaders on building sustainable MGA businesses and navigating European regulatory environments.',
+          title: t('featured_content.expert_insights.title'),
+          description: t('featured_content.expert_insights.description'),
           image: '/seated.jpg',
-          imageAlt: 'Expert insights'
+          imageAlt: t('featured_content.expert_insights.image_alt')
         }
       ]
     },
     {
       type: 'quote' as const,
-      quote: 'Delegated authority underwriting has become the most entrepreneurial sector of the insurance market. Our goal at FASE is to marshal the resources to help entrepreneurial underwriters succeed.',
-      author: 'William Pitt',
-      title: 'Executive Director, FASE'
+      quote: t('quote.text'),
+      author: t('quote.author'),
+      title: t('quote.title')
     }
   ];
 
   return (
     <ContentPageLayout
-      title="Entrepreneurial Underwriter"
+      title={t('page.title')}
       bannerImage="/consideration.jpg"
-      bannerImageAlt="Entrepreneurial underwriting"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="entrepreneurial-underwriter"
     />

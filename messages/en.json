@@ -22,6 +22,7 @@
     "affiliates": "Affiliates",
     "who_we_are": "Who We Are",
     "people": "People",
+    "code_of_conduct": "Code of Conduct",
     "sponsors": "Sponsors",
     "networking": "Networking",
     "events": "Events",
@@ -162,6 +163,476 @@
       "become_member": "Become a Member",
       "view_events": "View Upcoming Events",
       "tagline": "FASE — building a connected, informed, and responsible Delegated Underwriting community"
+    }
+  },
+  "about": {
+    "page": {
+      "title": "About FASE",
+      "banner_alt": "Modern European cityscape"
+    },
+    "voice_for_innovators": {
+      "title": "A Voice for Europe's insurance innovators",
+      "content": {
+        "paragraph1": "FASE is pan-European federation established to serve the needs of Europe's managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers.",
+        "paragraph2": "We share best practices in a rapidly growing sector of the market, offering an array of informational and educational services for MGAs through webinars, bulletins and our monthly digital magazine, The Entrepreneurial Underwriter."
+      },
+      "image_alt": "European insurance innovators"
+    },
+    "quote": {
+      "text": "The MGA model is gaining momentum globally, and we expect this trend to continue, particularly in Europe. Well-managed and highly professional MGA associations can play a pivotal role in contributing to sector's growth. We see FASE stepping into this space to enhance and strengthen the MGA ecosystem across Europe.",
+      "author": "Olaf Jonda",
+      "title": "CEO, DUAL Europe"
+    },
+    "building_connections": {
+      "title": "Building connections across Europe",
+      "content": {
+        "paragraph1": "MGAs bring product innovation and a very high standard of customer service to the markets they serve. But they depend on close relationships with capacity providers – insurance and reinsurance companies and Lloyd's syndicates – to sustain their business.",
+        "paragraph2": "FASE offers opportunities for MGAs from across Europe to broaden their relationships with capacity providers and distributors through a series of events, including the pan-European MGA Rendezvous."
+      },
+      "image_alt": "Professional networking event"
+    },
+    "cta": {
+      "title": "Ready to Join FASE?",
+      "description": "Applications for FASE membership are open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium. Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.",
+      "buttons": {
+        "become_member": "Become a Member",
+        "contact_us": "Contact Us"
+      }
+    }
+  },
+  "mission": {
+    "page": {
+      "title": "Mission",
+      "banner_alt": "Modern European business landscape"
+    },
+    "intro": {
+      "title": "Our mission & market impact",
+      "content": {
+        "paragraph1": "FASE represents the interests of MGAs doing business across Europe, including the European Economic Area, the United Kingdom, Switzerland, eastern European countries not currently within the EEA, and Turkey.",
+        "paragraph2": "Our mission is to provide a forum and a voice for MGAs across Europe:",
+        "paragraph3": "• A forum for MGAs to expand relationships with capacity providers, distributors, investors, and service providers.",
+        "paragraph4": "• A voice to raise awareness of the crucial role MGAs play in building a dynamic, innovative and responsive European insurance market."
+      },
+      "image_alt": "European insurance network connections"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Code of Conduct",
+      "banner_alt": "Professional standards and regulatory compliance"
+    },
+    "intro": {
+      "title": "FASE Code of Conduct",
+      "content": {
+        "paragraph1": "FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.",
+        "paragraph2": "Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.",
+        "paragraph3": "Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code."
+      }
+    },
+    "sections": {
+      "title": "Code of Conduct Sections",
+      "legal": {
+        "title": "1. Legal responsibilities",
+        "content": "Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.\n\nMembers will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:\n\n• A member being in breach of any regulatory requirement and\n\n• Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities\n\nMembers will provide all reasonable lawful assistance to regulatory, professional and law enforcement organisation in the discharge of their duties, whether in respect of themselves, another Member or a non-member."
+      },
+      "financial": {
+        "title": "2. Financial Responsibilities",
+        "content": "Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.\n\nMembers must comply with applicable solvency or like requirements."
+      },
+      "inter_org": {
+        "title": "3. Inter-organisational Responsibilities",
+        "content": "Members will compete fairly and honourably in the markets in which they operate.\n\nThis includes, but is not limited to:\n\n• making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;\n\n• entering into any agreement intended to diminish competition within the market."
+      },
+      "community": {
+        "title": "4. Community Responsibilities",
+        "content": "FASE members must conduct themselves in a manner befitting the privileges of membership.\n\nMembers will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.\n\nMembers are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.\n\nMembers will encourage continuing education and training for staff."
+      },
+      "insurers": {
+        "title": "5. Relationships with Insurers",
+        "content": "Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:\n\n• faithfully execute the underwriting guidelines of the insurers they represent;\n\n• act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;\n\n• keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship."
+      },
+      "brokers": {
+        "title": "6. Relationships with Brokers and Agents (or Insureds if operating directly)",
+        "content": "Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:\n\n• consider at all times the financial stability of insurers with which the Member places business;\n\n• make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.\n\nMembers should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.\n\nEffective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.\n\nFASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.\n\nMembers should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed."
+      }
+    },
+    "reporting": {
+      "title": "Reporting Breaches",
+      "content": {
+        "paragraph1": "All notices of potential breach made under this Code should be made to the Business Conduct Committee at conduct@fasemga.com."
+      }
+    }
+  },
+  "leadership": {
+    "page": {
+      "title": "Leadership",
+      "banner_alt": "FASE leadership team"
+    },
+    "advisory_board": {
+      "title": "Advisory Board",
+      "content": {
+        "paragraph1": "Our advisory board comprises distinguished industry leaders who guide FASE strategic direction and represent the diverse interests of the European MGA community.",
+        "paragraph2": "These experienced professionals bring decades of expertise in delegated underwriting, capacity provision, and regulatory affairs across European markets."
+      },
+      "image_alt": "Business leadership and strategy"
+    },
+    "members": {
+      "title": "Advisory Board Members",
+      "olaf_jonda": {
+        "role": "CEO",
+        "company": "DUAL Europe",
+        "bio": "Olaf Jonda is chief executive officer at DUAL Europe. He was appointed to the role in 2022 and is responsible for leading DUAL Europe's management and underwriting teams' growth and profitability, along with driving strategic vision across 13 countries. He is also a member of the DUAL Group Executive Committee.\n\nOlaf joined DUAL in 2011 as an underwriter and held several roles, including Head of Underwriting, before he was appointed MD of DUAL Deutschland in 2019. He started his career in insurance with Winterthur in 2002 and also worked at Creditreform with responsibility for rating companies. Olaf studied Business Administration at the University of Applied Sciences in Cologne."
+      },
+      "tim_quayle": {
+        "role": "CEO",
+        "company": "OneAdvent",
+        "bio": "Tim Quayle is chief executive officer at OneAdvent.\n\nTim began his insurance career developing policy administration and claims systems for intermediaries and insurers. In 2017 he joined a private equity-backed insurance group pursuing an MGA-focused strategy. He led a management buyout, forming OneAdvent in late 2023.\n\nOneAdvent's mission is to support MGAs through every stage of their lifecycle and has built a comprehensive suite of MGA services across multiple geographies. The platform successfully launched five MGAs in 2024 and is on-track to double that in 2025."
+      },
+      "stuart_mcmurdo": {
+        "role": "CEO",
+        "company": "Accredited Insurance Limited - Europe & UK",
+        "bio": "Stuart McMurdo is chief executive officer, Accredited Insurance Limited - Europe & UK.\n\nStuart joined Accredited in October 2024, bringing over 30 years of insurance experience from across the UK, South Africa and Europe. Prior to joining he held several roles of increasing responsibility at SCOR, most recently as CEO of Reinsurance SCOR P&C and a member of the SCOR P&C Management Team.\n\nStuart brings a strong background in both reinsurance and leadership having spent time with Santam in South Africa and with Hannover Reinsurance Group in various management positions."
+      },
+      "marc_van_der_veer": {
+        "role": "Managing Director Europe",
+        "company": "Optio",
+        "bio": "Marc van der Veer is managing director, Europe, at Optio.\n\nMarc is responsible for originating, orchestrating and managing European acquisitions for Optio. He joined Optio in August 2024, bringing more than 30 years of experience in the industry. He had previously served as chief executive officer, European Ventures, at Nexus Group."
+      },
+      "mike_keating": {
+        "role": "CEO",
+        "company": "Managing General Agents' Association",
+        "bio": "Mike has been chief executive officer of the Managing General Agents' Association since September 2020.\n\nHe began his career as an underwriter in the company market before joining AXA Commercial in 1999, where he managed strategic MGA and delegated authority partnerships. He later became Managing Director of AXA's Personal Lines business (excluding direct channels). In 2011, Mike joined the board of UK General, one of the UK's largest MGAs, where he led the Commercial portfolio and implemented a targeted strategy for small regional brokers across the UK.\n\nFrom 2016, he held executive roles in the broking sector, and later collaborated with West Hill Capital to launch the insurtech MGA start-up, Qlaims.\n\nMike's leadership and influence have been recognised on a global scale, with his inclusion in the Insurance Business Global 100 list for the second consecutive year in 2024."
+      },
+      "dario_spata": {
+        "role": "President",
+        "company": "ASASE",
+        "bio": "Darío is president of ASASE (Asociación de Agencias de Suscripción de España), the Spanish MGA association, a role he has held since April 2023.\n\nHe is founding partner of Iberian Insurance Group, one of the largest underwriting agencies in Spain. He has served as CEO of Iberian since November 2014.\n\nDarío was named 40 under 40 of the insurance sector in 2020, 2021 and 2022."
+      },
+      "enrico_bertagna": {
+        "role": "Managing Director",
+        "company": "Bowood Europe",
+        "bio": "Enrico Bertagna, an insurance executive with over 30 years of experience in the European P&C industry, is managing director of Bowood Europe, Howden's specialist binding authority/MGA division.\n\nOver the years he has had the opportunity to build enterprise value in a variety of positions in Lloyd's and the company market with particular focus on setting-up and running operations, managing broker/MGA/customer relationships and developing a network of professional connections at a global level. In these roles he has been responsible for managing and restructuring operations, leading the development/implementation of bespoke IT systems, developing human resources, building distribution networks and dealing with regulators. He also initiated, negotiated and closed a variety of business deals.\n\nEnrico's experience includes starting his career as a broker at Richards Longstaff in London and senior roles at Lloyd's of London, Allied World and Zurich Insurance."
+      },
+      "martin_mankabady": {
+        "role": "M&A Partner",
+        "company": "Eversheds Sutherland",
+        "bio": "Martin Mankabady is a mergers & acquisitions partner within Eversheds Sutherland's Company Commercial Group. He advises clients in the financial services sector, in particular insurance.\n\nMartin advises on reorganisations, joint ventures, start-ups, commercial, and regulatory matters, as well as insurance products (including W&I and credit insurance)."
+      }
+    }
+  },
+  "news": {
+    "page": {
+      "title": "News",
+      "banner_alt": "FASE news and updates"
+    },
+    "intro": {
+      "title": "FASE News & Updates",
+      "content": {
+        "paragraph1": "Stay informed about FASE developments, industry insights, and opportunities for professional growth and collaboration across the European MGA community.",
+        "paragraph2": "Our news platform serves as your primary source for European delegated underwriting industry information, regulatory updates, and organisational announcements."
+      },
+      "image_alt": "Industry news and updates"
+    },
+    "latest_updates": {
+      "title": "Latest Updates",
+      "cards": {
+        "foundation": {
+          "title": "FASE Foundation",
+          "description": "FASE is established to serve the rapidly growing European MGA sector, addressing the need for pan-European representation and collaboration.",
+          "image_alt": "FASE foundation announcement"
+        },
+        "advisory_board": {
+          "title": "Advisory Board Formation",
+          "description": "Distinguished industry leaders join FASE advisory board to guide strategic direction and represent diverse MGA community interests.",
+          "image_alt": "Advisory board formation"
+        },
+        "platform_launch": {
+          "title": "Membership Platform Launch",
+          "description": "FASE member portal goes live, providing registration, directory services, and exclusive resources for European MGA professionals.",
+          "image_alt": "Platform launch"
+        }
+      }
+    }
+  },
+  "events": {
+    "page": {
+      "title": "Events",
+      "banner_alt": "European cityscape and business district"
+    },
+    "intro": {
+      "title": "FASE events",
+      "content": {
+        "paragraph1": "Our events brings together MGAs, capacity providers, brokers and key service providers from across Europe to foster collaboration and grow business relationships.",
+        "paragraph2": "FASE events create opportunities for meaningful connections that drive the European delegated underwriting market forward."
+      },
+      "image_alt": "European business networking event"
+    },
+    "features": {
+      "title": "Event features",
+      "cards": {
+        "capacity": {
+          "title": "Expand capacity relationships",
+          "description": "Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.",
+          "image_alt": "Business matching"
+        },
+        "insights": {
+          "title": "Market insights",
+          "description": "Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.",
+          "image_alt": "Market analysis"
+        },
+        "development": {
+          "title": "Professional development",
+          "description": "Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.",
+          "image_alt": "Professional development"
+        }
+      }
+    },
+    "cta": {
+      "title": "Join Our Events",
+      "subtitle": "Connect with the European MGA Community",
+      "description": "Registration details and event schedules will be announced to FASE members. Become a member to secure your place at our premier networking events.",
+      "buttons": {
+        "become_member": "Become a Member",
+        "mga_rendezvous": "MGA Rendezvous"
+      }
+    }
+  },
+  "rendezvous": {
+    "page": {
+      "title": "MGA Rendezvous",
+      "banner_alt": "Pan-European MGA networking"
+    },
+    "intro": {
+      "title": "Pan-European MGA Rendezvous",
+      "content": {
+        "paragraph1": "Over two days, our annual Spring conference will bring together MGAs, capacity providers and selected service providers to expand business opportunities across Europe. Our primary focus will be on fostering networking and relationship-building opportunities, but we are also planning an event programme that sets the standard for European MGA events."
+      },
+      "image_alt": "European business conference"
+    },
+    "coming_soon": {
+      "title": "Coming Soon",
+      "content": {
+        "paragraph1": "The FASE Rendezvous is currently in development. Join our community to be the first to know about this upcoming flagship networking opportunity.",
+        "paragraph2": "We are planning a comprehensive program designed to foster collaboration and growth across the European MGA ecosystem."
+      },
+      "image_alt": "Future networking event",
+      "button": {
+        "text": "Join Us"
+      }
+    }
+  },
+  "people": {
+    "page": {
+      "title": "Our People",
+      "banner_alt": "FASE leadership and team"
+    },
+    "executive_team": {
+      "title": "Executive Team"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Executive Director",
+        "bio": "William founded FASE in 2025 to address a widely recognized need for a pan-European body to represent Europe's fast-growing, but little understood, MGA sector.\n\nPrior to establishing FASE, William led research and consulting projects at Lexicon Associates and Conning. He is the author of &lt;i&gt;The MGA Revolution: How MGAs are reshaping the insurance value chain&lt;/i&gt;, published by Lexicon Associates in November 2024. He previously led consulting initiatives for Conning in the United States and was the author of Conning's annual MGA studies.\n\nPrior to joining Conning in 2021, he served for twelve years as global chief marketing officer at Beazley. Earlier in his career, he held senior marketing and business development roles at Marsh & McLennan Companies and Lloyd's.\n\nWilliam has written extensively on insurance for publications including the &lt;i&gt;Wall Street Journal&lt;/i&gt;, &lt;i&gt;Harvard Business Review&lt;/i&gt;, &lt;i&gt;Institutional Investor&lt;/i&gt;, &lt;i&gt;the Insurer&lt;/i&gt;, and &lt;i&gt;Corriere della Sera&lt;/i&gt;. He is the author of &lt;i&gt;More Equal than Others: a Director's Guide to EU Competition Policy&lt;/i&gt;, published by Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Chief Operating Officer",
+        "bio": "Aline is responsible for the efficient delivery of all member services, working closely with members to address their needs. She has deep experience in business communications, educational programmes, and event management.\n\nAline is a partner at Lexicon Associates, a research and consulting business she founded in 2009. She has worked with Evercore Wealth Management and Evercore Trust Company since 2009 as the outsourced head of communications and the editor of the firm's quarterly journal, Independent Thinking; she earlier led communications for Aviva Investors, U.S. Trust and The Private Bank of Bank of America.\n\nHer articles on investing have featured in the New York Times, the International Herald Tribune, the Financial Times, Worth, Bloomberg, Barron's and the Wall Street Journal."
+      }
+    }
+  },
+  "contact": {
+    "page": {
+      "title": "Contact Us",
+      "banner_alt": "Professional communication and contact"
+    },
+    "contact_info": {
+      "title": "Contact Information",
+      "content": [
+        "Fédération des Agences de Souscription Européennes (FASE)"
+      ]
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Join FASE",
+      "banner_alt": "Join FASE membership"
+    },
+    "membership_applications": {
+      "title": "Membership applications",
+      "content": [
+        "FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium.",
+        "Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector."
+      ],
+      "image_alt": "European business meeting"
+    },
+    "member_benefits": {
+      "title": "FASE member benefits",
+      "items": [
+        {
+          "title": "Pan-European representation",
+          "content": "Join a unified voice advocating for MGAs and delegated underwriting across Europe."
+        },
+        {
+          "title": "Networking & collaboration",
+          "content": "Connect with MGA leaders, insurers, reinsurers, and service providers throughout Europe and beyond."
+        },
+        {
+          "title": "Annual MGA Rendezvous",
+          "content": "Exclusive access to our flagship event — bringing together MGA professionals, market influencers, and partners from around the world."
+        },
+        {
+          "title": "Educational & insight sessions",
+          "content": "Participate in workshops, webinars, and panels on regulatory trends, innovation, and best practices."
+        },
+        {
+          "title": "Industry intelligence",
+          "content": "Receive regular updates on European MGA market developments, opportunities, and challenges."
+        },
+        {
+          "title": "Recognition & credibility",
+          "content": "Strengthen your market reputation as part of a respected, forward-looking MGA association."
+        },
+        {
+          "title": "Opportunities for collaboration",
+          "content": "Shape the future of delegated underwriting through working groups and cross-border initiatives."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Membership categories",
+      "subtitle": "Three distinct membership types reflect the diversity of the MGA ecosystem.",
+      "mga": {
+        "title": "MGA",
+        "description": "MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.",
+        "image_alt": "MGA business meeting",
+        "action_text": "Apply as MGA"
+      },
+      "carrier": {
+        "title": "Carrier",
+        "description": "Insurance or reinsurance companies or Lloyd's Managing Agencies transacting business with MGAs.",
+        "image_alt": "Market analysis and data",
+        "action_text": "Apply as Carrier"
+      },
+      "service_provider": {
+        "title": "Service provider",
+        "description": "Service providers active within the MGA ecosystem.",
+        "image_alt": "Service provider collaboration",
+        "action_text": "Apply as Service Provider"
+      }
+    },
+    "application_process": {
+      "title": "Application process",
+      "content": [
+        "To begin your application, complete our membership form with your organisation details and business information.",
+        "Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives."
+      ],
+      "image_alt": "Application process",
+      "buttons": {
+        "join": "Join",
+        "contact_us": "Contact Us"
+      }
+    }
+  },
+  "sponsors": {
+    "page": {
+      "title": "Partner with FASE",
+      "banner_alt": "Strategic business partnership"
+    },
+    "partnership_opportunities": {
+      "title": "Strategic Partnership Opportunities",
+      "content": [
+        "Partner with FASE to connect with Europe's leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.",
+        "From conference sponsorship to thought leadership platforms, we offer tailored partnership packages that align with your business objectives and market reach goals."
+      ],
+      "image_alt": "Professional conference and networking"
+    },
+    "partnership_benefits": {
+      "title": "Partnership Benefits",
+      "subtitle": "Connect with Europe's most influential MGA community through strategic partnership opportunities.",
+      "network_access": {
+        "title": "Network Access",
+        "description": "Direct access to C-level executives from Europe's leading MGAs and capacity providers through exclusive networking events.",
+        "image_alt": "Executive networking event"
+      },
+      "thought_leadership": {
+        "title": "Thought Leadership",
+        "description": "Position your organization as an industry leader through speaking opportunities and content partnerships.",
+        "image_alt": "Industry leadership conference"
+      },
+      "market_intelligence": {
+        "title": "Market Intelligence",
+        "description": "Gain exclusive insights into European MGA market trends and opportunities through our research and events.",
+        "image_alt": "Market analysis and research"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Entrepreneurial Underwriter",
+      "banner_alt": "Entrepreneurial underwriting"
+    },
+    "intro": {
+      "title": "The Entrepreneurial Underwriter",
+      "content": [
+        "Beginning in 2026, the Entrepreneurial Underwriter – our flagship publication – will gather insights and practical guidance for entrepreneurs who are shaping the future of European delegated underwriting."
+      ],
+      "image_alt": "Entrepreneurial underwriting insights"
+    },
+    "featured_content": {
+      "title": "Featured Content",
+      "market_analysis": {
+        "title": "Market Analysis",
+        "description": "In-depth analysis of European delegated underwriting trends, regulatory developments, and emerging opportunities for MGAs.",
+        "image_alt": "Market analysis"
+      },
+      "case_studies": {
+        "title": "Case Studies",
+        "description": "Real-world examples of successful MGA strategies, innovative underwriting approaches, and effective capacity relationships.",
+        "image_alt": "Business case studies"
+      },
+      "expert_insights": {
+        "title": "Expert Insights",
+        "description": "Perspectives from industry leaders on building sustainable MGA businesses and navigating European regulatory environments.",
+        "image_alt": "Expert insights"
+      }
+    },
+    "quote": {
+      "text": "Delegated authority underwriting has become the most entrepreneurial sector of the insurance market. Our goal at FASE is to marshal the resources to help entrepreneurial underwriters succeed.",
+      "author": "William Pitt",
+      "title": "Executive Director, FASE"
+    }
+  },
+  "webinars": {
+    "page": {
+      "title": "Webinar Series",
+      "banner_alt": "FASE webinar series"
+    },
+    "intro": {
+      "title": "Expert-Led Webinar Series",
+      "content": [
+        "Our webinar series focusses on the most press needs of European MGA professionals featuring industry experts and thought leaders. Areas of focus will include regulatory challenges, recruitment, data management issues, and professional standards."
+      ],
+      "image_alt": "Online learning and webinars"
+    },
+    "upcoming_webinars": {
+      "title": "Upcoming Webinars",
+      "regulatory_hurdles": {
+        "title": "Regulatory Hurdles",
+        "description": "Market by market analysis of the regulatory landscape for MGAs and how to overcome regulatory barriers.",
+        "image_alt": "Regulatory compliance"
+      },
+      "capital_structures": {
+        "title": "Capital Structures and Incentives",
+        "description": "Advice on how to optimise alignment with capacity providers to secure durable capacity.",
+        "image_alt": "Business relationships"
+      },
+      "ai_promise_peril": {
+        "title": "AI: The Promise and the Peril",
+        "description": "AI promises huge gains for MGAs in operational efficiency, risk pricing, and improving the broker and customer experience. But some use cases are more speculative than others.",
+        "image_alt": "Digital transformation"
+      }
     }
   },
   "footer": {

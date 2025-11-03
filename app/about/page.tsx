@@ -1,51 +1,53 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ContentPageLayout from '../../components/ContentPageLayout';
 
 export default function AboutPage() {
+  const t = useTranslations('about');
   const sections = [
     {
       type: 'split' as const,
-      title: 'A Voice for Europe\'s insurance innovators',
+      title: t('voice_for_innovators.title'),
       content: [
-        'FASE is pan-European federation established to serve the needs of Europe\'s managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers.',
-        'We share best practices in a rapidly growing sector of the market, offering an array of informational and educational services for MGAs through webinars, bulletins and our monthly digital magazine, The Entrepreneurial Underwriter.'
+        t('voice_for_innovators.content.paragraph1'),
+        t('voice_for_innovators.content.paragraph2')
       ],
       image: '/airplane.jpeg',
-      imageAlt: 'European insurance innovators',
+      imageAlt: t('voice_for_innovators.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'quote' as const,
-      quote: 'The MGA model is gaining momentum globally, and we expect this trend to continue, particularly in Europe. Well-managed and highly professional MGA associations can play a pivotal role in contributing to sector\'s growth. We see FASE stepping into this space to enhance and strengthen the MGA ecosystem across Europe.',
-      author: 'Olaf Jonda',
-      title: 'CEO, DUAL Europe'
+      quote: t('quote.text'),
+      author: t('quote.author'),
+      title: t('quote.title')
     },
     {
       type: 'split' as const,
-      title: 'Building connections across Europe',
+      title: t('building_connections.title'),
       content: [
-        'MGAs bring product innovation and a very high standard of customer service to the markets they serve. But they depend on close relationships with capacity providers – insurance and reinsurance companies and Lloyd\'s syndicates – to sustain their business.',
-        'FASE offers opportunities for MGAs from across Europe to broaden their relationships with capacity providers and distributors through a series of events, including the pan-European MGA Rendezvous.'
+        t('building_connections.content.paragraph1'),
+        t('building_connections.content.paragraph2')
       ],
       image: '/gettingAlong.jpeg',
-      imageAlt: 'Professional networking event',
+      imageAlt: t('building_connections.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'cta' as const,
-      title: 'Ready to Join FASE?',
+      title: t('cta.title'),
       subtitle: undefined,
-      description: 'Applications for FASE membership are open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium. Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.',
+      description: t('cta.description'),
       backgroundImage: '/corporate-towers-bg.png',
       buttons: [
         {
-          text: 'Become a Member',
+          text: t('cta.buttons.become_member'),
           href: '/join',
           variant: 'primary' as const
         },
         {
-          text: 'Contact Us',
+          text: t('cta.buttons.contact_us'),
           href: '/contact',
           variant: 'secondary' as const
         }
@@ -55,9 +57,9 @@ export default function AboutPage() {
 
   return (
     <ContentPageLayout
-      title="About FASE"
+      title={t('page.title')}
       bannerImage="/conference.jpeg"
-      bannerImageAlt="Modern European cityscape"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="about"
     />

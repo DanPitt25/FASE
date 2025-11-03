@@ -27,7 +27,7 @@ export default function Footer() {
             <ul className="space-y-2 text-fase-cream">
               <li><a href="/knowledge" className="hover:text-fase-navy transition duration-200">{tFooter('knowledge_base')}</a></li>
               <li><a href="/events" className="hover:text-fase-navy transition duration-200">{tFooter('events')}</a></li>
-              <li><a href="/news" className="hover:text-fase-navy transition duration-200">{tFooter('news')}</a></li>
+              <li><a href="/about/news" className="hover:text-fase-navy transition duration-200">{tFooter('news')}</a></li>
             </ul>
           </div>
           <div>

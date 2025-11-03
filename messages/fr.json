@@ -22,6 +22,7 @@
     "affiliates": "Affiliés",
     "who_we_are": "Qui Nous Sommes",
     "people": "Équipe",
+    "code_of_conduct": "Code de Conduite",
     "sponsors": "Partenaires",
     "networking": "Réseautage",
     "events": "Événements",
@@ -30,7 +31,7 @@
     "knowledge": "Connaissances",
     "education": "Éducation",
     "webinars": "Webinaires",
-    "entrepreneurial_underwriter": "Souscripteur Entrepreneurial",
+    "entrepreneurial_underwriter": "Entrepreneurial Underwriter",
     "industry_advocacy": "Plaidoyer Industriel",
     "capacity_transparency": "Transparence des Capacités",
     "digital_platform": "Plateforme Numérique",
@@ -162,6 +163,476 @@
       "become_member": "Devenir Membre",
       "view_events": "Voir les Événements À Venir",
       "tagline": "FASE — construire une communauté de Souscription Déléguée connectée, informée et responsable"
+    }
+  },
+  "about": {
+    "page": {
+      "title": "À Propos de FASE",
+      "banner_alt": "Paysage urbain européen moderne"
+    },
+    "voice_for_innovators": {
+      "title": "Une voix pour les innovateurs de l'assurance européenne",
+      "content": {
+        "paragraph1": "FASE est une fédération pan-européenne établie pour servir les besoins des agences de souscription générales européennes, en les connectant aux fournisseurs de capacité d'assurance, distributeurs, investisseurs et prestataires de services.",
+        "paragraph2": "Nous partageons les meilleures pratiques dans un secteur du marché en croissance rapide, offrant un éventail de services d'information et d'éducation pour les agences de souscription à travers des webinaires, bulletins et notre magazine numérique mensuel, The Entrepreneurial Underwriter."
+      },
+      "image_alt": "Innovateurs de l'assurance européenne"
+    },
+    "quote": {
+      "text": "Le modèle d'agence de souscription gagne en dynamisme à l'échelle mondiale, et nous nous attendons à ce que cette tendance se poursuive, en particulier en Europe. Des associations d'agences de souscription bien gérées et hautement professionnelles peuvent jouer un rôle crucial dans la contribution à la croissance du secteur. Nous voyons FASE entrer dans cet espace pour améliorer et renforcer l'écosystème des agences de souscription à travers l'Europe.",
+      "author": "Olaf Jonda",
+      "title": "PDG, DUAL Europe"
+    },
+    "building_connections": {
+      "title": "Construire des connexions à travers l'Europe",
+      "content": {
+        "paragraph1": "Les agences de souscription apportent innovation produit et un très haut niveau de service client aux marchés qu'elles servent. Mais elles dépendent de relations étroites avec les fournisseurs de capacité – compagnies d'assurance et de réassurance et syndicats de Lloyd's – pour soutenir leur activité.",
+        "paragraph2": "FASE offre des opportunités aux agences de souscription de toute l'Europe d'élargir leurs relations avec les fournisseurs de capacité et distributeurs à travers une série d'événements, y compris le Rendez-vous pan-européen des agences de souscription."
+      },
+      "image_alt": "Événement de réseautage professionnel"
+    },
+    "cta": {
+      "title": "Prêt à rejoindre FASE ?",
+      "description": "Les candidatures pour l'adhésion à FASE sont ouvertes aux agences de souscription qui sont en activité depuis plus d'un an et souscrivent plus de 500 000 € de primes annuelles. L'adhésion est également ouverte aux compagnies d'assurance et de réassurance cherchant à s'associer avec des agences de souscription européennes, et aux prestataires de services qui soutiennent le secteur.",
+      "buttons": {
+        "become_member": "Devenir Membre",
+        "contact_us": "Nous Contacter"
+      }
+    }
+  },
+  "mission": {
+    "page": {
+      "title": "Mission",
+      "banner_alt": "Paysage commercial européen moderne"
+    },
+    "intro": {
+      "title": "Notre mission et impact sur le marché",
+      "content": {
+        "paragraph1": "FASE représente les intérêts des agences de souscription exerçant leurs activités en Europe, y compris l'Espace économique européen, le Royaume-Uni, la Suisse, les pays d'Europe de l'Est non actuellement membres de l'EEE, et la Turquie.",
+        "paragraph2": "Notre mission est de fournir un forum et une voix pour les agences de souscription à travers l'Europe :",
+        "paragraph3": "• Un forum permettant aux agences de souscription d'élargir leurs relations avec les fournisseurs de capacité, les distributeurs, les investisseurs et les prestataires de services.",
+        "paragraph4": "• Une voix pour sensibiliser au rôle crucial que jouent les agences de souscription dans la construction d'un marché européen de l'assurance dynamique, innovant et réactif."
+      },
+      "image_alt": "Connexions réseau d'assurance européennes"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Code de Conduite",
+      "banner_alt": "Normes professionnelles et conformité réglementaire"
+    },
+    "intro": {
+      "title": "Code de Conduite FASE",
+      "content": {
+        "paragraph1": "FASE soutient les plus hauts standards professionnels et éthiques, tels que décrits dans ce Code de Conduite, et exige que tous les membres s'engagent annuellement à respecter ces standards comme condition de leur adhésion.",
+        "paragraph2": "Les membres s'engagent par les présentes à agir de manière légale, équitable et éthique dans toutes leurs relations avec toutes les parties.",
+        "paragraph3": "Les membres s'engagent à coopérer pleinement et en tout temps avec FASE dans l'application de ce Code."
+      }
+    },
+    "sections": {
+      "title": "Sections du Code de Conduite",
+      "legal": {
+        "title": "1. Responsabilités légales",
+        "content": "Les membres se conformeront à toutes les lois et réglementations applicables dans les lieux où ils exercent leurs activités. Si cette responsabilité légale entre en conflit avec un autre devoir décrit dans ce Code, cette responsabilité légale prendra la priorité.\n\nLes membres porteront à l'attention du Comité de Conduite des Affaires de FASE toute circonstance dont ils prennent connaissance impliquant :\n\n• Un membre en violation d'une exigence réglementaire et\n\n• Toute circonstance pouvant raisonnablement conduire à des sanctions contre le membre ou un membre de son personnel ou de ses dirigeants par les autorités réglementaires pertinentes\n\nLes membres fourniront toute assistance légale raisonnable aux organisations réglementaires, professionnelles et d'application de la loi dans l'exercice de leurs fonctions, que ce soit en ce qui les concerne eux-mêmes, un autre Membre ou un non-membre."
+      },
+      "financial": {
+        "title": "2. Responsabilités financières",
+        "content": "Les membres doivent toujours honorer leurs obligations financières à temps. Cela inclut, mais ne se limite pas au paiement des dettes, des primes dues aux assureurs, des retours dus aux courtiers et assurés, des sommes dues aux employés.\n\nLes membres doivent se conformer aux exigences de solvabilité applicables ou similaires."
+      },
+      "inter_org": {
+        "title": "3. Responsabilités inter-organisationnelles",
+        "content": "Les membres rivaliseront de manière équitable et honorable sur les marchés où ils opèrent.\n\nCela inclut, mais ne se limite pas à :\n\n• ne faire aucune déclaration sur les autres Membres, concurrents ou autres participants du marché, en privé ou en public, qu'ils ne croient pas honnêtement être vraie et pertinente basée sur les meilleures informations raisonnablement disponibles ;\n\n• conclure tout accord destiné à diminuer la concurrence au sein du marché."
+      },
+      "community": {
+        "title": "4. Responsabilités communautaires",
+        "content": "Les membres de FASE doivent se conduire d'une manière digne des privilèges de l'adhésion.\n\nLes membres ne se contenteront pas seulement de respecter leurs obligations légales concernant la discrimination, mais dans toutes leurs relations prendront des mesures raisonnables pour ne pas causer de préjudice à toute personne ou organisation en raison de la race, du sexe, de l'orientation sexuelle, de la réassignation de genre, de la grossesse et de la maternité, du statut marital ou de partenariat civil, de la religion ou des croyances, de l'âge et du handicap.\n\nLes membres sont encouragés à participer aux activités civiques, caritatives et philanthropiques qui contribuent à la promotion de la bonne réputation du secteur de l'assurance, de sa contribution au bien public et du bien-être de ceux qui y travaillent.\n\nLes membres encourageront la formation continue et la formation du personnel."
+      },
+      "insurers": {
+        "title": "5. Relations avec les assureurs",
+        "content": "Les membres traiteront de manière équitable et honnête lorsqu'ils agissent au nom des assureurs. En particulier, ils devraient :\n\n• exécuter fidèlement les directives de souscription des assureurs qu'ils représentent ;\n\n• agir de la plus grande bonne foi et rassembler toutes les données nécessaires pour prendre une décision de souscription appropriée avant de mettre un assureur en risque ;\n\n• se tenir au courant des lois et réglementations dans tous les domaines où ils ont autorité, et conseiller les assureurs en conséquence de l'impact de ces lois et réglementations sur leur relation."
+      },
+      "brokers": {
+        "title": "6. Relations avec les courtiers et agents (ou assurés si opérant directement)",
+        "content": "Les membres doivent traiter de manière équitable et honnête avec les courtiers, agents ou assurés (si opérant directement), et ce faisant :\n\n• considérer en tout temps la stabilité financière des assureurs avec lesquels le Membre place des affaires ;\n\n• ne faire aucune fausse déclaration ou déclaration trompeuse sur la couverture fournie, ou les limitations ou exclusions de couverture ou imposer des limitations ou exclusions telles que la police ne fournit aucun avantage effectif à l'assuré.\n\nLes membres doivent être en mesure de démontrer qu'ils ont soigneusement considéré les assureurs qu'ils représentent comme agents de souscription et placent les affaires de leurs clients et de leurs courtiers.\n\nUne diligence raisonnable efficace et appropriée est une partie clé du processus que les Membres doivent effectuer sur les compagnies d'assurance qu'ils représentent comme sécurité pour les polices qu'ils fournissent. Il y a un risque pour les clients dans le cas où un assureur fait faillite et est incapable de payer les réclamations valides.\n\nFASE s'attend à ce que les Membres MGA soient en mesure de démontrer qu'une diligence raisonnable appropriée a été effectuée sur les assureurs qu'ils représentent et offrent comme sécurité d'assurance.\n\nLes membres doivent fournir des détails clairs et non ambigus du nom et de l'adresse de l'assureur dans toute la documentation pertinente fournie aux courtiers et assurés. Nous attendons des Membres qu'ils évitent positivement de donner au preneur d'assurance l'impression que l'MGA est l'assureur et d'obscurcir le nom de l'assureur derrière l'MGA. Il est important que les clients puissent prendre une décision éclairée sur l'endroit où leur assurance est placée."
+      }
+    },
+    "reporting": {
+      "title": "Signalement des violations",
+      "content": {
+        "paragraph1": "Tous les avis de violation potentielle faits sous ce Code doivent être adressés au Comité de Conduite des Affaires à conduct@fasemga.com."
+      }
+    }
+  },
+  "leadership": {
+    "page": {
+      "title": "Direction",
+      "banner_alt": "Équipe de direction FASE"
+    },
+    "advisory_board": {
+      "title": "Conseil Consultatif",
+      "content": {
+        "paragraph1": "Notre conseil consultatif comprend des dirigeants d'industrie distingués qui guident la direction stratégique de FASE et représentent les intérêts divers de la communauté européenne des agences de souscription.",
+        "paragraph2": "Ces professionnels expérimentés apportent des décennies d'expertise en souscription déléguée, fourniture de capacité et affaires réglementaires à travers les marchés européens."
+      },
+      "image_alt": "Leadership et stratégie d'entreprise"
+    },
+    "members": {
+      "title": "Membres du Conseil Consultatif",
+      "olaf_jonda": {
+        "role": "PDG",
+        "company": "DUAL Europe",
+        "bio": "Olaf Jonda est directeur général de DUAL Europe. Il a été nommé à ce poste en 2022 et est responsable de diriger la croissance et la rentabilité des équipes de gestion et de souscription de DUAL Europe, ainsi que de conduire la vision stratégique dans 13 pays. Il est également membre du Comité Exécutif du Groupe DUAL.\n\nOlaf a rejoint DUAL en 2011 en tant que souscripteur et a occupé plusieurs rôles, y compris Responsable de la Souscription, avant d'être nommé Directeur Général de DUAL Deutschland en 2019. Il a commencé sa carrière dans l'assurance chez Winterthur en 2002 et a également travaillé chez Creditreform avec la responsabilité de noter les entreprises. Olaf a étudié l'Administration des Affaires à l'Université des Sciences Appliquées de Cologne."
+      },
+      "tim_quayle": {
+        "role": "PDG",
+        "company": "OneAdvent",
+        "bio": "Tim Quayle est directeur général de OneAdvent.\n\nTim a commencé sa carrière dans l'assurance en développant des systèmes d'administration de polices et de sinistres pour les intermédiaires et assureurs. En 2017, il a rejoint un groupe d'assurance soutenu par du capital-investissement poursuivant une stratégie axée sur les agences de souscription. Il a dirigé un rachat par l'équipe dirigeante, formant OneAdvent fin 2023.\n\nLa mission d'OneAdvent est de soutenir les agences de souscription à travers chaque étape de leur cycle de vie et a construit une suite complète de services d'agences de souscription dans de multiples géographies. La plateforme a lancé avec succès cinq agences de souscription en 2024 et est sur la voie de doubler ce nombre en 2025."
+      },
+      "stuart_mcmurdo": {
+        "role": "PDG",
+        "company": "Accredited Insurance Limited - Europe & UK",
+        "bio": "Stuart McMurdo est directeur général d'Accredited Insurance Limited - Europe & UK.\n\nStuart a rejoint Accredited en octobre 2024, apportant plus de 30 ans d'expérience en assurance du Royaume-Uni, d'Afrique du Sud et d'Europe. Avant de rejoindre, il a occupé plusieurs rôles de responsabilité croissante chez SCOR, plus récemment en tant que PDG de Réassurance SCOR P&C et membre de l'Équipe de Gestion SCOR P&C.\n\nStuart apporte une solide expérience tant en réassurance qu'en leadership ayant passé du temps chez Santam en Afrique du Sud et chez Hannover Reinsurance Group dans diverses positions de gestion."
+      },
+      "marc_van_der_veer": {
+        "role": "Directeur Général Europe",
+        "company": "Optio",
+        "bio": "Marc van der Veer est directeur général, Europe, chez Optio.\n\nMarc est responsable de l'origine, de l'orchestration et de la gestion des acquisitions européennes pour Optio. Il a rejoint Optio en août 2024, apportant plus de 30 ans d'expérience dans l'industrie. Il avait précédemment servi comme directeur général, Ventures Européennes, chez Nexus Group."
+      },
+      "mike_keating": {
+        "role": "PDG",
+        "company": "Managing General Agents' Association",
+        "bio": "Mike est directeur général de la Managing General Agents' Association depuis septembre 2020.\n\nIl a commencé sa carrière comme souscripteur sur le marché des entreprises avant de rejoindre AXA Commercial en 1999, où il a géré les partenariats stratégiques d'agences de souscription et d'autorité déléguée. Il est devenu plus tard Directeur Général de l'activité Lignes Personnelles d'AXA (excluant les canaux directs). En 2011, Mike a rejoint le conseil d'UK General, l'une des plus grandes agences de souscription du Royaume-Uni, où il a dirigé le portefeuille Commercial et mis en œuvre une stratégie ciblée pour les petits courtiers régionaux à travers le Royaume-Uni.\n\nÀ partir de 2016, il a occupé des rôles exécutifs dans le secteur du courtage, et a plus tard collaboré avec West Hill Capital pour lancer la start-up insurtech MGA, Qlaims.\n\nLe leadership et l'influence de Mike ont été reconnus à l'échelle mondiale, avec son inclusion dans la liste Insurance Business Global 100 pour la deuxième année consécutive en 2024."
+      },
+      "dario_spata": {
+        "role": "Président",
+        "company": "ASASE",
+        "bio": "Darío est président d'ASASE (Asociación de Agencias de Suscripción de España), l'association espagnole des agences de souscription, un rôle qu'il occupe depuis avril 2023.\n\nIl est partenaire fondateur d'Iberian Insurance Group, l'une des plus grandes agences de souscription d'Espagne. Il a servi comme PDG d'Iberian depuis novembre 2014.\n\nDarío a été nommé parmi les 40 de moins de 40 ans du secteur de l'assurance en 2020, 2021 et 2022."
+      },
+      "enrico_bertagna": {
+        "role": "Directeur Général",
+        "company": "Bowood Europe",
+        "bio": "Enrico Bertagna, un dirigeant d'assurance avec plus de 30 ans d'expérience dans l'industrie européenne P&C, est directeur général de Bowood Europe, la division spécialisée en autorité contraignante/agence de souscription de Howden.\n\nAu fil des années, il a eu l'opportunité de construire de la valeur d'entreprise dans diverses positions chez Lloyd's et sur le marché des entreprises avec un focus particulier sur la mise en place et la gestion d'opérations, la gestion des relations courtier/agence de souscription/client et le développement d'un réseau de connexions professionnelles à un niveau global. Dans ces rôles, il a été responsable de la gestion et restructuration d'opérations, dirigeant le développement/implémentation de systèmes IT sur mesure, développant les ressources humaines, construisant des réseaux de distribution et traitant avec les régulateurs. Il a également initié, négocié et conclu diverses transactions commerciales.\n\nL'expérience d'Enrico inclut le début de sa carrière comme courtier chez Richards Longstaff à Londres et des rôles senior chez Lloyd's of London, Allied World et Zurich Insurance."
+      },
+      "martin_mankabady": {
+        "role": "Associé M&A",
+        "company": "Eversheds Sutherland",
+        "bio": "Martin Mankabady est un associé fusions & acquisitions au sein du Groupe Commercial d'Entreprise d'Eversheds Sutherland. Il conseille les clients du secteur des services financiers, en particulier l'assurance.\n\nMartin conseille sur les réorganisations, coentreprises, start-ups, questions commerciales et réglementaires, ainsi que les produits d'assurance (y compris W&I et assurance crédit)."
+      }
+    }
+  },
+  "news": {
+    "page": {
+      "title": "Actualités",
+      "banner_alt": "Actualités et mises à jour FASE"
+    },
+    "intro": {
+      "title": "Actualités et Mises à Jour FASE",
+      "content": {
+        "paragraph1": "Restez informé des développements de FASE, des perspectives de l'industrie et des opportunités de croissance professionnelle et de collaboration à travers la communauté européenne des agences de souscription.",
+        "paragraph2": "Notre plateforme d'actualités sert de source principale d'informations sur l'industrie européenne de la souscription déléguée, mises à jour réglementaires et annonces organisationnelles."
+      },
+      "image_alt": "Actualités et mises à jour de l'industrie"
+    },
+    "latest_updates": {
+      "title": "Dernières Mises à Jour",
+      "cards": {
+        "foundation": {
+          "title": "Fondation FASE",
+          "description": "FASE est établie pour servir le secteur européen des agences de souscription en croissance rapide, répondant au besoin de représentation et collaboration pan-européennes.",
+          "image_alt": "Annonce de la fondation FASE"
+        },
+        "advisory_board": {
+          "title": "Formation du Conseil Consultatif",
+          "description": "Des dirigeants d'industrie distingués rejoignent le conseil consultatif de FASE pour guider la direction stratégique et représenter les intérêts divers de la communauté des agences de souscription.",
+          "image_alt": "Formation du conseil consultatif"
+        },
+        "platform_launch": {
+          "title": "Lancement de la Plateforme d'Adhésion",
+          "description": "Le portail membre FASE est mis en ligne, fournissant inscription, services d'annuaire et ressources exclusives pour les professionnels européens des agences de souscription.",
+          "image_alt": "Lancement de plateforme"
+        }
+      }
+    }
+  },
+  "events": {
+    "page": {
+      "title": "Événements",
+      "banner_alt": "Paysage urbain européen et quartier d'affaires"
+    },
+    "intro": {
+      "title": "Événements FASE",
+      "content": {
+        "paragraph1": "Nos événements rassemblent les agences de souscription, fournisseurs de capacité, courtiers et prestataires de services clés de toute l'Europe pour favoriser la collaboration et développer les relations commerciales.",
+        "paragraph2": "Les événements FASE créent des opportunités de connexions significatives qui font avancer le marché européen de la souscription déléguée."
+      },
+      "image_alt": "Événement de réseautage d'affaires européen"
+    },
+    "features": {
+      "title": "Caractéristiques des événements",
+      "cards": {
+        "capacity": {
+          "title": "Élargir les relations de capacité",
+          "description": "Introductions directes entre les agences de souscription cherchant une capacité et les fournisseurs recherchant des opportunités d'affaires de qualité à travers les marchés européens.",
+          "image_alt": "Mise en relation d'affaires"
+        },
+        "insights": {
+          "title": "Perspectives de marché",
+          "description": "Panels d'experts et présentations sur les développements réglementaires européens, tendances du marché et opportunités émergentes en souscription déléguée.",
+          "image_alt": "Analyse de marché"
+        },
+        "development": {
+          "title": "Développement professionnel",
+          "description": "Sessions éducatives et ateliers conçus spécifiquement pour les professionnels des agences de souscription opérant sur le marché européen.",
+          "image_alt": "Développement professionnel"
+        }
+      }
+    },
+    "cta": {
+      "title": "Rejoignez Nos Événements",
+      "subtitle": "Connectez-vous avec la Communauté Européenne des Agences de Souscription",
+      "description": "Les détails d'inscription et calendriers d'événements seront annoncés aux membres FASE. Devenez membre pour réserver votre place à nos événements de réseautage de premier plan.",
+      "buttons": {
+        "become_member": "Devenir Membre",
+        "mga_rendezvous": "MGA Rendezvous"
+      }
+    }
+  },
+  "rendezvous": {
+    "page": {
+      "title": "MGA Rendezvous",
+      "banner_alt": "Réseautage pan-européen des agences de souscription"
+    },
+    "intro": {
+      "title": "Rendez-vous Pan-Européen des Agences de Souscription",
+      "content": {
+        "paragraph1": "Sur deux jours, notre conférence annuelle de printemps rassemblera les agences de souscription, fournisseurs de capacité et prestataires de services sélectionnés pour élargir les opportunités d'affaires à travers l'Europe. Notre focus principal sera de favoriser le réseautage et les opportunités de construction de relations, mais nous planifions également un programme d'événement qui établit la norme pour les événements européens d'agences de souscription."
+      },
+      "image_alt": "Conférence d'affaires européenne"
+    },
+    "coming_soon": {
+      "title": "Bientôt Disponible",
+      "content": {
+        "paragraph1": "Le Rendez-vous FASE est actuellement en développement. Rejoignez notre communauté pour être le premier à connaître cette opportunité de réseautage phare à venir.",
+        "paragraph2": "Nous planifions un programme complet conçu pour favoriser la collaboration et la croissance à travers l'écosystème européen des agences de souscription."
+      },
+      "image_alt": "Futur événement de réseautage",
+      "button": {
+        "text": "Nous Rejoindre"
+      }
+    }
+  },
+  "people": {
+    "page": {
+      "title": "Notre Équipe",
+      "banner_alt": "Direction et équipe FASE"
+    },
+    "executive_team": {
+      "title": "Équipe Dirigeante"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Directeur Exécutif",
+        "bio": "William a fondé FASE en 2025 pour répondre à un besoin largement reconnu d'un organisme pan-européen pour représenter le secteur des agences de souscription européennes en croissance rapide, mais peu compris.\n\nAvant d'établir FASE, William a dirigé des projets de recherche et de conseil chez Lexicon Associates et Conning. Il est l'auteur de The MGA Revolution: How MGAs are reshaping the insurance value chain, publié par Lexicon Associates en novembre 2024. Il a précédemment dirigé des initiatives de conseil pour Conning aux États-Unis et était l'auteur des études annuelles d'agences de souscription de Conning.\n\nAvant de rejoindre Conning en 2021, il a servi pendant douze ans comme directeur marketing mondial chez Beazley. Plus tôt dans sa carrière, il a occupé des rôles senior en marketing et développement commercial chez Marsh & McLennan Companies et Lloyd's.\n\nWilliam a écrit extensivement sur l'assurance pour des publications incluant le Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer, et Corriere della Sera. Il est l'auteur de More Equal than Others: a Director's Guide to EU Competition Policy, publié par Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Directrice des Opérations",
+        "bio": "Aline est responsable de la prestation efficace de tous les services aux membres, travaillant étroitement avec les membres pour répondre à leurs besoins. Elle a une expérience approfondie en communications d'entreprise, programmes éducatifs et gestion d'événements.\n\nAline est partenaire chez Lexicon Associates, une entreprise de recherche et de conseil qu'elle a fondée en 2009. Elle a travaillé avec Evercore Wealth Management et Evercore Trust Company depuis 2009 comme directrice externalisée des communications et éditrice du journal trimestriel de l'entreprise, Independent Thinking ; elle a précédemment dirigé les communications pour Aviva Investors, U.S. Trust et The Private Bank of Bank of America.\n\nSes articles sur l'investissement ont été publiés dans le New York Times, l'International Herald Tribune, le Financial Times, Worth, Bloomberg, Barron's et le Wall Street Journal."
+      }
+    }
+  },
+  "contact": {
+    "page": {
+      "title": "Nous Contacter",
+      "banner_alt": "Communication professionnelle et contact"
+    },
+    "contact_info": {
+      "title": "Informations de Contact",
+      "content": [
+        "Fédération des Agences de Souscription Européennes (FASE)"
+      ]
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Rejoindre FASE",
+      "banner_alt": "Adhésion FASE"
+    },
+    "membership_applications": {
+      "title": "Candidatures d'adhésion",
+      "content": [
+        "L'adhésion à FASE est ouverte aux agences de souscription qui sont en activité depuis plus d'un an et souscrivent plus de 500 000 € de primes annuelles.",
+        "L'adhésion est également ouverte aux compagnies d'assurance et de réassurance cherchant à s'associer avec des agences de souscription européennes, et aux prestataires de services qui soutiennent le secteur."
+      ],
+      "image_alt": "Réunion d'affaires européenne"
+    },
+    "member_benefits": {
+      "title": "Avantages membres FASE",
+      "items": [
+        {
+          "title": "Représentation pan-européenne",
+          "content": "Rejoignez une voix unifiée plaidant pour les agences de souscription et la souscription déléguée à travers l'Europe."
+        },
+        {
+          "title": "Réseautage et collaboration",
+          "content": "Connectez-vous avec les dirigeants d'agences de souscription, assureurs, réassureurs et prestataires de services à travers l'Europe et au-delà."
+        },
+        {
+          "title": "MGA Rendezvous annuel",
+          "content": "Accès exclusif à notre événement phare — rassemblant les professionnels des agences de souscription, influenceurs du marché et partenaires du monde entier."
+        },
+        {
+          "title": "Sessions éducatives et d'analyse",
+          "content": "Participez à des ateliers, webinaires et panels sur les tendances réglementaires, l'innovation et les meilleures pratiques."
+        },
+        {
+          "title": "Intelligence industrielle",
+          "content": "Recevez des mises à jour régulières sur les développements du marché européen des agences de souscription, opportunités et défis."
+        },
+        {
+          "title": "Reconnaissance et crédibilité",
+          "content": "Renforcez votre réputation sur le marché en tant que membre d'une association d'agences de souscription respectée et tournée vers l'avenir."
+        },
+        {
+          "title": "Opportunités de collaboration",
+          "content": "Façonnez l'avenir de la souscription déléguée à travers des groupes de travail et des initiatives transfrontalières."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Catégories d'adhésion",
+      "subtitle": "Trois types d'adhésion distincts reflètent la diversité de l'écosystème des agences de souscription.",
+      "mga": {
+        "title": "Agence de Souscription",
+        "description": "Agences de souscription exerçant leurs activités en Europe depuis au moins un an et avec un revenu de primes supérieur à 500 000 €.",
+        "image_alt": "Réunion d'affaires d'agence de souscription",
+        "action_text": "Postuler comme Agence de Souscription"
+      },
+      "carrier": {
+        "title": "Assureur",
+        "description": "Compagnies d'assurance ou de réassurance ou Agences de Gestion de Lloyd's faisant affaire avec des agences de souscription.",
+        "image_alt": "Analyse de marché et données",
+        "action_text": "Postuler comme Assureur"
+      },
+      "service_provider": {
+        "title": "Prestataire de services",
+        "description": "Prestataires de services actifs dans l'écosystème des agences de souscription.",
+        "image_alt": "Collaboration de prestataire de services",
+        "action_text": "Postuler comme Prestataire de Services"
+      }
+    },
+    "application_process": {
+      "title": "Processus de candidature",
+      "content": [
+        "Pour commencer votre candidature, complétez notre formulaire d'adhésion avec les détails de votre organisation et informations commerciales.",
+        "Les candidatures sont examinées par le comité d'adhésion FASE pour assurer l'alignement avec nos standards communautaires et objectifs."
+      ],
+      "image_alt": "Processus de candidature",
+      "buttons": {
+        "join": "Rejoindre",
+        "contact_us": "Nous Contacter"
+      }
+    }
+  },
+  "sponsors": {
+    "page": {
+      "title": "Partenariat avec FASE",
+      "banner_alt": "Partenariat commercial stratégique"
+    },
+    "partnership_opportunities": {
+      "title": "Opportunités de Partenariat Stratégique",
+      "content": [
+        "Partenaire avec FASE pour vous connecter avec les principales agences de souscription, fournisseurs de capacité et professionnels de l'assurance d'Europe. Nos opportunités de partenariat fournissent un accès direct aux décideurs clés des marchés européens de l'assurance.",
+        "Du partenariat de conférence aux plateformes de leadership éclairé, nous offrons des packages de partenariat sur mesure qui s'alignent avec vos objectifs commerciaux et vos buts de portée de marché."
+      ],
+      "image_alt": "Conférence professionnelle et réseautage"
+    },
+    "partnership_benefits": {
+      "title": "Avantages du Partenariat",
+      "subtitle": "Connectez-vous avec la communauté d'agences de souscription la plus influente d'Europe grâce aux opportunités de partenariat stratégique.",
+      "network_access": {
+        "title": "Accès au Réseau",
+        "description": "Accès direct aux dirigeants de niveau C des principales agences de souscription et fournisseurs de capacité d'Europe à travers des événements de réseautage exclusifs.",
+        "image_alt": "Événement de réseautage exécutif"
+      },
+      "thought_leadership": {
+        "title": "Leadership Éclairé",
+        "description": "Positionnez votre organisation comme un leader de l'industrie à travers des opportunités de prise de parole et des partenariats de contenu.",
+        "image_alt": "Conférence de leadership industriel"
+      },
+      "market_intelligence": {
+        "title": "Intelligence de Marché",
+        "description": "Obtenez des analyses exclusives sur les tendances et opportunités du marché européen des agences de souscription à travers nos recherches et événements.",
+        "image_alt": "Analyse et recherche de marché"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Entrepreneurial Underwriter",
+      "banner_alt": "Souscription entrepreneuriale"
+    },
+    "intro": {
+      "title": "The Entrepreneurial Underwriter",
+      "content": [
+        "À partir de 2026, The Entrepreneurial Underwriter – notre publication phare – rassemblera des analyses et des conseils pratiques pour les entrepreneurs qui façonnent l'avenir de la souscription déléguée européenne."
+      ],
+      "image_alt": "Analyses de souscription entrepreneuriale"
+    },
+    "featured_content": {
+      "title": "Contenu en Vedette",
+      "market_analysis": {
+        "title": "Analyse de Marché",
+        "description": "Analyse approfondie des tendances de la souscription déléguée européenne, développements réglementaires et opportunités émergentes pour les agences de souscription.",
+        "image_alt": "Analyse de marché"
+      },
+      "case_studies": {
+        "title": "Études de Cas",
+        "description": "Exemples concrets de stratégies d'agences de souscription réussies, approches de souscription innovantes et relations de capacité efficaces.",
+        "image_alt": "Études de cas d'affaires"
+      },
+      "expert_insights": {
+        "title": "Analyses d'Experts",
+        "description": "Perspectives de dirigeants de l'industrie sur la construction d'entreprises d'agences de souscription durables et la navigation dans les environnements réglementaires européens.",
+        "image_alt": "Analyses d'experts"
+      }
+    },
+    "quote": {
+      "text": "La souscription d'autorité déléguée est devenue le secteur le plus entrepreneurial du marché de l'assurance. Notre objectif chez FASE est de rassembler les ressources pour aider les souscripteurs entrepreneuriaux à réussir.",
+      "author": "William Pitt",
+      "title": "Directeur Exécutif, FASE"
+    }
+  },
+  "webinars": {
+    "page": {
+      "title": "Série de Webinaires",
+      "banner_alt": "Série de webinaires FASE"
+    },
+    "intro": {
+      "title": "Série de Webinaires Dirigée par des Experts",
+      "content": [
+        "Notre série de webinaires se concentre sur les besoins les plus pressants des professionnels européens des agences de souscription avec des experts de l'industrie et des leaders d'opinion. Les domaines d'intérêt incluront les défis réglementaires, le recrutement, les questions de gestion des données et les standards professionnels."
+      ],
+      "image_alt": "Apprentissage en ligne et webinaires"
+    },
+    "upcoming_webinars": {
+      "title": "Webinaires à Venir",
+      "regulatory_hurdles": {
+        "title": "Obstacles Réglementaires",
+        "description": "Analyse marché par marché du paysage réglementaire pour les agences de souscription et comment surmonter les barrières réglementaires.",
+        "image_alt": "Conformité réglementaire"
+      },
+      "capital_structures": {
+        "title": "Structures de Capital et Incitations",
+        "description": "Conseils sur comment optimiser l'alignement avec les fournisseurs de capacité pour sécuriser une capacité durable.",
+        "image_alt": "Relations d'affaires"
+      },
+      "ai_promise_peril": {
+        "title": "IA : La Promesse et le Péril",
+        "description": "L'IA promet d'énormes gains pour les agences de souscription en efficacité opérationnelle, tarification des risques et amélioration de l'expérience courtier et client. Mais certains cas d'usage sont plus spéculatifs que d'autres.",
+        "image_alt": "Transformation numérique"
+      }
     }
   },
   "footer": {

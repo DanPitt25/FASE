@@ -727,7 +727,7 @@ export default function IntegratedRegisterForm() {
                 </p>
                 
                 <p className="mb-3">
-                  <strong>Retention Period:</strong> We retain your data for the duration of your membership plus 7 years for regulatory compliance, unless you request earlier deletion or we have another legal basis to retain it.
+                  <strong>Retention Period:</strong> We retain your data for the duration of your membership plus one year for regulatory compliance, unless you request earlier deletion or we have another legal basis to retain it.
                 </p>
                 
                 <p className="mb-3">

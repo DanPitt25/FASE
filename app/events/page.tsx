@@ -1,58 +1,60 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ContentPageLayout from '../../components/ContentPageLayout';
 
 export default function EventsPage() {
+  const t = useTranslations('events');
   const sections = [
     {
       type: 'split' as const,
-      title: 'FASE events',
+      title: t('intro.title'),
       content: [
-        'Our events brings together MGAs, capacity providers, brokers and key service providers from across Europe to foster collaboration and grow business relationships.',
-        'FASE events create opportunities for meaningful connections that drive the European delegated underwriting market forward.'
+        t('intro.content.paragraph1'),
+        t('intro.content.paragraph2')
       ],
       image: '/hivan.jpg',
-      imageAlt: 'European business networking event',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'cards' as const,
-      title: 'Event features',
+      title: t('features.title'),
       cards: [
         {
-          title: 'Expand capacity relationships',
-          description: 'Direct introductions between MGAs seeking capacity and providers looking for quality business opportunities across European markets.',
+          title: t('features.cards.capacity.title'),
+          description: t('features.cards.capacity.description'),
           image: '/consideration.jpg',
-          imageAlt: 'Business matching'
+          imageAlt: t('features.cards.capacity.image_alt')
         },
         {
-          title: 'Market insights',
-          description: 'Expert panels and presentations on European regulatory developments, market trends, and emerging opportunities in delegated underwriting.',
+          title: t('features.cards.insights.title'),
+          description: t('features.cards.insights.description'),
           image: '/training.jpg',
-          imageAlt: 'Market analysis'
+          imageAlt: t('features.cards.insights.image_alt')
         },
         {
-          title: 'Professional development',
-          description: 'Educational sessions and workshops designed specifically for MGA professionals operating in the European marketplace.',
+          title: t('features.cards.development.title'),
+          description: t('features.cards.development.description'),
           image: '/market.jpg',
-          imageAlt: 'Professional development'
+          imageAlt: t('features.cards.development.image_alt')
         }
       ]
     },
     {
       type: 'cta' as const,
-      title: 'Join Our Events',
-      subtitle: 'Connect with the European MGA Community',
-      description: 'Registration details and event schedules will be announced to FASE members. Become a member to secure your place at our premier networking events.',
+      title: t('cta.title'),
+      subtitle: t('cta.subtitle'),
+      description: t('cta.description'),
       backgroundImage: '/conferenceWood.jpg',
       buttons: [
         {
-          text: 'Become a Member',
+          text: t('cta.buttons.become_member'),
           href: '/join',
           variant: 'primary' as const
         },
         {
-          text: 'MGA Rendezvous',
+          text: t('cta.buttons.mga_rendezvous'),
           href: '/rendezvous',
           variant: 'secondary' as const
         }
@@ -62,9 +64,9 @@ export default function EventsPage() {
 
   return (
     <ContentPageLayout
-      title="Events"
+      title={t('page.title')}
       bannerImage="/conferenceWood.jpg"
-      bannerImageAlt="European cityscape and business district"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="events"
     />

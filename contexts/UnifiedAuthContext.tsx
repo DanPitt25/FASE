@@ -56,6 +56,16 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         return;
       }
       
+      // CRITICAL SECURITY: Only allow users with status "active" to remain logged in
+      if (memberData.status !== 'active') {
+        // Force logout for any non-active account
+        await auth.signOut();
+        setMember(null);
+        setIsAdmin(false);
+        setHasMemberAccess(false);
+        return;
+      }
+      
       setMember(memberData);
       
       // Check claims for access levels
@@ -76,7 +86,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       }
       
       setIsAdmin(adminClaim || memberData.status === 'admin');
-      setHasMemberAccess(memberClaim || ['approved', 'admin'].includes(memberData.status));
+      setHasMemberAccess(memberClaim || memberData.status === 'active');
       
     } catch (error) {
       setMember(null);

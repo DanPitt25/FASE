@@ -176,7 +176,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       }`}>Mission</a>
                       <a href="/about/code-of-conduct" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'code-of-conduct' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>Code of Conduct</a>
+                      }`}>{tNav('code_of_conduct')}</a>
                       <a href="/about/leadership" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'leadership' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
                       }`}>{tNav('leadership')}</a>
@@ -204,9 +204,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                         <a href="/events" className={`block px-4 py-2 text-sm ${
                           currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>{tNav('events')}</a>
-                        <a href="/networking/rendezvous" className={`block px-4 py-2 text-sm ${
+                        <a href="/rendezvous" className={`block px-4 py-2 text-sm ${
                           currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>{tNav('rendezvous')}</a>
+                        }`}>MGA Rendezvous</a>
                       </div>
                     </div>
                   </div>
@@ -228,7 +228,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                         }`}>Entrepreneurial Underwriter</a>
                         <a href="/knowledge/webinars" className={`block px-4 py-2 text-sm ${
                           currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>Webinar Series</a>
+                        }`}>{tNav('webinars')}</a>
                       </div>
                     </div>
                   </div>
@@ -243,7 +243,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   {/* Sponsors */}
                   <a href="/sponsors" className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
                     currentPage === 'sponsors' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
-                  }`}>Sponsors</a>
+                  }`}>{tNav('sponsors')}</a>
                   
                   {/* Contact */}
                   <a href="/contact" className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg whitespace-nowrap transition-all duration-200 ${
@@ -309,7 +309,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               }`}>Mission</a>
               <a href="/about/code-of-conduct" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'code-of-conduct' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Code of Conduct</a>
+              }`}>{tNav('code_of_conduct')}</a>
               <a href="/about/leadership" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'leadership' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Leadership</a>
@@ -338,7 +338,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               }`}>Entrepreneurial Underwriter</a>
               <a href="/knowledge/webinars" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Webinar Series</a>
+              }`}>{tNav('webinars')}</a>
             </div>
             {user && (
               <a href="/member-portal" className={`block px-3 py-2 text-base font-medium ${
@@ -347,7 +347,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             )}
             <a href="/sponsors" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'sponsors' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-            }`}>Sponsors</a>
+            }`}>{tNav('sponsors')}</a>
             <a href="/contact" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'contact' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>Contact</a>

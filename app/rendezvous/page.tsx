@@ -1,32 +1,34 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import ContentPageLayout from '../../components/ContentPageLayout';
 
 export default function RendezvousPage() {
+  const t = useTranslations('rendezvous');
   const sections = [
     {
       type: 'split' as const,
-      title: 'Pan-European MGA Rendezvous',
+      title: t('intro.title'),
       content: [
-        'Over two days, our annual Spring conference will bring together MGAs, capacity providers and selected service providers to expand business opportunities across Europe. Our primary focus will be on fostering networking and relationship-building opportunities, but we are also planning an event programme that sets the standard for European MGA events.'
+        t('intro.content.paragraph1')
       ],
       image: '/conference.jpeg',
-      imageAlt: 'European business conference',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'split' as const,
-      title: 'Coming Soon',
+      title: t('coming_soon.title'),
       content: [
-        'The FASE Rendezvous is currently in development. Join our community to be the first to know about this upcoming flagship networking opportunity.',
-        'We are planning a comprehensive program designed to foster collaboration and growth across the European MGA ecosystem.'
+        t('coming_soon.content.paragraph1'),
+        t('coming_soon.content.paragraph2')
       ],
       image: '/airplane.jpeg',
-      imageAlt: 'Future networking event',
+      imageAlt: t('coming_soon.image_alt'),
       imagePosition: 'left' as const,
       buttons: [
         {
-          text: 'Join Us',
+          text: t('coming_soon.button.text'),
           href: '/join',
           variant: 'primary' as const
         }
@@ -36,9 +38,9 @@ export default function RendezvousPage() {
 
   return (
     <ContentPageLayout
-      title="MGA Rendezvous"
+      title={t('page.title')}
       bannerImage="/airplane.jpeg"
-      bannerImageAlt="Pan-European MGA networking"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="rendezvous"
     />

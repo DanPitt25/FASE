@@ -1,40 +1,41 @@
 'use client';
 
 import ContentPageLayout from '../../../components/ContentPageLayout';
+import { useTranslations } from 'next-intl';
 
 export default function WebinarsPage() {
+  const t = useTranslations('webinars');
+  
   const sections = [
     {
       type: 'split' as const,
-      title: 'Expert-Led Webinar Series',
-      content: [
-        'Our webinar series focusses on the most press needs of European MGA professionals featuring industry experts and thought leaders. Areas of focus will include regulatory challenges, recruitment, data management issues, and professional standards.'
-      ],
+      title: t('intro.title'),
+      content: t.raw('intro.content'),
       image: '/seminar.jpg',
-      imageAlt: 'Online learning and webinars',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'cards' as const,
-      title: 'Upcoming Webinars',
+      title: t('upcoming_webinars.title'),
       cards: [
         {
-          title: 'Regulatory Hurdles',
-          description: 'Market by market analysis of the regulatory landscape for MGAs and how to overcome regulatory barriers.',
+          title: t('upcoming_webinars.regulatory_hurdles.title'),
+          description: t('upcoming_webinars.regulatory_hurdles.description'),
           image: '/regulatory.jpg',
-          imageAlt: 'Regulatory compliance'
+          imageAlt: t('upcoming_webinars.regulatory_hurdles.image_alt')
         },
         {
-          title: 'Capital Structures and Incentives',
-          description: 'Advice on how to optimise alignment with capacity providers to secure durable capacity.',
+          title: t('upcoming_webinars.capital_structures.title'),
+          description: t('upcoming_webinars.capital_structures.description'),
           image: '/conferenceWood.jpg',
-          imageAlt: 'Business relationships'
+          imageAlt: t('upcoming_webinars.capital_structures.image_alt')
         },
         {
-          title: 'AI: The Promise and the Peril',
-          description: 'AI promises huge gains for MGAs in operational efficiency, risk pricing, and improving the broker and customer experience. But some use cases are more speculative than others.',
+          title: t('upcoming_webinars.ai_promise_peril.title'),
+          description: t('upcoming_webinars.ai_promise_peril.description'),
           image: '/data.jpg',
-          imageAlt: 'Digital transformation'
+          imageAlt: t('upcoming_webinars.ai_promise_peril.image_alt')
         }
       ]
     }
@@ -42,9 +43,9 @@ export default function WebinarsPage() {
 
   return (
     <ContentPageLayout
-      title="Webinar Series"
+      title={t('page.title')}
       bannerImage="/training.jpg"
-      bannerImageAlt="FASE webinar series"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="webinars"
     />

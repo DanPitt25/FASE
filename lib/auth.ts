@@ -9,7 +9,7 @@ import {
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
-import { getMemberApplicationsByUserId } from './firestore';
+import { getUnifiedMember } from './unified-member';
 
 export interface AuthUser {
   uid: string;
@@ -42,12 +42,9 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     
     // Check member status after successful authentication
     try {
-      const memberApplications = await getMemberApplicationsByUserId(user.uid);
+      const memberData = await getUnifiedMember(user.uid);
       
-      if (memberApplications && memberApplications.length > 0) {
-        // Get the most recent member application
-        const memberData = memberApplications[0];
-        
+      if (memberData) {
         // Check if member status allows login
         if (memberData.status === 'pending') {
           // Sign out the user since they shouldn't be logged in
@@ -55,7 +52,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
           throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
         }
         
-        if (!['approved', 'admin'].includes(memberData.status)) {
+        if (memberData.status !== 'active') {
           // Sign out the user since they shouldn't be logged in
           await firebaseSignOut(auth);
           throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');

@@ -1,42 +1,42 @@
 'use client';
 
 import ContentPageLayout from '../../components/ContentPageLayout';
+import { useTranslations } from 'next-intl';
 
 export default function SponsorsPage() {
+  const t = useTranslations('sponsors');
+  
   const sections = [
     {
       type: 'split' as const,
-      title: 'Strategic Partnership Opportunities',
-      content: [
-        'Partner with FASE to connect with Europe\'s leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.',
-        'From conference sponsorship to thought leadership platforms, we offer tailored partnership packages that align with your business objectives and market reach goals.'
-      ],
+      title: t('partnership_opportunities.title'),
+      content: t.raw('partnership_opportunities.content'),
       image: '/glass.jpg',
-      imageAlt: 'Professional conference and networking',
+      imageAlt: t('partnership_opportunities.image_alt'),
       imagePosition: 'right' as const
     },
     {
       type: 'cards' as const,
-      title: 'Partnership Benefits',
-      subtitle: 'Connect with Europe\'s most influential MGA community through strategic partnership opportunities.',
+      title: t('partnership_benefits.title'),
+      subtitle: t('partnership_benefits.subtitle'),
       cards: [
         {
-          title: 'Network Access',
-          description: 'Direct access to C-level executives from Europe\'s leading MGAs and capacity providers through exclusive networking events.',
+          title: t('partnership_benefits.network_access.title'),
+          description: t('partnership_benefits.network_access.description'),
           image: '/seated.jpg',
-          imageAlt: 'Executive networking event'
+          imageAlt: t('partnership_benefits.network_access.image_alt')
         },
         {
-          title: 'Thought Leadership',
-          description: 'Position your organization as an industry leader through speaking opportunities and content partnerships.',
+          title: t('partnership_benefits.thought_leadership.title'),
+          description: t('partnership_benefits.thought_leadership.description'),
           image: '/airplane.jpeg',
-          imageAlt: 'Industry leadership conference'
+          imageAlt: t('partnership_benefits.thought_leadership.image_alt')
         },
         {
-          title: 'Market Intelligence',
-          description: 'Gain exclusive insights into European MGA market trends and opportunities through our research and events.',
+          title: t('partnership_benefits.market_intelligence.title'),
+          description: t('partnership_benefits.market_intelligence.description'),
           image: '/consideration.jpg',
-          imageAlt: 'Market analysis and research'
+          imageAlt: t('partnership_benefits.market_intelligence.image_alt')
         }
       ]
     }
@@ -44,9 +44,9 @@ export default function SponsorsPage() {
 
   return (
     <ContentPageLayout
-      title="Partner with FASE"
+      title={t('page.title')}
       bannerImage="/training.jpg"
-      bannerImageAlt="Strategic business partnership"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="sponsors"
     />
