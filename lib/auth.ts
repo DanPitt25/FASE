@@ -52,7 +52,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
           throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
         }
         
-        if (memberData.status !== 'active') {
+        if (!['approved', 'admin'].includes(memberData.status)) {
           // Sign out the user since they shouldn't be logged in
           await firebaseSignOut(auth);
           throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');

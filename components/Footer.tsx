@@ -25,7 +25,6 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-noto-serif font-semibold mb-4 text-white">{tFooter('resources')}</h4>
             <ul className="space-y-2 text-fase-cream">
-              <li><a href="/knowledge" className="hover:text-fase-navy transition duration-200">{tFooter('knowledge_base')}</a></li>
               <li><a href="/events" className="hover:text-fase-navy transition duration-200">{tFooter('events')}</a></li>
               <li><a href="/about/news" className="hover:text-fase-navy transition duration-200">{tFooter('news')}</a></li>
             </ul>
@@ -34,7 +33,6 @@ export default function Footer() {
             <h4 className="text-lg font-noto-serif font-semibold mb-4 text-white">{tFooter('connect')}</h4>
             <ul className="space-y-2 text-fase-cream">
               <li><a href="mailto:info@fasemga.com" className="hover:text-fase-navy transition duration-200">{tFooter('contact_us')}</a></li>
-              <li><a href="/member-portal" className="hover:text-fase-navy transition duration-200">{tFooter('member_portal')}</a></li>
               <li><a href="/about" className="hover:text-fase-navy transition duration-200">{tFooter('about_fase')}</a></li>
             </ul>
           </div>
