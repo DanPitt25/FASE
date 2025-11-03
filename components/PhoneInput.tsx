@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import 'react-phone-number-input/style.css';
 
 // Dynamically import the phone input to avoid SSR issues
 const PhoneInputComponent = dynamic(() => import('react-phone-number-input'), {
@@ -40,8 +41,6 @@ export default function PhoneInput({
   
   useEffect(() => {
     setMounted(true);
-    // Import CSS only on client-side
-    import('react-phone-number-input/style.css');
   }, []);
   
   const isValid = !required || value.trim() !== '';
