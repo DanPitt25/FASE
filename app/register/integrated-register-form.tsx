@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
-import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
+// Removed sendVerificationCode and verifyCode imports - no longer needed
 import Button from "../../components/Button";
 import { ValidatedInput, validatePassword } from './form-components';
 import { Member } from './registration-hooks';
@@ -127,12 +127,7 @@ export default function IntegratedRegisterForm() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   
-  // Email verification state for after account creation
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
-  const [isSendingVerification, setIsSendingVerification] = useState(false);
-  const [pendingPaymentAction] = useState<'paypal' | 'invoice' | null>(null);
+  // Remove email verification state - no longer needed
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'paypal' | 'invoice' | null>(null);
   
   // Consent states
@@ -224,27 +219,20 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
-      // Check domain before sending verification code
+      // Skip verification - go straight to next step
       try {
-        setIsSendingVerification(true);
-        
         // Check if domain already exists
         const domainExists = await checkDomainExists(email);
         if (domainExists) {
           throw new Error(t('errors.domain_already_registered'));
         }
         
-        // Send verification code (no account creation yet)
-        console.log('Sending verification code with locale:', locale);
-        await sendVerificationCode(email, locale);
-        
-        setShowEmailVerification(true);
         setError("");
+        setStep(2);
+        window.scrollTo(0, 0);
         setAttemptedNext(false);
       } catch (error: any) {
         setError(error.message || t('errors.verification_failed'));
-      } finally {
-        setIsSendingVerification(false);
       }
     } else if (step === 2) {
       // Validate membership basic fields
@@ -351,40 +339,7 @@ export default function IntegratedRegisterForm() {
 
 
 
-  const handleVerifyCode = async () => {
-    if (!verificationCode.trim()) {
-      setError(t('errors.enter_verification_code'));
-      return;
-    }
-
-    setIsCheckingVerification(true);
-    try {
-      const isVerified = await verifyCode(email, verificationCode.trim());
-      
-      if (isVerified) {
-        setShowEmailVerification(false);
-        
-        // If this is after Step 2, continue to Step 3
-        if (!pendingPaymentAction) {
-          setStep(2);
-          window.scrollTo(0, 0);
-        } else {
-          // This is after payment - continue with the pending payment action
-          if (pendingPaymentAction === 'paypal') {
-            await continueWithPayPalPayment();
-          } else if (pendingPaymentAction === 'invoice') {
-            setRegistrationComplete(true);
-          }
-        }
-      } else {
-        setError(t('errors.invalid_verification_code'));
-      }
-    } catch (error: any) {
-      setError(error.message || t('errors.verification_code_failed'));
-    } finally {
-      setIsCheckingVerification(false);
-    }
-  };
+  // handleVerifyCode function removed - no longer needed
 
   const continueWithPayPalPayment = async () => {
     try {
@@ -430,19 +385,7 @@ export default function IntegratedRegisterForm() {
     }
   };
 
-  const handleSendVerificationCode = async () => {
-    if (isSendingVerification) return;
-    
-    try {
-      setIsSendingVerification(true);
-      await sendVerificationCode(email, locale);
-      setError("");
-    } catch (error: any) {
-      setError(error.message || t('errors.verification_failed'));
-    } finally {
-      setIsSendingVerification(false);
-    }
-  };
+  // handleSendVerificationCode function removed - no longer needed
 
 
   const handleSubmitApplication = async () => {
@@ -633,79 +576,7 @@ export default function IntegratedRegisterForm() {
 
 
 
-  // Email verification screen
-  if (showEmailVerification) {
-    return (
-      <div className="text-center space-y-6">
-        <div className="w-16 h-16 bg-fase-navy rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-        </div>
-        
-        <div>
-          <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('verification.title')}</h2>
-          <p className="text-fase-black mb-6">
-            {t('verification.subtitle')} <strong>{email}</strong>
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="verification-code" className="block text-sm font-medium text-fase-navy mb-2">
-              {t('verification.code_label')}
-            </label>
-            <input
-              id="verification-code"
-              type="text"
-              value={verificationCode}
-              onChange={(e) => {
-                // Only allow numbers and limit to 6 digits
-                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                setVerificationCode(value);
-              }}
-              placeholder={t('verification.code_placeholder')}
-              className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              maxLength={6}
-            />
-          </div>
-          
-          <Button 
-            variant="primary" 
-            size="large" 
-            className="w-full"
-            onClick={handleVerifyCode}
-            disabled={isCheckingVerification || verificationCode.length !== 6}
-          >
-            {isCheckingVerification ? t('verification.verifying') : t('verification.verify_button')}
-          </Button>
-          
-          <Button 
-            variant="secondary" 
-            size="medium" 
-            className="w-full"
-            onClick={handleSendVerificationCode}
-            disabled={isSendingVerification}
-          >
-            {isSendingVerification ? t('verification.sending') : t('verification.resend_code')}
-          </Button>
-          
-          <p className="text-xs text-fase-black text-center">
-            {t('verification.code_expires')}
-          </p>
-          
-          <p className="text-sm text-fase-black text-center bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-            {t('verification.spam_check')}
-          </p>
-        </div>
-
-        {error && (
-          <div className="text-red-600 text-sm">{error}</div>
-        )}
-        
-      </div>
-    );
-  }
+  // Email verification screen removed - no longer needed
 
   if (registrationComplete) {
     return (
@@ -1345,9 +1216,8 @@ export default function IntegratedRegisterForm() {
                 type="button"
                 variant="primary" 
                 onClick={handleNext}
-                disabled={step === 1 && isSendingVerification}
               >
-                {step === 1 && isSendingVerification ? t('buttons.sending_code') : t('buttons.next')}
+                {t('buttons.next')}
               </Button>
             ) : step === 3 ? (
               <Button 
