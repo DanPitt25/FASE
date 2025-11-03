@@ -418,6 +418,12 @@
       "mga_count_question": "Avec combien d'AGS travaillez-vous actuellement en Europe ?",
       "countries_question": "Dans quels pays européens déléguez-vous actuellement des pouvoirs de souscription aux AGS ?",
       "fronting_question": "Proposez-vous des options de couverture ?",
+      "fronting_options": {
+        "none": "Aucune",
+        "pure": "Pure",
+        "hybrid": "Hybride",
+        "both": "Les deux"
+      },
       "startup_question": "Considérez-vous les AGS en démarrage ?",
       "am_best_rating": "Notation AM Best (si notée)",
       "select_rating": "Sélectionner une notation",
