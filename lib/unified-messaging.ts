@@ -467,7 +467,7 @@ In the meantime, you can:
 • Learn about upcoming events and networking opportunities
 • Connect with the European MGA community
 
-If you have any questions about your membership or need assistance, please don't hesitate to contact us at info@fasemga.com.
+If you have any questions about your membership or need assistance, please don't hesitate to contact us at help@fasemga.com.
 
 Thank you for choosing to be part of FASE's mission to strengthen and advance the European MGA ecosystem.
 

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
             </div>
             <p>This link will guide you through creating your secure account password and accessing all member benefits.</p>
             <p>Best regards,<br>The FASE Team</p>
-            <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:support@fasemga.com">support@fasemga.com</a></p>
+            <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
           </div>
         `;
 

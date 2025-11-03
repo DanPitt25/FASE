@@ -325,7 +325,7 @@ export const sendJoinRequestNotification = functions.https.onCall({
           ` : ''}
           
           <p>Welcome to the Federation of European MGAs!</p>
-          <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:support@fasemga.com">support@fasemga.com</a></p>
+          <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
         </div>
       `;
     } else {

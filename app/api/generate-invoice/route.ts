@@ -158,7 +158,7 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
 
     <div class="footer">
         <p>Thank you for your membership in the Federation of European MGAs.</p>
-        <p>For questions about this invoice, please contact: finance@fasemga.com</p>
+        <p>For questions about this invoice, please contact: admin@fasemga.com</p>
     </div>
 </body>
 </html>`;
@@ -521,8 +521,8 @@ export async function POST(request: NextRequest) {
         emailData.invoiceHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
             <h2 style="color: #2D5574; margin-bottom: 20px;">Thank You for Your FASE Membership Application</h2>
-            <p>Thank you for submitting your application to become a member of the Federation of European MGAs.</p>
-            <p>We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
+            <p>Thank you for submitting your application to become a member of FASE.</p>
+            <p>We will review your application and you will receive full member benefits within 24 hours if approved.</p>
             <p>Your invoice for membership dues is attached. Please process payment according to the instructions in the invoice.</p>
             <p>If you have any questions, please contact us at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a></p>
             <p>Best regards,<br><strong>The FASE Team</strong></p>

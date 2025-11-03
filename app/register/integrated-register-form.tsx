@@ -1536,7 +1536,7 @@ export default function IntegratedRegisterForm() {
               
               <div className="space-y-3">
                 <p className="mb-3">
-                  <strong>Data Controller:</strong> FASE B.V., Herengracht 124, 1015 BT Amsterdam, Netherlands. Contact: info@fasemga.com
+                  <strong>Data Controller:</strong> FASE B.V., Herengracht 124, 1015 BT Amsterdam, Netherlands. Contact: admin@fasemga.com
                 </p>
                 
                 <p className="mb-3">

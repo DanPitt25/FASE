@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { Suspense } from 'react';
 import IntegratedRegisterForm from './integrated-register-form';
 
 export default function Register() {
@@ -17,7 +18,9 @@ export default function Register() {
             />
           </div>
           <div className="bg-white px-6 py-8">
-            <IntegratedRegisterForm />
+            <Suspense fallback={<div className="flex justify-center items-center py-8">Loading...</div>}>
+              <IntegratedRegisterForm />
+            </Suspense>
           </div>
         </div>
       </div>
