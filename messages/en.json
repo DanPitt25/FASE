@@ -932,7 +932,7 @@
         "action_text": "Apply as MGA"
       },
       "carrier": {
-        "title": "Carrier",
+        "title": "Carrier / Broker",
         "description": "Insurance or reinsurance companies or Lloyd's Managing Agencies transacting business with MGAs.",
         "image_alt": "Market analysis and data",
         "action_text": "Apply as Carrier"
