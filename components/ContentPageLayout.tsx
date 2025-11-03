@@ -509,7 +509,7 @@ export default function ContentPageLayout({
                       }}
                     >
                       <div className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0">
-                        <div className="w-64 h-auto mx-auto rounded-lg overflow-hidden">
+                        <div className="w-52 h-auto mx-auto rounded-lg overflow-hidden">
                           <img 
                             src={person.image} 
                             alt={person.name}

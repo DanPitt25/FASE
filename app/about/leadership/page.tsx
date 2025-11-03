@@ -73,7 +73,7 @@ export default function LeadershipPage() {
           role: 'Managing Director',
           company: 'Bowood Europe',
           bio: 'Enrico Bertagna, an insurance executive with over 30 years of experience in the European P&C industry, is managing director of Bowood Europe, Howden\'s specialist binding authority/MGA division. Over the years he has had the opportunity to build enterprise value in a variety of positions in Lloyd\'s and the company market.',
-          image: '/market.jpg'
+          image: '/enrico_bertagna.jpg'
         }
       ]
     }
