@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { europeanCountries } from '../../lib/countries';
-import { frontingOptions, amBestRatings, serviceProviderCategories } from './registration-utils';
+import { amBestRatings } from './registration-utils';
 
 // Carrier Information Component
 export const CarrierInformationSection = ({
@@ -125,17 +125,17 @@ export const CarrierInformationSection = ({
           {t('fronting_question')} *
         </label>
         <div className="space-y-2">
-          {frontingOptions.map((option) => (
-            <label key={option} className="flex items-center">
+          {Object.entries(t.raw('fronting_options')).map(([key, label]) => (
+            <label key={key} className="flex items-center">
               <input
                 type="radio"
                 name="frontingOptions"
-                value={option}
-                checked={selectedFrontingOptions === option}
+                value={key}
+                checked={selectedFrontingOptions === key}
                 onChange={(e) => setFrontingOptions(e.target.value)}
                 className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
               />
-              <span className="text-sm text-fase-black">{option}</span>
+              <span className="text-sm text-fase-black">{label}</span>
             </label>
           ))}
         </div>
@@ -216,21 +216,21 @@ export const ServiceProviderSection = ({
           {t('services_question')} *
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {serviceProviderCategories.map((service) => (
-            <label key={service} className="flex items-center">
+          {Object.entries(t.raw('categories')).map(([key, label]) => (
+            <label key={key} className="flex items-center">
               <input
                 type="checkbox"
-                checked={servicesProvided.includes(service)}
+                checked={servicesProvided.includes(key)}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    setServicesProvided([...servicesProvided, service]);
+                    setServicesProvided([...servicesProvided, key]);
                   } else {
-                    setServicesProvided(servicesProvided.filter(s => s !== service));
+                    setServicesProvided(servicesProvided.filter(s => s !== key));
                   }
                 }}
                 className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
               />
-              <span className="text-sm text-fase-black">{service}</span>
+              <span className="text-sm text-fase-black">{label}</span>
             </label>
           ))}
         </div>

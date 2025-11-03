@@ -425,7 +425,25 @@
     },
     "service_provider": {
       "title": "Informations sur le Fournisseur de Services",
-      "services_question": "Lesquels des services suivants fournissez-vous ?"
+      "services_question": "Lesquels des services suivants fournissez-vous ?",
+      "categories": {
+        "actuarial_services": "Services Actuariels",
+        "back_office_underwriting": "Externalisation Back-office/Souscription",
+        "business_consulting": "Conseil en Affaires/Marketing",
+        "capital_financial": "Fournisseur de Capital/Financier",
+        "claims_management": "Gestion des Sinistres",
+        "client_policy_tech": "Technologie de Gestion Client/Police",
+        "data_solutions": "Solutions de Données",
+        "financial_services": "Services Financiers",
+        "ma_advisory": "Conseil en Fusions-Acquisitions",
+        "program_product_dev": "Développement de Programme/Produit",
+        "rating_issuing_tech": "Technologie de Tarification et d'Émission",
+        "regulatory_compliance": "Conformité Réglementaire/Licences",
+        "reinsurance_intermediary": "Intermédiaire en Réassurance",
+        "risk_management": "Gestion des Risques/Contrôle des Risques",
+        "talent_staffing": "Talents/Personnel/Recrutement",
+        "technology_other": "Technologie - Autre"
+      }
     }
   },
   "header": {

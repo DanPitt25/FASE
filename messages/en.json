@@ -425,7 +425,44 @@
     },
     "service_provider": {
       "title": "Service Provider Information",
-      "services_question": "Which of the following services do you provide?"
+      "services_question": "Which of the following services do you provide?",
+      "categories": {
+        "actuarial_services": "Actuarial Services",
+        "back_office_underwriting": "Back-office/Underwriting Outsourcing",
+        "business_consulting": "Business Consulting/Marketing",
+        "capital_financial": "Capital/Financial Provider",
+        "claims_management": "Claims Management",
+        "client_policy_tech": "Client/Policy Management Technology",
+        "data_solutions": "Data Solutions",
+        "financial_services": "Financial Services",
+        "ma_advisory": "M&A Advisory",
+        "program_product_dev": "Program/Product Development",
+        "rating_issuing_tech": "Rating and Issuing Technology",
+        "regulatory_compliance": "Regulatory Compliance/Licensing",
+        "reinsurance_intermediary": "Reinsurance Intermediary",
+        "risk_management": "Risk Management/Risk Control",
+        "talent_staffing": "Talent/Staffing/Personnel",
+        "technology_other": "Technology - Other"
+      }
+    },
+    "carrier": {
+      "title": "Carrier Information",
+      "delegating_question": "Do you currently delegate underwriting authority to MGAs in Europe?",
+      "delegating_note": "This includes any form of binding authority, coverholder agreements, or similar arrangements where MGAs can underwrite on your behalf.",
+      "mga_count_question": "How many MGAs do you currently work with in Europe?",
+      "countries_question": "In which European countries do you delegate underwriting authority?",
+      "fronting_question": "Do you offer fronting options?",
+      "fronting_options": {
+        "none": "None",
+        "pure": "Pure",
+        "hybrid": "Hybrid",
+        "both": "Both"
+      },
+      "startup_question": "Would you consider working with startup MGAs?",
+      "am_best_rating": "AM Best Rating",
+      "other_rating": "Other Rating (S&P, Moody's, etc.)",
+      "select_rating": "Select rating...",
+      "other_rating_placeholder": "Enter other rating..."
     }
   },
   "header": {
