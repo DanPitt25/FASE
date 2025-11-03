@@ -628,37 +628,52 @@ export async function POST(request: NextRequest) {
         console.log('PDF attachment added to email data');
       }
       
-      // Always include a nice thank you message
+      // Simple thank you message with correct status
+      const isEnglish = currentLang === 'en';
       emailData.invoiceHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 40px; border-radius: 8px; border: 2px solid #2D5574;">
-            <h2 style="color: #2D5574; text-align: center; margin-bottom: 30px;">Welcome to FASE!</h2>
+            <h2 style="color: #2D5574; text-align: center; margin-bottom: 30px;">
+              ${isEnglish ? 'Application Received' : 'Candidature Reçue'}
+            </h2>
             
-            <p style="font-size: 16px; line-height: 1.6;">Dear ${membershipData.organizationName},</p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              ${isEnglish ? `Dear ${membershipData.organizationName},` : `Cher ${membershipData.organizationName},`}
+            </p>
             
-            <p style="font-size: 16px; line-height: 1.6;">Thank you for joining the Federation of European MGAs – Europe's premier professional association for Managing General Agents and insurance professionals.</p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              ${isEnglish 
+                ? 'Thank you for your FASE membership application. Your application is now under review and you will be notified of the outcome within 48 hours.'
+                : 'Merci pour votre candidature d\'adhésion à la FASE. Votre candidature est maintenant en cours d\'examen et vous serez informé du résultat dans les 48 heures.'
+              }
+            </p>
             
-            <p style="font-size: 16px; line-height: 1.6;">Your membership application has been received and you're now part of an exclusive community that:</p>
-            
-            <ul style="font-size: 16px; line-height: 1.8; margin: 20px 0;">
-              <li>Connects you with Europe's leading insurance professionals</li>
-              <li>Provides access to industry insights and best practices</li>
-              <li>Offers networking opportunities at exclusive events</li>
-              <li>Advocates for MGA interests across European markets</li>
-            </ul>
-            
-            <p style="font-size: 16px; line-height: 1.6;">Your invoice is attached${pdfBuffer ? '' : ' (will be sent separately due to a technical issue)'}. We'll activate your membership benefits within 24 hours of payment confirmation.</p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              ${isEnglish
+                ? `Your invoice is attached${pdfBuffer ? '' : ' (will be sent separately due to a technical issue)'}. Please settle payment to complete your application.`
+                : `Votre facture est jointe${pdfBuffer ? '' : ' (sera envoyée séparément en raison d\'un problème technique)'}. Veuillez effectuer le paiement pour finaliser votre candidature.`
+              }
+            </p>
             
             <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 25px 0; border-left: 4px solid #2D5574;">
-              <p style="margin: 0; font-size: 14px; color: #2D5574;"><strong>Invoice Reference:</strong> ${invoiceNumber}</p>
+              <p style="margin: 0; font-size: 14px; color: #2D5574;">
+                <strong>${isEnglish ? 'Invoice Reference:' : 'Référence de facture:'}</strong> ${invoiceNumber}
+              </p>
             </div>
             
-            <p style="font-size: 16px; line-height: 1.6;">Questions? Contact us at <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a></p>
+            <p style="font-size: 16px; line-height: 1.6;">
+              ${isEnglish 
+                ? 'Questions? Contact us at <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a>'
+                : 'Questions? Contactez-nous à <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a>'
+              }
+            </p>
             
-            <p style="font-size: 16px; line-height: 1.6; margin-top: 30px;">Welcome aboard!</p>
-            
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 0;"><strong>The FASE Team</strong><br>
-            <span style="color: #666; font-size: 14px;">Federation of European MGAs</span></p>
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 0;">
+              <strong>${isEnglish ? 'The FASE Team' : 'L\'équipe FASE'}</strong><br>
+              <span style="color: #666; font-size: 14px;">
+                ${isEnglish ? 'Federation of European MGAs' : 'Fédération des Agences de Souscription Européennes'}
+              </span>
+            </p>
           </div>
         </div>
       `;
