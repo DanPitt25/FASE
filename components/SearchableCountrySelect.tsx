@@ -2,7 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { countries, europeanCountries } from '../lib/countries';
+import { useLocale } from 'next-intl';
+import countries from 'i18n-iso-countries';
+
+// Initialize country data for supported languages
+countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));  
+countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
 
 interface SearchableCountrySelectProps {
   label: string;
@@ -17,6 +23,16 @@ interface SearchableCountrySelectProps {
   europeanOnly?: boolean;
 }
 
+// European countries list for filtering
+const europeanCountryCodes = [
+  'AL', 'AD', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BA', 'BG', 'HR', 'CY', 'CZ', 
+  'DK', 'EE', 'FO', 'FI', 'FR', 'GE', 'DE', 'GI', 'GR', 'GL', 'HU', 'IS', 
+  'IE', 'IT', 'JE', 'XK', 'LV', 'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 
+  'NL', 'MK', 'NO', 'PL', 'PT', 'RO', 'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 
+  'SE', 'CH', 'TR', 'UA', 'GB'
+];
+
+
 export default function SearchableCountrySelect({
   label,
   value,
@@ -30,16 +46,39 @@ export default function SearchableCountrySelect({
   europeanOnly = false
 }: SearchableCountrySelectProps) {
   const t = useTranslations('register_form.address');
+  const locale = useLocale();
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const countryList = europeanOnly ? europeanCountries : countries;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Get country list based on filter
+  const getCountryList = () => {
+    const allCountries = countries.getNames(locale);
+    
+    // Filter countries based on filter type
+    const filteredCountries = europeanOnly 
+      ? Object.fromEntries(
+          Object.entries(allCountries).filter(([code]) => europeanCountryCodes.includes(code))
+        )
+      : allCountries;
+    
+    // All countries sorted alphabetically by name
+    return Object.entries(filteredCountries)
+      .map(([code, name]) => ({
+        value: code,
+        label: name
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+  const countryList = getCountryList();
   const [selectedCountry, setSelectedCountry] = useState(
     countryList.find(c => c.value === value) || null
   );
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredCountries = countryList.filter(country =>
-    country.label.toLowerCase().includes(searchTerm.toLowerCase())
+    country.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    country.value.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const isValid = value.trim() !== '';
@@ -60,7 +99,7 @@ export default function SearchableCountrySelect({
     setSelectedCountry(countryList.find(c => c.value === value) || null);
   }, [value, countryList]);
 
-  const handleSelect = (country: typeof countries[0]) => {
+  const handleSelect = (country: { value: string; label: string }) => {
     setSelectedCountry(country);
     onChange(country.value);
     setIsOpen(false);

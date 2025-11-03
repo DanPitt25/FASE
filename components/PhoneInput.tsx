@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import dynamic from 'next/dynamic';
-import 'react-phone-number-input/style.css';
+import { useLocale } from 'next-intl';
+import { getCountryCallingCode } from 'libphonenumber-js';
+import countries from 'i18n-iso-countries';
 
-// Dynamically import the phone input to avoid SSR issues
-const PhoneInputComponent = dynamic(() => import('react-phone-number-input'), {
-  ssr: false,
-  loading: () => <div className="h-12 bg-gray-100 animate-pulse rounded-lg"></div>
-});
+// Initialize country data for our supported languages
+countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));  
+countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
 
 interface PhoneInputProps {
   label: string;
@@ -24,6 +24,16 @@ interface PhoneInputProps {
   disabled?: boolean;
 }
 
+// Country code to flag emoji mapping
+const getCountryFlag = (countryCode: string): string => {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
+
+
 export default function PhoneInput({
   label,
   value,
@@ -37,29 +47,75 @@ export default function PhoneInput({
   disabled = false
 }: PhoneInputProps) {
   const t = useTranslations('register_form.team_members');
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const locale = useLocale();
+  const [selectedCountry, setSelectedCountry] = useState('GB'); // Default to UK
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [countrySearch, setCountrySearch] = useState('');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   
   const isValid = !required || value.trim() !== '';
   const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
 
-  console.log('PhoneInput value:', value, 'type:', typeof value);
+  // Initialize phone input from existing value
+  useEffect(() => {
+    if (value && !phoneNumber) {
+      setPhoneNumber(value);
+    }
+  }, [value, phoneNumber]);
 
-  if (!mounted) {
-    return (
-      <div className={className}>
-        {label && (
-          <label className="block text-sm font-medium text-fase-navy mb-2">
-            {label} {required && '*'}
-          </label>
-        )}
-        <div className="h-12 bg-gray-100 animate-pulse rounded-lg"></div>
-      </div>
-    );
-  }
+  // Get all countries in the current locale
+  const getCountryList = () => {
+    const allCountries = countries.getNames(locale);
+    
+    // Helper function to safely get calling code
+    const getCallingCodeSafely = (code: string) => {
+      try {
+        return getCountryCallingCode(code as any);
+      } catch (error) {
+        return null; // Return null for countries without calling codes
+      }
+    };
+    
+    // All countries sorted alphabetically by name
+    return Object.entries(allCountries)
+      .map(([code, name]) => ({
+        code,
+        name,
+        callingCode: getCallingCodeSafely(code)
+      }))
+      .filter(country => country.callingCode) // Only include countries with calling codes
+      .sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const countryList = getCountryList();
+  const selectedCountryData = countryList.find(c => c.code === selectedCountry);
+  
+  // Filter countries based on search
+  const filteredCountries = countryList.filter(country =>
+    country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+    country.callingCode.includes(countrySearch.replace('+', '')) ||
+    country.code.toLowerCase().includes(countrySearch.toLowerCase())
+  );
+
+  // Get display text for country input
+  const getCountryDisplayText = () => {
+    if (selectedCountryData) {
+      return `${selectedCountryData.name} +${selectedCountryData.callingCode}`;
+    }
+    return countrySearch;
+  };
+
+  // Update full phone number when country or number changes
+  useEffect(() => {
+    if (selectedCountryData && phoneNumber) {
+      const fullNumber = `+${selectedCountryData.callingCode} ${phoneNumber}`;
+      if (fullNumber !== value) {
+        onChange(fullNumber);
+      }
+    } else if (phoneNumber && phoneNumber !== value) {
+      onChange(phoneNumber);
+    }
+  }, [selectedCountry, phoneNumber, selectedCountryData, onChange, value]);
 
   return (
     <div className={className}>
@@ -69,93 +125,79 @@ export default function PhoneInput({
         </label>
       )}
       
-      <PhoneInputComponent
-        value={value || undefined}
-        onChange={(newValue) => {
-          console.log('Phone onChange:', newValue);
-          onChange(newValue || '');
-          markFieldTouched(fieldKey);
-        }}
-        defaultCountry="GB"
-        international
-        countryCallingCodeEditable={true}
-        className={`phone-input ${shouldShowValidation ? 'phone-input--error' : ''}`}
-        disabled={disabled}
-        placeholder={t('phone_placeholder')}
-        withCountryCallingCode={true}
-        addInternationalOption={false}
-      />
+      <div className="flex space-x-2">
+        {/* Country Selector */}
+        <div className="relative" style={{ width: '200px' }}>
+          <input
+            type="text"
+            value={showCountryDropdown ? countrySearch : getCountryDisplayText()}
+            onChange={(e) => {
+              setCountrySearch(e.target.value);
+              setShowCountryDropdown(true);
+              markFieldTouched(fieldKey);
+            }}
+            onFocus={() => {
+              setShowCountryDropdown(true);
+              setCountrySearch('');
+            }}
+            onBlur={() => {
+              setTimeout(() => setShowCountryDropdown(false), 200);
+            }}
+            placeholder="Search country..."
+            disabled={disabled}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent ${
+              shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
+            }`}
+          />
+          
+          {showCountryDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredCountries.length > 0 ? (
+                filteredCountries.map((country) => (
+                  <button
+                    key={country.code}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCountry(country.code);
+                      setShowCountryDropdown(false);
+                      setCountrySearch('');
+                      markFieldTouched(fieldKey);
+                    }}
+                    className={`w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
+                      selectedCountry === country.code ? 'bg-fase-light-blue text-fase-navy font-medium' : 'text-gray-900'
+                    }`}
+                  >
+                    {country.name} +{country.callingCode}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-gray-500 text-center">
+                  No countries found
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Phone Number Input */}
+        <input
+          type="tel"
+          value={phoneNumber}
+          onChange={(e) => {
+            setPhoneNumber(e.target.value);
+            markFieldTouched(fieldKey);
+          }}
+          placeholder={t('phone_placeholder')}
+          disabled={disabled}
+          className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent min-w-0 ${
+            shouldShowValidation ? 'border-red-300' : 'border-fase-light-gold'
+          }`}
+        />
+      </div>
       
       {shouldShowValidation && (
         <p className="mt-1 text-sm text-red-600">{t('phone_required')}</p>
       )}
-      
-      <style jsx global>{`
-        .phone-input {
-          --PhoneInputCountrySelectArrow-color: #6b7280;
-          --PhoneInputCountrySelectArrow-color--focus: #2D5574;
-          --PhoneInput-color--focus: #2D5574;
-        }
-        
-        .phone-input .PhoneInputInput {
-          border: 1px solid #E6C77A !important;
-          border-radius: 0 0.5rem 0.5rem 0 !important;
-          border-left: none !important;
-          padding: 0.5rem 0.75rem !important;
-          font-size: 1rem !important;
-          line-height: 1.5 !important;
-          color: #374151 !important;
-          background-color: white !important;
-        }
-        
-        .phone-input .PhoneInputInput:focus {
-          outline: none !important;
-          border-color: #2D5574 !important;
-          box-shadow: 0 0 0 2px rgba(45, 85, 116, 0.2) !important;
-        }
-        
-        .phone-input .PhoneInputCountrySelect {
-          border: 1px solid #E6C77A !important;
-          border-radius: 0.5rem 0 0 0.5rem !important;
-          border-right: none !important;
-          background-color: white !important;
-          padding: 0.5rem !important;
-          cursor: pointer !important;
-          position: relative !important;
-        }
-        
-        .phone-input .PhoneInputCountrySelect:focus {
-          outline: none !important;
-          border-color: #2D5574 !important;
-          box-shadow: 0 0 0 2px rgba(45, 85, 116, 0.2) !important;
-        }
-        
-        .phone-input .PhoneInputCountrySelectDropdown {
-          z-index: 1000 !important;
-          position: absolute !important;
-          top: 100% !important;
-          left: 0 !important;
-          background: white !important;
-          border: 1px solid #E6C77A !important;
-          border-radius: 0.5rem !important;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-          max-height: 200px !important;
-          overflow-y: auto !important;
-        }
-        
-        .phone-input--error .PhoneInputInput {
-          border-color: #ef4444 !important;
-        }
-        
-        .phone-input--error .PhoneInputCountrySelect {
-          border-color: #ef4444 !important;
-        }
-        
-        .phone-input .PhoneInputCountryIcon {
-          width: 1.25rem !important;
-          height: 1rem !important;
-        }
-      `}</style>
     </div>
   );
 }

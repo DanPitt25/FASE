@@ -1,8 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { europeanCountries } from '../../lib/countries';
 import { amBestRatings } from './registration-utils';
+import CountryMultiSelector from '../../components/CountryMultiSelector';
 
 // Carrier Information Component
 export const CarrierInformationSection = ({
@@ -42,6 +42,7 @@ export const CarrierInformationSection = ({
 }) => {
   const t = useTranslations('register_form.carrier');
   const tCommon = useTranslations('common');
+  const tAddress = useTranslations('register_form.address');
   
   return (
     <div className="space-y-6">
@@ -114,30 +115,14 @@ export const CarrierInformationSection = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-fase-navy mb-3">
-                {t('countries_question')} *
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
-                {europeanCountries.map((country) => (
-                  <label key={country.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={delegatingCountries.includes(country.value)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setDelegatingCountries([...delegatingCountries, country.value]);
-                        } else {
-                          setDelegatingCountries(delegatingCountries.filter(c => c !== country.value));
-                        }
-                      }}
-                      className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                    />
-                    <span className="text-sm text-fase-black">{country.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            <CountryMultiSelector
+              label={t('countries_question')}
+              value={delegatingCountries}
+              onChange={setDelegatingCountries}
+              required={true}
+              countriesFilter="european"
+              placeholder={tAddress('search_countries_placeholder')}
+            />
           </div>
         )}
       </div>

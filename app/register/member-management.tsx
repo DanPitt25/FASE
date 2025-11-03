@@ -160,7 +160,6 @@ export const TeamMembersSection = ({
                 touchedFields={{}}
                 attemptedNext={false}
                 markFieldTouched={() => {}}
-                disabled={member.id === 'registrant'}
               />
             </div>
 
