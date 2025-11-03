@@ -25,7 +25,6 @@ import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, cal
 export default function IntegratedRegisterForm() {
   // Translations
   const t = useTranslations('register_form');
-  const tCommon = useTranslations('common');
   const locale = useLocale();
   
   // URL parameter handling
@@ -406,7 +405,7 @@ export default function IntegratedRegisterForm() {
           organizationName: orgName,
           organizationType: membershipType === 'individual' ? 'individual' : organizationType,
           membershipType,
-          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
+          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands), gwpCurrency)) : undefined,
           userEmail: email,
           userId: auth.currentUser.uid,
           testPayment: false
@@ -465,62 +464,7 @@ export default function IntegratedRegisterForm() {
     let draftUserId: string | null = null;
 
     try {
-      // Prepare application data
-      const applicationData = {
-        // Personal info
-        firstName,
-        surname,
-        email,
-        phone: membershipType === 'corporate' ? members.find(m => m.isPrimaryContact)?.phone || '' : '',
-        membershipType,
-        
-        // Organization info
-        ...(membershipType === 'corporate' && {
-          organizationName,
-          organizationType,
-          members: membershipType === 'corporate' ? members : undefined,
-        }),
-
-        // Address
-        businessAddress: {
-          line1: addressLine1,
-          line2: addressLine2,
-          city,
-          state,
-          postalCode,
-          country,
-        },
-
-        // MGA specific
-        ...(membershipType === 'corporate' && organizationType === 'MGA' && {
-          grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)),
-          gwpCurrency,
-          selectedLinesOfBusiness,
-          selectedMarkets,
-          hasOtherAssociations,
-          otherAssociations: hasOtherAssociations ? otherAssociations : undefined,
-        }),
-
-        // Carrier specific
-        ...(membershipType === 'corporate' && organizationType === 'carrier' && {
-          isDelegatingInEurope,
-          numberOfMGAs: isDelegatingInEurope === tCommon('yes') ? numberOfMGAs : undefined,
-          delegatingCountries: isDelegatingInEurope === tCommon('yes') ? delegatingCountries : undefined,
-          frontingOptions,
-          considerStartupMGAs,
-          amBestRating,
-          otherRating,
-        }),
-
-        // Service provider specific
-        ...(membershipType === 'corporate' && organizationType === 'provider' && {
-          servicesProvided,
-        }),
-
-        // Consents
-        dataNoticeConsent,
-        codeOfConductConsent,
-      };
+      // Application data already stored in account document by createAccountAndMembership above
 
       // Create Firebase Auth account and store draft application data
       draftUserId = await createAccountAndMembership('draft', {
@@ -581,19 +525,25 @@ export default function IntegratedRegisterForm() {
             postalCode,
             country
           },
-          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(grossWrittenPremiums) || 0, gwpCurrency)) : undefined,
+          grossWrittenPremiums: membershipType === 'corporate' && organizationType === 'MGA' ? getGWPBand(convertToEUR(calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands), gwpCurrency)) : undefined,
           hasOtherAssociations: hasOtherAssociations || false,
           userId: draftUserId // Pass userId for application completion
         };
 
         // Generate invoice and process application
+        const exactTotalAmount = getCurrentDiscountedFee(); // Use EXACT amount from final screen
         const invoiceResponse = await fetch('/api/generate-invoice', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            membershipData
+            membershipData: {
+              ...membershipData,
+              userId: draftUserId, // Pass userId so invoice API can update account status
+              exactTotalAmount: exactTotalAmount, // Pass exact total from final screen
+              userLocale: locale // Pass user's selected language
+            }
           }),
         });
 
@@ -617,6 +567,7 @@ export default function IntegratedRegisterForm() {
         // Account document already created by createAccountAndMembership above
 
         const orgName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+        const exactTotalAmount = getCurrentDiscountedFee(); // Use EXACT amount from final screen
         
         const paypalResponse = await fetch('/api/create-paypal-subscription', {
           method: 'POST',
@@ -631,6 +582,7 @@ export default function IntegratedRegisterForm() {
             userEmail: email,
             userId: draftUserId,
             hasOtherAssociations: hasOtherAssociations || false,
+            exactTotalAmount: exactTotalAmount, // Pass exact total from final screen
             testPayment: false
           }),
         });

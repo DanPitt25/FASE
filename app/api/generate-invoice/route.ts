@@ -30,12 +30,16 @@ const calculateMembershipFee = (membershipData: any): number => {
     switch (membershipData.grossWrittenPremiums) {
       case '<10m': return 900;
       case '10-20m': return 1500;
-      case '20-50m': return 2000;
+      case '20-50m': return 2200;
       case '50-100m': return 2800;
       case '100-500m': return 4200;
-      case '500m+': return 6400;
+      case '500m+': return 7000;
       default: return 900;
     }
+  } else if (membershipData.organizationType === 'carrier') {
+    return 4000; // Flat rate for carriers
+  } else if (membershipData.organizationType === 'provider') {
+    return 5000; // Flat rate for service providers
   } else {
     return 900; // Default corporate rate
   }
@@ -163,9 +167,10 @@ export async function POST(request: NextRequest) {
     const userEmail = membershipData?.primaryContact?.email || membershipData?.email || 'test@example.com';
     const userUid = 'test-user-' + Date.now();
     
-    // Detect language from Accept-Language header
+    // Use user's selected language if provided, otherwise detect from header
+    const userLocale = membershipData?.userLocale;
     const acceptLanguage = request.headers.get('accept-language');
-    const isFrench = acceptLanguage?.toLowerCase().includes('fr');
+    const isFrench = userLocale ? userLocale === 'fr' : acceptLanguage?.toLowerCase().includes('fr');
     
     // PDF text translations
     const pdfText = {
@@ -266,8 +271,8 @@ export async function POST(request: NextRequest) {
     // Generate simple 5-digit invoice number
     const invoiceNumber = String(10000 + Math.floor(Math.random() * 90000));
     
-    // Calculate fees
-    const totalAmount = getDiscountedFee(membershipData);
+    // Use exact amount from frontend if provided, otherwise calculate
+    const totalAmount = membershipData.exactTotalAmount || getDiscountedFee(membershipData);
     
     // Update payment text with actual invoice number
     texts.paymentText[3] = currentLang === 'fr' ? 
@@ -578,8 +583,25 @@ export async function POST(request: NextRequest) {
     //   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     // });
 
-    // Application processing would happen here but requires admin SDK
-    // For now, just generate invoice and let the Firebase function handle the rest
+    // Update account status from draft to pending after invoice generation
+    const { db } = await initializeAdmin();
+    
+    // Get userId from membershipData
+    const userId = membershipData.userId;
+    if (userId) {
+      try {
+        await db.collection('accounts').doc(userId).update({
+          status: 'pending',
+          paymentMethod: 'invoice',
+          invoiceNumber: invoiceNumber,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`Account ${userId} updated to pending status with invoice ${invoiceNumber}`);
+      } catch (updateError) {
+        console.error('Failed to update account status:', updateError);
+      }
+    }
+    
     const applicationNumber = `FASE-APP-${Date.now()}`;
 
     // Send invoice via email (using Firebase Functions)
@@ -603,21 +625,43 @@ export async function POST(request: NextRequest) {
       if (pdfBuffer) {
         emailData.pdfAttachment = Buffer.from(pdfBuffer).toString('base64');
         emailData.pdfFilename = `FASE-Invoice-${invoiceNumber}.pdf`;
-        // Don't include invoiceHTML - let Firebase Function use localized templates
         console.log('PDF attachment added to email data');
-      } else {
-        // If PDF generation failed, include error message HTML
-        emailData.invoiceHTML = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-            <h2 style="color: #dc2626;">Thank You - Invoice Generation Issue</h2>
-            <p>Thank you for your FASE membership application. We will review your application and you will receive full FASE member benefits within 24 hours if approved.</p>
-            <p>There was a technical issue generating your invoice PDF. Please contact our support team at <a href="mailto:help@fasemga.com" style="color: #2D5574;">help@fasemga.com</a> and we'll send your invoice manually.</p>
-            <p>Reference: ${invoiceNumber}</p>
-            <p>Best regards,<br><strong>The FASE Team</strong></p>
-          </div>
-        `;
-        console.log('PDF generation failed - sending error message');
       }
+      
+      // Always include a nice thank you message
+      emailData.invoiceHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 40px; border-radius: 8px; border: 2px solid #2D5574;">
+            <h2 style="color: #2D5574; text-align: center; margin-bottom: 30px;">Welcome to FASE!</h2>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Dear ${membershipData.organizationName},</p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Thank you for joining the Federation of European MGAs – Europe's premier professional association for Managing General Agents and insurance professionals.</p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Your membership application has been received and you're now part of an exclusive community that:</p>
+            
+            <ul style="font-size: 16px; line-height: 1.8; margin: 20px 0;">
+              <li>Connects you with Europe's leading insurance professionals</li>
+              <li>Provides access to industry insights and best practices</li>
+              <li>Offers networking opportunities at exclusive events</li>
+              <li>Advocates for MGA interests across European markets</li>
+            </ul>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Your invoice is attached${pdfBuffer ? '' : ' (will be sent separately due to a technical issue)'}. We'll activate your membership benefits within 24 hours of payment confirmation.</p>
+            
+            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 25px 0; border-left: 4px solid #2D5574;">
+              <p style="margin: 0; font-size: 14px; color: #2D5574;"><strong>Invoice Reference:</strong> ${invoiceNumber}</p>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6;">Questions? Contact us at <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a></p>
+            
+            <p style="font-size: 16px; line-height: 1.6; margin-top: 30px;">Welcome aboard!</p>
+            
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 0;"><strong>The FASE Team</strong><br>
+            <span style="color: #666; font-size: 14px;">Federation of European MGAs</span></p>
+          </div>
+        </div>
+      `;
       
       // Call Firebase Function directly via HTTP (server-side)
       const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
