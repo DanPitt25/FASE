@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Link from 'next/link';
 import Header from './Header';
 import Footer from './Footer';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
@@ -29,6 +30,8 @@ interface CardsSection {
     icon?: ReactNode;
     image?: string;
     imageAlt?: string;
+    href?: string;
+    actionText?: string;
   }>;
 }
 
@@ -277,16 +280,8 @@ export default function ContentPageLayout({
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {section.cards.map((card, cardIndex) => (
-                    <div
-                      key={cardIndex}
-                      className={`group transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 ${
-                        animation.isVisible ? 'scroll-visible' : 'scroll-hidden'
-                      }`}
-                      style={{ 
-                        transitionDelay: animation.isVisible ? `${cardIndex * 200}ms` : '0ms'
-                      }}
-                    >
+                  {section.cards.map((card, cardIndex) => {
+                    const CardContent = (
                       <div className="bg-white border border-gray-200 shadow-lg p-8 text-center h-full transition-shadow duration-300 group-hover:shadow-2xl">
                         {card.image ? (
                           <div className="mb-6">
@@ -302,12 +297,44 @@ export default function ContentPageLayout({
                           </div>
                         ) : null}
                         <h3 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">{card.title}</h3>
-                        <p className="text-fase-black leading-relaxed text-sm">
+                        <p className="text-fase-black leading-relaxed text-sm mb-6">
                           {card.description}
                         </p>
+                        {card.actionText && (
+                          <p className="text-fase-navy font-medium text-sm">
+                            {card.actionText}
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+
+                    return card.href ? (
+                      <Link
+                        key={cardIndex}
+                        href={card.href}
+                        className={`group transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 block ${
+                          animation.isVisible ? 'scroll-visible' : 'scroll-hidden'
+                        }`}
+                        style={{ 
+                          transitionDelay: animation.isVisible ? `${cardIndex * 200}ms` : '0ms'
+                        }}
+                      >
+                        {CardContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={cardIndex}
+                        className={`group transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 ${
+                          animation.isVisible ? 'scroll-visible' : 'scroll-hidden'
+                        }`}
+                        style={{ 
+                          transitionDelay: animation.isVisible ? `${cardIndex * 200}ms` : '0ms'
+                        }}
+                      >
+                        {CardContent}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </section>

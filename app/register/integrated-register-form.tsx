@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
 import Button from "../../components/Button";
 import SearchableCountrySelect from "../../components/SearchableCountrySelect";
@@ -156,6 +157,10 @@ const ValidatedSelect = ({
 };
 
 export default function IntegratedRegisterForm() {
+  // URL parameter handling
+  const searchParams = useSearchParams();
+  const typeFromUrl = searchParams.get('type');
+  
   // Auth fields
   const [firstName, setFirstName] = useState("");
   const [surname, setSurname] = useState("");
@@ -166,7 +171,7 @@ export default function IntegratedRegisterForm() {
   // Membership fields
   const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('corporate');
   const [organizationName, setOrganizationName] = useState("");
-  const [organizationType, setOrganizationType] = useState("");
+  const [organizationType, setOrganizationType] = useState(typeFromUrl || "");
   // Corporate members management (up to 3 people)
   interface Member {
     id: string;
@@ -247,7 +252,7 @@ export default function IntegratedRegisterForm() {
     setGrossWrittenPremiums(total.toString());
   }, [gwpBillions, gwpMillions, gwpThousands]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(typeFromUrl ? 0 : -1);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
@@ -371,7 +376,18 @@ export default function IntegratedRegisterForm() {
   const handleNext = async () => {
     setAttemptedNext(true);
     
-    if (step === 0) {
+    if (step === -1) {
+      // Validate organization type selection
+      if (!organizationType) {
+        setError("Please select an organization type to continue");
+        return;
+      }
+      
+      setError("");
+      setStep(0);
+      window.scrollTo(0, 0);
+      setAttemptedNext(false);
+    } else if (step === 0) {
       // Validate data notice consent
       if (!dataNoticeConsent) {
         setError("Please consent to our data notice to continue");
@@ -518,7 +534,7 @@ export default function IntegratedRegisterForm() {
   };
 
   const handleBack = () => {
-    if (step > 0) {
+    if (step > (typeFromUrl ? 0 : -1)) {
       setStep(step - 1);
       setError("");
       window.scrollTo(0, 0);
@@ -1458,6 +1474,54 @@ export default function IntegratedRegisterForm() {
         </div>
       </div>
 
+      {/* Step -1: Organization Type Selection */}
+      {step === -1 && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Choose Your Organization Type</h3>
+            <p className="text-fase-black text-sm">Select the type that best describes your organization</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button
+              onClick={() => setOrganizationType('MGA')}
+              className={`p-6 border-2 rounded-lg transition-colors text-left ${
+                organizationType === 'MGA' 
+                  ? 'border-fase-navy bg-fase-cream' 
+                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
+              }`}
+            >
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">MGA</h4>
+              <p className="text-fase-black text-sm">Managing General Agents transacting business in Europe</p>
+            </button>
+
+            <button
+              onClick={() => setOrganizationType('carrier')}
+              className={`p-6 border-2 rounded-lg transition-colors text-left ${
+                organizationType === 'carrier' 
+                  ? 'border-fase-navy bg-fase-cream' 
+                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
+              }`}
+            >
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Carrier</h4>
+              <p className="text-fase-black text-sm">Insurance or reinsurance companies working with MGAs</p>
+            </button>
+
+            <button
+              onClick={() => setOrganizationType('provider')}
+              className={`p-6 border-2 rounded-lg transition-colors text-left ${
+                organizationType === 'provider' 
+                  ? 'border-fase-navy bg-fase-cream' 
+                  : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
+              }`}
+            >
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Service Provider</h4>
+              <p className="text-fase-black text-sm">Service providers active within the MGA ecosystem</p>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Step 0: Data Notice Consent */}
       {step === 0 && (
         <div className="space-y-6">
@@ -1468,11 +1532,11 @@ export default function IntegratedRegisterForm() {
 
           <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
             <div className="space-y-4 text-base text-fase-black">
-              <h4 className="font-semibold text-fase-navy text-lg">Data Protection Notice</h4>
+              <h4 className="font-semibold text-fase-navy text-lg">Data protection notice</h4>
               
               <div className="space-y-3">
                 <p className="mb-3">
-                  <strong>Data Controller:</strong> Federation of European MGAs (FASE), Herengracht 124-128, 1015 BT Amsterdam, Netherlands. Contact: info@fasemga.com
+                  <strong>Data Controller:</strong> FASE B.V., Herengracht 124, 1015 BT Amsterdam, Netherlands. Contact: info@fasemga.com
                 </p>
                 
                 <p className="mb-3">
@@ -1490,11 +1554,7 @@ export default function IntegratedRegisterForm() {
                 </ul>
                 
                 <p className="mb-3">
-                  <strong>Data Sharing and Confidentiality:</strong> FASE may share basic business contact information with other members for legitimate organisational and networking purposes. However, FASE will not sell, transfer, or otherwise divulge organisationally identifiable information to third parties outside the membership without explicit consent. Commercially sensitive information, including financial data, business strategies, and proprietary information, will be held in strict confidence.
-                </p>
-                
-                <p className="mb-3">
-                  <strong>International Transfers:</strong> Your data may be transferred to other FASE members across Europe. We ensure appropriate safeguards are in place for any transfers outside the EU/EEA.
+                  <strong>Data Sharing and Confidentiality:</strong> FASE may share basic information about your business publicly and with other members for legitimate organisational and networking purposes. Commercially sensitive information, including financial processing data, business strategies, and proprietary information, will be held in strict confidence.
                 </p>
                 
                 <p className="mb-3">
@@ -1662,17 +1722,6 @@ export default function IntegratedRegisterForm() {
             markFieldTouched={markFieldTouched}
           />
 
-          <ValidatedSelect
-            label="Organization Type"
-            fieldKey="organizationType"
-            value={organizationType}
-            onChange={setOrganizationType}
-            options={organizationTypeOptions}
-            required
-            touchedFields={touchedFields}
-            attemptedNext={attemptedNext}
-            markFieldTouched={markFieldTouched}
-          />
 
           {/* Team Members Section */}
             <div className="space-y-6">
@@ -2496,94 +2545,9 @@ export default function IntegratedRegisterForm() {
             <p className="text-fase-black text-sm">Review your information and submit your membership application</p>
           </div>
 
-          {/* Application Summary */}
-          <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application summary</h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-fase-navy font-medium">Organization:</span>
-                <p className="text-fase-black">{membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName}</p>
-              </div>
-              
-              <div>
-                <span className="text-fase-navy font-medium">Membership type:</span>
-                <p className="text-fase-black">
-                  {membershipType === 'individual' 
-                    ? 'Individual' 
-                    : `${organizationType} Corporate`
-                  }
-                </p>
-              </div>
-              
-              <div>
-                <span className="text-fase-navy font-medium">Contact email:</span>
-                <p className="text-fase-black">
-                  {membershipType === 'corporate' 
-                    ? members.find(m => m.isPrimaryContact)?.email || email
-                    : email
-                  }
-                </p>
-              </div>
-              
-              <div>
-                <span className="text-fase-navy font-medium">Country:</span>
-                <p className="text-fase-black">{country}</p>
-              </div>
-              
-              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
-                <div className="md:col-span-2">
-                  <span className="text-fase-navy font-medium">Gross written premiums:</span>
-                  <p className="text-fase-black">
-                    {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
-                      const billions = parseFloat(gwpBillions) || 0;
-                      const millions = parseFloat(gwpMillions) || 0;
-                      const thousands = parseFloat(gwpThousands) || 0;
-                      const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
-                      return total.toLocaleString('en-US');
-                    })()}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Annual membership fee</h4>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-fase-black">Base Fee</span>
-                <span className="text-fase-black">€{calculateMembershipFee()}</span>
-              </div>
-              
-              {membershipType === 'corporate' && hasOtherAssociations && (
-                <div className="flex justify-between items-center text-green-600">
-                  <span>Member Discount (20%)</span>
-                  <span>-€{calculateMembershipFee() - getDiscountedFee()}</span>
-                </div>
-              )}
-              
-              <div className="border-t border-fase-light-gold pt-2 mt-2">
-                <div className="flex justify-between items-center font-semibold text-lg">
-                  <span className="text-fase-navy">Total annual fee</span>
-                  <span className="text-fase-navy">€{getDiscountedFee()}</span>
-                </div>
-              </div>
-            </div>
-            
-            <p className="text-xs text-fase-black mt-4">
-              Membership is billed annually, with notice prior to renewal.
-              {membershipType === 'corporate' && hasOtherAssociations && (
-                <>* 20% discount applied for members of other European MGA associations.</>
-              )}
-            </p>
-          </div>
-
           {/* Code of Conduct Consent */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">FASE Code of Conduct</h4>
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Please review and consent to our code of conduct.</h4>
             
             <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm mb-4">
               <div className="text-base text-fase-black">
@@ -2698,7 +2662,7 @@ export default function IntegratedRegisterForm() {
                   </p>
                   
                   <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
-                    All notices of potential breach made under this Code should be made to: Chairman of the Business Conduct Committee, FASE, Herengracht, 124-128, 1015 BT Amsterdam, Netherlands.
+                    All notices of potential breach made under this Code should be made to the Business Conduct Committee at conduct@fasemga.com.
                   </p>
                 </div>
               </div>
@@ -2717,6 +2681,91 @@ export default function IntegratedRegisterForm() {
                 </span>
               </label>
             </div>
+          </div>
+
+          {/* Application Summary */}
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">Application summary</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-fase-navy font-medium">Organization:</span>
+                <p className="text-fase-black">{membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName}</p>
+              </div>
+              
+              <div>
+                <span className="text-fase-navy font-medium">Membership type:</span>
+                <p className="text-fase-black">
+                  {membershipType === 'individual' 
+                    ? 'Individual' 
+                    : `${organizationType.charAt(0).toUpperCase() + organizationType.slice(1)}`
+                  }
+                </p>
+              </div>
+              
+              <div>
+                <span className="text-fase-navy font-medium">Contact email:</span>
+                <p className="text-fase-black">
+                  {membershipType === 'corporate' 
+                    ? members.find(m => m.isPrimaryContact)?.email || email
+                    : email
+                  }
+                </p>
+              </div>
+              
+              <div>
+                <span className="text-fase-navy font-medium">Country:</span>
+                <p className="text-fase-black">{country}</p>
+              </div>
+              
+              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
+                <div className="md:col-span-2">
+                  <span className="text-fase-navy font-medium">Gross written premiums:</span>
+                  <p className="text-fase-black">
+                    {gwpCurrency === 'EUR' ? '€' : gwpCurrency === 'GBP' ? '£' : '$'}{(() => {
+                      const billions = parseFloat(gwpBillions) || 0;
+                      const millions = parseFloat(gwpMillions) || 0;
+                      const thousands = parseFloat(gwpThousands) || 0;
+                      const total = (billions * 1000000000) + (millions * 1000000) + (thousands * 1000);
+                      return total.toLocaleString('en-US');
+                    })()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Annual membership fee (founding member)</h4>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-fase-black">Base Fee</span>
+                <span className="text-fase-black">€{calculateMembershipFee()}</span>
+              </div>
+              
+              {membershipType === 'corporate' && hasOtherAssociations && (
+                <div className="flex justify-between items-center text-green-600">
+                  <span>Member Discount (20%)</span>
+                  <span>-€{calculateMembershipFee() - getDiscountedFee()}</span>
+                </div>
+              )}
+              
+              <div className="border-t border-fase-light-gold pt-2 mt-2">
+                <div className="flex justify-between items-center font-semibold text-lg">
+                  <span className="text-fase-navy">Total annual fee</span>
+                  <span className="text-fase-navy">€{getDiscountedFee()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-xs text-fase-black mt-4">
+              Membership is billed annually, with notice prior to renewal.
+              {membershipType === 'corporate' && hasOtherAssociations && (
+                <>* 20% discount applied for members of other European MGA associations.</>
+              )}
+            </p>
           </div>
 
           {/* Submit Application Button */}
@@ -2753,11 +2802,24 @@ export default function IntegratedRegisterForm() {
         <div className="text-red-600 text-sm">{error || paymentError}</div>
       )}
 
+      {/* Help Contact */}
+      <div className="text-center py-4 border-t border-gray-200">
+        <p className="text-sm text-gray-600">
+          Problems signing up? Please contact{' '}
+          <a 
+            href="mailto:help@fasemga.com" 
+            className="text-fase-navy hover:text-fase-gold transition-colors"
+          >
+            help@fasemga.com
+          </a>
+        </p>
+      </div>
+
       {/* Navigation Buttons */}
       {step < 5 && (
         <div className="pt-6">
           <div className="flex justify-between">
-            {step > 0 ? (
+            {step > (typeFromUrl ? 0 : -1) ? (
               <Button 
                 type="button"
                 variant="secondary" 
@@ -2788,21 +2850,6 @@ export default function IntegratedRegisterForm() {
               </Button>
             ) : null}
           </div>
-          
-          {/* Alternative Options - Only show on step 1 (account creation) */}
-          {step === 1 && (
-            <div className="mt-8 text-center border-t border-fase-light-gold pt-6">
-              <p className="text-sm text-fase-black mb-4">Already a member?</p>
-              <div className="flex justify-center">
-                <a 
-                  href="/login" 
-                  className="inline-flex items-center justify-center px-4 py-2 border border-fase-navy text-sm font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream transition-colors duration-200"
-                >
-                  Sign in to existing account
-                </a>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

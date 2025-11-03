@@ -58,19 +58,25 @@ export default function JoinPage() {
           title: 'MGA',
           description: 'MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.',
           image: '/seated.jpg',
-          imageAlt: 'MGA business meeting'
+          imageAlt: 'MGA business meeting',
+          href: '/register?type=MGA',
+          actionText: 'Apply as MGA'
         },
         {
           title: 'Carrier',
           description: 'Insurance or reinsurance companies or Lloyd\'s Managing Agencies transacting business with MGAs.',
           image: '/consideration.jpg',
-          imageAlt: 'Market analysis and data'
+          imageAlt: 'Market analysis and data',
+          href: '/register?type=carrier',
+          actionText: 'Apply as Carrier'
         },
         {
           title: 'Service provider',
           description: 'Service providers active within the MGA ecosystem.',
           image: '/training.jpg',
-          imageAlt: 'Service provider collaboration'
+          imageAlt: 'Service provider collaboration',
+          href: '/register?type=provider',
+          actionText: 'Apply as Service Provider'
         }
       ]
     },

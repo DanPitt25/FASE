@@ -6,7 +6,6 @@ import {
   updateProfile,
   updatePassword,
   reload,
-  sendPasswordResetEmail,
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -34,7 +33,7 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
       twoFactorEnabled: false
     };
   } catch (error: any) {
-    throw new Error(error.message);
+    throw error;
   }
 };
 
@@ -161,12 +160,55 @@ export const removeAdminClaim = async (targetUserId: string): Promise<void> => {
   }
 };
 
-// Send password reset email
+// Send password reset email via Firebase Function (using Resend)
 export const sendPasswordReset = async (email: string): Promise<void> => {
   try {
-    await sendPasswordResetEmail(auth, email);
+    const { httpsCallable } = await import('firebase/functions');
+    const { functions } = await import('./firebase');
+    
+    const sendPasswordResetFunction = httpsCallable(functions, 'sendPasswordReset');
+    const result = await sendPasswordResetFunction({ email });
+    
+    if (!result.data || !(result.data as any).success) {
+      throw new Error('Failed to send password reset email');
+    }
   } catch (error: any) {
-    throw new Error(error.message);
+    console.error('Error sending password reset:', error);
+    throw error;
+  }
+};
+
+// Validate password reset token via Firebase Function
+export const validatePasswordResetToken = async (email: string, token: string): Promise<boolean> => {
+  try {
+    const { httpsCallable } = await import('firebase/functions');
+    const { functions } = await import('./firebase');
+    
+    const validateTokenFunction = httpsCallable(functions, 'validatePasswordResetToken');
+    const result = await validateTokenFunction({ email, token });
+    
+    return !!(result.data as any)?.success;
+  } catch (error: any) {
+    console.error('Error validating password reset token:', error);
+    return false;
+  }
+};
+
+// Reset password with new password (after token validation)
+export const resetPassword = async (email: string, token: string, newPassword: string): Promise<void> => {
+  try {
+    const { httpsCallable } = await import('firebase/functions');
+    const { functions } = await import('./firebase');
+    
+    const resetPasswordFunction = httpsCallable(functions, 'resetPasswordWithToken');
+    const result = await resetPasswordFunction({ email, token, newPassword });
+    
+    if (!result.data || !(result.data as any).success) {
+      throw new Error('Failed to reset password');
+    }
+  } catch (error: any) {
+    console.error('Error resetting password:', error);
+    throw error;
   }
 };
 
@@ -188,7 +230,7 @@ export const submitApplication = async (applicationData: any): Promise<{ applica
     // Use existing sendInvoiceEmail function to send application
     const sendEmailFunction = httpsCallable(functions, 'sendInvoiceEmail');
     const result = await sendEmailFunction({
-      email: 'daniel.pitt@fasemga.com',
+      email: 'applications@fasemga.com',
       invoiceHTML: emailContent,
       invoiceNumber: applicationNumber,
       organizationName: applicationData.organizationName || `${applicationData.firstName} ${applicationData.surname}`,
@@ -303,7 +345,7 @@ const generateApplicationEmailHTML = (applicationData: any, applicationNumber: s
 
     // Carrier Information (always show if available)
     if (applicationData.isDelegatingInEurope || applicationData.frontingOptions || applicationData.considerStartupMGAs || applicationData.amBestRating) {
-      applicationDetails += `<h4>Carrier Information</h4>`;
+      applicationDetails += `<h4>Carrier information</h4>`;
       if (applicationData.isDelegatingInEurope) {
         applicationDetails += `<p><strong>Currently writing delegated authority business in Europe:</strong> ${applicationData.isDelegatingInEurope}</p>`;
         if (applicationData.isDelegatingInEurope === 'Yes') {

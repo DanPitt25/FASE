@@ -3,12 +3,14 @@
 export const getAuthErrorMessage = (errorCode: string): string => {
   const errorMessages: Record<string, string> = {
     // Authentication errors
-    'auth/user-not-found': 'No account found with this email address.',
-    'auth/wrong-password': 'Incorrect password. Please try again.',
-    'auth/invalid-credential': 'Invalid email or password. Please check your credentials.',
+    'auth/user-not-found': 'Invalid email or password.',
+    'auth/wrong-password': 'Invalid email or password.',
+    'auth/invalid-credential': 'Invalid email or password.',
+    'auth/invalid-login-credentials': 'Invalid email or password.',
     'auth/invalid-email': 'Please enter a valid email address.',
     'auth/user-disabled': 'This account has been disabled. Please contact support.',
-    'auth/weak-password': 'Password should be at least 6 characters long.',
+    'auth/weak-password': 'Invalid email or password.',
+    'auth/account-exists-with-different-credential': 'Invalid email or password.',
     
     // Registration errors
     'auth/email-already-in-use': 'An account with this email already exists. Try signing in instead.',
@@ -16,6 +18,7 @@ export const getAuthErrorMessage = (errorCode: string): string => {
     
     // Rate limiting
     'auth/too-many-requests': 'Too many failed attempts. Please wait a few minutes before trying again.',
+    'auth/quota-exceeded': 'Too many requests. Please try again later.',
     
     // Network errors
     'auth/network-request-failed': 'Network error. Please check your internet connection and try again.',
@@ -39,7 +42,7 @@ export const getAuthErrorMessage = (errorCode: string): string => {
     'auth/passwords-do-not-match': 'Passwords do not match. Please try again.'
   };
 
-  return errorMessages[errorCode] || 'An unexpected error occurred. Please try again.';
+  return errorMessages[errorCode] || 'An unexpected error occurred. Please contact help@fasemga.com for assistance.';
 };
 
 // Helper function to extract error code from Firebase error

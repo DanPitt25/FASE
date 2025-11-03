@@ -330,15 +330,15 @@ export default function MembershipApplication() {
   // Simplified steps for carriers (insurance companies providing capacity)
   const carrierSteps = [
     { id: 'introduction', title: 'Introduction', required: true },
-    { id: 'privacy', title: 'Privacy, Data and Disclosure', required: true },
-    { id: 'primary-contact', title: 'Primary Contact Details', required: true },
-    { id: 'organisation', title: 'Organisation Details', required: true },
-    { id: 'registered-address', title: 'Registered Address', required: true },
-    { id: 'carrier-details', title: 'Carrier Information', required: true },
-    { id: 'invoicing-address', title: 'Invoicing Address', required: true },
-    { id: 'invoicing-contact', title: 'Invoicing Contact Details', required: true },
-    { id: 'payment', title: 'Membership Payment', required: true },
-    { id: 'submit', title: 'Complete and Submit', required: true }
+    { id: 'privacy', title: 'Privacy, data and disclosure', required: true },
+    { id: 'primary-contact', title: 'Primary contact details', required: true },
+    { id: 'organisation', title: 'Organisation details', required: true },
+    { id: 'registered-address', title: 'Registered address', required: true },
+    { id: 'carrier-details', title: 'Carrier information', required: true },
+    { id: 'invoicing-address', title: 'Invoicing address', required: true },
+    { id: 'invoicing-contact', title: 'Invoicing Contact details', required: true },
+    { id: 'payment', title: 'Membership payment', required: true },
+    { id: 'submit', title: 'Complete and submit', required: true }
   ];
 
   // Simplified steps for service providers (technology, legal, consulting, etc.)
@@ -1039,7 +1039,7 @@ export default function MembershipApplication() {
             
             <div className="space-y-4">
               <ValidatedCheckbox
-                label="Are you a member of any other European MGA associations?"
+                label="Are you a member of any European national MGA associations?"
                 fieldKey="hasOtherAssociations"
                 checked={newOrgData.hasOtherAssociations}
                 onChange={(checked) => setNewOrgData({ 
@@ -2084,7 +2084,7 @@ Your application has been submitted and will be processed once payment is receiv
                   <span className="text-fase-navy">
                     {newOrgData.membershipType === 'individual' 
                       ? 'Individual' 
-                      : `${newOrgData.organizationType} Corporate`}
+                      : `${newOrgData.organizationType.charAt(0).toUpperCase() + newOrgData.organizationType.slice(1)}`}
                   </span>
                 </div>
                 {newOrgData.membershipType === 'corporate' && newOrgData.organizationType === 'MGA' && newOrgData.grossWrittenPremiums && (
@@ -2137,7 +2137,7 @@ Your application has been submitted and will be processed once payment is receiv
                   </div>
                   <div>
                     <span className="text-fase-black font-medium">Type:</span>
-                    <p className="text-fase-navy">{newOrgData.membershipType === 'individual' ? 'Individual' : `${newOrgData.organizationType} Corporate`}</p>
+                    <p className="text-fase-navy">{newOrgData.membershipType === 'individual' ? 'Individual' : `${newOrgData.organizationType.charAt(0).toUpperCase() + newOrgData.organizationType.slice(1)} Corporate`}</p>
                   </div>
                   <div>
                     <span className="text-fase-black font-medium">Primary Contact:</span>

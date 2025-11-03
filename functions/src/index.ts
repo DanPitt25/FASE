@@ -388,3 +388,245 @@ export const sendJoinRequestNotification = functions.https.onCall({
     throw new functions.https.HttpsError('internal', 'Failed to send join request notification');
   }
 });
+
+export const sendPasswordReset = functions.https.onCall({
+  enforceAppCheck: false, // Allow unauthenticated calls
+}, async (request) => {
+  try {
+    const { email } = request.data;
+    logger.info('sendPasswordReset called with email:', email);
+
+    if (!email) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+    }
+
+    // Check rate limit
+    if (!checkRateLimit(email)) {
+      logger.warn(`Rate limit exceeded for email: ${email}`);
+      throw new functions.https.HttpsError('resource-exhausted', 'Too many password reset attempts. Please wait before trying again.');
+    }
+
+    // First check if user exists in Firebase Auth
+    try {
+      await admin.auth().getUserByEmail(email);
+    } catch (userError: any) {
+      if (userError.code === 'auth/user-not-found') {
+        // Don't reveal that user doesn't exist - return success anyway for security
+        logger.info(`Password reset attempted for non-existent user: ${email}`);
+        return { success: true };
+      }
+      throw userError;
+    }
+
+    // Generate secure reset token (32 characters)
+    const resetToken = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+    
+    // Generate random document ID to prevent enumeration
+    const resetDocId = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+
+    // Store reset token in Firestore using admin SDK (bypasses security rules)
+    const db = admin.firestore();
+    await db.collection('password_resets').doc(resetDocId).set({
+      token: resetToken,
+      email: email,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      used: false
+    });
+
+    // Check for Resend API key using environment variables
+    const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('Resend API key configured:', !!resendApiKey);
+
+    if (resendApiKey) {
+      try {
+        const resetUrl = `https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+        
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a8a;">Reset your FASE password</h2>
+            <p>You requested a password reset for your FASE account.</p>
+            
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p>Click the button below to reset your password:</p>
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="${resetUrl}" style="background-color: #1e3a8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+              </div>
+              <p style="font-size: 14px; color: #6b7280;">Or copy and paste this link in your browser:<br>
+              <a href="${resetUrl}" style="color: #1e3a8a; word-break: break-all;">${resetUrl}</a></p>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour.</p>
+            <p style="color: #6b7280; font-size: 14px;">If you didn't request this password reset, please ignore this email.</p>
+            <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
+          </div>
+        `;
+
+        logger.info('Sending password reset email via Resend...');
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'FASE <noreply@fasemga.com>',
+            to: email,
+            subject: 'Reset your FASE password',
+            html: emailHtml,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Resend API error: ${response.status}`);
+        }
+
+        logger.info(`Password reset email sent to ${email} via Resend`);
+        return { success: true };
+      } catch (emailError) {
+        logger.error('Resend password reset email error:', emailError);
+        logger.error('API Key available:', !!resendApiKey);
+        logger.error('API Key length:', resendApiKey?.length);
+      }
+    }
+
+    // Fallback: Log to console for development/testing
+    logger.info(`Password reset for ${email}: ${resetToken}`);
+    logger.info(`
+    ===========================================
+    PASSWORD RESET EMAIL (DEVELOPMENT MODE)
+    ===========================================
+    To: ${email}
+    Subject: Reset your FASE password
+    
+    Reset Token: ${resetToken}
+    Reset URL: https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}
+    
+    This token will expire in 1 hour.
+    ===========================================
+    `);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending password reset:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send password reset email');
+  }
+});
+
+export const validatePasswordResetToken = functions.https.onCall({
+  enforceAppCheck: false, // Allow unauthenticated calls
+}, async (request) => {
+  try {
+    const { email, token } = request.data;
+    logger.info('validatePasswordResetToken called for email:', email);
+
+    if (!email || !token) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email and token are required');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+    }
+
+    const db = admin.firestore();
+    
+    // Query for the reset token (can't use email as doc ID anymore)
+    const querySnapshot = await db.collection('password_resets')
+      .where('email', '==', email)
+      .where('token', '==', token)
+      .where('used', '==', false)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      throw new functions.https.HttpsError('not-found', 'Invalid or expired reset token');
+    }
+
+    const resetDoc = querySnapshot.docs[0];
+    const resetData = resetDoc.data();
+
+    // Check if token is expired
+    if (new Date() > resetData.expiresAt.toDate()) {
+      // Clean up expired token
+      await resetDoc.ref.delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'Reset token has expired');
+    }
+
+    // Mark token as used
+    await resetDoc.ref.update({ used: true });
+
+    logger.info(`Password reset token validated for: ${email}`);
+    return { success: true, email: email };
+  } catch (error) {
+    logger.error('Error validating password reset token:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to validate reset token');
+  }
+});
+
+export const resetPasswordWithToken = functions.https.onCall({
+  enforceAppCheck: false, // Allow unauthenticated calls
+}, async (request) => {
+  try {
+    const { email, token, newPassword } = request.data;
+    logger.info('resetPasswordWithToken called for email:', email);
+
+    if (!email || !token || !newPassword) {
+      throw new functions.https.HttpsError('invalid-argument', 'Email, token, and new password are required');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+    }
+
+    // Validate password strength
+    if (newPassword.length < 6) {
+      throw new functions.https.HttpsError('invalid-argument', 'Password must be at least 6 characters long');
+    }
+
+    const db = admin.firestore();
+    
+    // Query for the reset token and validate it
+    const querySnapshot = await db.collection('password_resets')
+      .where('email', '==', email)
+      .where('token', '==', token)
+      .where('used', '==', false)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      throw new functions.https.HttpsError('not-found', 'Invalid or expired reset token');
+    }
+
+    const resetDoc = querySnapshot.docs[0];
+    const resetData = resetDoc.data();
+
+    // Check if token is expired
+    if (new Date() > resetData.expiresAt.toDate()) {
+      // Clean up expired token
+      await resetDoc.ref.delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'Reset token has expired');
+    }
+
+    // Get the user and update their password
+    const user = await admin.auth().getUserByEmail(email);
+    await admin.auth().updateUser(user.uid, {
+      password: newPassword
+    });
+
+    // Mark token as used and delete it
+    await resetDoc.ref.delete();
+
+    logger.info(`Password successfully reset for: ${email}`);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error resetting password:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to reset password');
+  }
+});

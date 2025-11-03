@@ -106,10 +106,10 @@ export default function ThankYouPage() {
             <p className="text-fase-black">
               Contact us at{' '}
               <a 
-                href="mailto:daniel.pitt@fasemga.com" 
+                href="mailto:help@fasemga.com" 
                 className="text-fase-navy hover:text-fase-gold font-medium transition-colors"
               >
-                daniel.pitt@fasemga.com
+                help@fasemga.com
               </a>
             </p>
           </div>
@@ -121,12 +121,6 @@ export default function ThankYouPage() {
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
             >
               Return to Homepage
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex items-center justify-center px-6 py-3 border border-fase-navy text-base font-medium rounded-md text-fase-navy bg-white hover:bg-fase-cream focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
-            >
-              Learn More About FASE
             </Link>
           </div>
           </div>

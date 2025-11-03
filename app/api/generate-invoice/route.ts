@@ -126,7 +126,7 @@ const generateInvoiceHTML = (membershipData: any, invoiceNumber: string, totalAm
                 <td>
                     FASE ${membershipData.membershipType === 'individual' ? 'Individual' : membershipData.organizationType + ' Corporate'} Membership - Annual
                     ${membershipData.organizationType === 'MGA' && membershipData.grossWrittenPremiums ? '<br><small>Premium Bracket: ' + membershipData.grossWrittenPremiums + '</small>' : ''}
-                    ${membershipData.hasOtherAssociations ? '<br><small>20% European MGA Association Member Discount Applied</small>' : ''}
+                    ${membershipData.hasOtherAssociations ? '<br><small>20% European MGA association member discount applied</small>' : ''}
                 </td>
                 <td>1</td>
                 <td>€${totalAmount}</td>
@@ -396,7 +396,7 @@ export async function POST(request: NextRequest) {
       }
       
       if (membershipData.hasOtherAssociations) {
-        firstPage.drawText('20% European MGA Association Member Discount Applied', {
+        firstPage.drawText('20% European MGA association member discount applied', {
           x: colX[0] + 20,
           y: currentY,
           size: 9,

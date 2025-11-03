@@ -100,6 +100,15 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
                 )}
                 
+                {!user && (
+                  <a 
+                    href="/login" 
+                    className="text-xs text-fase-navy hover:text-fase-gold transition-colors duration-200 font-medium border border-fase-navy hover:border-fase-gold px-2 py-1 rounded"
+                  >
+                    Member Login
+                  </a>
+                )}
+                
                 <div className="relative">
                   <input
                     type="text"
