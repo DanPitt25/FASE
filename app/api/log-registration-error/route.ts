@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin
 const initializeAdmin = async () => {
-  if (!admin.apps.find(app => app.name === 'log-error')) {
+  if (!admin.apps.find(app => app?.name === 'log-error')) {
     if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
     }
@@ -19,7 +19,7 @@ const initializeAdmin = async () => {
     }
   }
   
-  const app = admin.apps.find(app => app.name === 'log-error') || admin.app();
+  const app = admin.apps.find(app => app?.name === 'log-error') || admin.app();
   return {
     db: admin.firestore(app)
   };

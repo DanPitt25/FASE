@@ -4,7 +4,7 @@ import { getGWPBand, convertToEUR } from '../../../lib/registration-utils-server
 
 // Initialize Firebase Admin using service account key from environment variable
 const initializeAdmin = async () => {
-  if (!admin.apps.find(app => app.name === 'register-account')) {
+  if (!admin.apps.find(app => app?.name === 'register-account')) {
     if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
     }
@@ -20,7 +20,7 @@ const initializeAdmin = async () => {
     }
   }
   
-  const app = admin.apps.find(app => app.name === 'register-account') || admin.app();
+  const app = admin.apps.find(app => app?.name === 'register-account') || admin.app();
   return {
     auth: admin.auth(app),
     db: admin.firestore(app)
