@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import PageLayout from '../../components/PageLayout';
 import { getApprovedMembersForDirectory } from '../../lib/unified-member';
 import type { UnifiedMember } from '../../lib/unified-member';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 
 export default function DirectoryPage() {
+  const t = useTranslations('directory');
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,7 +76,7 @@ export default function DirectoryPage() {
           <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
             <img
               src="/conferenceWood.jpg"
-              alt="Member Directory"
+              alt={t('page.banner_alt')}
               className="absolute inset-0 w-full h-full object-cover"
               style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
             />
@@ -84,7 +86,7 @@ export default function DirectoryPage() {
                 bannerAnimation.isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
               }`}>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-white leading-tight">
-                  Directory
+                  {t('page.title')}
                 </h1>
               </div>
             </div>
@@ -101,7 +103,7 @@ export default function DirectoryPage() {
           <section className="bg-white py-12 lg:py-16 2xl:py-20">
             <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-fase-blue mx-auto"></div>
-              <p className="mt-4 text-lg text-fase-black">Loading directory...</p>
+              <p className="mt-4 text-lg text-fase-black">{t('loading.message')}</p>
             </div>
           </section>
         </main>
@@ -116,7 +118,7 @@ export default function DirectoryPage() {
         <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
           <img
             src="/conferenceWood.jpg"
-            alt="Member Directory"
+            alt={t('page.banner_alt')}
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
           />
@@ -126,7 +128,7 @@ export default function DirectoryPage() {
               bannerAnimation.isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
             }`}>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-white leading-tight">
-                Directory
+                {t('page.title')}
               </h1>
             </div>
           </div>
@@ -151,35 +153,35 @@ export default function DirectoryPage() {
                   </svg>
                   
                   <h2 className="text-4xl font-noto-serif font-bold text-fase-navy mb-6">
-                    Member Directory Coming Soon
+                    {t('coming_soon.title')}
                   </h2>
                   
                   <p className="text-xl text-fase-black mb-8 leading-relaxed">
-                    The FASE Member Directory will launch on <strong>November 17th, 2025</strong>, providing a comprehensive view of our European MGA community.
+                    {t('coming_soon.description')}
                   </p>
                   
                   <div className="bg-fase-cream/50 border border-fase-light-gold rounded-lg p-6 mb-8">
                     <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">
-                      What to Expect
+                      {t('coming_soon.what_to_expect.title')}
                     </h3>
                     <ul className="text-fase-black space-y-2 text-left max-w-md mx-auto">
                       <li className="flex items-start">
                         <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
-                        Searchable member profiles and contact information
+                        {t('coming_soon.what_to_expect.features.searchable')}
                       </li>
                       <li className="flex items-start">
                         <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
-                        Filtering by country, organization type, and lines of business
+                        {t('coming_soon.what_to_expect.features.filtering')}
                       </li>
                       <li className="flex items-start">
                         <svg className="w-5 h-5 text-fase-navy mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
-                        Direct access to connect with European MGA professionals
+                        {t('coming_soon.what_to_expect.features.direct_access')}
                       </li>
                     </ul>
                   </div>
@@ -189,7 +191,7 @@ export default function DirectoryPage() {
                       href="/join"
                       className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-navy/90 transition-colors duration-200"
                     >
-                      Become a Member
+                      {t('coming_soon.become_member')}
                     </a>
                   </div>
                 </div>
@@ -203,7 +205,7 @@ export default function DirectoryPage() {
                 {/* Search */}
                 <div className="flex-1">
                   <label htmlFor="search" className="block text-sm font-medium text-fase-black mb-2">
-                    Search Directory
+                    {t('search_and_filters.search_label')}
                   </label>
                   <div className="relative">
                     <input
@@ -211,7 +213,7 @@ export default function DirectoryPage() {
                       id="search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search by name, organisation, or location..."
+                      placeholder={t('search_and_filters.search_placeholder')}
                       className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
                     />
                     <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,7 +227,7 @@ export default function DirectoryPage() {
                   {/* Country Filter */}
                   <div>
                     <label htmlFor="country" className="block text-sm font-medium text-fase-black mb-2">
-                      Filter by Country
+                      {t('search_and_filters.filter_by_country')}
                     </label>
                     <select
                       id="country"
@@ -233,7 +235,7 @@ export default function DirectoryPage() {
                       onChange={(e) => setSelectedCountry(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
                     >
-                      <option value="">All Countries</option>
+                      <option value="">{t('search_and_filters.all_countries')}</option>
                       {availableCountries.map(country => (
                         <option key={country} value={country}>{country}</option>
                       ))}
@@ -243,7 +245,7 @@ export default function DirectoryPage() {
                   {/* Organization Type Filter */}
                   <div>
                     <label htmlFor="organizationType" className="block text-sm font-medium text-fase-black mb-2">
-                      Filter by Type
+                      {t('search_and_filters.filter_by_type')}
                     </label>
                     <select
                       id="organizationType"
@@ -251,7 +253,7 @@ export default function DirectoryPage() {
                       onChange={(e) => setSelectedOrganizationType(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
                     >
-                      <option value="">All Types</option>
+                      <option value="">{t('search_and_filters.all_types')}</option>
                       {availableOrganizationTypes.map(type => (
                         <option key={type} value={type}>{type}</option>
                       ))}
@@ -261,7 +263,7 @@ export default function DirectoryPage() {
                   {/* Lines of Business Filter */}
                   <div>
                     <label htmlFor="linesOfBusiness" className="block text-sm font-medium text-fase-black mb-2">
-                      Filter by Business Line
+                      {t('search_and_filters.filter_by_business_line')}
                     </label>
                     <select
                       id="linesOfBusiness"
@@ -269,7 +271,7 @@ export default function DirectoryPage() {
                       onChange={(e) => setSelectedLinesOfBusiness(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
                     >
-                      <option value="">All Business Lines</option>
+                      <option value="">{t('search_and_filters.all_business_lines')}</option>
                       {availableLinesOfBusiness.map(line => (
                         <option key={line} value={line}>{line}</option>
                       ))}
@@ -282,11 +284,11 @@ export default function DirectoryPage() {
             {/* Results count */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-noto-serif font-bold text-fase-navy">
-                FASE Members
+                {t('results.title')}
               </h2>
               <p className="text-sm text-gray-600">
-                {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''}
-                {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness ? ' found' : ''}
+                {filteredMembers.length} {filteredMembers.length === 1 ? t('results.count_singular') : t('results.count_plural')}
+                {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness ? ` ${t('results.found')}` : ''}
               </p>
             </div>
 
@@ -296,11 +298,11 @@ export default function DirectoryPage() {
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">{t('empty_state.no_members_title')}</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness
-                    ? "Try adjusting your search or filter criteria."
-                    : "The directory will be populated as members join FASE."
+                    ? t('empty_state.try_adjusting')
+                    : t('empty_state.will_be_populated')
                   }
                 </p>
               </div>

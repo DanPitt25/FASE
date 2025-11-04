@@ -1123,5 +1123,48 @@
     "invalid_session": "Session d'abonnement invalide",
     "return_to_registration": "Retour à l'Inscription",
     "processing_subscription": "Traitement de votre abonnement..."
+  },
+  "directory": {
+    "page": {
+      "title": "Annuaire",
+      "banner_alt": "Annuaire des Membres"
+    },
+    "loading": {
+      "message": "Chargement de l'annuaire..."
+    },
+    "coming_soon": {
+      "title": "Annuaire des Membres Bientôt Disponible",
+      "description": "L'Annuaire des Membres FASE sera lancé le 1er décembre 2025, offrant une vue complète de notre communauté européenne d'agences de souscription.",
+      "what_to_expect": {
+        "title": "À Quoi S'Attendre",
+        "features": {
+          "searchable": "Profils de membres et informations de contact consultables",
+          "filtering": "Filtrage par pays, type d'organisation et lignes d'activité",
+          "direct_access": "Accès direct pour se connecter avec les professionnels européens des agences de souscription"
+        }
+      },
+      "become_member": "Devenir Membre"
+    },
+    "search_and_filters": {
+      "search_label": "Rechercher dans l'Annuaire",
+      "search_placeholder": "Rechercher par nom, organisation ou lieu...",
+      "filter_by_country": "Filtrer par Pays",
+      "all_countries": "Tous les Pays",
+      "filter_by_type": "Filtrer par Type",
+      "all_types": "Tous les Types",
+      "filter_by_business_line": "Filtrer par Ligne d'Activité",
+      "all_business_lines": "Toutes les Lignes d'Activité"
+    },
+    "results": {
+      "title": "Membres FASE",
+      "count_singular": "membre",
+      "count_plural": "membres",
+      "found": "trouvé(s)"
+    },
+    "empty_state": {
+      "no_members_title": "Aucun membre trouvé",
+      "try_adjusting": "Essayez d'ajuster vos critères de recherche ou de filtrage.",
+      "will_be_populated": "L'annuaire sera rempli au fur et à mesure que les membres rejoindront FASE."
+    }
   }
 }

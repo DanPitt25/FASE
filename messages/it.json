@@ -1123,5 +1123,48 @@
     "invalid_session": "Sessione di abbonamento non valida",
     "return_to_registration": "Torna alla Registrazione",
     "processing_subscription": "Elaborazione del tuo abbonamento..."
+  },
+  "directory": {
+    "page": {
+      "title": "Directory",
+      "banner_alt": "Directory dei Membri"
+    },
+    "loading": {
+      "message": "Caricamento directory..."
+    },
+    "coming_soon": {
+      "title": "Directory dei Membri in Arrivo",
+      "description": "La Directory dei Membri FASE sarà lanciata il 1° dicembre 2025, fornendo una visione completa della nostra comunità europea di MGA.",
+      "what_to_expect": {
+        "title": "Cosa Aspettarsi",
+        "features": {
+          "searchable": "Profili dei membri e informazioni di contatto ricercabili",
+          "filtering": "Filtraggio per paese, tipo di organizzazione e linee di business",
+          "direct_access": "Accesso diretto per connettersi con professionisti europei MGA"
+        }
+      },
+      "become_member": "Diventa Membro"
+    },
+    "search_and_filters": {
+      "search_label": "Cerca nella Directory",
+      "search_placeholder": "Cerca per nome, organizzazione o località...",
+      "filter_by_country": "Filtra per Paese",
+      "all_countries": "Tutti i Paesi",
+      "filter_by_type": "Filtra per Tipo",
+      "all_types": "Tutti i Tipi",
+      "filter_by_business_line": "Filtra per Linea di Business",
+      "all_business_lines": "Tutte le Linee di Business"
+    },
+    "results": {
+      "title": "Membri FASE",
+      "count_singular": "membro",
+      "count_plural": "membri",
+      "found": "trovato/i"
+    },
+    "empty_state": {
+      "no_members_title": "Nessun membro trovato",
+      "try_adjusting": "Prova ad aggiustare i tuoi criteri di ricerca o filtro.",
+      "will_be_populated": "La directory sarà popolata man mano che i membri si uniscono a FASE."
+    }
   }
 }
