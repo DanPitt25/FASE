@@ -2,13 +2,19 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import LoginForm from './login-form';
 import LanguageToggle from '../../components/LanguageToggle';
 
 export default function Login() {
   const t = useTranslations('login_form');
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/');
+  }, [router]);
   return (
     <div className="flex min-h-screen w-screen items-center justify-center bg-fase-navy">
       <div className="z-10 w-full max-w-md overflow-hidden rounded-lg border border-fase-light-gold shadow-xl">
