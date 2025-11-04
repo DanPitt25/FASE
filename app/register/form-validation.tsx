@@ -95,6 +95,7 @@ export const validateStep3 = (
   gwpMillions?: string,
   gwpThousands?: string,
   // Carrier-specific fields
+  carrierOrganizationType?: string,
   isDelegatingInEurope?: string,
   numberOfMGAs?: string,
   delegatingCountries?: string[],
@@ -124,27 +125,33 @@ export const validateStep3 = (
     return "Please select at least one European MGA association you are a member of";
   }
   
-  // Carrier validation (from git history)
+  // Carrier validation - only for specific organization types
   if (membershipType === 'corporate' && organizationType === 'carrier') {
-    if (!isDelegatingInEurope) {
-      return "Europe delegation status is required";
-    }
-    
-    if (isDelegatingInEurope === 'Yes') {
-      if (!numberOfMGAs) {
-        return "Number of MGAs is required";
+    // Only validate delegating/fronting/startup fields for specific carrier types
+    if (carrierOrganizationType === 'insurance_company' || 
+        carrierOrganizationType === 'reinsurance_company' || 
+        carrierOrganizationType === 'lloyds_managing_agency') {
+      
+      if (!isDelegatingInEurope) {
+        return "Europe delegation status is required";
       }
-      if (!delegatingCountries || delegatingCountries.length === 0) {
-        return "European delegation countries are required";
+      
+      if (isDelegatingInEurope === 'Yes') {
+        if (!numberOfMGAs) {
+          return "Number of MGAs is required";
+        }
+        if (!delegatingCountries || delegatingCountries.length === 0) {
+          return "European delegation countries are required";
+        }
       }
-    }
-    
-    if (!frontingOptions) {
-      return "Fronting options selection is required";
-    }
-    
-    if (!considerStartupMGAs) {
-      return "Startup MGA consideration is required";
+      
+      if (!frontingOptions) {
+        return "Fronting options selection is required";
+      }
+      
+      if (!considerStartupMGAs) {
+        return "Startup MGA consideration is required";
+      }
     }
   }
   

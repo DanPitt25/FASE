@@ -308,6 +308,49 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
+      // Carrier validation - only for specific organization types
+      if (membershipType === 'corporate' && organizationType === 'carrier') {
+        // Only validate delegating/fronting/startup fields for specific carrier types
+        if (carrierOrganizationType === 'insurance_company' || 
+            carrierOrganizationType === 'reinsurance_company' || 
+            carrierOrganizationType === 'lloyds_managing_agency') {
+          
+          if (!isDelegatingInEurope) {
+            setError(t('errors.carrier_delegation_required'));
+            return;
+          }
+          
+          if (isDelegatingInEurope === 'Yes') {
+            if (!numberOfMGAs) {
+              setError(t('errors.carrier_mga_count_required'));
+              return;
+            }
+            if (!delegatingCountries || delegatingCountries.length === 0) {
+              setError(t('errors.carrier_countries_required'));
+              return;
+            }
+          }
+          
+          if (!frontingOptions) {
+            setError(t('errors.carrier_fronting_required'));
+            return;
+          }
+          
+          if (!considerStartupMGAs) {
+            setError(t('errors.carrier_startup_required'));
+            return;
+          }
+        }
+      }
+      
+      // Service provider validation
+      if (membershipType === 'corporate' && organizationType === 'provider') {
+        if (!servicesProvided || servicesProvided.length === 0) {
+          setError(t('errors.service_provider_services_required'));
+          return;
+        }
+      }
+      
       setError("");
       setStep(4);
       window.scrollTo(0, 0);

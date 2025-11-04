@@ -404,6 +404,12 @@
       "gwp_required": "Gross written premiums are required for MGA memberships",
       "associations_specify_required": "Please specify if you are a member of other European MGA associations",
       "associations_select_required": "Please select which associations you are a member of",
+      "carrier_delegation_required": "Europe delegation status is required",
+      "carrier_mga_count_required": "Number of MGAs is required",
+      "carrier_countries_required": "European delegation countries are required",
+      "carrier_fronting_required": "Fronting options selection is required",
+      "carrier_startup_required": "Startup MGA consideration is required",
+      "service_provider_services_required": "Service selection is required",
       "enter_verification_code": "Please enter the verification code",
       "invalid_verification_code": "Invalid verification code",
       "verification_code_failed": "Failed to verify code",
@@ -417,19 +423,6 @@
       "payment_processing_failed": "Payment processing failed. Please try again.",
       "no_paypal_url": "No approval URL received from PayPal",
       "failed_payment_start": "Failed to start payment process"
-    },
-    "carrier": {
-      "title": "Carrier Information",
-      "delegating_question": "Is your company currently writing delegated authority business through MGAs in Europe? (Continental Europe and/or the UK and/or Ireland)",
-      "delegating_note": "This is not a qualification for membership. Carriers that are planning to delegate authority to MGAs in Europe are also eligible for FASE membership.",
-      "mga_count_question": "How many MGAs do you currently work with in Europe?",
-      "countries_question": "In which European countries are you currently delegating underwriting authority to MGAs?",
-      "fronting_question": "Do you offer fronting options?",
-      "startup_question": "Do you consider startup MGAs?",
-      "am_best_rating": "AM Best rating (if rated)",
-      "select_rating": "Select rating",
-      "other_rating": "Additional / Other rating (Please specify)",
-      "other_rating_placeholder": "Please specify other rating if applicable"
     },
     "service_provider": {
       "title": "Service Provider Information",
@@ -455,7 +448,7 @@
     },
     "carrier": {
       "title": "Carrier / Broker Information",
-      "organization_type_question": "What type of organization are you?",
+      "organization_type_question": "What type of organisation are you?",
       "organization_types": {
         "insurance_company": "Insurance Company",
         "reinsurance_company": "Reinsurance Company",
@@ -475,8 +468,8 @@
         "both": "Both"
       },
       "startup_question": "Would you consider working with startup MGAs?",
-      "am_best_rating": "AM Best Rating",
-      "other_rating": "Other Rating (S&P, Moody's, etc.)",
+      "am_best_rating": "AM Best Rating (if applicable)",
+      "other_rating": "Other Rating (S&P, Moody's, etc., if applicable)",
       "select_rating": "Select rating...",
       "other_rating_placeholder": "Enter other rating..."
     }
