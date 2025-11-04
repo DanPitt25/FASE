@@ -16,11 +16,6 @@ export default function JoinPage() {
       imagePosition: 'right' as const
     },
     {
-      type: 'accordion' as const,
-      title: t('member_benefits.title'),
-      items: t.raw('member_benefits.items')
-    },
-    {
       type: 'cards' as const,
       title: t('membership_categories.title'),
       subtitle: t('membership_categories.subtitle'),
