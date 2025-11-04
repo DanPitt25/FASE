@@ -47,7 +47,7 @@ export const checkDomainExists = async (emailAddress: string): Promise<boolean> 
   }
 };
 
-// Create account and membership
+// Create account and membership using server-side API
 export const createAccountAndMembership = async (
   status: 'pending_payment' | 'pending_invoice' | 'pending' | 'draft',
   formData: {
@@ -86,8 +86,6 @@ export const createAccountAndMembership = async (
     otherRating?: string;
   }
 ) => {
-  let userToCleanup: any = null;
-
   try {
     // Check if domain already exists before creating account
     const domainExists = await checkDomainExists(formData.email);
@@ -95,189 +93,41 @@ export const createAccountAndMembership = async (
       throw new Error('An organization with this email domain is already registered. Please contact us if you believe this is an error.');
     }
 
-    // Step 1: Create Firebase Auth account first
-    const { createUserWithEmailAndPassword, updateProfile, deleteUser } = await import('firebase/auth');
+    // Call server-side API to create account atomically
+    const response = await fetch('/api/register-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...formData,
+        status
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to create account');
+    }
+
+    if (!result.success || !result.userId) {
+      throw new Error('Invalid response from server');
+    }
+
+    // Sign in the user after successful account creation
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
     const { auth } = await import('../../lib/firebase');
     
-    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-    const user = userCredential.user;
-    userToCleanup = user;
-    
-    // Create display name
-    const fullName = `${formData.firstName} ${formData.surname}`.trim();
-    const orgForAuth = formData.membershipType === 'corporate' ? formData.organizationName : undefined;
-    const displayName = orgForAuth && orgForAuth.trim()
-      ? `${fullName} (${orgForAuth})`
-      : fullName;
-    
-    await updateProfile(user, { displayName });
-
-    // Small delay to ensure auth state propagates to Firestore
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Step 2: Create Firestore documents
     try {
-      if (formData.membershipType === 'corporate') {
-        const { doc: firestoreDoc, setDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
-        const { db } = await import('../../lib/firebase');
-        
-        const companyId = user.uid;
-        const batch = writeBatch(db);
-        
-        // Find primary contact
-        const primaryContactMember = formData.members.find(m => m.isPrimaryContact);
-        if (!primaryContactMember) {
-          throw new Error("No account administrator designated");
-        }
-        
-        // Create company document
-        const companyRef = firestoreDoc(db, 'accounts', companyId);
-        const companyRecord = {
-          id: companyId,
-          email: user.email,
-          displayName: formData.organizationName,
-          status,
-          personalName: '',
-          isCompanyAccount: true,
-          primaryContactMemberId: user.uid,
-          paymentUserId: user.uid,
-          membershipType: 'corporate' as const,
-          organizationName: formData.organizationName,
-          organizationType: formData.organizationType as 'MGA' | 'carrier' | 'provider',
-          accountAdministrator: {
-            name: primaryContactMember.name,
-            email: primaryContactMember.email,
-            phone: primaryContactMember.phone,
-            role: primaryContactMember.jobTitle
-          },
-          businessAddress: {
-            line1: formData.addressLine1,
-            line2: formData.addressLine2,
-            city: formData.city,
-            county: formData.state,
-            postcode: formData.postalCode,
-            country: formData.country
-          },
-          ...(formData.organizationType === 'MGA' && {
-            portfolio: {
-              grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)),
-              grossWrittenPremiumsValue: parseFloat(formData.grossWrittenPremiums) || 0,
-              grossWrittenPremiumsCurrency: formData.gwpCurrency,
-              grossWrittenPremiumsEUR: convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency),
-              linesOfBusiness: formData.selectedLinesOfBusiness,
-              otherLinesOfBusiness: {
-                other1: formData.otherLineOfBusiness1.trim(),
-                other2: formData.otherLineOfBusiness2.trim(),
-                other3: formData.otherLineOfBusiness3.trim()
-              },
-              markets: formData.selectedMarkets
-            }
-          }),
-          hasOtherAssociations: formData.hasOtherAssociations ?? false,
-          otherAssociations: formData.hasOtherAssociations ? formData.otherAssociations : [],
-          // Carrier-specific fields
-          ...(formData.organizationType === 'carrier' && {
-            carrierInfo: {
-              organizationType: formData.carrierOrganizationType,
-              isDelegatingInEurope: formData.isDelegatingInEurope,
-              numberOfMGAs: formData.numberOfMGAs,
-              delegatingCountries: formData.delegatingCountries || [],
-              frontingOptions: formData.frontingOptions,
-              considerStartupMGAs: formData.considerStartupMGAs,
-              amBestRating: formData.amBestRating,
-              otherRating: formData.otherRating
-            }
-          }),
-          // Service provider specific fields
-          ...(formData.organizationType === 'provider' && {
-            servicesProvided: formData.servicesProvided
-          }),
-          logoUrl: null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        
-        batch.set(companyRef, companyRecord);
-        
-        // Create member documents
-        for (const member of formData.members) {
-          const memberId = member.id === 'registrant' ? user.uid : member.id;
-          const memberRef = firestoreDoc(db, 'accounts', companyId, 'members', memberId);
-          
-          const memberRecord = {
-            id: memberId,
-            email: member.email,
-            personalName: member.name,
-            jobTitle: member.jobTitle,
-            isAccountAdministrator: member.isPrimaryContact,
-            isRegistrant: member.id === 'registrant',
-            accountConfirmed: member.id === 'registrant',
-            joinedAt: serverTimestamp(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-          
-          batch.set(memberRef, memberRecord);
-        }
-        
-        await batch.commit();
-        
-      } else {
-        // Individual membership
-        const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-        const { db } = await import('../../lib/firebase');
-        
-        const accountRef = firestoreDoc(db, 'accounts', user.uid);
-        
-        const dataToWrite = {
-          email: user.email,
-          displayName: user.displayName,
-          status,
-          membershipType: formData.membershipType,
-          personalName: fullName,
-          organizationName: fullName,
-          paymentUserId: user.uid,
-          accountAdministrator: {
-            name: fullName,
-            email: user.email!,
-            phone: '',
-            role: 'Individual Member'
-          },
-          businessAddress: {
-            line1: formData.addressLine1,
-            line2: formData.addressLine2,
-            city: formData.city,
-            county: formData.state,
-            postcode: formData.postalCode,
-            country: formData.country
-          },
-          hasOtherAssociations: formData.hasOtherAssociations ?? false,
-          otherAssociations: formData.hasOtherAssociations ? formData.otherAssociations : [],
-          logoUrl: null,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        };
-        
-        await setDoc(accountRef, dataToWrite);
-      }
-
-      // Welcome message creation would go here if needed
-      
-      // Return the user ID for draft storage
-      return user.uid;
-      
-    } catch (firestoreError) {
-      // Cleanup auth account if Firestore fails
-      
-      if (userToCleanup) {
-        try {
-          await deleteUser(userToCleanup);
-        } catch (cleanupError) {
-        }
-      }
-      
-      throw firestoreError;
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+    } catch (signInError) {
+      console.error('Auto sign-in failed:', signInError);
+      // Don't throw here - account was created successfully
     }
+
+    // Return the user ID
+    return result.userId;
     
   } catch (error: any) {
     // Check for network/connection errors
@@ -286,7 +136,9 @@ export const createAccountAndMembership = async (
         error.code === 'unavailable') {
       throw new Error("Connection blocked. Please disable any ad blockers or try using a different browser.");
     } else {
-      throw new Error(handleAuthError(error));
+      // Preserve original error message for better debugging
+      console.error('Full createAccountAndMembership error:', error);
+      throw error; // Don't wrap it in handleAuthError to preserve the real error
     }
   }
 };
@@ -319,7 +171,7 @@ export const continueWithPayPalPayment = async (formData: any) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      await response.text(); // Read response to clear buffer
       throw new Error(`Payment processing failed (${response.status}). Please try again.`);
     }
 

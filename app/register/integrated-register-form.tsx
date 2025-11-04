@@ -1110,8 +1110,12 @@ export default function IntegratedRegisterForm() {
                   const applicationNumber = `FASE-APP-${Date.now()}-${Date.now().toString().slice(-6)}`;
                   const membershipFee = getCurrentDiscountedFee();
                   
-                  // Send application email via simple API
+                  // Send application email via simple API with timeout
+                  const controller = new AbortController();
+                  const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                  
                   const response = await fetch('/api/submit-application', {
+                    signal: controller.signal,
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -1139,8 +1143,12 @@ export default function IntegratedRegisterForm() {
                       members
                     }),
                   });
+                  
+                  clearTimeout(timeout);
 
                   if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Submit application API error:', response.status, errorText);
                     throw new Error('Failed to submit application');
                   }
                   
@@ -1156,8 +1164,47 @@ export default function IntegratedRegisterForm() {
                   window.location.href = '/register/thank-you';
                   
                 } catch (error: any) {
-                  setError(error.message || t('errors.failed_to_submit'));
+                  // Log full error details for debugging
+                  const errorDetails = {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    email: email,
+                    organizationName: organizationName,
+                    organizationType: organizationType,
+                    membershipType: membershipType,
+                    timestamp: new Date().toISOString(),
+                    userAgent: window.navigator.userAgent
+                  };
+                  
+                  console.error('Registration submission error:', errorDetails);
+                  
+                  // Send error log to server
+                  try {
+                    fetch('/api/log-registration-error', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(errorDetails)
+                    });
+                  } catch (logError) {
+                    console.error('Failed to log error:', logError);
+                  }
+                  
+                  // Show user-friendly error with specific timeout message
+                  if (error.name === 'AbortError') {
+                    setError(t('errors.submission_timeout'));
+                  } else {
+                    setError(error.message || t('errors.failed_to_submit'));
+                  }
+                  
                   setSubmittingApplication(false);
+                  console.error('Registration failed:', error.message, {
+                    email: email,
+                    organizationName: organizationName,
+                    organizationType: organizationType,
+                    membershipType: membershipType,
+                    timestamp: new Date().toISOString()
+                  });
                 }
               }}
               disabled={!codeOfConductConsent || submittingApplication}
