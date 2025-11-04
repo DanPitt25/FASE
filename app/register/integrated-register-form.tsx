@@ -117,7 +117,7 @@ export default function IntegratedRegisterForm() {
   // Update grossWrittenPremiums whenever magnitude inputs change
   useEffect(() => {
     const total = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
-    setGrossWrittenPremiums((total / 1000000).toString()); // Convert to millions for consistency
+    setGrossWrittenPremiums(total.toString()); // Keep the full value
   }, [gwpBillions, gwpMillions, gwpThousands]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const [step, setStep] = useState(typeFromUrl ? 0 : -1);

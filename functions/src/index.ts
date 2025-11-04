@@ -213,7 +213,7 @@ export const sendInvoiceEmail = functions.https.onCall({
   enforceAppCheck: false,
 }, async (request) => {
   try {
-    const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
+    const { email, cc, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename, subject } = request.data;
     logger.info('sendInvoiceEmail called for:', email);
 
     if (!email || !invoiceNumber) {
@@ -241,9 +241,14 @@ export const sendInvoiceEmail = functions.https.onCall({
         const emailPayload: any = {
           from: 'FASE <admin@fasemga.com>',
           to: email,
-          subject: template.subject(invoiceNumber, totalAmount || '0'),
+          subject: subject || template.subject(invoiceNumber, totalAmount || '0'),
           html: emailHtml,
         };
+        
+        // Add CC if provided
+        if (cc) {
+          emailPayload.cc = cc;
+        }
         
         // Add PDF attachment if provided
         if (pdfAttachment && pdfFilename) {

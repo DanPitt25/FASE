@@ -40,31 +40,30 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Check member status after successful authentication
+    // Check member status after successful authentication - only allow admin users
     try {
       const memberData = await getUnifiedMember(user.uid);
       
       if (memberData) {
-        // Check if member status allows login
-        if (memberData.status === 'pending') {
+        // Only allow admin users to log in
+        if (memberData.status !== 'admin') {
           // Sign out the user since they shouldn't be logged in
           await firebaseSignOut(auth);
-          throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
+          throw new AccountPendingError('Access restricted to administrators only.');
         }
-        
-        if (!['approved', 'admin'].includes(memberData.status)) {
-          // Sign out the user since they shouldn't be logged in
-          await firebaseSignOut(auth);
-          throw new AccountPendingError('Your FASE account is still pending approval. Please contact admin@fasemga.com for any questions.');
-        }
+      } else {
+        // If no member data exists, deny login
+        await firebaseSignOut(auth);
+        throw new AccountPendingError('Access restricted to administrators only.');
       }
-      // If no member data exists, allow login (might be an admin user or special case)
     } catch (statusError) {
       // If it's our custom error, re-throw it
       if (statusError instanceof AccountPendingError || statusError instanceof AccountNotApprovedError) {
         throw statusError;
       }
-      // For other errors (e.g., member data not found), allow login to proceed
+      // For other errors (e.g., member data not found), deny access
+      await firebaseSignOut(auth);
+      throw new AccountPendingError('Access restricted to administrators only.');
     }
     
     return {

@@ -189,139 +189,174 @@ export default function MemberContent() {
       title: 'Overview',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
       content: (
         <div className="space-y-6">
-          {/* Payment Status - Clean design */}
-          {member && member.status === 'pending_payment' && (
-            <div className="border border-amber-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Payment Required</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Complete your membership payment to access all FASE resources.
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Welcome to FASE</h2>
+            <p className="text-fase-black mb-6">Your benefits as a FASE founder member include:</p>
+            
+            <div className="space-y-4">
+              {/* Unique access to a pan-European MGA community */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">Unique access to a pan-European MGA community</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    For capacity and service providers, FASE membership offers unique access to the European MGA market. 
+                    For MGAs, FASE offers access to capacity and service providers from around the world that can help them grow their business.
+                  </p>
+                  <p className="text-fase-black">
+                    We will be publishing our initial membership directory on December 1 – you will receive an email with a link 
+                    to this resource, which we expect to grow substantially in the coming months.
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {member && member.status === 'pending_invoice' && (
-            <div className="border border-blue-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Invoice Sent</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Your membership invoice has been sent to your email. Access will be activated upon payment receipt.
+              </details>
+
+              {/* Brand endorsement */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">Brand endorsement</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    FASE members are entitled to display the FASE logo on their websites and marketing materials, 
+                    reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct.
+                  </p>
+                  <p className="text-fase-black">
+                    Please send a copy of your logo to <a href="mailto:admin@fasemga.com" className="text-fase-navy underline">admin@fasemga.com</a>, 
+                    together with a brief (max 500 character) summary of your business and we will add this to our member directory.
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {member && member.status === 'pending' && (
-            <div className="border border-gray-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Application Under Review</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Your membership application is being reviewed by our team. You&apos;ll receive an email once it&apos;s approved.
+              </details>
+
+              {/* Capacity and distribution matching */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">Capacity and distribution matching</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    Through the FASE platform, MGAs and capacity providers can share information on areas of specialism (MGAs) 
+                    and risk appetite (capacity providers). Brokers can also access the FASE platform to identify products written locally by MGAs.
+                  </p>
+                  <p className="text-fase-black font-medium">
+                    We will be launching this interface on December 1.
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
+              </details>
 
-          {/* Member Resources */}
-          <div className="space-y-4">
-            {/* Knowledge Base */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-fase-light-blue to-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Knowledge Base</h3>
-                    <p className="text-fase-black">Access industry insights, regulatory updates, and educational resources</p>
+              {/* Data and insights - with sub-sections */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">Data and insights</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    You have received three member logins to obtain access to a range of resources to support the growth of their businesses in Europe, including:
+                  </p>
+                  
+                  <div className="space-y-3 ml-4">
+                    {/* Regulatory analysis */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">Regulatory analysis</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black mb-3">
+                          Regulations affecting MGAs in Europe are often poorly matched to the MGA business model and vary widely 
+                          across European jurisdictions. Through a panel of expert legal advisors, FASE is coordinating the provision 
+                          of high-quality regulatory guidance for members across different markets.
+                        </p>
+                        <p className="text-sm text-fase-black">
+                          From the beginning of next year, this portal will house an interactive map of European states, reflecting 
+                          the principal regulations impacting MGAs in those countries. More detailed analysis of regulatory issues will 
+                          also be provided in The Entrepreneurial Underwriter, the federation&apos;s monthly online publication, starting in January 2026.
+                        </p>
+                      </div>
+                    </details>
+
+                    {/* Annual market report */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">Annual market report</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black">
+                          FASE&apos;s annual market report will provide a clear picture of the size, growth rate, and composition of the 
+                          European MGA market, while enabling members to benchmark their performance against the broader market. 
+                          The first FASE annual report will be published in January 2027.
+                        </p>
+                      </div>
+                    </details>
+
+                    {/* Webinar archive */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">Webinar archive</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black">
+                          All of FASE&apos;s educational webinars, focusing on issues of concern to MGAs, will be archived within this portal. 
+                          We will shortly be sending you invitations to the first of our webinar series, which will start in December.
+                        </p>
+                      </div>
+                    </details>
                   </div>
                 </div>
-                <Button 
-                  href={hasMemberAccess ? "/knowledge" : "#"}
-                  variant={hasMemberAccess ? "primary" : "secondary"}
-                  size="medium"
-                  className={`flex-shrink-0 ${!hasMemberAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={!hasMemberAccess ? () => {} : undefined}
-                >
-                  {hasMemberAccess ? 'Browse Resources' : 'Access Restricted'}
-                </Button>
-              </div>
-            </div>
+              </details>
 
-            {/* Events */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-fase-gold rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Events & Conferences</h3>
-                    <p className="text-fase-black">Join upcoming FASE events, conferences, and networking opportunities</p>
-                  </div>
+              {/* Relationship building */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">Relationship building</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    The MGA Rendezvous, our annual conference, will unite the European MGA community for two days of relationship-building 
+                    and networking, accompanied by presentations from leading lights in the market.
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    We will be announcing the dates and location for the 2026 MGA Rendezvous in the coming days.
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    Additional events (locations reflecting member demand) will help MGAs expand their distribution channels 
+                    and capacity relationships on a more local basis.
+                  </p>
+                  <p className="text-fase-black">
+                    In 2025, the MGA Rendezvous will be open to non-members, but at a significantly higher price than for members. 
+                    (Members will receive a 50% discount from the non-member price). From 2026, all of FASE&apos;s events will be members-only.
+                  </p>
                 </div>
-                <Button 
-                  href="/events"
-                  variant="primary" 
-                  size="medium"
-                  className="flex-shrink-0"
-                >
-                  View Events
-                </Button>
-              </div>
+              </details>
             </div>
-
-            {/* Member Directory */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Member Directory</h3>
-                    <p className="text-fase-black">Connect with fellow FASE members across Europe</p>
-                  </div>
-                </div>
-                <Button 
-                  href={hasMemberAccess ? "/directory" : "#"}
-                  variant={hasMemberAccess ? "primary" : "secondary"}
-                  size="medium"
-                  className={`flex-shrink-0 ${!hasMemberAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={!hasMemberAccess ? () => {} : undefined}
-                >
-                  {hasMemberAccess ? 'Browse Directory' : 'Access Restricted'}
-                </Button>
-              </div>
-            </div>
-
           </div>
         </div>
       )
@@ -578,14 +613,6 @@ export default function MemberContent() {
             {/* Account Information */}
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">Email Address</label>
-                <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                  {user?.email}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Your email address cannot be changed</p>
-              </div>
-              
-              <div>
                 <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
                 {editingProfile ? (
                   <div className="space-y-2">
@@ -629,7 +656,6 @@ export default function MemberContent() {
                     </Button>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-1">Your personal name only. Company name cannot be changed here.</p>
               </div>
               
               {/* Show company name separately for corporate members */}
