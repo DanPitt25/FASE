@@ -100,6 +100,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
                 )}
                 
+{/* Member Login temporarily suppressed
                 {!user && (
                   <a 
                     href="/login" 
@@ -108,6 +109,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     Member Login
                   </a>
                 )}
+                */}
                 
                 <div className="relative">
                   <input
