@@ -36,7 +36,7 @@ interface EditingMember {
 }
 
 export default function ManageProfile() {
-  const { user, member, refreshMemberData } = useUnifiedAuth();
+  const { user, member } = useUnifiedAuth();
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
