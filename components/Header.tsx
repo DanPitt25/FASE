@@ -251,18 +251,17 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     currentPage === 'contact' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-white hover:bg-fase-gold'
                   }`}>Contact</a>
                 </div>
-                {loading ? (
-                  <div className="w-20 h-8 bg-fase-cream animate-pulse rounded"></div>
-                ) : user ? (
-                  <button
-                    onClick={handleSignOut}
-                    className="px-2 lg:px-3 py-2 text-xs lg:text-sm xl:text-base 2xl:text-lg font-medium text-fase-black hover:text-fase-navy"
-                  >
-                    {tAuth('sign_out')}
-                  </button>
-                ) : (
-                  <Button href="/join" variant="primary" size="small" className="ml-4">{tNav('join_us')}</Button>
-                )}
+                <div className="flex items-center space-x-4">
+                  <Button href="/join" variant="primary" size="small">{tNav('join_us')}</Button>
+                  {!loading && user && (
+                    <button
+                      onClick={handleSignOut}
+                      className="px-2 lg:px-3 py-2 text-xs lg:text-sm xl:text-base 2xl:text-lg font-medium text-fase-black hover:text-fase-navy"
+                    >
+                      {tAuth('sign_out')}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
