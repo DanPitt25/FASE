@@ -15,9 +15,9 @@ export default function LanguageToggle() {
         onChange={(e) => setLocale(e.target.value as 'en' | 'fr' | 'de')}
         className="text-xs border border-fase-light-gold rounded px-2 py-1 text-fase-black focus:outline-none focus:ring-1 focus:ring-fase-navy"
       >
-        <option value="en">{tCommon('english')}</option>
-        <option value="fr">{tCommon('french')}</option>
-        <option value="de">{tCommon('german')}</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
       </select>
     </div>
   );

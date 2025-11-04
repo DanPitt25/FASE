@@ -135,9 +135,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     onChange={(e) => setLocale(e.target.value as 'en' | 'fr' | 'de')}
                     className="bg-white text-fase-black text-xs lg:text-sm border border-fase-light-gold rounded px-1 lg:px-2 py-1 focus:outline-none focus:ring-2 focus:ring-fase-navy"
                   >
-                    <option value="en">{tCommon('english')}</option>
-                    <option value="fr">{tCommon('french')}</option>
-                    <option value="de">{tCommon('german')}</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
                   </select>
                 </div>
               </div>
@@ -298,9 +298,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 onChange={(e) => setLocale(e.target.value as 'en' | 'fr' | 'de')}
                 className="w-full bg-white text-fase-black text-sm border border-fase-light-gold rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fase-navy"
               >
-                <option value="en">{tCommon('english')}</option>
-                <option value="fr">{tCommon('french')}</option>
-                <option value="de">{tCommon('german')}</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
               </select>
             </div>
 

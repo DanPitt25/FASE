@@ -14,7 +14,6 @@ interface GeolocationData {
 const GERMAN_SPEAKING_COUNTRIES = [
   'DE', // Germany
   'AT', // Austria
-  'CH', // Switzerland (also German-speaking)
   'LI', // Liechtenstein
 ];
 
@@ -25,6 +24,7 @@ const FRENCH_SPEAKING_COUNTRIES = [
   'CA', // Canada
   'LU', // Luxembourg
   'MC', // Monaco
+  'CH', // Switzerland (French-speaking regions)
   'BF', // Burkina Faso
   'BI', // Burundi
   'BJ', // Benin
@@ -47,6 +47,7 @@ const FRENCH_SPEAKING_COUNTRIES = [
   'TG', // Togo
   'VU', // Vanuatu
 ];
+
 
 export function useGeolocation(): GeolocationData {
   const [geolocationData, setGeolocationData] = useState<GeolocationData>({});

@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 
-type Locale = 'en' | 'fr' | 'de';
+type Locale = 'en' | 'fr' | 'de' | 'it';
 
 interface LocaleContextType {
   locale: Locale;
@@ -39,7 +39,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     // Priority order: localStorage > browser language > default
     if (typeof window !== 'undefined') {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
-      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de')) {
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'it')) {
         return savedLocale;
       }
       

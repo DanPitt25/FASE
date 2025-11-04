@@ -22,6 +22,10 @@ interface EmailTemplates {
     subject: string;
     html: (resetUrl: string) => string;
   };
+  membershipAcceptance: {
+    subject: (organizationName: string) => string;
+    html: (fullName: string, organizationName: string, paypalUrl: string, invoiceUrl: string, totalAmount: string) => string;
+  };
 }
 
 const templates: Record<Language, EmailTemplates> = {
@@ -143,6 +147,85 @@ const templates: Record<Language, EmailTemplates> = {
           <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
         </div>
       `
+    },
+    membershipAcceptance: {
+      subject: (organizationName: string) => `🎉 Welcome to FASE! Membership Approved - ${organizationName}`,
+      html: (fullName: string, organizationName: string, paypalUrl: string, invoiceUrl: string, totalAmount: string) => `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 40px; border-radius: 12px; border: 3px solid #2D5574; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2D5574; margin: 0; font-size: 28px;">🎉 Congratulations!</h1>
+              <h2 style="color: #B46A33; margin: 10px 0; font-size: 22px;">Welcome to FASE</h2>
+            </div>
+            
+            <p style="font-size: 18px; line-height: 1.6; color: #333;">
+              Dear ${fullName},
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Fantastic news! <strong>${organizationName}</strong> has been accepted as a member of the <strong>Federation of European MGAs (FASE)</strong>.
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              We're thrilled to welcome you to our growing community of European managing general agents and industry professionals. Your membership opens doors to networking, collaboration, and professional development opportunities across Europe.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 25px; border-radius: 10px; margin: 30px 0; border-left: 5px solid #2D5574;">
+              <h3 style="color: #2D5574; margin-top: 0; font-size: 18px;">🚀 Complete Your Membership</h3>
+              <p style="margin: 0; color: #333; font-size: 16px;">
+                To finalize your membership and gain full access to FASE benefits, please complete your payment of <strong>€${totalAmount}</strong>.
+              </p>
+            </div>
+            
+            <div style="margin: 30px 0;">
+              <h3 style="color: #2D5574; margin-bottom: 20px; font-size: 18px;">Choose Your Payment Method:</h3>
+              
+              <div style="display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 2px solid #2D5574; border-radius: 8px; padding: 20px; text-align: center;">
+                  <h4 style="color: #2D5574; margin-top: 0;">💳 Pay with PayPal</h4>
+                  <p style="color: #666; font-size: 14px; margin: 10px 0;">Quick and secure payment</p>
+                  <a href="${paypalUrl}" style="background: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Pay with PayPal</a>
+                </div>
+                
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 2px solid #B46A33; border-radius: 8px; padding: 20px; text-align: center;">
+                  <h4 style="color: #B46A33; margin-top: 0;">🧾 Request Invoice</h4>
+                  <p style="color: #666; font-size: 14px; margin: 10px 0;">Bank transfer payment</p>
+                  <a href="${invoiceUrl}" style="background: #B46A33; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Get Invoice</a>
+                </div>
+              </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <h3 style="color: #2D5574; margin-top: 0; font-size: 16px;">🌟 What's Next?</h3>
+              <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
+                <li style="margin: 8px 0;">Access to our member-only networking events</li>
+                <li style="margin: 8px 0;">Exclusive industry insights and market intelligence</li>
+                <li style="margin: 8px 0;">Professional development opportunities</li>
+                <li style="margin: 8px 0;">Directory listing to connect with peers</li>
+                <li style="margin: 8px 0;">Advocacy and representation at European level</li>
+              </ul>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Once your payment is processed, you'll receive full access to your member portal and all FASE resources.
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Questions? We're here to help! Contact us at <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a>
+            </p>
+            
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #E5E7EB;">
+              <p style="font-size: 18px; line-height: 1.6; margin-bottom: 10px; color: #333;">
+                <strong>Welcome to the FASE family!</strong>
+              </p>
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                <strong>The FASE Team</strong><br>
+                Federation of European MGAs
+              </p>
+            </div>
+          </div>
+        </div>
+      `
     }
   },
   fr: {
@@ -261,6 +344,85 @@ const templates: Record<Language, EmailTemplates> = {
           <p style="color: #6b7280; font-size: 14px;">Ce lien expirera dans 1 heure.</p>
           <p style="color: #6b7280; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation de mot de passe, veuillez ignorer cet e-mail.</p>
           <p style="color: #6b7280; font-size: 14px;">Si vous avez des questions, veuillez nous contacter à <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
+        </div>
+      `
+    },
+    membershipAcceptance: {
+      subject: (organizationName: string) => `🎉 Bienvenue à FASE ! Adhésion Approuvée - ${organizationName}`,
+      html: (fullName: string, organizationName: string, paypalUrl: string, invoiceUrl: string, totalAmount: string) => `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 40px; border-radius: 12px; border: 3px solid #2D5574; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2D5574; margin: 0; font-size: 28px;">🎉 Félicitations !</h1>
+              <h2 style="color: #B46A33; margin: 10px 0; font-size: 22px;">Bienvenue à FASE</h2>
+            </div>
+            
+            <p style="font-size: 18px; line-height: 1.6; color: #333;">
+              Cher/Chère ${fullName},
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Excellente nouvelle ! <strong>${organizationName}</strong> a été acceptée comme membre de la <strong>Fédération des Agences de Souscription Européennes (FASE)</strong>.
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Nous sommes ravis de vous accueillir dans notre communauté grandissante d'agences générales de souscription européennes et de professionnels du secteur. Votre adhésion ouvre les portes au networking, à la collaboration et aux opportunités de développement professionnel à travers l'Europe.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 25px; border-radius: 10px; margin: 30px 0; border-left: 5px solid #2D5574;">
+              <h3 style="color: #2D5574; margin-top: 0; font-size: 18px;">🚀 Finalisez Votre Adhésion</h3>
+              <p style="margin: 0; color: #333; font-size: 16px;">
+                Pour finaliser votre adhésion et obtenir un accès complet aux avantages FASE, veuillez compléter votre paiement de <strong>€${totalAmount}</strong>.
+              </p>
+            </div>
+            
+            <div style="margin: 30px 0;">
+              <h3 style="color: #2D5574; margin-bottom: 20px; font-size: 18px;">Choisissez Votre Mode de Paiement :</h3>
+              
+              <div style="display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 2px solid #2D5574; border-radius: 8px; padding: 20px; text-align: center;">
+                  <h4 style="color: #2D5574; margin-top: 0;">💳 Payer avec PayPal</h4>
+                  <p style="color: #666; font-size: 14px; margin: 10px 0;">Paiement rapide et sécurisé</p>
+                  <a href="${paypalUrl}" style="background: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Payer avec PayPal</a>
+                </div>
+                
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 2px solid #B46A33; border-radius: 8px; padding: 20px; text-align: center;">
+                  <h4 style="color: #B46A33; margin-top: 0;">🧾 Demander une Facture</h4>
+                  <p style="color: #666; font-size: 14px; margin: 10px 0;">Paiement par virement bancaire</p>
+                  <a href="${invoiceUrl}" style="background: #B46A33; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Obtenir une Facture</a>
+                </div>
+              </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <h3 style="color: #2D5574; margin-top: 0; font-size: 16px;">🌟 Et Maintenant ?</h3>
+              <ul style="margin: 10px 0; color: #333; padding-left: 20px;">
+                <li style="margin: 8px 0;">Accès aux événements de networking réservés aux membres</li>
+                <li style="margin: 8px 0;">Insights exclusifs du secteur et intelligence de marché</li>
+                <li style="margin: 8px 0;">Opportunités de développement professionnel</li>
+                <li style="margin: 8px 0;">Annuaire pour se connecter avec des pairs</li>
+                <li style="margin: 8px 0;">Advocacy et représentation au niveau européen</li>
+              </ul>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Une fois votre paiement traité, vous recevrez un accès complet à votre portail membre et à toutes les ressources FASE.
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Des questions ? Nous sommes là pour vous aider ! Contactez-nous à <a href="mailto:admin@fasemga.com" style="color: #2D5574; text-decoration: none;">admin@fasemga.com</a>
+            </p>
+            
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #E5E7EB;">
+              <p style="font-size: 18px; line-height: 1.6; margin-bottom: 10px; color: #333;">
+                <strong>Bienvenue dans la famille FASE !</strong>
+              </p>
+              <p style="color: #666; font-size: 14px; margin: 0;">
+                <strong>L'équipe FASE</strong><br>
+                Fédération des Agences de Souscription Européennes
+              </p>
+            </div>
+          </div>
         </div>
       `
     }

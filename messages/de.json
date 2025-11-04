@@ -7,6 +7,7 @@
     "english": "English",
     "french": "Français",
     "german": "Deutsch",
+    "italian": "Italienisch",
     "loading": "Lädt...",
     "error": "Fehler",
     "success": "Erfolg",
@@ -35,7 +36,7 @@
     "knowledge": "Wissen",
     "education": "Bildung",
     "webinars": "Webinare",
-    "entrepreneurial_underwriter": "Entrepreneurialer Versicherer",
+    "entrepreneurial_underwriter": "Entrepreneurial Underwriter",
     "industry_advocacy": "Branchenvertretung",
     "capacity_transparency": "Kapazitätstransparenz",
     "digital_platform": "Digitale Plattform",
@@ -1005,9 +1006,9 @@
       "banner_alt": "Entrepreneuriale Zeichnung"
     },
     "intro": {
-      "title": "Der Entrepreneuriale Versicherer",
+      "title": "Der Entrepreneurial Underwriter",
       "content": [
-        "Ab 2026 wird der Entrepreneuriale Versicherer – unsere Flaggschiff-Publikation – Einblicke und praktische Anleitung für Unternehmer sammeln, die die Zukunft der europäischen delegierten Zeichnung gestalten."
+        "Ab 2026 wird der Entrepreneurial Underwriter – unsere Flaggschiff-Publikation – Einblicke und praktische Anleitung für Unternehmer sammeln, die die Zukunft der europäischen delegierten Zeichnung gestalten."
       ],
       "image_alt": "Entrepreneuriale Zeichnungseinblicke"
     },
