@@ -403,6 +403,7 @@
       "members_need_job_title": "Tous les membres doivent avoir un titre de poste",
       "address_required": "Les informations d'adresse sont requises",
       "gwp_required": "Les primes brutes souscrites sont requises pour les adhésions d'agences de souscription",
+      "gwp_must_be_greater_than_zero": "Les primes brutes souscrites doivent être supérieures à zéro",
       "associations_specify_required": "Veuillez spécifier si vous êtes membre d'autres associations européennes d'agences de souscription",
       "associations_select_required": "Veuillez sélectionner de quelles associations vous êtes membre",
       "carrier_delegation_required": "Le statut de délégation en Europe est requis",

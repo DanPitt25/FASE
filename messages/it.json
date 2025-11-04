@@ -403,6 +403,7 @@
       "members_need_job_title": "Tutti i membri devono avere un titolo professionale",
       "address_required": "Le informazioni di indirizzo sono obbligatorie",
       "gwp_required": "I premi lordi sottoscritti sono obbligatori per le adesioni di agenzie di sottoscrizione",
+      "gwp_must_be_greater_than_zero": "I premi lordi sottoscritti devono essere maggiori di zero",
       "associations_specify_required": "Specifica se sei membro di altre associazioni europee di agenzie di sottoscrizione",
       "associations_select_required": "Seleziona di quali associazioni sei membro",
       "carrier_delegation_required": "Lo stato di delega europea è obbligatorio",

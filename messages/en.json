@@ -403,6 +403,7 @@
       "members_need_job_title": "All members must have a job title",
       "address_required": "Address information is required",
       "gwp_required": "Gross written premiums are required for MGA memberships",
+      "gwp_must_be_greater_than_zero": "Gross written premiums must be greater than zero",
       "associations_specify_required": "Please specify if you are a member of other European MGA associations",
       "associations_select_required": "Please select which associations you are a member of",
       "carrier_delegation_required": "Europe delegation status is required",

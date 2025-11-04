@@ -403,6 +403,7 @@
       "members_need_job_title": "Alle Mitglieder müssen eine Berufsbezeichnung haben",
       "address_required": "Adressinformationen sind erforderlich",
       "gwp_required": "Bruttoprämieneinnahmen sind für MGA-Mitgliedschaften erforderlich",
+      "gwp_must_be_greater_than_zero": "Bruttoprämieneinnahmen müssen größer als null sein",
       "associations_specify_required": "Bitte geben Sie an, ob Sie Mitglied in anderen europäischen MGA-Verbänden sind",
       "associations_select_required": "Bitte wählen Sie aus, in welchen Verbänden Sie Mitglied sind",
       "carrier_delegation_required": "Der Status der Vollmachtsdelegation in Europa ist erforderlich",

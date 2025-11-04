@@ -117,7 +117,7 @@ export default function IntegratedRegisterForm() {
   // Update grossWrittenPremiums whenever magnitude inputs change
   useEffect(() => {
     const total = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
-    setGrossWrittenPremiums((total / 1000000).toString()); // Convert to millions for consistency
+    setGrossWrittenPremiums(total.toString()); // Store actual total value
   }, [gwpBillions, gwpMillions, gwpThousands]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const [step, setStep] = useState(typeFromUrl ? 0 : -1);
@@ -293,9 +293,12 @@ export default function IntegratedRegisterForm() {
       }
       
       
-      if (membershipType === 'corporate' && organizationType === 'MGA' && (!grossWrittenPremiums || isNaN(parseFloat(grossWrittenPremiums)))) {
-        setError(t('errors.gwp_required'));
-        return;
+      if (membershipType === 'corporate' && organizationType === 'MGA') {
+        const actualTotal = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
+        if (actualTotal <= 0) {
+          setError(t('errors.gwp_must_be_greater_than_zero'));
+          return;
+        }
       }
       
       if (hasOtherAssociations === null) {
