@@ -26,6 +26,16 @@ export default function IntegratedRegisterForm() {
   // Translations
   const t = useTranslations('register_form');
   const locale = useLocale();
+
+  // Helper function to scroll to top of form
+  const scrollToTop = () => {
+    const formContainer = document.querySelector('.overflow-y-auto');
+    if (formContainer) {
+      formContainer.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  };
   
   // URL parameter handling
   const searchParams = useSearchParams();
@@ -173,7 +183,7 @@ export default function IntegratedRegisterForm() {
       
       setError("");
       setStep(0);
-      window.scrollTo(0, 0);
+      scrollToTop();
       setAttemptedNext(false);
     } else if (step === 0) {
       // Validate data notice consent
@@ -184,7 +194,7 @@ export default function IntegratedRegisterForm() {
       
       setError("");
       setStep(1);
-      window.scrollTo(0, 0);
+      scrollToTop();
       setAttemptedNext(false);
     } else if (step === 1) {
       // Validate auth fields
@@ -232,7 +242,7 @@ export default function IntegratedRegisterForm() {
         
         setError("");
         setStep(2);
-        window.scrollTo(0, 0);
+        scrollToTop();
         setAttemptedNext(false);
       } catch (error: any) {
         setError(error.message || t('errors.verification_failed'));
@@ -283,7 +293,7 @@ export default function IntegratedRegisterForm() {
       
       setError("");
       setStep(3);
-      window.scrollTo(0, 0);
+      scrollToTop();
       setAttemptedNext(false);
     } else if (step === 3) {
       // Validate address and portfolio fields before proceeding to payment

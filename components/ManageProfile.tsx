@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getCompanyMembers } from '../lib/unified-member';
-import { doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 
@@ -45,6 +45,13 @@ export default function ManageProfile() {
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newMember, setNewMember] = useState({
+    email: '',
+    personalName: '',
+    jobTitle: ''
+  });
+  const [adding, setAdding] = useState(false);
 
   // Helper function to check if member needs an invite (has generated ID)
   const memberNeedsInvite = (member: Member) => {
@@ -190,6 +197,55 @@ export default function ManageProfile() {
     }
   };
 
+  const handleAddMember = async () => {
+    if (!user || !member || !newMember.email || !newMember.personalName) return;
+
+    try {
+      setAdding(true);
+      setError(null);
+
+      // Generate a unique member ID
+      const memberId = `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create member document
+      const memberRef = doc(db, 'accounts', member.organizationId!, 'members', memberId);
+      const memberData = {
+        id: memberId,
+        email: newMember.email.toLowerCase().trim(),
+        personalName: newMember.personalName.trim(),
+        jobTitle: newMember.jobTitle.trim() || '',
+        isPrimaryContact: false,
+        addedBy: user.uid,
+        joinedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      // Add to Firestore using setDoc since we're creating a new document
+      await setDoc(memberRef, memberData);
+
+      // Add to local state
+      const newMemberForState: Member = {
+        ...memberData,
+        joinedAt: { toDate: () => new Date() },
+        createdAt: { toDate: () => new Date() },
+        updatedAt: { toDate: () => new Date() }
+      };
+      setMembers(prev => [...prev, newMemberForState]);
+
+      // Reset form
+      setNewMember({ email: '', personalName: '', jobTitle: '' });
+      setShowAddForm(false);
+
+      // Show success message
+      alert(`${newMember.personalName} has been added to the team. They will receive an invitation email.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add member');
+    } finally {
+      setAdding(false);
+    }
+  };
+
 
 
   if (loading) {
@@ -310,10 +366,88 @@ export default function ManageProfile() {
       {/* Members List */}
       <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-fase-light-gold">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            Team Members ({members.length})
-          </h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
+              Team Members ({members.length})
+            </h3>
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              variant="primary"
+              size="small"
+            >
+              {showAddForm ? 'Cancel' : 'Add Member'}
+            </Button>
+          </div>
         </div>
+
+        {/* Add Member Form */}
+        {showAddForm && (
+          <div className="px-6 py-4 border-b border-fase-light-gold bg-gray-50">
+            <h4 className="text-md font-medium text-fase-navy mb-4">Add New Member</h4>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={newMember.email}
+                    onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    placeholder="member@company.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newMember.personalName}
+                    onChange={(e) => setNewMember(prev => ({ ...prev, personalName: e.target.value }))}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  value={newMember.jobTitle}
+                  onChange={(e) => setNewMember(prev => ({ ...prev, jobTitle: e.target.value }))}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  placeholder="e.g. Operations Manager"
+                />
+              </div>
+              <div className="flex space-x-3">
+                <Button
+                  onClick={handleAddMember}
+                  disabled={adding || !newMember.email || !newMember.personalName}
+                  variant="primary"
+                  size="small"
+                >
+                  {adding ? 'Adding...' : 'Add Member'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewMember({ email: '', personalName: '', jobTitle: '' });
+                  }}
+                  variant="secondary"
+                  size="small"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="divide-y divide-fase-light-gold">
           {members.map((memberItem) => (
