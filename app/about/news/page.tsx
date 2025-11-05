@@ -70,7 +70,7 @@ export default function NewsPage() {
             
             return { slug, metadata };
           } catch (err) {
-            console.error(`Failed to load article ${slug}:`, err);
+            console.error(`Failed to load article ${baseSlug}:`, err);
             return null;
           }
         });
