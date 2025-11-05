@@ -696,6 +696,37 @@
     },
     "return_home": "Retour à la page d'accueil"
   },
+  "payment_succeeded": {
+    "title": "Paiement Réussi !",
+    "message": "Merci pour votre paiement. Votre adhésion FASE est maintenant active.",
+    "what_happens_next": {
+      "title": "Que se passe-t-il ensuite :",
+      "step1": "Vous recevrez un e-mail de confirmation avec les détails de votre adhésion.",
+      "step2": "L'accès au portail des membres sera activé sous peu.",
+      "step3": "Vous recevrez un reçu de facture pour vos dossiers."
+    },
+    "contact": {
+      "question": "Des questions sur votre adhésion ?",
+      "email_text": "Contactez-nous à"
+    },
+    "return_home": "Retour à l'accueil"
+  },
+  "payment_failed": {
+    "title": "Paiement Annulé",
+    "message": "Votre paiement a été annulé. Ne vous inquiétez pas, vous pouvez toujours compléter votre demande d'adhésion.",
+    "what_you_can_do": {
+      "title": "Ce que vous pouvez faire :",
+      "step1": "Essayez à nouveau le paiement en utilisant une carte de crédit ou de débit.",
+      "step2": "Choisissez de payer par virement bancaire à la place (facture jointe dans votre e-mail original).",
+      "step3": "Contactez-nous si vous avez besoin d'aide avec le paiement."
+    },
+    "contact": {
+      "question": "Besoin d'aide avec votre paiement ?",
+      "email_text": "Contactez-nous à"
+    },
+    "try_again": "Essayer le Paiement à Nouveau",
+    "return_home": "Retour à l'accueil"
+  },
   "leadership": {
     "page": {
       "title": "Direction",

@@ -4,26 +4,28 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
-import LanguageToggle from '../../../components/LanguageToggle';
+import { auth } from '../../lib/firebase';
+import LanguageToggle from '../../components/LanguageToggle';
 
-export default function ThankYouPage() {
+export default function PaymentFailedPage() {
   const [applicationNumber, setApplicationNumber] = useState<string | null>(null);
   const [applicantName, setApplicantName] = useState<string | null>(null);
-  const t = useTranslations('thank_you');
+  const t = useTranslations('payment_failed');
 
   useEffect(() => {
-    // Get application data from sessionStorage
-    const submissionData = sessionStorage.getItem('applicationSubmission');
-    if (submissionData) {
+    // Get payment data from URL params or sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionData = sessionStorage.getItem('paymentFailed');
+    
+    if (sessionData) {
       try {
-        const { applicationNumber: appNum, applicantName: name } = JSON.parse(submissionData);
+        const { applicationNumber: appNum, applicantName: name } = JSON.parse(sessionData);
         setApplicationNumber(appNum);
         setApplicantName(name);
         // Clear the data after use
-        sessionStorage.removeItem('applicationSubmission');
+        sessionStorage.removeItem('paymentFailed');
       } catch (error) {
-        console.error('Error parsing application submission data:', error);
+        console.error('Error parsing payment failed data:', error);
       }
     }
   }, []);
@@ -48,10 +50,10 @@ export default function ThankYouPage() {
             />
           </div>
           <div className="bg-white px-6 py-8 text-center">
-          {/* Success Icon */}
-          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+          {/* Error Icon */}
+          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
             <svg 
-              className="w-8 h-8 text-green-600" 
+              className="w-8 h-8 text-red-600" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -60,7 +62,7 @@ export default function ThankYouPage() {
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
                 strokeWidth={2} 
-                d="M5 13l4 4L19 7" 
+                d="M6 18L18 6M6 6l12 12" 
               />
             </svg>
           </div>
@@ -72,25 +74,24 @@ export default function ThankYouPage() {
 
           {/* Main message */}
           <p className="text-lg text-fase-black mb-6">
-            {t('application_submitted')}
+            {t('message')}
           </p>
 
-
           {/* Next steps */}
-          <div className="text-left bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-fase-navy mb-3">{t('what_happens_next.title')}</h3>
+          <div className="text-left bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-fase-navy mb-3">{t('what_you_can_do.title')}</h3>
             <ul className="space-y-2 text-fase-black">
               <li className="flex items-start">
                 <span className="text-fase-navy mr-2">•</span>
-                <span>{t('what_happens_next.step1')}</span>
+                <span>{t('what_you_can_do.step1')}</span>
               </li>
               <li className="flex items-start">
                 <span className="text-fase-navy mr-2">•</span>
-                <span>{t('what_happens_next.step2')}</span>
+                <span>{t('what_you_can_do.step2')}</span>
               </li>
               <li className="flex items-start">
                 <span className="text-fase-navy mr-2">•</span>
-                <span>{t('what_happens_next.step3')}</span>
+                <span>{t('what_you_can_do.step3')}</span>
               </li>
             </ul>
           </div>
@@ -103,16 +104,24 @@ export default function ThankYouPage() {
             <p className="text-fase-black">
               {t('contact.email_text')}{' '}
               <a 
-                href="mailto:help@fasemga.com" 
+                href="mailto:admin@fasemga.com" 
                 className="text-fase-navy hover:text-fase-gold font-medium transition-colors"
               >
-                help@fasemga.com
+                admin@fasemga.com
               </a>
             </p>
           </div>
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => {
+                window.location.href = '/register';
+              }}
+              className="inline-flex items-center justify-center px-6 py-3 border border-fase-navy text-base font-medium rounded-md text-fase-navy bg-white hover:bg-fase-navy hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
+            >
+              {t('try_again')}
+            </button>
             <button
               onClick={async () => {
                 try {

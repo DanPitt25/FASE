@@ -4,26 +4,28 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
-import LanguageToggle from '../../../components/LanguageToggle';
+import { auth } from '../../lib/firebase';
+import LanguageToggle from '../../components/LanguageToggle';
 
-export default function ThankYouPage() {
+export default function PaymentSucceededPage() {
   const [applicationNumber, setApplicationNumber] = useState<string | null>(null);
   const [applicantName, setApplicantName] = useState<string | null>(null);
-  const t = useTranslations('thank_you');
+  const t = useTranslations('payment_succeeded');
 
   useEffect(() => {
-    // Get application data from sessionStorage
-    const submissionData = sessionStorage.getItem('applicationSubmission');
-    if (submissionData) {
+    // Get payment data from URL params or sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionData = sessionStorage.getItem('paymentSuccess');
+    
+    if (sessionData) {
       try {
-        const { applicationNumber: appNum, applicantName: name } = JSON.parse(submissionData);
+        const { applicationNumber: appNum, applicantName: name } = JSON.parse(sessionData);
         setApplicationNumber(appNum);
         setApplicantName(name);
         // Clear the data after use
-        sessionStorage.removeItem('applicationSubmission');
+        sessionStorage.removeItem('paymentSuccess');
       } catch (error) {
-        console.error('Error parsing application submission data:', error);
+        console.error('Error parsing payment success data:', error);
       }
     }
   }, []);
@@ -72,9 +74,8 @@ export default function ThankYouPage() {
 
           {/* Main message */}
           <p className="text-lg text-fase-black mb-6">
-            {t('application_submitted')}
+            {t('message')}
           </p>
-
 
           {/* Next steps */}
           <div className="text-left bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
@@ -103,10 +104,10 @@ export default function ThankYouPage() {
             <p className="text-fase-black">
               {t('contact.email_text')}{' '}
               <a 
-                href="mailto:help@fasemga.com" 
+                href="mailto:admin@fasemga.com" 
                 className="text-fase-navy hover:text-fase-gold font-medium transition-colors"
               >
-                help@fasemga.com
+                admin@fasemga.com
               </a>
             </p>
           </div>

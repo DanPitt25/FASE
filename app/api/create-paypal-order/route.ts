@@ -124,8 +124,8 @@ export async function POST(request: NextRequest) {
         landing_page: 'NO_PREFERENCE',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'PAY_NOW',
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-success?provider=paypal`,
-        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/register?cancelled=true`
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-succeeded`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-failed`
       }
     };
 

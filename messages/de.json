@@ -696,6 +696,37 @@
     },
     "return_home": "Zur Startseite zurückkehren"
   },
+  "payment_succeeded": {
+    "title": "Zahlung Erfolgreich!",
+    "message": "Vielen Dank für Ihre Zahlung. Ihre FASE-Mitgliedschaft ist jetzt aktiv.",
+    "what_happens_next": {
+      "title": "Was passiert als Nächstes:",
+      "step1": "Sie erhalten eine Bestätigungs-E-Mail mit Ihren Mitgliedschaftsdetails.",
+      "step2": "Der Zugang zum Mitgliederportal wird in Kürze aktiviert.",
+      "step3": "Sie erhalten eine Rechnungsquittung für Ihre Unterlagen."
+    },
+    "contact": {
+      "question": "Fragen zu Ihrer Mitgliedschaft?",
+      "email_text": "Kontaktieren Sie uns unter"
+    },
+    "return_home": "Zur Startseite"
+  },
+  "payment_failed": {
+    "title": "Zahlung Abgebrochen",
+    "message": "Ihre Zahlung wurde abgebrochen. Keine Sorge, Sie können Ihre Mitgliedschaftsanmeldung trotzdem abschließen.",
+    "what_you_can_do": {
+      "title": "Was Sie tun können:",
+      "step1": "Versuchen Sie die Zahlung erneut mit Kredit- oder Debitkarte.",
+      "step2": "Wählen Sie stattdessen die Zahlung per Banküberweisung (Rechnung in Ihrer ursprünglichen E-Mail beigefügt).",
+      "step3": "Kontaktieren Sie uns, wenn Sie Hilfe bei der Zahlung benötigen."
+    },
+    "contact": {
+      "question": "Benötigen Sie Hilfe bei Ihrer Zahlung?",
+      "email_text": "Kontaktieren Sie uns unter"
+    },
+    "try_again": "Zahlung Erneut Versuchen",
+    "return_home": "Zur Startseite"
+  },
   "leadership": {
     "page": {
       "title": "Führung",

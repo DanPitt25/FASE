@@ -696,6 +696,37 @@
     },
     "return_home": "Return to Homepage"
   },
+  "payment_succeeded": {
+    "title": "Payment Successful!",
+    "message": "Thank you for your payment. Your FASE membership is now active.",
+    "what_happens_next": {
+      "title": "What happens next:",
+      "step1": "You will receive a confirmation email with your membership details.",
+      "step2": "Access to the member portal will be activated shortly.",
+      "step3": "You will receive an invoice receipt for your records."
+    },
+    "contact": {
+      "question": "Questions about your membership?",
+      "email_text": "Contact us at"
+    },
+    "return_home": "Return Home"
+  },
+  "payment_failed": {
+    "title": "Payment Cancelled",
+    "message": "Your payment was cancelled. Don't worry, you can still complete your membership application.",
+    "what_you_can_do": {
+      "title": "What you can do:",
+      "step1": "Try the payment again using credit or debit card.",
+      "step2": "Choose to pay by bank transfer instead (invoice attached in your original email).",
+      "step3": "Contact us if you need assistance with payment."
+    },
+    "contact": {
+      "question": "Need help with your payment?",
+      "email_text": "Contact us at"
+    },
+    "try_again": "Try Payment Again",
+    "return_home": "Return Home"
+  },
   "leadership": {
     "page": {
       "title": "Leadership",

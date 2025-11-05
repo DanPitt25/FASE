@@ -192,8 +192,8 @@ export async function POST(request: NextRequest) {
           payer_selected: 'PAYPAL',
           payee_preferred: 'IMMEDIATE_PAYMENT_REQUIRED'
         },
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/register/thank-you`,
-        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/register?cancelled=true`
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-succeeded`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-failed`
       },
       custom_id: userId
     };
