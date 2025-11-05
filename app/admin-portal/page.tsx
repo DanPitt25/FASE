@@ -974,13 +974,13 @@ export default function AdminPortalPage() {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                                   <div>
-                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {member.accountAdministrator?.name || member.primaryContact?.name || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {member.accountAdministrator?.email || member.primaryContact?.email || member.email || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {member.accountAdministrator?.phone || member.primaryContact?.phone || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {member.primaryContact?.name || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {member.primaryContact?.email || member.email || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {member.primaryContact?.phone || 'N/A'}</p>
                                   </div>
                                   <div>
-                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {member.businessAddress?.country || member.registeredAddress?.country || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>City:</strong> {member.businessAddress?.city || member.registeredAddress?.city || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {member.registeredAddress?.country || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>City:</strong> {member.registeredAddress?.city || 'N/A'}</p>
                                     <p className="text-sm text-fase-black"><strong>Applied:</strong> {member.createdAt?.seconds ? new Date(member.createdAt.seconds * 1000).toLocaleDateString() : member.createdAt?.toDate ? member.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
                                   </div>
                                   <div>
@@ -1953,7 +1953,7 @@ export default function AdminPortalPage() {
             setSelectedAccount(null);
           }} 
           title={`Send Email - ${selectedAccount.organizationName}`}
-          maxWidth="4xl"
+          maxWidth="xl"
         >
           <EmailsTab prefilledData={selectedAccount} />
         </Modal>
