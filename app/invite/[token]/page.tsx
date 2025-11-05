@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, updateDoc, deleteDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../../../lib/firebase';
+import { signInWithCustomToken } from 'firebase/auth';
+import { auth } from '../../../lib/firebase';
 import Button from '../../../components/Button';
-import PageLayout from '../../../components/PageLayout';
+import Link from 'next/link';
+import Image from 'next/image';
+import LanguageToggle from '../../../components/LanguageToggle';
 
 interface InviteData {
   memberId: string;
@@ -28,8 +29,11 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   const validateInviteToken = useCallback(async () => {
     try {
-      // Decode the token
-      const decodedData = JSON.parse(atob(params.token));
+      // Decode the URL-safe base64 token
+      const base64 = params.token.replace(/-/g, '+').replace(/_/g, '/');
+      // Add padding if needed
+      const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+      const decodedData = JSON.parse(atob(padded));
       
       // Validate token structure
       if (!decodedData.memberId || !decodedData.companyId || !decodedData.email || !decodedData.name) {
@@ -84,43 +88,40 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         throw new Error('Password must be at least 8 characters with at least one capital letter and one special character');
       }
 
-      // Create Firebase Auth account
-      const userCredential = await createUserWithEmailAndPassword(auth, inviteData.email, password);
-      const user = userCredential.user;
+      // Call server-side API to create account and update member document
+      const response = await fetch('/api/accept-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: inviteData.email,
+          password: password,
+          inviteData: inviteData
+        })
+      });
 
-      // Update the member document: move from generated ID to Firebase Auth UID
-      const oldMemberRef = doc(db, 'accounts', inviteData.companyId, 'members', inviteData.memberId);
-      const newMemberRef = doc(db, 'accounts', inviteData.companyId, 'members', user.uid);
-
-      // Fetch the existing member data
-      const oldMemberDoc = await getDoc(oldMemberRef);
-      if (!oldMemberDoc.exists()) {
-        throw new Error('Member invitation not found or has already been used');
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to create account');
       }
 
-      const existingMemberData = oldMemberDoc.data();
+      const { customToken } = responseData;
 
-      // Create new member document with Firebase Auth UID, preserving existing data
-      const memberData = {
-        ...existingMemberData,
-        id: user.uid,
-        accountConfirmed: true,
-        inviteAcceptedAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      // Create new member document with Firebase Auth UID
-      await setDoc(newMemberRef, memberData);
-
-      // Delete the old member document with generated ID
-      await deleteDoc(oldMemberRef);
+      // Sign in with the custom token
+      await signInWithCustomToken(auth, customToken);
 
       // Create welcome message for new user (async, don't wait for completion)
       try {
         const { createWelcomeMessage } = await import('../../../lib/unified-messaging');
-        createWelcomeMessage(user.uid).catch(error => {
-          console.error('Failed to create welcome message:', error);
-        });
+        // Use the user data from the response since we have the user ID from the custom token
+        const userFromCustomToken = auth.currentUser;
+        if (userFromCustomToken) {
+          createWelcomeMessage(userFromCustomToken.uid).catch(error => {
+            console.error('Failed to create welcome message:', error);
+          });
+        }
       } catch (error) {
         console.error('Failed to import welcome message function:', error);
       }
@@ -142,70 +143,104 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   if (loading) {
     return (
-      <PageLayout currentPage="">
-        <div className="max-w-md mx-auto text-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-          <p className="text-fase-black">Validating invitation...</p>
+      <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
+          <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mb-4"></div>
+            <p className="text-fase-black">Validating invitation...</p>
+          </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <PageLayout currentPage="">
-        <div className="max-w-md mx-auto py-20">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <svg className="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
+          <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16 relative">
+            <div className="absolute top-4 right-4">
+              <LanguageToggle />
+            </div>
+            <Link href="/">
+              <Image 
+                src="/fase-logo-rgb.png" 
+                alt="FASE Logo" 
+                width={120}
+                height={48}
+                className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            <svg className="w-12 h-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 className="text-lg font-semibold text-red-900 mb-2">Invalid Invitation</h2>
-            <p className="text-red-700 mb-4">{error}</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-red-900">Invalid Invitation</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <div className="bg-white px-4 py-8 sm:px-16 text-center">
             <Button href="/" variant="secondary" size="medium">
               Return to Home
             </Button>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   if (step === 'complete') {
     return (
-      <PageLayout currentPage="">
-        <div className="max-w-md mx-auto py-20">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-            <svg className="w-12 h-12 text-green-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
+          <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16">
+            <Link href="/">
+              <Image 
+                src="/fase-logo-rgb.png" 
+                alt="FASE Logo" 
+                width={120}
+                height={48}
+                className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            <svg className="w-12 h-12 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <h2 className="text-lg font-semibold text-green-900 mb-2">Account Created Successfully!</h2>
-            <p className="text-green-700 mb-4">
-              Welcome to FASE! Your account has been created and you now have access to your company&apos;s member portal.
-            </p>
-            <p className="text-sm text-green-600">
-              Redirecting to member portal in a few seconds...
-            </p>
+            <h3 className="text-xl font-noto-serif font-semibold text-green-900">Account Created!</h3>
+            <p className="text-sm text-green-700">Welcome to FASE! Redirecting to member portal...</p>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   const passwordValidation = validatePassword(password);
 
   return (
-    <PageLayout currentPage="">
-      <div className="max-w-md mx-auto py-20">
-        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-noto-serif font-bold text-fase-navy mb-2">
-              Complete Your Account
-            </h1>
-            <p className="text-fase-black">
-              Welcome {inviteData?.name}! Please create a secure password to access your FASE account.
-            </p>
+    <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
+        <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16 relative">
+          <div className="absolute top-4 right-4">
+            <LanguageToggle />
           </div>
-
+          
+          <Link href="/">
+            <Image 
+              src="/fase-logo-rgb.png" 
+              alt="FASE Logo" 
+              width={120}
+              height={48}
+              className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+            />
+          </Link>
+          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Complete Your Account</h3>
+          <p className="text-sm text-fase-black">
+            Welcome {inviteData?.name}! Create a secure password to access your FASE account.
+          </p>
+        </div>
+        <div className="bg-white px-4 py-8 sm:px-16">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-2">
@@ -279,6 +314,6 @@ export default function InvitePage({ params }: { params: { token: string } }) {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </div>
   );
 }

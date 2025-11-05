@@ -40,19 +40,45 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Check member status after successful authentication - only allow admin users
+    // Check account status after successful authentication
     try {
-      const memberData = await getUnifiedMember(user.uid);
+      const { collection, query, where, getDocs, doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('./firebase');
       
-      if (memberData) {
-        // Only allow admin users to log in
-        if (memberData.status !== 'admin') {
-          // Sign out the user since they shouldn't be logged in
+      let accountId = null;
+      let accountData = null;
+      
+      // Step 1: Find which account this user belongs to by searching all accounts' members subcollections
+      const accountsRef = collection(db, 'accounts');
+      const accountsSnapshot = await getDocs(accountsRef);
+      
+      for (const accountDoc of accountsSnapshot.docs) {
+        // Check all members in this account by their 'id' field
+        const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+        const membersSnapshot = await getDocs(membersRef);
+        
+        // Look for a member whose 'id' field matches the Firebase Auth UID
+        for (const memberDoc of membersSnapshot.docs) {
+          const memberData = memberDoc.data();
+          if (memberData.id === user.uid) {
+            accountId = accountDoc.id;
+            accountData = accountDoc.data();
+            break;
+          }
+        }
+        
+        if (accountId) break; // Exit outer loop if we found the user
+      }
+      
+      if (accountId && accountData) {
+        // Step 2: Check the account's status (not the member's status)
+        if (!['approved', 'admin'].includes(accountData.status)) {
           await firebaseSignOut(auth);
           throw new AccountPendingError('Access restricted to administrators only.');
         }
+        // User belongs to an approved or admin account - allow login
       } else {
-        // If no member data exists, deny login
+        // User not found in any account's members subcollection
         await firebaseSignOut(auth);
         throw new AccountPendingError('Access restricted to administrators only.');
       }

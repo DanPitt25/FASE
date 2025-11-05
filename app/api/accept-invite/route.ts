@@ -54,7 +54,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update the member document with Firebase Auth UID and confirmation
+    // Generate a custom token for immediate login
+    const customToken = await auth.createCustomToken(userRecord.uid);
+
+    // Only update the member document after we know everything else succeeded
     await memberRef.update({
       id: userRecord.uid,
       accountConfirmed: true,
@@ -63,9 +66,6 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Successfully moved member from', inviteData.memberId, 'to', userRecord.uid);
-
-    // Generate a custom token for immediate login
-    const customToken = await auth.createCustomToken(userRecord.uid);
 
     return NextResponse.json({ 
       success: true, 

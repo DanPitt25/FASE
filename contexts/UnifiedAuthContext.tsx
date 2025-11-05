@@ -56,9 +56,9 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         return;
       }
       
-      // CRITICAL SECURITY: Only allow users with status "admin" to remain logged in
-      if (memberData.status !== 'admin') {
-        // Force logout for any non-admin account
+      // SECURITY: Allow approved members and admins to access member portal
+      if (!['approved', 'admin'].includes(memberData.status)) {
+        // Force logout for non-approved accounts
         await auth.signOut();
         setMember(null);
         setIsAdmin(false);

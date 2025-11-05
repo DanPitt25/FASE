@@ -9,9 +9,11 @@ import ManageProfile from "../../components/ManageProfile";
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
 import { sendPasswordReset } from "../../lib/auth";
 import { updateProfile } from "firebase/auth";
+import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
+  const { t, loading: translationsLoading } = usePortalTranslations();
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -117,7 +119,7 @@ export default function MemberContent() {
       setPasswordResetSent(true);
       setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
     } catch (error) {
-      alert('Failed to send password reset email. Please try again.');
+      alert(t('profile.password_reset_failed'));
     } finally {
       setSendingPasswordReset(false);
     }
@@ -143,9 +145,9 @@ export default function MemberContent() {
       await user.reload();
       
       setEditingProfile(false);
-      alert('Profile updated successfully!');
+      alert(t('profile.profile_updated'));
     } catch (error) {
-      alert('Failed to update profile. Please try again.');
+      alert(t('profile.profile_update_failed'));
     } finally {
       setSavingProfile(false);
     }
@@ -160,7 +162,7 @@ export default function MemberContent() {
   };
 
 
-  if (loading) {
+  if (loading || translationsLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         <div className="animate-pulse">
@@ -186,7 +188,7 @@ export default function MemberContent() {
   const dashboardSections = [
     {
       id: 'overview',
-      title: 'Overview',
+      title: t('sections.overview'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -195,26 +197,24 @@ export default function MemberContent() {
       content: (
         <div className="space-y-6">
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Welcome to FASE</h2>
-            <p className="text-fase-black mb-6">Your benefits as a FASE founder member include:</p>
+            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('overview.welcome_title')}</h2>
+            <p className="text-fase-black mb-6">{t('overview.benefits_intro')}</p>
             
             <div className="space-y-4">
               {/* Unique access to a pan-European MGA community */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">Unique access to a pan-European MGA community</h3>
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.community.title')}</h3>
                   <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
                   <p className="text-fase-black mb-4">
-                    For capacity and service providers, FASE membership offers unique access to the European MGA market. 
-                    For MGAs, FASE offers access to capacity and service providers from around the world that can help them grow their business.
+                    {t('overview.community.description_1')}
                   </p>
                   <p className="text-fase-black">
-                    We will be publishing our initial membership directory on December 1 – you will receive an email with a link 
-                    to this resource, which we expect to grow substantially in the coming months.
+                    {t('overview.community.description_2')}
                   </p>
                 </div>
               </details>
@@ -222,19 +222,17 @@ export default function MemberContent() {
               {/* Brand endorsement */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">Brand endorsement</h3>
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.brand.title')}</h3>
                   <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
                   <p className="text-fase-black mb-4">
-                    FASE members are entitled to display the FASE logo on their websites and marketing materials, 
-                    reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct.
+                    {t('overview.brand.description_1')}
                   </p>
                   <p className="text-fase-black">
-                    Please send a copy of your logo to <a href="mailto:admin@fasemga.com" className="text-fase-navy underline">admin@fasemga.com</a>, 
-                    together with a brief (max 500 character) summary of your business and we will add this to our member directory.
+                    {t('overview.brand.description_2')}
                   </p>
                 </div>
               </details>
@@ -242,18 +240,17 @@ export default function MemberContent() {
               {/* Capacity and distribution matching */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">Capacity and distribution matching</h3>
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.matching.title')}</h3>
                   <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
                   <p className="text-fase-black mb-4">
-                    Through the FASE platform, MGAs and capacity providers can share information on areas of specialism (MGAs) 
-                    and risk appetite (capacity providers). Brokers can also access the FASE platform to identify products written locally by MGAs.
+                    {t('overview.matching.description_1')}
                   </p>
                   <p className="text-fase-black font-medium">
-                    We will be launching this interface on December 1.
+                    {t('overview.matching.description_2')}
                   </p>
                 </div>
               </details>
@@ -261,35 +258,31 @@ export default function MemberContent() {
               {/* Data and insights - with sub-sections */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">Data and insights</h3>
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.data.title')}</h3>
                   <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
                   <p className="text-fase-black mb-4">
-                    You have received three member logins to obtain access to a range of resources to support the growth of their businesses in Europe, including:
+                    {t('overview.data.description')}
                   </p>
                   
                   <div className="space-y-3 ml-4">
                     {/* Regulatory analysis */}
                     <details className="group border border-gray-100 rounded-lg">
                       <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
-                        <h4 className="font-medium text-fase-navy">Regulatory analysis</h4>
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.regulatory.title')}</h4>
                         <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </summary>
                       <div className="p-3 pt-0 border-t border-gray-50">
                         <p className="text-sm text-fase-black mb-3">
-                          Regulations affecting MGAs in Europe are often poorly matched to the MGA business model and vary widely 
-                          across European jurisdictions. Through a panel of expert legal advisors, FASE is coordinating the provision 
-                          of high-quality regulatory guidance for members across different markets.
+                          {t('overview.data.regulatory.description_1')}
                         </p>
                         <p className="text-sm text-fase-black">
-                          From the beginning of next year, this portal will house an interactive map of European states, reflecting 
-                          the principal regulations impacting MGAs in those countries. More detailed analysis of regulatory issues will 
-                          also be provided in The Entrepreneurial Underwriter, the federation&apos;s monthly online publication, starting in January 2026.
+                          {t('overview.data.regulatory.description_2')}
                         </p>
                       </div>
                     </details>
@@ -297,16 +290,14 @@ export default function MemberContent() {
                     {/* Annual market report */}
                     <details className="group border border-gray-100 rounded-lg">
                       <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
-                        <h4 className="font-medium text-fase-navy">Annual market report</h4>
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.report.title')}</h4>
                         <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </summary>
                       <div className="p-3 pt-0 border-t border-gray-50">
                         <p className="text-sm text-fase-black">
-                          FASE&apos;s annual market report will provide a clear picture of the size, growth rate, and composition of the 
-                          European MGA market, while enabling members to benchmark their performance against the broader market. 
-                          The first FASE annual report will be published in January 2027.
+                          {t('overview.data.report.description')}
                         </p>
                       </div>
                     </details>
@@ -314,15 +305,14 @@ export default function MemberContent() {
                     {/* Webinar archive */}
                     <details className="group border border-gray-100 rounded-lg">
                       <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
-                        <h4 className="font-medium text-fase-navy">Webinar archive</h4>
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.webinars.title')}</h4>
                         <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </summary>
                       <div className="p-3 pt-0 border-t border-gray-50">
                         <p className="text-sm text-fase-black">
-                          All of FASE&apos;s educational webinars, focusing on issues of concern to MGAs, will be archived within this portal. 
-                          We will shortly be sending you invitations to the first of our webinar series, which will start in December.
+                          {t('overview.data.webinars.description')}
                         </p>
                       </div>
                     </details>
@@ -333,26 +323,23 @@ export default function MemberContent() {
               {/* Relationship building */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">Relationship building</h3>
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.relationships.title')}</h3>
                   <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
                   <p className="text-fase-black mb-4">
-                    The MGA Rendezvous, our annual conference, will unite the European MGA community for two days of relationship-building 
-                    and networking, accompanied by presentations from leading lights in the market.
+                    {t('overview.relationships.description_1')}
                   </p>
                   <p className="text-fase-black mb-4">
-                    We will be announcing the dates and location for the 2026 MGA Rendezvous in the coming days.
+                    {t('overview.relationships.description_2')}
                   </p>
                   <p className="text-fase-black mb-4">
-                    Additional events (locations reflecting member demand) will help MGAs expand their distribution channels 
-                    and capacity relationships on a more local basis.
+                    {t('overview.relationships.description_3')}
                   </p>
                   <p className="text-fase-black">
-                    In 2025, the MGA Rendezvous will be open to non-members, but at a significantly higher price than for members. 
-                    (Members will receive a 50% discount from the non-member price). From 2026, all of FASE&apos;s events will be members-only.
+                    {t('overview.relationships.description_4')}
                   </p>
                 </div>
               </details>
@@ -363,7 +350,7 @@ export default function MemberContent() {
     },
     {
       id: 'messages',
-      title: 'Messages',
+      title: t('sections.messages'),
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,8 +385,8 @@ export default function MemberContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No Messages</h3>
-              <p className="text-fase-black">You don&apos;t have any messages yet.</p>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('messages.no_messages')}</h3>
+              <p className="text-fase-black">{t('messages.no_messages_desc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -419,7 +406,7 @@ export default function MemberContent() {
                         message.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {message.priority}
+                        {t(`messages.priority.${message.priority}`)}
                       </span>
                       <span className="text-xs text-gray-500">
                         {message.createdAt?.toDate?.()?.toLocaleDateString()}
@@ -432,7 +419,7 @@ export default function MemberContent() {
                   </p>
                   
                   <div className="text-xs text-gray-500 mb-3">
-                    From: {message.senderName} ({message.senderEmail})
+                    {t('messages.from')}: {message.senderName} ({message.senderEmail})
                   </div>
                   
                   <div className="flex justify-between items-center">
@@ -442,7 +429,7 @@ export default function MemberContent() {
                           onClick={() => handleMarkMessageAsRead(message.id)}
                           className="text-xs text-blue-600 hover:text-blue-800"
                         >
-                          Mark as Read
+                          {t('messages.mark_read')}
                         </button>
                       )}
                     </div>
@@ -450,7 +437,7 @@ export default function MemberContent() {
                       onClick={() => handleDeleteMessage(message.id)}
                       className="text-xs text-red-600 hover:text-red-800"
                     >
-                      Delete
+                      {t('messages.delete')}
                     </button>
                   </div>
                 </div>
@@ -462,7 +449,7 @@ export default function MemberContent() {
     },
     {
       id: 'alerts',
-      title: 'Alerts',
+      title: t('sections.alerts'),
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,8 +484,8 @@ export default function MemberContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No Alerts</h3>
-              <p className="text-fase-black">You&apos;re all caught up! Check back later for important updates.</p>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('alerts.no_alerts')}</h3>
+              <p className="text-fase-black">{t('alerts.no_alerts_desc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -525,7 +512,7 @@ export default function MemberContent() {
                         alert.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {alert.priority}
+                        {t(`alerts.priority.${alert.priority}`)}
                       </span>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                         alert.type === 'error' ? 'bg-red-100 text-red-800' :
@@ -533,7 +520,7 @@ export default function MemberContent() {
                         alert.type === 'success' ? 'bg-green-100 text-green-800' :
                         'bg-blue-100 text-blue-800'
                       }`}>
-                        {alert.type}
+                        {t(`alerts.types.${alert.type}`)}
                       </span>
                     </div>
                   </div>
@@ -578,14 +565,14 @@ export default function MemberContent() {
                             'text-blue-600 hover:text-blue-800'
                           }`}
                         >
-                          Mark as Read
+                          {t('alerts.mark_read')}
                         </button>
                       )}
                       <button
                         onClick={() => handleDismissAlert(alert.id)}
                         className="text-xs text-gray-600 hover:text-gray-800 font-medium"
                       >
-                        Dismiss
+                        {t('alerts.dismiss')}
                       </button>
                     </div>
                   </div>
@@ -598,7 +585,7 @@ export default function MemberContent() {
     },
     {
       id: 'profile',
-      title: 'Manage Profile',
+      title: t('sections.profile'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -608,12 +595,12 @@ export default function MemberContent() {
         <div className="space-y-6">
           {/* Account Settings */}
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Account Settings</h3>
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('profile.account_settings')}</h3>
             
             {/* Account Information */}
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
+                <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.personal_name')}</label>
                 {editingProfile ? (
                   <div className="space-y-2">
                     <input
@@ -621,7 +608,7 @@ export default function MemberContent() {
                       value={profileData.displayName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
                       className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                      placeholder="Enter your personal name"
+                      placeholder={t('profile.enter_name_placeholder')}
                     />
                     <div className="flex space-x-2">
                       <Button
@@ -630,21 +617,21 @@ export default function MemberContent() {
                         variant="primary"
                         size="small"
                       >
-                        {savingProfile ? 'Saving...' : 'Save'}
+                        {savingProfile ? t('profile.saving') : t('profile.save')}
                       </Button>
                       <Button
                         onClick={handleCancelEdit}
                         variant="secondary"
                         size="small"
                       >
-                        Cancel
+                        {t('profile.cancel')}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                      {member?.personalName || user?.displayName || 'Not set'}
+                      {member?.personalName || user?.displayName || t('profile.not_set')}
                     </div>
                     <Button
                       onClick={handleEditProfile}
@@ -652,7 +639,7 @@ export default function MemberContent() {
                       size="small"
                       className="ml-3"
                     >
-                      Edit
+                      {t('profile.edit')}
                     </Button>
                   </div>
                 )}
@@ -661,26 +648,26 @@ export default function MemberContent() {
               {/* Show company name separately for corporate members */}
               {member?.membershipType === 'corporate' && member?.organizationName && (
                 <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.company')}</label>
                   <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
                     {member.organizationName}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Contact support to change your company information</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('profile.company_change_note')}</p>
                 </div>
               )}
             </div>
 
             {/* Password Reset */}
             <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Security</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('profile.security')}</h4>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Password</span>
-                  <p className="text-xs text-gray-500">Reset your password via email</p>
+                  <span className="text-sm font-medium text-gray-700">{t('profile.password')}</span>
+                  <p className="text-xs text-gray-500">{t('profile.password_desc')}</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   {passwordResetSent && (
-                    <span className="text-sm text-green-600 font-medium">Reset email sent!</span>
+                    <span className="text-sm text-green-600 font-medium">{t('profile.reset_email_sent')}</span>
                   )}
                   <Button
                     onClick={handlePasswordReset}
@@ -688,7 +675,7 @@ export default function MemberContent() {
                     variant="secondary"
                     size="small"
                   >
-                    {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                    {sendingPasswordReset ? t('profile.sending') : t('profile.reset_password')}
                   </Button>
                 </div>
               </div>
@@ -705,27 +692,27 @@ export default function MemberContent() {
   // Construct title with personal name and company name (if applicable)
   const getWelcomeTitle = () => {
     if (!user?.displayName && !member?.personalName) {
-      return "Member Portal";
+      return t('portal.welcome_title');
     }
     
     const personalName = member?.personalName || user?.displayName || "";
     const companyName = member?.organizationName;
     
     if (personalName && companyName && member?.membershipType === 'corporate') {
-      return `Welcome, ${personalName} (${companyName})`;
+      return t('portal.welcome_company', { name: personalName, company: companyName });
     } else if (personalName) {
-      return `Welcome, ${personalName}`;
+      return t('portal.welcome_personal', { name: personalName });
     } else {
-      return "Member Portal";
+      return t('portal.welcome_title');
     }
   };
 
   return (
     <DashboardLayout
       title={getWelcomeTitle()}
-      subtitle={user?.email || "Access all member benefits and resources"}
+      subtitle={user?.email || t('portal.email_subtitle')}
       bannerImage="/education.jpg"
-      bannerImageAlt="Business Meeting"
+      bannerImageAlt={t('manage_profile.business_meeting_alt')}
       sections={dashboardSections}
       currentPage="member-portal"
       statusBadge={statusBadge}

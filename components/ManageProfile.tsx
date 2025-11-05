@@ -6,6 +6,7 @@ import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getCompanyMembers } from '../lib/unified-member';
 import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { usePortalTranslations } from '../app/member-portal/hooks/usePortalTranslations';
 
 
 interface CompanyInfo {
@@ -26,6 +27,7 @@ interface Member {
   addedBy?: string;
   createdAt: any;
   updatedAt: any;
+  accountConfirmed?: boolean;
 }
 
 interface EditingMember {
@@ -37,6 +39,7 @@ interface EditingMember {
 
 export default function ManageProfile() {
   const { user, member } = useUnifiedAuth();
+  const { t } = usePortalTranslations();
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,34 +56,65 @@ export default function ManageProfile() {
   });
   const [adding, setAdding] = useState(false);
 
-  // Helper function to check if member needs an invite (has generated ID)
+  // Helper function to check if member needs an invite (has generated ID and hasn't confirmed account)
   const memberNeedsInvite = (member: Member) => {
-    return member.id.startsWith('member_');
+    return member.id.startsWith('member_') && !member.accountConfirmed;
   };
 
   // Fetch company members
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!user || !member || member.membershipType !== 'corporate') return;
+      if (!user || !member) return;
 
       try {
         setLoading(true);
         
-        // Get company members directly
-        const membersData = await getCompanyMembers(member.organizationId!);
+        // Find which account this user belongs to
+        const { collection, getDocs, doc, getDoc } = await import('firebase/firestore');
+        const { db } = await import('../lib/firebase');
         
-        // Set company info from member data
+        const accountsRef = collection(db, 'accounts');
+        const accountsSnapshot = await getDocs(accountsRef);
+        
+        let userAccountId = null;
+        let userAccountData = null;
+        
+        // Search all accounts to find which one contains this user
+        for (const accountDoc of accountsSnapshot.docs) {
+          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+          const membersSnapshot = await getDocs(membersRef);
+          
+          for (const memberDoc of membersSnapshot.docs) {
+            const memberData = memberDoc.data();
+            if (memberData.id === user.uid) {
+              userAccountId = accountDoc.id;
+              userAccountData = accountDoc.data();
+              break;
+            }
+          }
+          
+          if (userAccountId) break;
+        }
+        
+        if (!userAccountId || !userAccountData) {
+          throw new Error('Could not find account for user');
+        }
+        
+        // Get company members directly
+        const membersData = await getCompanyMembers(userAccountId);
+        
+        // Set company info from account data
         setCompany({
-          id: member.organizationId!,
-          organizationName: member.organizationName || 'Unknown Company',
-          organizationType: member.organizationType || 'Unknown',
-          status: member.status,
-          logoURL: member.logoURL
+          id: userAccountId,
+          organizationName: userAccountData.organizationName || t('manage_profile.unknown_company'),
+          organizationType: userAccountData.organizationType || t('manage_profile.unknown'),
+          status: userAccountData.status,
+          logoURL: userAccountData.logoURL
         });
         
         setMembers(membersData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load members');
+        setError(err instanceof Error ? err.message : t('manage_profile.errors.load_members_failed'));
       } finally {
         setLoading(false);
       }
@@ -122,7 +156,7 @@ export default function ManageProfile() {
 
       setEditingMember(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update member');
+      setError(err instanceof Error ? err.message : t('manage_profile.errors.update_member_failed'));
     } finally {
       setSaving(false);
     }
@@ -132,14 +166,14 @@ export default function ManageProfile() {
   const handleRemoveMember = async (memberToRemove: Member) => {
     if (!user || !member) return;
     
-    if (!confirm(`Are you sure you want to remove ${memberToRemove.personalName} from the company?`)) {
+    if (!confirm(t('manage_profile.confirm_remove', { name: memberToRemove.personalName }))) {
       return;
     }
 
     try {
       // Don't allow removing themselves
       if (user.uid === memberToRemove.id) {
-        throw new Error('Cannot remove yourself from the company');
+        throw new Error(t('manage_profile.errors.cannot_remove_self'));
       }
 
       // Delete member document directly
@@ -149,7 +183,7 @@ export default function ManageProfile() {
       // Remove from local state
       setMembers(prev => prev.filter(m => m.id !== memberToRemove.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove member');
+      setError(err instanceof Error ? err.message : t('manage_profile.errors.remove_member_failed'));
     }
   };
 
@@ -166,7 +200,7 @@ export default function ManageProfile() {
         email: memberToInvite.email,
         name: memberToInvite.personalName,
         timestamp: Date.now()
-      }));
+      })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
       const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
 
@@ -186,12 +220,12 @@ export default function ManageProfile() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send invitation email');
+        throw new Error(t('manage_profile.errors.send_invitation_email_failed'));
       }
 
-      alert(`Invitation sent to ${memberToInvite.personalName} at ${memberToInvite.email}`);
+      alert(t('manage_profile.invitation_sent', { name: memberToInvite.personalName, email: memberToInvite.email }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send invitation');
+      setError(err instanceof Error ? err.message : t('manage_profile.errors.send_invitation_failed'));
     } finally {
       setInviting(null);
     }
@@ -207,7 +241,7 @@ export default function ManageProfile() {
       // Generate a unique member ID
       const memberId = `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create member document
+      // Create member document with all required fields
       const memberRef = doc(db, 'accounts', member.organizationId!, 'members', memberId);
       const memberData = {
         id: memberId,
@@ -215,6 +249,9 @@ export default function ManageProfile() {
         personalName: newMember.personalName.trim(),
         jobTitle: newMember.jobTitle.trim() || '',
         isPrimaryContact: false,
+        isAccountAdministrator: false,
+        isRegistrant: false,
+        accountConfirmed: false,
         addedBy: user.uid,
         joinedAt: serverTimestamp(),
         createdAt: serverTimestamp(),
@@ -233,14 +270,50 @@ export default function ManageProfile() {
       };
       setMembers(prev => [...prev, newMemberForState]);
 
+      // Automatically send invitation email
+      try {
+        const inviteToken = btoa(JSON.stringify({
+          memberId: memberId,
+          companyId: member.organizationId,
+          email: newMember.email,
+          name: newMember.personalName,
+          timestamp: Date.now()
+        })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+        const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+
+        const response = await fetch('/api/send-invite', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: newMember.email,
+            name: newMember.personalName,
+            companyName: member.organizationName,
+            inviteUrl: inviteUrl,
+            inviterName: user.displayName || user.email
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to send invitation email');
+        }
+
+        console.log('Invitation email sent automatically');
+      } catch (inviteError) {
+        console.error('Failed to send automatic invitation:', inviteError);
+        // Don't fail the whole process if email fails
+      }
+
       // Reset form
       setNewMember({ email: '', personalName: '', jobTitle: '' });
       setShowAddForm(false);
 
       // Show success message
-      alert(`${newMember.personalName} has been added to the team. They will receive an invitation email.`);
+      alert(t('manage_profile.member_added_success', { name: newMember.personalName }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add member');
+      setError(err instanceof Error ? err.message : t('manage_profile.errors.add_member_failed'));
     } finally {
       setAdding(false);
     }
@@ -276,18 +349,7 @@ export default function ManageProfile() {
     );
   }
 
-  if (!member || member.membershipType !== 'corporate') {
-    return (
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <div className="flex items-center">
-          <svg className="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="text-blue-800">Member management is only available for corporate accounts.</span>
-        </div>
-      </div>
-    );
-  }
+  // Remove the corporate membership check since we're determining account type dynamically
 
   return (
     <div className="space-y-6">
@@ -301,16 +363,16 @@ export default function ManageProfile() {
               </h3>
               <div className="flex items-center space-x-6 text-sm text-gray-600">
                 <span className="font-medium">
-                  {company.organizationType === 'MGA' ? 'Managing General Agent' : 
-                   company.organizationType === 'carrier' ? 'Insurance Carrier' : 
-                   company.organizationType === 'provider' ? 'Service Provider' : 
+                  {company.organizationType === 'MGA' ? t('manage_profile.organization_types.mga_full') : 
+                   company.organizationType === 'carrier' ? t('manage_profile.organization_types.carrier_full') : 
+                   company.organizationType === 'provider' ? t('manage_profile.organization_types.provider_full') : 
                    company.organizationType}
                 </span>
                 <span className="font-medium">
-                  {company.status === 'approved' ? 'Active Member' : 
-                   company.status === 'pending' ? 'Under Review' : 
-                   company.status === 'pending_payment' ? 'Payment Required' : 
-                   company.status === 'pending_invoice' ? 'Invoice Sent' : 
+                  {company.status === 'approved' ? t('manage_profile.member_statuses.active_member') : 
+                   company.status === 'pending' ? t('manage_profile.member_statuses.under_review') : 
+                   company.status === 'pending_payment' ? t('manage_profile.member_statuses.payment_required') : 
+                   company.status === 'pending_invoice' ? t('manage_profile.member_statuses.invoice_sent') : 
                    company.status}
                 </span>
               </div>
@@ -323,7 +385,7 @@ export default function ManageProfile() {
               onClick={() => setShowSettings(!showSettings)}
               className="text-sm text-gray-600 hover:text-gray-900 flex items-center space-x-1"
             >
-              <span>Settings</span>
+              <span>{t('manage_profile.settings')}</span>
               <svg className={`w-4 h-4 transition-transform ${showSettings ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -333,12 +395,12 @@ export default function ManageProfile() {
           {/* Company Settings - Collapsible */}
           {showSettings && (
             <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Company Settings</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('manage_profile.company_settings')}</h4>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-medium text-gray-700">Include in Member Directory</span>
-                    <p className="text-xs text-gray-500">Show your company in the public member directory</p>
+                    <span className="text-sm font-medium text-gray-700">{t('manage_profile.directory_inclusion')}</span>
+                    <p className="text-xs text-gray-500">{t('manage_profile.directory_inclusion_desc')}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -348,8 +410,8 @@ export default function ManageProfile() {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-medium text-gray-700">Public Contact Information</span>
-                    <p className="text-xs text-gray-500">Allow other members to see your contact details</p>
+                    <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact')}</span>
+                    <p className="text-xs text-gray-500">{t('manage_profile.public_contact_desc')}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -368,14 +430,14 @@ export default function ManageProfile() {
         <div className="px-6 py-4 border-b border-fase-light-gold">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              Team Members ({members.length})
+              {t('manage_profile.team_members')} ({members.length})
             </h3>
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
               variant="primary"
               size="small"
             >
-              {showAddForm ? 'Cancel' : 'Add Member'}
+              {showAddForm ? t('manage_profile.cancel') : t('manage_profile.add_member')}
             </Button>
           </div>
         </div>
@@ -383,39 +445,39 @@ export default function ManageProfile() {
         {/* Add Member Form */}
         {showAddForm && (
           <div className="px-6 py-4 border-b border-fase-light-gold bg-gray-50">
-            <h4 className="text-md font-medium text-fase-navy mb-4">Add New Member</h4>
+            <h4 className="text-md font-medium text-fase-navy mb-4">{t('manage_profile.add_new_member')}</h4>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-1">
-                    Email Address *
+                    {t('manage_profile.email_address')} *
                   </label>
                   <input
                     type="email"
                     value={newMember.email}
                     onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                    placeholder="member@company.com"
+                    placeholder={t('manage_profile.placeholders.email')}
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-1">
-                    Full Name *
+                    {t('manage_profile.full_name')} *
                   </label>
                   <input
                     type="text"
                     value={newMember.personalName}
                     onChange={(e) => setNewMember(prev => ({ ...prev, personalName: e.target.value }))}
                     className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                    placeholder="John Doe"
+                    placeholder={t('manage_profile.placeholders.name')}
                     required
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-1">
-                  Job Title
+                  {t('manage_profile.job_title')}
                 </label>
                 <input
                   type="text"
@@ -432,7 +494,7 @@ export default function ManageProfile() {
                   variant="primary"
                   size="small"
                 >
-                  {adding ? 'Adding...' : 'Add Member'}
+                  {adding ? t('manage_profile.adding') : t('manage_profile.add_member')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -442,7 +504,7 @@ export default function ManageProfile() {
                   variant="secondary"
                   size="small"
                 >
-                  Cancel
+                  {t('manage_profile.cancel')}
                 </Button>
               </div>
             </div>
@@ -458,7 +520,7 @@ export default function ManageProfile() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-fase-navy mb-1">
-                        Full Name
+                        {t('manage_profile.full_name')}
                       </label>
                       <input
                         type="text"
@@ -471,7 +533,7 @@ export default function ManageProfile() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-fase-navy mb-1">
-                        Job Title
+                        {t('manage_profile.job_title')}
                       </label>
                       <input
                         type="text"
@@ -495,7 +557,7 @@ export default function ManageProfile() {
                       className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-fase-light-gold rounded"
                     />
                     <label htmlFor={`primary-${memberItem.id}`} className="ml-2 text-sm text-fase-black">
-                      Account Administrator
+                      {t('manage_profile.account_administrator')}
                     </label>
                   </div>
 
@@ -506,14 +568,14 @@ export default function ManageProfile() {
                       variant="primary"
                       size="small"
                     >
-                      {saving ? 'Saving...' : 'Save'}
+                      {saving ? t('manage_profile.saving') : t('manage_profile.save')}
                     </Button>
                     <Button
                       onClick={() => setEditingMember(null)}
                       variant="secondary"
                       size="small"
                     >
-                      Cancel
+                      {t('manage_profile.cancel')}
                     </Button>
                   </div>
                 </div>
@@ -533,17 +595,17 @@ export default function ManageProfile() {
                         </h4>
                         {memberItem.isPrimaryContact && (
                           <span className="text-xs font-medium text-gray-600">
-                            (Account Administrator)
+                            ({t('manage_profile.account_administrator')})
                           </span>
                         )}
                         {memberItem.id === user?.uid && (
                           <span className="text-xs font-medium text-gray-600">
-                            (You)
+                            ({t('manage_profile.you')})
                           </span>
                         )}
                         {memberNeedsInvite(memberItem) && (
                           <span className="text-xs font-medium text-amber-600">
-                            (Pending Invite)
+                            ({t('manage_profile.pending_invite_status')})
                           </span>
                         )}
                       </div>
@@ -552,7 +614,7 @@ export default function ManageProfile() {
                         <p className="text-sm text-gray-600">{memberItem.jobTitle}</p>
                       )}
                       <p className="text-xs text-gray-500">
-                        Joined {memberItem.joinedAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                        Joined {memberItem.joinedAt?.toDate?.()?.toLocaleDateString() || t('manage_profile.unknown')}
                       </p>
                     </div>
                   </div>
@@ -565,7 +627,7 @@ export default function ManageProfile() {
                         variant="primary"
                         size="small"
                       >
-                        {inviting === memberItem.id ? 'Sending...' : 'Send Invite'}
+                        {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
                       </Button>
                     ) : (
                       <Button
@@ -573,7 +635,7 @@ export default function ManageProfile() {
                         variant="secondary"
                         size="small"
                       >
-                        Edit
+                        {t('manage_profile.edit')}
                       </Button>
                     )}
                     {memberItem.id !== user?.uid && (
@@ -583,7 +645,7 @@ export default function ManageProfile() {
                         size="small"
                         className="text-red-600 hover:text-red-800"
                       >
-                        Remove
+                        {t('manage_profile.remove')}
                       </Button>
                     )}
                   </div>
@@ -601,8 +663,8 @@ export default function ManageProfile() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No Members Found</h3>
-          <p className="text-fase-black">No team members found for this company.</p>
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('manage_profile.no_members')}</h3>
+          <p className="text-fase-black">{t('manage_profile.no_members_desc')}</p>
         </div>
       )}
     </div>
