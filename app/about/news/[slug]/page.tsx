@@ -13,6 +13,8 @@ interface ArticleMetadata {
   date: string;
   excerpt: string;
   author?: string;
+  bannerImage?: string;
+  bannerImageAlt?: string;
 }
 
 export default function NewsArticlePage() {
@@ -66,7 +68,7 @@ export default function NewsArticlePage() {
         }
         
         const content = lines.slice(metadataEnd).join('\n');
-        const htmlContent = marked(content);
+        const htmlContent = await marked(content);
         
         console.log('Parsed metadata:', metadata);
         console.log('Content length:', content.length);
