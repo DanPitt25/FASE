@@ -266,6 +266,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate required address fields
+    const requiredAddressFields = [
+      'organizationName',
+      'primaryContact.name',
+      'primaryContact.email',
+      'registeredAddress.line1',
+      'registeredAddress.city',
+      'registeredAddress.postalCode',
+      'registeredAddress.country'
+    ];
+
+    const missingFields = [];
+    for (const field of requiredAddressFields) {
+      const fieldValue = field.includes('.') 
+        ? field.split('.').reduce((obj, key) => obj?.[key], membershipData)
+        : membershipData[field];
+      
+      if (!fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
+        missingFields.push(field);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
     // const { db } = await initializeAdmin(); // Skipped - not storing invoice records
 
     // Generate simple 5-digit invoice number

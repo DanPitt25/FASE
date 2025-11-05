@@ -6,11 +6,321 @@ import DashboardLayout from '../../components/DashboardLayout';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 // Note: MemberApplication type no longer used after UnifiedMember migration
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, createAlert, sendMessage } from '../../lib/unified-messaging';
-import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, getAccountsByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
+import { searchMembersByOrganizationName, getUserIdsForMemberCriteria, UnifiedMember, getMembersByStatus, updateMemberStatus, getAllPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getOrganizationForMember, OrganizationAccount } from '../../lib/unified-member';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
+
+// Simple function to get all account documents (not individual members)
+const getAllAccounts = async () => {
+  try {
+    const accountsRef = collection(db, 'accounts');
+    const snapshot = await getDocs(accountsRef);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error getting all accounts:', error);
+    return [];
+  }
+};
+
+// Email form component
+function EmailsTab({ prefilledData = null }: { prefilledData?: any }) {
+  const [formData, setFormData] = useState({
+    email: prefilledData?.accountAdministrator?.email || prefilledData?.email || '',
+    cc: '',
+    fullName: prefilledData?.accountAdministrator?.name || prefilledData?.personalName || '',
+    greeting: '',
+    gender: 'm',
+    organizationName: prefilledData?.organizationName || '',
+    membershipType: prefilledData?.membershipType || 'corporate',
+    organizationType: prefilledData?.organizationType || 'MGA',
+    hasOtherAssociations: prefilledData?.hasOtherAssociations || false,
+    userLocale: 'en',
+    address: {
+      line1: prefilledData?.businessAddress?.line1 || prefilledData?.registeredAddress?.line1 || '',
+      line2: prefilledData?.businessAddress?.line2 || prefilledData?.registeredAddress?.line2 || '',
+      city: prefilledData?.businessAddress?.city || prefilledData?.registeredAddress?.city || '',
+      county: prefilledData?.businessAddress?.county || prefilledData?.registeredAddress?.county || '',
+      postcode: prefilledData?.businessAddress?.postcode || prefilledData?.registeredAddress?.postcode || '',
+      country: prefilledData?.businessAddress?.country || prefilledData?.registeredAddress?.country || ''
+    }
+  });
+
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  // Calculate pricing automatically
+  const calculateOriginalAmount = () => {
+    if (formData.membershipType === 'individual') {
+      return 500;
+    } else if (formData.organizationType === 'MGA') {
+      // Use prefilledData GWP if available, otherwise default to lowest tier
+      const gwp = prefilledData?.portfolio?.grossWrittenPremiums;
+      switch (gwp) {
+        case '<10m': return 900;
+        case '10-20m': return 1500;
+        case '20-50m': return 2200;
+        case '50-100m': return 2800;
+        case '100-500m': return 4200;
+        case '500m+': return 7000;
+        default: return 900;
+      }
+    } else if (formData.organizationType === 'carrier') {
+      return 4000;
+    } else if (formData.organizationType === 'provider') {
+      return 5000;
+    }
+    return 900;
+  };
+
+  const originalAmount = calculateOriginalAmount();
+  const finalAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/test-membership-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          totalAmount: finalAmount,
+          exactTotalAmount: finalAmount, // Use exact calculated amount for PayPal
+          originalAmount: originalAmount.toString(),
+          discountAmount: formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0',
+          discountReason: formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '',
+          userId: `FASE-${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}` // Generate safe random ID for PayPal tracking
+        })
+      });
+
+      const data = await response.json();
+      setResult(data);
+    } catch (error: any) {
+      setResult({ success: false, error: error.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">Send Membership Email</h3>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Language Selection */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Language</h4>
+            <div className="w-1/3">
+              <select
+                value={formData.userLocale}
+                onChange={(e) => setFormData({...formData, userLocale: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent w-full"
+              >
+                <option value="en">English</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Email Recipients */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Recipients</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="email"
+                placeholder="Primary Email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+              <input
+                type="email"
+                placeholder="CC Email (optional)"
+                value={formData.cc}
+                onChange={(e) => setFormData({...formData, cc: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Contact Details */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Contact Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Greeting (Mr. Smith)"
+                value={formData.greeting}
+                onChange={(e) => setFormData({...formData, greeting: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              />
+              {formData.userLocale === 'fr' && (
+                <select
+                  value={formData.gender}
+                  onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                  className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                >
+                  <option value="m">Masculine (Cher)</option>
+                  <option value="f">Feminine (Chère)</option>
+                </select>
+              )}
+              <input
+                type="text"
+                placeholder="Organization Name"
+                value={formData.organizationName}
+                onChange={(e) => setFormData({...formData, organizationName: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Address</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Address Line 1"
+                value={formData.address.line1}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, line1: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Address Line 2"
+                value={formData.address.line2}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, line2: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              />
+              <input
+                type="text"
+                placeholder="City"
+                value={formData.address.city}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, city: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+              <input
+                type="text"
+                placeholder="County/State"
+                value={formData.address.county}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, county: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              />
+              <input
+                type="text"
+                placeholder="Postcode"
+                value={formData.address.postcode}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, postcode: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Country"
+                value={formData.address.country}
+                onChange={(e) => setFormData({...formData, address: {...formData.address, country: e.target.value}})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Membership & Pricing */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Membership & Pricing</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select
+                value={formData.membershipType}
+                onChange={(e) => setFormData({...formData, membershipType: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="individual">Individual</option>
+                <option value="corporate">Corporate</option>
+              </select>
+              <select
+                value={formData.organizationType}
+                onChange={(e) => setFormData({...formData, organizationType: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="MGA">MGA</option>
+                <option value="carrier">Carrier</option>
+                <option value="provider">Service Provider</option>
+              </select>
+              <div className="bg-gray-50 border border-gray-300 rounded px-3 py-2">
+                <label className="text-xs text-gray-600 block">Original Amount</label>
+                <span className="text-lg font-semibold text-gray-900">€{originalAmount.toLocaleString()}</span>
+              </div>
+              <div className={`border border-gray-300 rounded px-3 py-2 ${formData.hasOtherAssociations ? 'bg-green-50' : 'bg-gray-50'}`}>
+                <label className="text-xs text-gray-600 block">Final Amount</label>
+                <span className="text-lg font-semibold text-gray-900">€{finalAmount.toLocaleString()}</span>
+                {formData.hasOtherAssociations && (
+                  <div className="text-xs text-green-700 mt-1">20% Multi-Association Discount Applied</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="border-b pb-6">
+            <h4 className="text-md font-semibold mb-4 text-fase-navy">Settings</h4>
+            <div className="grid grid-cols-1 gap-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.hasOtherAssociations}
+                  onChange={(e) => setFormData({...formData, hasOtherAssociations: e.target.checked})}
+                  className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                />
+                <span className="text-sm text-gray-700">Has Other Associations (20% discount)</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={sending}
+              variant="primary"
+              size="medium"
+            >
+              {sending ? 'Sending...' : 'Send Email'}
+            </Button>
+          </div>
+        </form>
+
+        {/* Result */}
+        {result && (
+          <div className={`mt-6 p-4 rounded ${result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {result.success ? 'Email sent successfully!' : `Error: ${result.error}`}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Pricing calculation function (member includes organization data)
 const calculateMembershipFee = (member: UnifiedMember): number => {
@@ -19,17 +329,24 @@ const calculateMembershipFee = (member: UnifiedMember): number => {
   if (member.membershipType === 'individual') {
     baseFee = 500;
   } else if (member.organizationType === 'MGA' && member.portfolio?.grossWrittenPremiums) {
+    // MGA pricing based on GWP tiers
     switch (member.portfolio.grossWrittenPremiums) {
       case '<10m': baseFee = 900; break;
       case '10-20m': baseFee = 1500; break;
-      case '20-50m': baseFee = 2000; break;
+      case '20-50m': baseFee = 2200; break; // Updated from 2000 to 2200
       case '50-100m': baseFee = 2800; break;
       case '100-500m': baseFee = 4200; break;
-      case '500m+': baseFee = 6400; break;
+      case '500m+': baseFee = 7000; break; // Updated from 6400 to 7000
       default: baseFee = 900;
     }
+  } else if (member.organizationType === 'carrier') {
+    // Fixed fee for insurance carriers
+    baseFee = 4000;
+  } else if (member.organizationType === 'provider') {
+    // Fixed fee for service providers
+    baseFee = 5000;
   } else {
-    // Default corporate fee for carriers and providers
+    // Default fallback
     baseFee = 900;
   }
   
@@ -54,6 +371,10 @@ export default function AdminPortalPage() {
     requestData: any;
   } | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
+  
+  // Email form pre-fill state
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,14 +416,13 @@ export default function AdminPortalPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [pendingAccounts, approvedAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
-        getAccountsByStatus('pending_invoice'), // Get pending invoice accounts
-        getAccountsByStatus('approved'), // Get approved accounts  
+      const [allAccounts, joinRequestsData, alertsData, messagesData] = await Promise.all([
+        getAllAccounts(), // Get all account documents only
         getAllPendingJoinRequests(), // Get pending join requests
         member?.id ? getUserAlerts(member.id) : [], // Use account ID
         member?.id ? getUserMessages(member.id) : [] // Use account ID
       ]);
-      setMemberApplications([...pendingAccounts, ...approvedAccounts]); // Combine for display
+      setMemberApplications(allAccounts); // Show all accounts with their statuses
       setPendingJoinRequests(joinRequestsData);
       setAlerts(alertsData);
       setMessages(messagesData);
@@ -167,30 +487,52 @@ export default function AdminPortalPage() {
     }
   };
 
-  const handleMemberApplicationStatus = async (memberId: string, newStatus: 'approved' | 'rejected') => {
+  const handleSendEmail = (account: any) => {
+    setSelectedAccount(account);
+    setShowEmailForm(true);
+  };
+
+  const handleConfirmInvoice = async (memberId: string) => {
     try {
-      console.log('Updating member status for:', memberId, 'to:', newStatus);
+      console.log('Updating member status to invoice_sent for:', memberId);
       
-      // Validate memberId
       if (!memberId || typeof memberId !== 'string') {
         console.error('Invalid memberId:', memberId);
         alert('Invalid member ID');
         return;
       }
       
-      // Map rejected to guest status for UnifiedMember
-      const status: UnifiedMember['status'] = newStatus === 'rejected' ? 'guest' : 'approved';
-      await updateMemberStatus(memberId, status);
+      await updateMemberStatus(memberId, 'invoice_sent');
       setMemberApplications(prev => 
-        prev.map(member => member.id === memberId ? { ...member, status } : member)
+        prev.map(member => member.id === memberId ? { ...member, status: 'invoice_sent' } : member)
       );
       
-      // Reload data after successful update
-      await loadData();
+      alert('Status updated to Invoice Sent');
     } catch (error) {
       console.error('Error updating member status:', error);
-      console.error('MemberId was:', memberId);
-      alert('Error updating member status. Please try again.');
+      alert('Error updating status. Please try again.');
+    }
+  };
+
+  const handleFlag = async (memberId: string) => {
+    try {
+      console.log('Flagging member:', memberId);
+      
+      if (!memberId || typeof memberId !== 'string') {
+        console.error('Invalid memberId:', memberId);
+        alert('Invalid member ID');
+        return;
+      }
+      
+      await updateMemberStatus(memberId, 'flagged');
+      setMemberApplications(prev => 
+        prev.map(member => member.id === memberId ? { ...member, status: 'flagged' } : member)
+      );
+      
+      alert('Account flagged');
+    } catch (error) {
+      console.error('Error flagging account:', error);
+      alert('Error flagging account. Please try again.');
     }
   };
 
@@ -461,13 +803,16 @@ export default function AdminPortalPage() {
     }
   };
 
-  const pendingApplications = memberApplications.filter(member => member.status === 'pending_invoice');
+  const pendingApplications = memberApplications.filter(member => member.status === 'pending');
+  const pendingInvoiceApplications = memberApplications.filter(member => member.status === 'pending_invoice');
+  const pendingPaymentApplications = memberApplications.filter(member => member.status === 'pending_payment');
+  const invoiceSentApplications = memberApplications.filter(member => member.status === 'invoice_sent');
+  const flaggedApplications = memberApplications.filter(member => member.status === 'flagged');
   const approvedApplications = memberApplications.filter(member => member.status === 'approved');
-  // Note: invoice_sent status doesn't exist in UnifiedMember, mapping to pending for now
-  const invoiceSentApplications: UnifiedMember[] = [];
+  const guestApplications = memberApplications.filter(member => member.status === 'guest');
   
-  // Calculate total expected revenue from pending and invoice_sent applications
-  const totalExpectedRevenue = [...pendingApplications, ...invoiceSentApplications]
+  // Calculate total expected revenue from all pending applications
+  const totalExpectedRevenue = [...pendingApplications, ...pendingInvoiceApplications, ...pendingPaymentApplications]
     .reduce((total, app) => total + calculateMembershipFee(app), 0);
 
   if (authLoading || adminLoading || !user || !isAdmin) {
@@ -503,47 +848,77 @@ export default function AdminPortalPage() {
         </div>
       ) : (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Pending Invoice Payments</h3>
-                      <p className="text-3xl font-bold text-orange-600 mb-2">{pendingApplications.length}</p>
-                      <p className="text-fase-black text-sm">Awaiting payment confirmation</p>
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Pending Applications</h3>
+                      <p className="text-2xl font-bold text-yellow-600 mb-2">{pendingApplications.length}</p>
+                      <p className="text-fase-black text-xs">New applications</p>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Pending Invoice</h3>
+                      <p className="text-2xl font-bold text-orange-600 mb-2">{pendingInvoiceApplications.length}</p>
+                      <p className="text-fase-black text-xs">Awaiting invoice</p>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Pending Payment</h3>
+                      <p className="text-2xl font-bold text-blue-600 mb-2">{pendingPaymentApplications.length}</p>
+                      <p className="text-fase-black text-xs">Awaiting payment</p>
                     </div>
                     
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Active Members</h3>
-                      <p className="text-3xl font-bold text-green-600 mb-2">{approvedApplications.length}</p>
-                      <p className="text-fase-black text-sm">Approved members</p>
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Active Members</h3>
+                      <p className="text-2xl font-bold text-green-600 mb-2">{approvedApplications.length}</p>
+                      <p className="text-fase-black text-xs">Approved members</p>
                     </div>
                     
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Expected Revenue</h3>
-                      <p className="text-3xl font-bold text-blue-600 mb-2">€{totalExpectedRevenue.toLocaleString()}</p>
-                      <p className="text-fase-black text-sm">From pending applications</p>
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Invoice Sent</h3>
+                      <p className="text-2xl font-bold text-purple-600 mb-2">{invoiceSentApplications.length}</p>
+                      <p className="text-fase-black text-xs">Invoices sent</p>
                     </div>
                     
                     <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">Join Requests</h3>
-                      <p className="text-3xl font-bold text-purple-600 mb-2">{pendingJoinRequests.length}</p>
-                      <p className="text-fase-black text-sm">Pending approval</p>
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Flagged</h3>
+                      <p className="text-2xl font-bold text-red-600 mb-2">{flaggedApplications.length}</p>
+                      <p className="text-fase-black text-xs">Flagged accounts</p>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+                      <h3 className="text-sm font-noto-serif font-semibold text-fase-navy mb-2">Expected Revenue</h3>
+                      <p className="text-2xl font-bold text-indigo-600 mb-2">€{totalExpectedRevenue.toLocaleString()}</p>
+                      <p className="text-fase-black text-xs">From pending apps</p>
                     </div>
                   </div>
                   
                   {/* Revenue Breakdown */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
                     <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Revenue Breakdown</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                        <p className="text-xl font-bold text-yellow-600">€{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-yellow-800">Pending ({pendingApplications.length})</p>
+                      </div>
                       <div className="text-center p-4 bg-orange-50 rounded-lg">
-                        <p className="text-2xl font-bold text-orange-600">€{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
-                        <p className="text-sm text-orange-800">Pending Review ({pendingApplications.length})</p>
+                        <p className="text-xl font-bold text-orange-600">€{pendingInvoiceApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-orange-800">Pending Invoice ({pendingInvoiceApplications.length})</p>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <p className="text-2xl font-bold text-blue-600">€{invoiceSentApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
-                        <p className="text-sm text-blue-800">Invoices Sent ({invoiceSentApplications.length})</p>
+                        <p className="text-xl font-bold text-blue-600">€{pendingPaymentApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-blue-800">Pending Payment ({pendingPaymentApplications.length})</p>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <p className="text-xl font-bold text-purple-600">€{invoiceSentApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-purple-800">Invoice Sent ({invoiceSentApplications.length})</p>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <p className="text-xl font-bold text-red-600">€{flaggedApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-red-800">Flagged ({flaggedApplications.length})</p>
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-2xl font-bold text-green-600">€{approvedApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
-                        <p className="text-sm text-green-800">Approved Members ({approvedApplications.length})</p>
+                        <p className="text-xl font-bold text-green-600">€{approvedApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                        <p className="text-sm text-green-800">Approved ({approvedApplications.length})</p>
                       </div>
                     </div>
                   </div>
@@ -552,7 +927,7 @@ export default function AdminPortalPage() {
     },
     {
       id: 'members',
-      title: `Members${pendingApplications.length > 0 ? ` (${pendingApplications.length})` : ''}`,
+      title: `Members (${memberApplications.length})`,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -565,38 +940,50 @@ export default function AdminPortalPage() {
         </div>
       ) : (
                 <div className="space-y-6">
-                  {/* Pending Applications */}
+                  {/* All Members */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
                     <div className="p-6 border-b border-fase-light-gold">
-                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Pending Invoice Payments</h3>
-                      <p className="text-fase-black text-sm mt-1">Confirm bank transfer payments for invoice members • Expected revenue: €{pendingApplications.reduce((total, app) => total + calculateMembershipFee(app), 0).toLocaleString()}</p>
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">All Member Accounts</h3>
+                      <p className="text-fase-black text-sm mt-1">All member accounts showing current status • Total expected revenue: €{totalExpectedRevenue.toLocaleString()}</p>
                     </div>
                     <div className="divide-y divide-fase-light-gold">
-                      {pendingApplications.length === 0 ? (
+                      {memberApplications.length === 0 ? (
                         <div className="p-8 text-center">
-                          <p className="text-fase-black">No pending invoice payments to confirm</p>
+                          <p className="text-fase-black">No member accounts found</p>
                         </div>
                       ) : (
-                        pendingApplications.map(member => (
+                        memberApplications.map(member => (
                           <div key={member.id} className="p-6">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center mb-2">
                                   <span className="font-medium text-fase-navy text-lg">{member.organizationName || 'Unknown Organization'}</span>
-                                  <span className="ml-3 px-2 py-1 bg-fase-cream text-fase-navy text-xs rounded-full">
+                                  <span className={`ml-3 px-2 py-1 text-xs rounded-full font-medium ${
+                                    member.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                    member.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    member.status === 'pending_invoice' ? 'bg-orange-100 text-orange-800' :
+                                    member.status === 'pending_payment' ? 'bg-blue-100 text-blue-800' :
+                                    member.status === 'invoice_sent' ? 'bg-purple-100 text-purple-800' :
+                                    member.status === 'flagged' ? 'bg-red-100 text-red-800' :
+                                    member.status === 'guest' ? 'bg-gray-100 text-gray-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {member.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
+                                  </span>
+                                  <span className="ml-2 px-2 py-1 bg-fase-cream text-fase-navy text-xs rounded-full">
                                     {member.organizationType || 'N/A'}
                                   </span>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                                   <div>
-                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {member.primaryContact?.name || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {member.primaryContact?.email || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {member.primaryContact?.phone || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {member.accountAdministrator?.name || member.primaryContact?.name || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {member.accountAdministrator?.email || member.primaryContact?.email || member.email || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {member.accountAdministrator?.phone || member.primaryContact?.phone || 'N/A'}</p>
                                   </div>
                                   <div>
-                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {member.registeredAddress?.country || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>City:</strong> {member.registeredAddress?.city || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Applied:</strong> {member.createdAt?.seconds ? new Date(member.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {member.businessAddress?.country || member.registeredAddress?.country || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>City:</strong> {member.businessAddress?.city || member.registeredAddress?.city || 'N/A'}</p>
+                                    <p className="text-sm text-fase-black"><strong>Applied:</strong> {member.createdAt?.seconds ? new Date(member.createdAt.seconds * 1000).toLocaleDateString() : member.createdAt?.toDate ? member.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
                                   </div>
                                   <div>
                                     <p className="text-sm text-fase-black"><strong>Membership:</strong> {member.membershipType === 'individual' ? 'Individual' : `${member.organizationType || 'Corporate'} Corporate`}</p>
@@ -619,18 +1006,24 @@ export default function AdminPortalPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className="flex space-x-2 ml-4">
+                              <div className="flex flex-col space-y-2 ml-4">
                                 <button
-                                  onClick={() => handleMemberApplicationStatus(member.id, 'approved')}
-                                  className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                                  onClick={() => handleSendEmail(member)}
+                                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                                 >
-                                  Confirm Payment
+                                  Send Email
                                 </button>
                                 <button
-                                  onClick={() => handleMemberApplicationStatus(member.id, 'rejected')}
+                                  onClick={() => handleConfirmInvoice(member.id)}
+                                  className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                                >
+                                  Confirm Invoice
+                                </button>
+                                <button
+                                  onClick={() => handleFlag(member.id)}
                                   className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
                                 >
-                                  Reject
+                                  Flag
                                 </button>
                               </div>
                             </div>
@@ -640,67 +1033,6 @@ export default function AdminPortalPage() {
                     </div>
                   </div>
 
-                  {/* Invoice Sent Applications */}
-                  {invoiceSentApplications.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
-                      <div className="p-6 border-b border-fase-light-gold">
-                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Invoices Sent</h3>
-                        <p className="text-fase-black text-sm mt-1">Awaiting payment • Expected revenue: €{invoiceSentApplications.reduce((total, member) => total + calculateMembershipFee(member), 0).toLocaleString()}</p>
-                      </div>
-                      <div className="divide-y divide-fase-light-gold">
-                        {invoiceSentApplications.map(member => (
-                          <div key={member.id} className="p-6">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center mb-2">
-                                  <span className="font-medium text-fase-navy text-lg">{member.organizationName || 'Unknown Organization'}</span>
-                                  <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                    Invoice Sent
-                                  </span>
-                                  <span className="ml-2 px-2 py-1 bg-fase-cream text-fase-navy text-xs rounded-full">
-                                    {member.organizationType || 'N/A'}
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                                  <div>
-                                    <p className="text-sm text-fase-black"><strong>Contact:</strong> {member.primaryContact?.name || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Email:</strong> {member.primaryContact?.email || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Phone:</strong> {member.primaryContact?.phone || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-fase-black"><strong>Country:</strong> {member.registeredAddress?.country || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>City:</strong> {member.registeredAddress?.city || 'N/A'}</p>
-                                    <p className="text-sm text-fase-black"><strong>Invoice Sent:</strong> {member.updatedAt?.seconds ? new Date(member.updatedAt.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm text-fase-black"><strong>Membership:</strong> {member.membershipType === 'individual' ? 'Individual' : `${member.organizationType || 'Corporate'} Corporate`}</p>
-                                    {member.portfolio?.grossWrittenPremiums && (
-                                      <p className="text-sm text-fase-black"><strong>GWP:</strong> {member.portfolio.grossWrittenPremiums}</p>
-                                    )}
-                                    <p className="text-sm font-semibold text-blue-600"><strong>Expected Payment: €{calculateMembershipFee(member)}</strong></p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="ml-4 flex space-x-2">
-                                <Button
-                                  onClick={() => handleMemberApplicationStatus(member.id, 'approved')}
-                                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                >
-                                  Mark as Paid
-                                </Button>
-                                <Button
-                                  onClick={() => handleMemberApplicationStatus(member.id, 'rejected')}
-                                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                >
-                                  Reject
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Approved Members */}
                   <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold">
@@ -1087,6 +1419,16 @@ export default function AdminPortalPage() {
           </div>
         </div>
       )
+    },
+    {
+      id: 'emails',
+      title: 'Emails',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      content: <EmailsTab prefilledData={null} />
     }
   ];
 
@@ -1601,6 +1943,21 @@ export default function AdminPortalPage() {
                 {processingRequest.action === 'approve' ? 'Approve Request' : 'Reject Request'}
               </Button>
             </div>
+        </Modal>
+      )}
+
+      {/* Pre-filled Email Form Modal */}
+      {showEmailForm && selectedAccount && (
+        <Modal 
+          isOpen={showEmailForm} 
+          onClose={() => {
+            setShowEmailForm(false);
+            setSelectedAccount(null);
+          }} 
+          title={`Send Email - ${selectedAccount.organizationName}`}
+          maxWidth="4xl"
+        >
+          <EmailsTab prefilledData={selectedAccount} />
         </Modal>
       )}
     </>

@@ -135,7 +135,6 @@ export async function POST(request: NextRequest) {
       organizationName, 
       organizationType, 
       membershipType,
-      grossWrittenPremiums, 
       userEmail,
       userId,
       hasOtherAssociations = false,
@@ -146,20 +145,14 @@ export async function POST(request: NextRequest) {
     // Get access token
     const accessToken = await getPayPalAccessToken();
     
-    // Use exact amount from frontend if provided, otherwise calculate
+    // Use exact amount from frontend or test payment
     let finalPrice;
-    if (testPayment || (grossWrittenPremiums && grossWrittenPremiums.includes('test'))) {
+    if (testPayment) {
       finalPrice = 0.50; // 50 cents for testing
     } else if (exactTotalAmount) {
-      finalPrice = exactTotalAmount; // Use exact amount from final screen
+      finalPrice = exactTotalAmount; // Use exact amount from admin
     } else {
-      finalPrice = calculateMembershipFee(
-        membershipType as 'individual' | 'corporate',
-        organizationType as 'MGA' | 'carrier' | 'provider', 
-        grossWrittenPremiums || '',
-        'EUR',
-        hasOtherAssociations
-      );
+      throw new Error('exactTotalAmount is required');
     }
 
     // Create product and billing plan
@@ -195,7 +188,7 @@ export async function POST(request: NextRequest) {
         return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-succeeded`,
         cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment-failed`
       },
-      custom_id: userId
+      custom_id: userId.substring(0, 127) // PayPal custom_id has 127 char limit
     };
 
     const subscriptionResponse = await fetch(`${base}/v1/billing/subscriptions`, {
@@ -211,8 +204,11 @@ export async function POST(request: NextRequest) {
 
     if (!subscriptionResponse.ok) {
       const errorData = await subscriptionResponse.text();
-      console.error('PayPal subscription creation error:', subscriptionResponse.status, errorData);
-      throw new Error(`PayPal subscription creation failed: ${subscriptionResponse.status}`);
+      console.error('❌ PayPal subscription creation failed!');
+      console.error('Status:', subscriptionResponse.status);
+      console.error('Response:', errorData);
+      console.error('Request data sent:', JSON.stringify(subscriptionData, null, 2));
+      throw new Error(`PayPal subscription creation failed: ${subscriptionResponse.status} - ${errorData}`);
     }
 
     const subscription = await subscriptionResponse.json();
