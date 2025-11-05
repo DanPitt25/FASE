@@ -999,7 +999,7 @@
       }
     },
     "membership_pricing": {
-      "title": "Membership Pricing",
+      "title": "Membership Dues",
       "subtitle": "Annual membership fees designed for different organization types and sizes",
       "mga": {
         "title": "MGA Membership",
@@ -1045,8 +1045,8 @@
         ]
       },
       "carrier": {
-        "title": "Insurance Carrier Membership",
-        "description": "For insurance and reinsurance companies",
+        "title": "Insurance Carrier / (Re)insurance Broker Membership",
+        "description": "For insurance and reinsurance companies, and (re)insurance brokers",
         "price": "€4,000",
         "period": "per year",
         "features": [
@@ -1071,8 +1071,8 @@
         ]
       },
       "discount": {
-        "title": "Multi-Association Discount",
-        "description": "20% discount for organizations that are members of other MGA or insurance associations"
+        "title": "Multi-Association Discount", 
+        "description": "20% discount applies to all membership categories for organizations that are members of other MGA associations (NVGA, MGAA, ASASE, AIMGA, BAUA)"
       },
       "billing": {
         "note": "All memberships are billed annually. Membership will automatically renew each year with advance notice."
