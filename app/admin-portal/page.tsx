@@ -422,7 +422,7 @@ export default function AdminPortalPage() {
         member?.id ? getUserAlerts(member.id) : [], // Use account ID
         member?.id ? getUserMessages(member.id) : [] // Use account ID
       ]);
-      setMemberApplications(allAccounts); // Show all accounts with their statuses
+      setMemberApplications(allAccounts as UnifiedMember[]); // Show all accounts with their statuses
       setPendingJoinRequests(joinRequestsData);
       setAlerts(alertsData);
       setMessages(messagesData);
@@ -502,9 +502,9 @@ export default function AdminPortalPage() {
         return;
       }
       
-      await updateMemberStatus(memberId, 'invoice_sent');
+      await updateMemberStatus(memberId, 'pending_invoice');
       setMemberApplications(prev => 
-        prev.map(member => member.id === memberId ? { ...member, status: 'invoice_sent' } : member)
+        prev.map(member => member.id === memberId ? { ...member, status: 'pending_invoice' } : member)
       );
       
       alert('Status updated to Invoice Sent');
@@ -524,9 +524,9 @@ export default function AdminPortalPage() {
         return;
       }
       
-      await updateMemberStatus(memberId, 'flagged');
+      await updateMemberStatus(memberId, 'pending');
       setMemberApplications(prev => 
-        prev.map(member => member.id === memberId ? { ...member, status: 'flagged' } : member)
+        prev.map(member => member.id === memberId ? { ...member, status: 'pending' } : member)
       );
       
       alert('Account flagged');
@@ -806,8 +806,8 @@ export default function AdminPortalPage() {
   const pendingApplications = memberApplications.filter(member => member.status === 'pending');
   const pendingInvoiceApplications = memberApplications.filter(member => member.status === 'pending_invoice');
   const pendingPaymentApplications = memberApplications.filter(member => member.status === 'pending_payment');
-  const invoiceSentApplications = memberApplications.filter(member => member.status === 'invoice_sent');
-  const flaggedApplications = memberApplications.filter(member => member.status === 'flagged');
+  const invoiceSentApplications = memberApplications.filter(member => member.status === 'pending_invoice');
+  const flaggedApplications = memberApplications.filter(member => member.status === 'pending');
   const approvedApplications = memberApplications.filter(member => member.status === 'approved');
   const guestApplications = memberApplications.filter(member => member.status === 'guest');
   
@@ -963,8 +963,6 @@ export default function AdminPortalPage() {
                                     member.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                     member.status === 'pending_invoice' ? 'bg-orange-100 text-orange-800' :
                                     member.status === 'pending_payment' ? 'bg-blue-100 text-blue-800' :
-                                    member.status === 'invoice_sent' ? 'bg-purple-100 text-purple-800' :
-                                    member.status === 'flagged' ? 'bg-red-100 text-red-800' :
                                     member.status === 'guest' ? 'bg-gray-100 text-gray-800' :
                                     'bg-gray-100 text-gray-800'
                                   }`}>
