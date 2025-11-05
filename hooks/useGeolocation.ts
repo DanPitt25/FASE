@@ -48,6 +48,31 @@ const FRENCH_SPEAKING_COUNTRIES = [
   'VU', // Vanuatu
 ];
 
+// Spanish-speaking countries
+const SPANISH_SPEAKING_COUNTRIES = [
+  'ES', // Spain
+  'MX', // Mexico
+  'AR', // Argentina
+  'CO', // Colombia
+  'PE', // Peru
+  'VE', // Venezuela
+  'CL', // Chile
+  'EC', // Ecuador
+  'GT', // Guatemala
+  'CU', // Cuba
+  'BO', // Bolivia
+  'DO', // Dominican Republic
+  'HN', // Honduras
+  'PY', // Paraguay
+  'SV', // El Salvador
+  'NI', // Nicaragua
+  'CR', // Costa Rica
+  'PA', // Panama
+  'UY', // Uruguay
+  'PR', // Puerto Rico
+  'GQ', // Equatorial Guinea
+];
+
 
 export function useGeolocation(): GeolocationData {
   const [geolocationData, setGeolocationData] = useState<GeolocationData>({});
@@ -106,6 +131,7 @@ export function useGeolocation(): GeolocationData {
         if (browserLang) {
           const germanRegions = ['de', 'de-DE', 'de-AT', 'de-CH'];
           const frenchRegions = ['fr', 'fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'];
+          const spanishRegions = ['es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-PE', 'es-VE', 'es-CL', 'es-UY', 'es-PY', 'es-BO', 'es-EC', 'es-CR', 'es-PA', 'es-GT', 'es-HN', 'es-NI', 'es-SV', 'es-DO', 'es-CU', 'es-PR'];
           
           let detectedLanguage: Locale = 'en';
           if (germanRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {

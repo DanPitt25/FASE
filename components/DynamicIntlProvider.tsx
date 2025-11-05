@@ -6,7 +6,7 @@ import { ReactNode, useState, useEffect } from 'react';
 
 interface DynamicIntlProviderProps {
   children: ReactNode;
-  allMessages: { en: any; fr: any; de: any; it: any };
+  allMessages: { en: any; fr: any; de: any; };
 }
 
 export default function DynamicIntlProvider({ children, allMessages }: DynamicIntlProviderProps) {
@@ -23,7 +23,8 @@ export default function DynamicIntlProvider({ children, allMessages }: DynamicIn
 
   // Use the actual locale as early as possible to minimize flash
   // During SSR, we'll use 'en' but switch immediately on hydration
-  const currentLocale = locale;
+  // Fallback to 'en' if locale is not supported in allMessages
+  const currentLocale = (locale && allMessages[locale as keyof typeof allMessages]) ? locale : 'en';
   
   return (
     <NextIntlClientProvider 

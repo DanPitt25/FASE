@@ -2,22 +2,18 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import LoginForm from './login-form';
 import LanguageToggle from '../../components/LanguageToggle';
 
 export default function Login() {
   const t = useTranslations('login_form');
-  const router = useRouter();
 
-  useEffect(() => {
-    router.push('/');
-  }, [router]);
   return (
-    <div className="flex min-h-screen w-screen items-center justify-center bg-fase-navy">
-      <div className="z-10 w-full max-w-md overflow-hidden rounded-lg border border-fase-light-gold shadow-xl">
+    <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16 relative">
           {/* Language Toggle */}
           <div className="absolute top-4 right-4">

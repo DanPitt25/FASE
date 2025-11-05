@@ -268,12 +268,14 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
       
       // Corporate account (Firebase Auth UID = Primary Contact UID = Account ID)
       if (data.membershipType === 'corporate') {
-        // Check if this user exists in the members subcollection
-        const memberRef = doc(db, 'accounts', uid, 'members', uid);
-        const memberSnap = await getDoc(memberRef);
+        // Check if this user exists in the members subcollection by querying the 'id' field
+        const membersRef = collection(db, 'accounts', uid, 'members');
+        const memberQuery = query(membersRef, where('id', '==', uid));
+        const memberSnapshot = await getDocs(memberQuery);
         
-        if (memberSnap.exists()) {
-          const memberData = memberSnap.data();
+        if (!memberSnapshot.empty) {
+          const memberDoc = memberSnapshot.docs[0];
+          const memberData = memberDoc.data();
           
           return {
             id: uid,
@@ -308,11 +310,14 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
     const corporateSnapshot = await getDocs(corporateQuery);
     
     for (const orgDoc of corporateSnapshot.docs) {
-      const memberRef = doc(db, 'accounts', orgDoc.id, 'members', uid);
-      const memberSnap = await getDoc(memberRef);
+      // Query members subcollection by the 'id' field (Firebase Auth UID)
+      const membersRef = collection(db, 'accounts', orgDoc.id, 'members');
+      const memberQuery = query(membersRef, where('id', '==', uid));
+      const memberSnapshot = await getDocs(memberQuery);
       
-      if (memberSnap.exists()) {
-        const memberData = memberSnap.data();
+      if (!memberSnapshot.empty) {
+        const memberDoc = memberSnapshot.docs[0];
+        const memberData = memberDoc.data();
         const orgData = orgDoc.data();
         
         return {

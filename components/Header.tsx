@@ -100,13 +100,13 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
                 )}
                 
-{/* Member Login temporarily suppressed
-                {!user && (
+{/* Temporarily suppressed login button 
+                {!loading && !user && (
                   <a 
                     href="/login" 
                     className="text-xs text-fase-navy hover:text-fase-gold transition-colors duration-200 font-medium border border-fase-navy hover:border-fase-gold px-2 py-1 rounded"
                   >
-                    Member Login
+                    {tAuth('login')}
                   </a>
                 )}
                 */}
@@ -254,7 +254,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   }`}>Contact</a>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <Button href="/join" variant="primary" size="small">{tNav('join_us')}</Button>
+                  {!loading && !user && (
+                    <Button href="/join" variant="primary" size="small">{tNav('join_us')}</Button>
+                  )}
                   {!loading && user && (
                     <button
                       onClick={handleSignOut}
@@ -373,7 +375,16 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 </button>
               </div>
             ) : (
-              <Button href="/join" variant="primary" size="medium" className="w-full text-center mt-2">{tNav('join_us')}</Button>
+              <div className="mt-4 pt-4 border-t border-fase-light-gold space-y-2">
+                {!loading && !user && (
+                  <>
+                    {/* Temporarily suppressed login button 
+                    <Button href="/login" variant="secondary" size="medium" className="w-full text-center">{tAuth('login')}</Button>
+                    */}
+                    <Button href="/join" variant="primary" size="medium" className="w-full text-center">{tNav('join_us')}</Button>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>

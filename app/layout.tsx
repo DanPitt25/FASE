@@ -29,8 +29,7 @@ export default async function RootLayout({
   const enMessages = (await import('../messages/en.json')).default;
   const frMessages = (await import('../messages/fr.json')).default;
   const deMessages = (await import('../messages/de.json')).default;
-  const itMessages = (await import('../messages/it.json')).default;
-  const allMessages = { en: enMessages, fr: frMessages, de: deMessages, it: itMessages };
+  const allMessages = { en: enMessages, fr: frMessages, de: deMessages };
   
   return (
     <html lang="en">

@@ -9,9 +9,11 @@ import ManageProfile from "../../components/ManageProfile";
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
 import { sendPasswordReset } from "../../lib/auth";
 import { updateProfile } from "firebase/auth";
+import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
+  const { t, loading: translationsLoading } = usePortalTranslations();
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -117,7 +119,7 @@ export default function MemberContent() {
       setPasswordResetSent(true);
       setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
     } catch (error) {
-      alert('Failed to send password reset email. Please try again.');
+      alert(t('profile.password_reset_failed'));
     } finally {
       setSendingPasswordReset(false);
     }
@@ -143,9 +145,9 @@ export default function MemberContent() {
       await user.reload();
       
       setEditingProfile(false);
-      alert('Profile updated successfully!');
+      alert(t('profile.profile_updated'));
     } catch (error) {
-      alert('Failed to update profile. Please try again.');
+      alert(t('profile.profile_update_failed'));
     } finally {
       setSavingProfile(false);
     }
@@ -160,7 +162,7 @@ export default function MemberContent() {
   };
 
 
-  if (loading) {
+  if (loading || translationsLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         <div className="animate-pulse">
@@ -186,149 +188,169 @@ export default function MemberContent() {
   const dashboardSections = [
     {
       id: 'overview',
-      title: 'Overview',
+      title: t('sections.overview'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
       content: (
         <div className="space-y-6">
-          {/* Payment Status - Clean design */}
-          {member && member.status === 'pending_payment' && (
-            <div className="border border-amber-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Payment Required</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Complete your membership payment to access all FASE resources.
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('overview.welcome_title')}</h2>
+            <p className="text-fase-black mb-6">{t('overview.benefits_intro')}</p>
+            
+            <div className="space-y-4">
+              {/* Unique access to a pan-European MGA community */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.community.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.community.description_1')}
+                  </p>
+                  <p className="text-fase-black">
+                    {t('overview.community.description_2')}
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {member && member.status === 'pending_invoice' && (
-            <div className="border border-blue-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Invoice Sent</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Your membership invoice has been sent to your email. Access will be activated upon payment receipt.
+              </details>
+
+              {/* Brand endorsement */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.brand.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.brand.description_1')}
+                  </p>
+                  <p className="text-fase-black">
+                    {t('overview.brand.description_2')}
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {member && member.status === 'pending' && (
-            <div className="border border-gray-200 bg-white p-6">
-              <div className="flex items-start space-x-4">
-                <svg className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-medium">Application Under Review</h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Your membership application is being reviewed by our team. You&apos;ll receive an email once it&apos;s approved.
+              </details>
+
+              {/* Capacity and distribution matching */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.matching.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.matching.description_1')}
+                  </p>
+                  <p className="text-fase-black font-medium">
+                    {t('overview.matching.description_2')}
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
+              </details>
 
-          {/* Member Resources */}
-          <div className="space-y-4">
-            {/* Knowledge Base */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-fase-light-blue to-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Knowledge Base</h3>
-                    <p className="text-fase-black">Access industry insights, regulatory updates, and educational resources</p>
+              {/* Data and insights - with sub-sections */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.data.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.data.description')}
+                  </p>
+                  
+                  <div className="space-y-3 ml-4">
+                    {/* Regulatory analysis */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.regulatory.title')}</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black mb-3">
+                          {t('overview.data.regulatory.description_1')}
+                        </p>
+                        <p className="text-sm text-fase-black">
+                          {t('overview.data.regulatory.description_2')}
+                        </p>
+                      </div>
+                    </details>
+
+                    {/* Annual market report */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.report.title')}</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black">
+                          {t('overview.data.report.description')}
+                        </p>
+                      </div>
+                    </details>
+
+                    {/* Webinar archive */}
+                    <details className="group border border-gray-100 rounded-lg">
+                      <summary className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-25 rounded-lg">
+                        <h4 className="font-medium text-fase-navy">{t('overview.data.webinars.title')}</h4>
+                        <svg className="w-4 h-4 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="p-3 pt-0 border-t border-gray-50">
+                        <p className="text-sm text-fase-black">
+                          {t('overview.data.webinars.description')}
+                        </p>
+                      </div>
+                    </details>
                   </div>
                 </div>
-                <Button 
-                  href={hasMemberAccess ? "/knowledge" : "#"}
-                  variant={hasMemberAccess ? "primary" : "secondary"}
-                  size="medium"
-                  className={`flex-shrink-0 ${!hasMemberAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={!hasMemberAccess ? () => {} : undefined}
-                >
-                  {hasMemberAccess ? 'Browse Resources' : 'Access Restricted'}
-                </Button>
-              </div>
-            </div>
+              </details>
 
-            {/* Events */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-fase-gold rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Events & Conferences</h3>
-                    <p className="text-fase-black">Join upcoming FASE events, conferences, and networking opportunities</p>
-                  </div>
+              {/* Relationship building */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.relationships.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.relationships.description_1')}
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    {t('overview.relationships.description_2')}
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    {t('overview.relationships.description_3')}
+                  </p>
+                  <p className="text-fase-black">
+                    {t('overview.relationships.description_4')}
+                  </p>
                 </div>
-                <Button 
-                  href="/events"
-                  variant="primary" 
-                  size="medium"
-                  className="flex-shrink-0"
-                >
-                  View Events
-                </Button>
-              </div>
+              </details>
             </div>
-
-            {/* Member Directory */}
-            <div className="bg-white rounded-lg border border-fase-light-gold hover:border-fase-navy transition-colors duration-200 p-6 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-fase-navy rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">Member Directory</h3>
-                    <p className="text-fase-black">Connect with fellow FASE members across Europe</p>
-                  </div>
-                </div>
-                <Button 
-                  href={hasMemberAccess ? "/directory" : "#"}
-                  variant={hasMemberAccess ? "primary" : "secondary"}
-                  size="medium"
-                  className={`flex-shrink-0 ${!hasMemberAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={!hasMemberAccess ? () => {} : undefined}
-                >
-                  {hasMemberAccess ? 'Browse Directory' : 'Access Restricted'}
-                </Button>
-              </div>
-            </div>
-
           </div>
         </div>
       )
     },
     {
       id: 'messages',
-      title: 'Messages',
+      title: t('sections.messages'),
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -363,8 +385,8 @@ export default function MemberContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No Messages</h3>
-              <p className="text-fase-black">You don&apos;t have any messages yet.</p>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('messages.no_messages')}</h3>
+              <p className="text-fase-black">{t('messages.no_messages_desc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -384,7 +406,7 @@ export default function MemberContent() {
                         message.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {message.priority}
+                        {t(`messages.priority.${message.priority}`)}
                       </span>
                       <span className="text-xs text-gray-500">
                         {message.createdAt?.toDate?.()?.toLocaleDateString()}
@@ -397,7 +419,7 @@ export default function MemberContent() {
                   </p>
                   
                   <div className="text-xs text-gray-500 mb-3">
-                    From: {message.senderName} ({message.senderEmail})
+                    {t('messages.from')}: {message.senderName} ({message.senderEmail})
                   </div>
                   
                   <div className="flex justify-between items-center">
@@ -407,7 +429,7 @@ export default function MemberContent() {
                           onClick={() => handleMarkMessageAsRead(message.id)}
                           className="text-xs text-blue-600 hover:text-blue-800"
                         >
-                          Mark as Read
+                          {t('messages.mark_read')}
                         </button>
                       )}
                     </div>
@@ -415,7 +437,7 @@ export default function MemberContent() {
                       onClick={() => handleDeleteMessage(message.id)}
                       className="text-xs text-red-600 hover:text-red-800"
                     >
-                      Delete
+                      {t('messages.delete')}
                     </button>
                   </div>
                 </div>
@@ -427,7 +449,7 @@ export default function MemberContent() {
     },
     {
       id: 'alerts',
-      title: 'Alerts',
+      title: t('sections.alerts'),
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -462,8 +484,8 @@ export default function MemberContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No Alerts</h3>
-              <p className="text-fase-black">You&apos;re all caught up! Check back later for important updates.</p>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('alerts.no_alerts')}</h3>
+              <p className="text-fase-black">{t('alerts.no_alerts_desc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -490,7 +512,7 @@ export default function MemberContent() {
                         alert.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {alert.priority}
+                        {t(`alerts.priority.${alert.priority}`)}
                       </span>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                         alert.type === 'error' ? 'bg-red-100 text-red-800' :
@@ -498,7 +520,7 @@ export default function MemberContent() {
                         alert.type === 'success' ? 'bg-green-100 text-green-800' :
                         'bg-blue-100 text-blue-800'
                       }`}>
-                        {alert.type}
+                        {t(`alerts.types.${alert.type}`)}
                       </span>
                     </div>
                   </div>
@@ -543,14 +565,14 @@ export default function MemberContent() {
                             'text-blue-600 hover:text-blue-800'
                           }`}
                         >
-                          Mark as Read
+                          {t('alerts.mark_read')}
                         </button>
                       )}
                       <button
                         onClick={() => handleDismissAlert(alert.id)}
                         className="text-xs text-gray-600 hover:text-gray-800 font-medium"
                       >
-                        Dismiss
+                        {t('alerts.dismiss')}
                       </button>
                     </div>
                   </div>
@@ -563,7 +585,7 @@ export default function MemberContent() {
     },
     {
       id: 'profile',
-      title: 'Manage Profile',
+      title: t('sections.profile'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -573,20 +595,12 @@ export default function MemberContent() {
         <div className="space-y-6">
           {/* Account Settings */}
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Account Settings</h3>
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('profile.account_settings')}</h3>
             
             {/* Account Information */}
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">Email Address</label>
-                <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                  {user?.email}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Your email address cannot be changed</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
+                <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.personal_name')}</label>
                 {editingProfile ? (
                   <div className="space-y-2">
                     <input
@@ -594,7 +608,7 @@ export default function MemberContent() {
                       value={profileData.displayName}
                       onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
                       className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                      placeholder="Enter your personal name"
+                      placeholder={t('profile.enter_name_placeholder')}
                     />
                     <div className="flex space-x-2">
                       <Button
@@ -603,21 +617,21 @@ export default function MemberContent() {
                         variant="primary"
                         size="small"
                       >
-                        {savingProfile ? 'Saving...' : 'Save'}
+                        {savingProfile ? t('profile.saving') : t('profile.save')}
                       </Button>
                       <Button
                         onClick={handleCancelEdit}
                         variant="secondary"
                         size="small"
                       >
-                        Cancel
+                        {t('profile.cancel')}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                      {member?.personalName || user?.displayName || 'Not set'}
+                      {member?.personalName || user?.displayName || t('profile.not_set')}
                     </div>
                     <Button
                       onClick={handleEditProfile}
@@ -625,36 +639,35 @@ export default function MemberContent() {
                       size="small"
                       className="ml-3"
                     >
-                      Edit
+                      {t('profile.edit')}
                     </Button>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-1">Your personal name only. Company name cannot be changed here.</p>
               </div>
               
               {/* Show company name separately for corporate members */}
               {member?.membershipType === 'corporate' && member?.organizationName && (
                 <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.company')}</label>
                   <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
                     {member.organizationName}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Contact support to change your company information</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('profile.company_change_note')}</p>
                 </div>
               )}
             </div>
 
             {/* Password Reset */}
             <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Security</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('profile.security')}</h4>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Password</span>
-                  <p className="text-xs text-gray-500">Reset your password via email</p>
+                  <span className="text-sm font-medium text-gray-700">{t('profile.password')}</span>
+                  <p className="text-xs text-gray-500">{t('profile.password_desc')}</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   {passwordResetSent && (
-                    <span className="text-sm text-green-600 font-medium">Reset email sent!</span>
+                    <span className="text-sm text-green-600 font-medium">{t('profile.reset_email_sent')}</span>
                   )}
                   <Button
                     onClick={handlePasswordReset}
@@ -662,7 +675,7 @@ export default function MemberContent() {
                     variant="secondary"
                     size="small"
                   >
-                    {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                    {sendingPasswordReset ? t('profile.sending') : t('profile.reset_password')}
                   </Button>
                 </div>
               </div>
@@ -679,27 +692,27 @@ export default function MemberContent() {
   // Construct title with personal name and company name (if applicable)
   const getWelcomeTitle = () => {
     if (!user?.displayName && !member?.personalName) {
-      return "Member Portal";
+      return t('portal.welcome_title');
     }
     
     const personalName = member?.personalName || user?.displayName || "";
     const companyName = member?.organizationName;
     
     if (personalName && companyName && member?.membershipType === 'corporate') {
-      return `Welcome, ${personalName} (${companyName})`;
+      return t('portal.welcome_company', { name: personalName, company: companyName });
     } else if (personalName) {
-      return `Welcome, ${personalName}`;
+      return t('portal.welcome_personal', { name: personalName });
     } else {
-      return "Member Portal";
+      return t('portal.welcome_title');
     }
   };
 
   return (
     <DashboardLayout
       title={getWelcomeTitle()}
-      subtitle={user?.email || "Access all member benefits and resources"}
+      subtitle={user?.email || t('portal.email_subtitle')}
       bannerImage="/education.jpg"
-      bannerImageAlt="Business Meeting"
+      bannerImageAlt={t('manage_profile.business_meeting_alt')}
       sections={dashboardSections}
       currentPage="member-portal"
       statusBadge={statusBadge}

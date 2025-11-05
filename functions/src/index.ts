@@ -213,7 +213,7 @@ export const sendInvoiceEmail = functions.https.onCall({
   enforceAppCheck: false,
 }, async (request) => {
   try {
-    const { email, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename } = request.data;
+    const { email, cc, invoiceHTML, invoiceNumber, organizationName, totalAmount, pdfAttachment, pdfFilename, subject } = request.data;
     logger.info('sendInvoiceEmail called for:', email);
 
     if (!email || !invoiceNumber) {
@@ -241,9 +241,14 @@ export const sendInvoiceEmail = functions.https.onCall({
         const emailPayload: any = {
           from: 'FASE <admin@fasemga.com>',
           to: email,
-          subject: template.subject(invoiceNumber, totalAmount || '0'),
+          subject: subject || template.subject(invoiceNumber, totalAmount || '0'),
           html: emailHtml,
         };
+        
+        // Add CC if provided
+        if (cc) {
+          emailPayload.cc = cc;
+        }
         
         // Add PDF attachment if provided
         if (pdfAttachment && pdfFilename) {
@@ -589,6 +594,86 @@ export const resetPasswordWithToken = functions.https.onCall({
   } catch (error) {
     logger.error('Error resetting password:', error);
     throw new functions.https.HttpsError('internal', 'Failed to reset password');
+  }
+});
+
+export const sendInviteEmail = functions.https.onCall({
+  enforceAppCheck: false,
+}, async (request) => {
+  try {
+    const { email, name, companyName, inviteUrl, inviterName } = request.data;
+    logger.info('sendInviteEmail called for:', email);
+
+    if (!email || !name || !companyName || !inviteUrl || !inviterName) {
+      throw new functions.https.HttpsError('invalid-argument', 'All fields are required: email, name, companyName, inviteUrl, inviterName');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+    }
+
+    // Create invitation email HTML
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #2D5574;">You're invited to join ${companyName} on FASE</h2>
+        <p>Hi ${name},</p>
+        <p>${inviterName} has invited you to join <strong>${companyName}</strong> on the Federation of European MGAs (FASE) platform.</p>
+        <p>To complete your account setup and gain access to your company's member portal, please click the button below:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${inviteUrl}" style="background-color: #2D5574; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Account Setup</a>
+        </div>
+        <p>This link will guide you through creating your secure account password and accessing all member benefits.</p>
+        <p>Best regards,<br>The FASE Team</p>
+        <p style="color: #6b7280; font-size: 14px;">If you have any questions, please contact us at <a href="mailto:help@fasemga.com">help@fasemga.com</a></p>
+      </div>
+    `;
+
+    // Check for Resend API key
+    const resendApiKey = process.env.RESEND_API_KEY;
+    logger.info('Resend API key configured:', !!resendApiKey);
+
+    if (resendApiKey) {
+      try {
+        logger.info('Sending invitation email via Resend...');
+        
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'FASE <admin@fasemga.com>',
+            to: email,
+            subject: `Invitation to join ${companyName} on FASE`,
+            html: emailHtml,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Resend API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        logger.info(`Invitation email sent to ${email} via Resend:`, result.id);
+        return { success: true, emailId: result.id };
+      } catch (emailError) {
+        logger.error('Resend invitation email error:', emailError);
+        throw new functions.https.HttpsError('internal', 'Failed to send invitation email');
+      }
+    }
+
+    // Fallback: Log to console for development
+    logger.info(`Invitation email for ${email}:`);
+    logger.info(`Subject: Invitation to join ${companyName} on FASE`);
+    logger.info(`Inviter: ${inviterName}`);
+    logger.info(`Invite URL: ${inviteUrl}`);
+
+    return { success: true };
+  } catch (error) {
+    logger.error('Error sending invitation email:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send invitation email');
   }
 });
 
