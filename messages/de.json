@@ -816,6 +816,9 @@
           "image_alt": "Plattform-Start"
         }
       }
+    },
+    "article": {
+      "also_available_in": "Dieser Artikel ist auch verfügbar in:"
     }
   },
   "events": {

@@ -816,6 +816,9 @@
           "image_alt": "Lancement de plateforme"
         }
       }
+    },
+    "article": {
+      "also_available_in": "Cet article est également disponible en :"
     }
   },
   "events": {

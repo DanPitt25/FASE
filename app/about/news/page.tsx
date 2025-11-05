@@ -1,55 +1,199 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import ContentPageLayout from '../../../components/ContentPageLayout';
+import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import Link from 'next/link';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
+
+interface ArticleMetadata {
+  title: string;
+  date: string;
+  excerpt: string;
+  author?: string;
+  bannerImage?: string;
+  bannerImageAlt?: string;
+}
+
+interface NewsArticle {
+  slug: string;
+  metadata: ArticleMetadata;
+}
 
 export default function NewsPage() {
   const t = useTranslations('news');
-  const sections = [
-    {
-      type: 'split' as const,
-      title: t('intro.title'),
-      content: [
-        t('intro.content.paragraph1'),
-        t('intro.content.paragraph2')
-      ],
-      image: '/market.jpg',
-      imageAlt: t('intro.image_alt'),
-      imagePosition: 'left' as const
-    },
-    {
-      type: 'cards' as const,
-      title: t('latest_updates.title'),
-      cards: [
-        {
-          title: t('latest_updates.cards.foundation.title'),
-          description: t('latest_updates.cards.foundation.description'),
-          image: '/motorcycle.jpeg',
-          imageAlt: t('latest_updates.cards.foundation.image_alt')
-        },
-        {
-          title: t('latest_updates.cards.advisory_board.title'),
-          description: t('latest_updates.cards.advisory_board.description'),
-          image: '/consideration.jpg',
-          imageAlt: t('latest_updates.cards.advisory_board.image_alt')
-        },
-        {
-          title: t('latest_updates.cards.platform_launch.title'),
-          description: t('latest_updates.cards.platform_launch.description'),
-          image: '/conference.jpeg',
-          imageAlt: t('latest_updates.cards.platform_launch.image_alt')
-        }
-      ]
+  const locale = useLocale();
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadArticles() {
+      try {
+        // For now, manually list the known articles
+        // In a real app, you'd have an API endpoint that lists all markdown files
+        const baseArticleSlugs = ['fase-formation-announcement', 'sample-press-release'];
+        
+        const articlePromises = baseArticleSlugs.map(async (baseSlug) => {
+          try {
+            // Try to load the article in the current locale first
+            const localeSlug = locale === 'en' ? baseSlug : `${baseSlug}-${locale}`;
+            let response = await fetch(`/news/${localeSlug}.md`);
+            
+            // If not found in current locale, fall back to English
+            if (!response.ok && locale !== 'en') {
+              response = await fetch(`/news/${baseSlug}.md`);
+            }
+            
+            if (!response.ok) return null;
+            
+            const slug = response.url.includes(`${baseSlug}-${locale}`) ? localeSlug : baseSlug;
+            
+            const text = await response.text();
+            const lines = text.split('\n');
+            
+            // Extract frontmatter
+            let metadataEnd = 0;
+            const metadata: any = {};
+            
+            if (lines[0] === '---') {
+              for (let i = 1; i < lines.length; i++) {
+                if (lines[i] === '---') {
+                  metadataEnd = i + 1;
+                  break;
+                }
+                const [key, ...valueParts] = lines[i].split(':');
+                if (key && valueParts.length) {
+                  metadata[key.trim()] = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
+                }
+              }
+            }
+            
+            return { slug, metadata };
+          } catch (err) {
+            console.error(`Failed to load article ${slug}:`, err);
+            return null;
+          }
+        });
+        
+        const loadedArticles = (await Promise.all(articlePromises))
+          .filter(article => article !== null)
+          .sort((a, b) => new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime());
+        
+        setArticles(loadedArticles);
+      } catch (error) {
+        console.error('Error loading articles:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+    
+    loadArticles();
+  }, []);
 
   return (
-    <ContentPageLayout
-      title={t('page.title')}
-      bannerImage="/conferenceWood.jpg"
-      bannerImageAlt={t('page.banner_alt')}
-      sections={sections}
-      currentPage="news"
-    />
+    <>
+      <Header />
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <div className="relative h-96 overflow-hidden">
+          <img 
+            src="/conferenceWood.jpg" 
+            alt={t('page.banner_alt')}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 flex items-center">
+            <div className="container mx-auto px-4">
+              <h1 className="text-4xl md:text-6xl font-noto-serif font-bold mb-4 text-white max-w-4xl">
+                {t('page.title')}
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Intro Section */}
+        <div className="bg-white py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-8">
+                {t('intro.title')}
+              </h2>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  {t('intro.content.paragraph1')}
+                </p>
+                <p className="text-gray-700 text-lg leading-relaxed">
+                  {t('intro.content.paragraph2')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Latest Updates Section */}
+        <div className="bg-gray-50 py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-noto-serif font-bold text-fase-navy mb-12 text-center">
+                {t('latest_updates.title')}
+              </h2>
+              
+              {loading ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto"></div>
+                  <p className="text-gray-600 mt-4">Loading articles...</p>
+                </div>
+              ) : articles.length > 0 ? (
+                <div className="flex flex-wrap justify-center gap-8">
+                  {articles.map((article) => (
+                    <Link 
+                      key={article.slug}
+                      href={`/about/news/${article.slug}`}
+                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm"
+                    >
+                      {article.metadata.bannerImage && (
+                        <img 
+                          src={article.metadata.bannerImage}
+                          alt={article.metadata.bannerImageAlt || article.metadata.title}
+                          className="w-full h-48 object-cover"
+                        />
+                      )}
+                      <div className="p-6">
+                        <div className="text-sm text-gray-500 mb-2">
+                          {new Date(article.metadata.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                          {article.metadata.author && (
+                            <span> • By {article.metadata.author}</span>
+                          )}
+                        </div>
+                        <h3 className="text-xl font-noto-serif font-bold text-fase-navy mb-3 line-clamp-2">
+                          {article.metadata.title}
+                        </h3>
+                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                          {article.metadata.excerpt}
+                        </p>
+                        <div className="mt-4">
+                          <span className="text-fase-navy font-medium text-sm hover:underline">
+                            Read more →
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 text-lg">No articles found.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 }

@@ -816,6 +816,9 @@
           "image_alt": "Platform launch"
         }
       }
+    },
+    "article": {
+      "also_available_in": "This article also available in:"
     }
   },
   "events": {
