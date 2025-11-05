@@ -966,6 +966,53 @@
         "join": "Rejoindre",
         "contact_us": "Nous Contacter"
       }
+    },
+    "membership_pricing": {
+      "title": "Tarification des Adhésions",
+      "mga": {
+        "title": "Adhésion MGA",
+        "description": "Tarification échelonnée basée sur les primes brutes souscrites annuelles",
+        "tiers": [
+          {
+            "range": "Jusqu'à 10 M€ GWP",
+            "price": "900 €"
+          },
+          {
+            "range": "10 M€ - 20 M€ GWP", 
+            "price": "1 500 €"
+          },
+          {
+            "range": "20 M€ - 50 M€ GWP",
+            "price": "2 200 €"
+          },
+          {
+            "range": "50 M€ - 100 M€ GWP",
+            "price": "2 800 €"
+          },
+          {
+            "range": "100 M€ - 500 M€ GWP",
+            "price": "4 200 €"
+          },
+          {
+            "range": "500 M€+ GWP",
+            "price": "7 000 €"
+          }
+        ]
+      },
+      "carrier": {
+        "title": "Adhésion Assureur",
+        "description": "Pour les compagnies d'assurance et de réassurance",
+        "price": "4 000 €"
+      },
+      "provider": {
+        "title": "Adhésion Prestataire de Services", 
+        "description": "Pour les entreprises fournissant des services au secteur MGA",
+        "price": "5 000 €"
+      },
+      "discount": {
+        "title": "Remise Multi-Association",
+        "description": "20% de remise pour les organisations membres d'autres associations MGA ou d'assurance"
+      }
     }
   },
   "sponsors": {

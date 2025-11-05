@@ -966,6 +966,86 @@
         "join": "Join",
         "contact_us": "Contact Us"
       }
+    },
+    "membership_pricing": {
+      "title": "Membership Pricing",
+      "subtitle": "Annual membership fees designed for different organization types and sizes",
+      "mga": {
+        "title": "MGA Membership",
+        "description": "Tiered pricing based on annual gross written premiums",
+        "tiers": [
+          {
+            "range": "Up to €10m GWP",
+            "price": "€900",
+            "period": "per year"
+          },
+          {
+            "range": "€10m - €20m GWP", 
+            "price": "€1,500",
+            "period": "per year"
+          },
+          {
+            "range": "€20m - €50m GWP",
+            "price": "€2,200", 
+            "period": "per year"
+          },
+          {
+            "range": "€50m - €100m GWP",
+            "price": "€2,800",
+            "period": "per year"
+          },
+          {
+            "range": "€100m - €500m GWP",
+            "price": "€4,200",
+            "period": "per year"
+          },
+          {
+            "range": "€500m+ GWP",
+            "price": "€7,000",
+            "period": "per year"
+          }
+        ],
+        "features": [
+          "All individual membership benefits",
+          "Company profile in member directory",
+          "Multiple team member access",
+          "Priority event booking",
+          "Quarterly business matching opportunities"
+        ]
+      },
+      "carrier": {
+        "title": "Insurance Carrier Membership",
+        "description": "For insurance and reinsurance companies",
+        "price": "€4,000",
+        "period": "per year",
+        "features": [
+          "Direct access to European MGA network",
+          "Capacity matching opportunities",
+          "Market intelligence reports",
+          "Priority sponsorship opportunities",
+          "Exclusive carrier networking events"
+        ]
+      },
+      "provider": {
+        "title": "Service Provider Membership", 
+        "description": "For companies providing services to the MGA sector",
+        "price": "€5,000",
+        "period": "per year",
+        "features": [
+          "Access to qualified MGA prospects",
+          "Thought leadership opportunities",
+          "Industry event participation",
+          "Market research and insights",
+          "Business development support"
+        ]
+      },
+      "discount": {
+        "title": "Multi-Association Discount",
+        "description": "20% discount for organizations that are members of other MGA or insurance associations"
+      },
+      "billing": {
+        "note": "All memberships are billed annually. Membership will automatically renew each year with advance notice."
+      }
     }
   },
   "sponsors": {

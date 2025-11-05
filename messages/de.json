@@ -966,6 +966,53 @@
         "join": "Beitreten",
         "contact_us": "Kontaktieren Sie uns"
       }
+    },
+    "membership_pricing": {
+      "title": "Mitgliedschaftspreise",
+      "mga": {
+        "title": "MGA-Mitgliedschaft",
+        "description": "Gestaffelte Preise basierend auf jährlichen Bruttoprämieneinnahmen",
+        "tiers": [
+          {
+            "range": "Bis zu 10 Mio. € GWP",
+            "price": "900 €"
+          },
+          {
+            "range": "10 Mio. € - 20 Mio. € GWP", 
+            "price": "1.500 €"
+          },
+          {
+            "range": "20 Mio. € - 50 Mio. € GWP",
+            "price": "2.200 €"
+          },
+          {
+            "range": "50 Mio. € - 100 Mio. € GWP",
+            "price": "2.800 €"
+          },
+          {
+            "range": "100 Mio. € - 500 Mio. € GWP",
+            "price": "4.200 €"
+          },
+          {
+            "range": "500 Mio. €+ GWP",
+            "price": "7.000 €"
+          }
+        ]
+      },
+      "carrier": {
+        "title": "Versicherer-Mitgliedschaft",
+        "description": "Für Versicherungs- und Rückversicherungsunternehmen",
+        "price": "4.000 €"
+      },
+      "provider": {
+        "title": "Dienstleister-Mitgliedschaft", 
+        "description": "Für Unternehmen, die Dienstleistungen für den MGA-Sektor anbieten",
+        "price": "5.000 €"
+      },
+      "discount": {
+        "title": "Multi-Verbands-Rabatt",
+        "description": "20% Rabatt für Organisationen, die Mitglieder anderer MGA- oder Versicherungsverbände sind"
+      }
     }
   },
   "sponsors": {

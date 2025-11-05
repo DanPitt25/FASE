@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import Header from './Header';
 import Footer from './Footer';
+import PricingAccordion from './PricingAccordion';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface SplitSection {
@@ -90,7 +91,13 @@ interface ContentOnlySection {
   content: string[];
 }
 
-type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection | ContentOnlySection;
+interface PricingSection {
+  type: 'pricing';
+  title: string;
+  subtitle: string;
+}
+
+type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection | ContentOnlySection | PricingSection;
 
 interface ContentPageLayoutProps {
   title: string;
@@ -657,6 +664,39 @@ export default function ContentPageLayout({
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+
+      case 'pricing':
+        return (
+          <div key={index}>
+            {/* Blue ribbon separator */}
+            <div ref={ribbonAnimations[index].elementRef} className="relative h-12">
+              <div className={`absolute ${isEven ? 'right-0' : 'left-0'} h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+                ribbonAnimations[index].isVisible 
+                  ? isEven ? 'w-4/5' : 'w-4/5' 
+                  : 'w-0'
+              }`}></div>
+            </div>
+            
+            <section className="bg-white py-12 lg:py-16 2xl:py-20">
+              <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+                <div ref={animation.elementRef} className={`transition-all duration-700 ${
+                  animation.isVisible ? 'scroll-visible-up' : 'scroll-hidden-down'
+                }`}>
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl lg:text-4xl xl:text-5xl font-noto-serif font-bold text-fase-navy mb-4">
+                      {section.title}
+                    </h2>
+                    <p className="text-lg lg:text-xl text-fase-black max-w-3xl mx-auto">
+                      {section.subtitle}
+                    </p>
+                  </div>
+                  
+                  <PricingAccordion />
                 </div>
               </div>
             </section>

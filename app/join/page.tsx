@@ -47,6 +47,11 @@ export default function JoinPage() {
       ]
     },
     {
+      type: 'pricing' as const,
+      title: t('membership_pricing.title'),
+      subtitle: ''
+    },
+    {
       type: 'split' as const,
       title: t('application_process.title'),
       content: t.raw('application_process.content'),
