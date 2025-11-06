@@ -224,13 +224,13 @@ export const removeAdminClaim = async (targetUserId: string): Promise<void> => {
 };
 
 // Send password reset email via Firebase Function (using Resend)
-export const sendPasswordReset = async (email: string): Promise<void> => {
+export const sendPasswordReset = async (email: string, locale?: string): Promise<void> => {
   try {
     const { httpsCallable } = await import('firebase/functions');
     const { functions } = await import('./firebase');
     
     const sendPasswordResetFunction = httpsCallable(functions, 'sendPasswordReset');
-    const result = await sendPasswordResetFunction({ email });
+    const result = await sendPasswordResetFunction({ email, locale: locale || 'en' });
     
     if (!result.data || !(result.data as any).success) {
       throw new Error('Failed to send password reset email');

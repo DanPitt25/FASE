@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { validatePasswordResetToken, resetPassword } from '../../lib/auth';
@@ -19,6 +19,7 @@ export default function ResetPasswordForm() {
   const [tokenValid, setTokenValid] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
+  const hasValidatedToken = useRef(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,9 +39,12 @@ export default function ResetPasswordForm() {
     setEmail(emailParam);
     setToken(tokenParam);
 
-    // Validate the token
-    validateToken(emailParam, tokenParam);
-  }, [searchParams, t]);
+    // Only validate the token once to prevent it from being invalidated on language change
+    if (!hasValidatedToken.current) {
+      hasValidatedToken.current = true;
+      validateToken(emailParam, tokenParam);
+    }
+  }, [searchParams]);
 
   const validateToken = async (email: string, token: string) => {
     try {

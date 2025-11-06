@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { signIn, sendPasswordReset, AccountPendingError, AccountNotApprovedError } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
@@ -19,6 +19,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('login_form');
+  const locale = useLocale();
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -58,7 +59,7 @@ export default function LoginForm() {
     setError('');
 
     try {
-      await sendPasswordReset(email);
+      await sendPasswordReset(email, locale);
       setResetSent(true);
     } catch (error: any) {
       const errorMessage = handleAuthError(error);

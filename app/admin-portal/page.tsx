@@ -128,6 +128,9 @@ function EmailsTab({ prefilledData = null }: { prefilledData?: any }) {
               >
                 <option value="en">English</option>
                 <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+                <option value="it">Italian</option>
               </select>
             </div>
           </div>
@@ -173,16 +176,14 @@ function EmailsTab({ prefilledData = null }: { prefilledData?: any }) {
                 onChange={(e) => setFormData({...formData, greeting: e.target.value})}
                 className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
-              {formData.userLocale === 'fr' && (
-                <select
-                  value={formData.gender}
-                  onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                  className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="m">Masculine (Cher)</option>
-                  <option value="f">Feminine (Chère)</option>
-                </select>
-              )}
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="m">Masculine/Male</option>
+                <option value="f">Feminine/Female</option>
+              </select>
               <input
                 type="text"
                 placeholder="Organization Name"

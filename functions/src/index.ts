@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { getEmailTemplate, detectUserLanguage } from "./email-templates";
+import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateInvoiceEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail, generateMembershipAcceptanceEmail } from "./email-translations";
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // Initialize Firebase Admin with default credentials
@@ -87,13 +87,12 @@ export const sendVerificationCode = functions.https.onCall({
 
     if (resendApiKey) {
       try {
-        // Use provided locale or default to English
-        const userLanguage = (locale === 'fr' ? 'fr' : 'en') as 'en' | 'fr';
-        logger.info(`Language for ${email}: ${userLanguage} (from locale: ${locale})`);
+        // Detect user's preferred language using provided locale or headers
+        const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language'], locale);
+        logger.info(`Detected language for verification code ${email}: ${userLanguage} (locale: ${locale})`);
         
-        // Get localized email template
-        const template = getEmailTemplate('verificationCode', userLanguage) as { subject: string; html: (code: string) => string };
-        const emailHtml = template.html(code);
+        // Generate localized email content
+        const { subject, html: emailHtml } = generateVerificationCodeEmail(code, userLanguage);
 
         logger.info('Sending email via Resend...');
         const response = await fetch('https://api.resend.com/emails', {
@@ -105,7 +104,7 @@ export const sendVerificationCode = functions.https.onCall({
           body: JSON.stringify({
             from: 'FASE <admin@fasemga.com>',
             to: email,
-            subject: template.subject,
+            subject: subject,
             html: emailHtml,
           }),
         });
@@ -229,19 +228,20 @@ export const sendInvoiceEmail = functions.https.onCall({
         logger.info('Sending invoice email via Resend...');
         
         // Detect user's preferred language
-        const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+        const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language']);
         logger.info(`Detected language for invoice ${email}: ${userLanguage}`);
         
-        // Get localized email template
-        const template = getEmailTemplate('invoice', userLanguage) as { subject: (invoiceNumber: string, totalAmount: string) => string; html: (invoiceNumber: string, organizationName: string, totalAmount: string) => string };
+        // Generate localized email content
+        const { subject: generatedSubject, html: generatedHtml } = generateInvoiceEmail(invoiceNumber, organizationName || 'Organization', totalAmount || '0', userLanguage);
         
-        // Use custom HTML if provided, otherwise use localized template
-        const emailHtml = invoiceHTML || template.html(invoiceNumber, organizationName || 'Organization', totalAmount || '0');
+        // Use custom HTML/subject if provided, otherwise use generated content
+        const emailHtml = invoiceHTML || generatedHtml;
+        const emailSubject = subject || generatedSubject;
         
         const emailPayload: any = {
           from: 'FASE <admin@fasemga.com>',
           to: email,
-          subject: subject || template.subject(invoiceNumber, totalAmount || '0'),
+          subject: emailSubject,
           html: emailHtml,
         };
         
@@ -308,23 +308,23 @@ export const sendJoinRequestNotification = functions.https.onCall({
     logger.info('Resend API key configured:', !!resendApiKey);
 
     // Detect user's preferred language
-    const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+    const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language']);
     logger.info(`Detected language for join request ${email}: ${userLanguage}`);
 
     const isApproved = status === 'approved';
     
-    // Get localized email template
+    // Generate localized email content
     let emailHtml;
     let subject;
     
     if (isApproved) {
-      const approvedTemplate = getEmailTemplate('joinRequestApproved', userLanguage) as { subject: (companyName: string) => string; html: (fullName: string, email: string, companyName: string, adminNotes?: string) => string };
-      subject = approvedTemplate.subject(companyName);
-      emailHtml = approvedTemplate.html(fullName, email, companyName, adminNotes);
+      const generated = generateJoinRequestApprovedEmail(fullName, email, companyName, adminNotes, userLanguage);
+      subject = generated.subject;
+      emailHtml = generated.html;
     } else {
-      const updateTemplate = getEmailTemplate('joinRequestUpdate', userLanguage) as { subject: (companyName: string) => string; html: (fullName: string, companyName: string, status: string, adminNotes?: string) => string };
-      subject = updateTemplate.subject(companyName);
-      emailHtml = updateTemplate.html(fullName, companyName, status, adminNotes);
+      const generated = generateJoinRequestUpdateEmail(fullName, companyName, status, adminNotes, userLanguage);
+      subject = generated.subject;
+      emailHtml = generated.html;
     }
 
     if (resendApiKey) {
@@ -372,7 +372,7 @@ export const sendPasswordReset = functions.https.onCall({
   enforceAppCheck: false, // Allow unauthenticated calls
 }, async (request) => {
   try {
-    const { email } = request.data;
+    const { email, locale } = request.data;
     logger.info('sendPasswordReset called with email:', email);
 
     if (!email) {
@@ -424,14 +424,13 @@ export const sendPasswordReset = functions.https.onCall({
 
     if (resendApiKey) {
       try {
-        // Detect user's preferred language
-        const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
-        logger.info(`Detected language for password reset ${email}: ${userLanguage}`);
+        // Detect user's preferred language using provided locale or headers
+        const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language'], locale);
+        logger.info(`Detected language for password reset ${email}: ${userLanguage} (locale: ${locale})`);
         
-        // Get localized email template
-        const template = getEmailTemplate('passwordReset', userLanguage) as { subject: string; html: (resetUrl: string) => string };
+        // Generate localized email content
         const resetUrl = `https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-        const emailHtml = template.html(resetUrl);
+        const { subject, html: emailHtml } = generatePasswordResetEmail(resetUrl, userLanguage);
 
         logger.info('Sending password reset email via Resend...');
         const response = await fetch('https://api.resend.com/emails', {
@@ -443,7 +442,7 @@ export const sendPasswordReset = functions.https.onCall({
           body: JSON.stringify({
             from: 'FASE <admin@fasemga.com>',
             to: email,
-            subject: template.subject,
+            subject: subject,
             html: emailHtml,
           }),
         });
@@ -710,19 +709,15 @@ export const sendMembershipAcceptanceEmail = functions.https.onCall({
     const invoiceNumber = String(10000 + Math.floor(Math.random() * 90000));
 
     // Detect user's preferred language
-    const userLanguage = detectUserLanguage(email, undefined, request.rawRequest?.headers?.['accept-language']);
+    const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language']);
     logger.info(`Detected language for membership acceptance ${email}: ${userLanguage}`);
 
-    // Get localized email template
-    const template = getEmailTemplate('membershipAcceptance', userLanguage) as { 
-      subject: (organizationName: string) => string; 
-      html: (fullName: string, organizationName: string, paypalUrl: string, invoiceUrl: string, totalAmount: string) => string 
-    };
-
-    const subject = template.subject(organizationName);
-    // For now, use simple invoice text link - we'll attach the actual PDF below
-    const invoiceText = userLanguage === 'fr' ? 'Facture PDF jointe' : 'PDF Invoice attached';
-    const emailHtml = template.html(fullName, organizationName, paypalLink, invoiceText, totalAmount.toString());
+    // Generate localized email content
+    const invoiceText = userLanguage === 'fr' ? 'Facture PDF jointe' : 
+                       userLanguage === 'de' ? 'PDF-Rechnung beigefügt' :
+                       userLanguage === 'es' ? 'Factura PDF adjunta' :
+                       userLanguage === 'it' ? 'Fattura PDF allegata' : 'PDF Invoice attached';
+    const { subject, html: emailHtml } = generateMembershipAcceptanceEmail(fullName, organizationName, paypalLink, invoiceText, totalAmount.toString(), userLanguage);
 
     // Generate PDF invoice attachment
     let pdfAttachment: string | null = null;

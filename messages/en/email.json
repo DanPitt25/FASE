@@ -1,0 +1,98 @@
+{
+  "password_reset": {
+    "subject": "Reset your FASE password",
+    "title": "Reset your FASE password",
+    "intro": "You requested a password reset for your FASE account.",
+    "button_text": "Reset Password",
+    "button_instruction": "Click the button below to reset your password:",
+    "alt_text": "Or copy and paste this link in your browser:",
+    "expiry": "This link will expire in 1 hour.",
+    "ignore": "If you didn't request this password reset, please ignore this email.",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "verification_code": {
+    "subject": "Verify your FASE account",
+    "title": "Verify your FASE account",
+    "intro": "Thank you for registering with FASE. Please verify your email address to complete your account setup.",
+    "code_text": "Your verification code is:",
+    "code_instruction": "Enter this code in the verification form:",
+    "expiry": "This code will expire in 20 minutes.",
+    "ignore": "If you didn't create a FASE account, please ignore this email.",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "invoice": {
+    "subject": "FASE Membership Invoice {invoiceNumber} - €{totalAmount}",
+    "title": "FASE Membership Invoice",
+    "intro": "Thank you for your FASE membership. Please find your invoice below.",
+    "invoice_number": "Invoice Number: {invoiceNumber}",
+    "organization": "Organization: {organizationName}",
+    "total_amount": "Total Amount: €{totalAmount}",
+    "payment_info": "Payment instructions have been included in the attached PDF.",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "join_request_approved": {
+    "subject": "Welcome to FASE! Your membership application for {companyName} has been approved",
+    "title": "Welcome to FASE!",
+    "intro": "Congratulations! Your membership application for {companyName} has been approved.",
+    "next_steps": "Next steps:",
+    "step_1": "Complete your payment to activate your membership",
+    "step_2": "Access your member portal and resources",
+    "step_3": "Join our upcoming events and networking opportunities",
+    "admin_notes_label": "Additional information:",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "join_request_update": {
+    "subject": "Update on your FASE membership application for {companyName}",
+    "title": "FASE Membership Application Update",
+    "intro": "We have an update regarding your membership application for {companyName}.",
+    "status_label": "Current status: {status}",
+    "admin_notes_label": "Additional information:",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "membership_acceptance": {
+    "subject": "Welcome to FASE! Complete your {organizationName} membership setup",
+    "title": "Welcome to FASE!",
+    "intro": "Congratulations {fullName}! Your organization {organizationName} has been accepted as a FASE member.",
+    "payment_instruction": "To complete your membership setup, please proceed with payment:",
+    "paypal_button": "Pay with PayPal",
+    "invoice_text": "Your membership invoice ({invoiceText}) is attached to this email.",
+    "amount_due": "Amount due: €{totalAmount}",
+    "next_steps": "Once payment is complete, you'll gain access to all member benefits and resources.",
+    "help": "If you have any questions, please contact us at help@fasemga.com"
+  },
+  "membership_acceptance_admin": {
+    "subject": "Welcome to FASE - Membership Approved",
+    "welcome": "Welcome to FASE",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "welcome_text": "Welcome to FASE. Your application for {organizationName} has been approved.",
+    "payment_text": "To complete your membership, please remit payment of €{totalAmount} using one of the following methods:",
+    "payment_options": "Payment Options:",
+    "paypal_option": "PayPal:",
+    "pay_online": "Pay Online",
+    "bank_transfer": "Bank Transfer:",
+    "invoice_attached": "Invoice attached with payment details",
+    "engagement": "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact admin@fasemga.com with any questions.",
+    "regards": "Best regards,",
+    "signature": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE"
+  },
+  "pdf_invoice": {
+    "invoice": "INVOICE",
+    "bill_to": "Bill To:",
+    "invoice_number": "Invoice #:",
+    "date": "Date:",
+    "due_date": "Due Date:",
+    "terms": "Terms: Net 30",
+    "description": "Description",
+    "quantity": "Qty",
+    "unit_price": "Unit Price",
+    "total": "Total",
+    "total_amount_due": "Total Amount Due:",
+    "payment_instructions": "Payment Instructions:",
+    "payment_company": "Lexicon Associates, LLC is accepting payments on behalf of Fédération des Agences de Souscription (FASE B.V.)",
+    "account_number": "Account number: 1255828998",
+    "payment_reference": "Payment Reference: {invoiceNumber}"
+  }
+}
