@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import PageLayout from './PageLayout';
 
 interface DashboardSection {
@@ -62,10 +63,11 @@ export default function DashboardLayout({
         {/* Hero Banner */}
         {bannerImage && (
           <section ref={sectionRef} className="relative h-[20vh] flex items-center overflow-hidden">
-            <img
+            <Image
               src={bannerImage}
               alt={bannerImageAlt || ''}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
               style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
             />
             <div className="absolute inset-0 bg-fase-navy/40"></div>

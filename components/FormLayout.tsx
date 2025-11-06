@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -29,9 +30,11 @@ export default function FormLayout({
               {/* Logo and Title */}
               <div className="flex items-center space-x-4">
                 <Link href="/" className="flex items-center space-x-3">
-                  <img 
+                  <Image 
                     src="/fase-logo-mark.png" 
                     alt="FASE Logo" 
+                    width={40}
+                    height={40}
                     className="h-10 w-auto object-contain"
                   />
                   <span className="text-2xl font-noto-serif font-bold text-fase-navy">FASE</span>

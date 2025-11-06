@@ -23,7 +23,7 @@ function SubscriptionSuccessContent() {
       setError(t('invalid_session'));
       setLoading(false);
     }
-  }, [provider, subscriptionId]);
+  }, [provider, subscriptionId, t]);
 
   if (loading) {
     return (

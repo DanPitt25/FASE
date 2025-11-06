@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import Image from 'next/image';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SearchContent from './search-content';
@@ -10,11 +11,13 @@ export default function SearchPage() {
     <>
       <Header currentPage="search" />
       <section className="relative h-[33vh] flex items-center overflow-hidden">
-        <img
+        <Image
           src="/corporate-building-bg.png"
           alt="Search"
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          className="object-cover"
           style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+          priority
         />
         <div className="absolute inset-0 bg-fase-navy/40"></div>
         <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">

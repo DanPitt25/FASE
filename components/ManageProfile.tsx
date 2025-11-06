@@ -121,7 +121,7 @@ export default function ManageProfile() {
     };
 
     fetchMembers();
-  }, [user, member]);
+  }, [user, member, t]);
 
   const handleEditMember = (memberToEdit: Member) => {
     setEditingMember({

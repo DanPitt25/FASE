@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import CTASection from '../components/CTASection';
 import ContentHero from '../components/ContentHero';
@@ -159,12 +159,12 @@ export default function Page() {
     }
   ];
 
-  const sections = [
+  const sections = useMemo(() => [
     { name: 'Home', id: 'hero' },
     { name: 'What We Offer', id: 'services' },
     { name: 'Conference', id: 'conference' },
     { name: 'Join FASE', id: 'cta' }
-  ];
+  ], []);
 
   useEffect(() => {
     const interval = setInterval(() => {

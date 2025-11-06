@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 
@@ -88,7 +89,7 @@ export default function NewsPage() {
     }
     
     loadArticles();
-  }, []);
+  }, [locale]);
 
   return (
     <>
@@ -96,10 +97,12 @@ export default function NewsPage() {
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
         <div className="relative h-96 overflow-hidden">
-          <img 
+          <Image 
             src="/conferenceWood.jpg" 
             alt={t('page.banner_alt')}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="absolute inset-0 flex items-center">
@@ -152,9 +155,11 @@ export default function NewsPage() {
                       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm"
                     >
                       {article.metadata.bannerImage && (
-                        <img 
+                        <Image 
                           src={article.metadata.bannerImage}
                           alt={article.metadata.bannerImageAlt || article.metadata.title}
+                          width={400}
+                          height={192}
                           className="w-full h-48 object-cover"
                         />
                       )}

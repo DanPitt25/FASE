@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface CTAButton {
   text: string;
   href: string;
@@ -85,11 +87,12 @@ export default function CTASection({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left side - Image */}
             <div className="relative">
-              <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden shadow-xl">
-                <img 
+              <div className="aspect-w-4 aspect-h-3 rounded-lg overflow-hidden shadow-xl relative h-96">
+                <Image 
                   src={image} 
                   alt={imageAlt} 
-                  className="w-full h-96 object-cover rounded-lg"
+                  fill
+                  className="object-cover rounded-lg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-fase-navy/20 to-transparent rounded-lg"></div>
               </div>

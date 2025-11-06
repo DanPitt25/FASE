@@ -103,7 +103,7 @@ export default function VideoPage() {
     };
 
     checkAccess();
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, hasMemberAccess, member]);
 
   useEffect(() => {
     if (params.slug && hasAccess) {

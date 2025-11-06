@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Image from 'next/image';
 
 interface ContentHeroProps {
   id?: string;
@@ -43,10 +44,11 @@ export default function ContentHero({
                 index === currentImageIndex ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              <img
+              <Image
                 src={city.image}
                 alt={city.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 style={{
                   filter: 'brightness(0.8) contrast(1.1) saturate(1.1)'
                 }}

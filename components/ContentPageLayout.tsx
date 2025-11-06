@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from './Header';
 import Footer from './Footer';
 import PricingAccordion from './PricingAccordion';
@@ -160,11 +161,12 @@ export default function ContentPageLayout({
                       <div className={`relative group transition-all duration-700 ${
                         animation.isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
                       }`}>
-                        <div className="transform transition-all duration-700 hover:scale-105">
-                          <img 
+                        <div className="transform transition-all duration-700 hover:scale-105 relative h-[400px] lg:h-[500px] 2xl:h-[600px]">
+                          <Image 
                             src={section.image}
                             alt={section.imageAlt}
-                            className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
+                            fill
+                            className="object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                           />
                           <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
                         </div>
@@ -250,11 +252,12 @@ export default function ContentPageLayout({
                       <div className={`relative group transition-all duration-700 delay-200 ${
                         animation.isVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
                       }`}>
-                        <div className="transform transition-all duration-700 hover:scale-105">
-                          <img 
+                        <div className="transform transition-all duration-700 hover:scale-105 relative h-[400px] lg:h-[500px] 2xl:h-[600px]">
+                          <Image 
                             src={section.image}
                             alt={section.imageAlt}
-                            className="w-full h-[400px] lg:h-[500px] 2xl:h-[600px] object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
+                            fill
+                            className="object-cover rounded-lg shadow-lg transition-shadow duration-500 group-hover:shadow-2xl"
                           />
                           <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
                         </div>
@@ -298,11 +301,12 @@ export default function ContentPageLayout({
                     const CardContent = (
                       <div className="bg-white border border-gray-200 shadow-lg p-8 text-center h-full transition-shadow duration-300 group-hover:shadow-2xl">
                         {card.image ? (
-                          <div className="mb-6">
-                            <img 
+                          <div className="mb-6 relative h-48">
+                            <Image 
                               src={card.image} 
                               alt={card.imageAlt || card.title}
-                              className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                              fill
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                           </div>
                         ) : card.icon ? (
@@ -537,11 +541,12 @@ export default function ContentPageLayout({
                       }}
                     >
                       <div className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0">
-                        <div className="w-72 h-80 mx-auto rounded-lg overflow-hidden">
-                          <img 
+                        <div className="w-72 h-80 mx-auto rounded-lg overflow-hidden relative">
+                          <Image 
                             src={person.image} 
                             alt={person.name}
-                            className="w-full h-full object-cover object-top"
+                            fill
+                            className="object-cover object-top"
                           />
                         </div>
                       </div>
@@ -716,11 +721,13 @@ export default function ContentPageLayout({
 
         {/* Hero Banner */}
         <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
-          <img
+          <Image
             src={bannerImage}
             alt={bannerImageAlt}
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            className="object-cover"
             style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+            priority
           />
           <div className="absolute inset-0 bg-fase-navy/40"></div>
           <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">

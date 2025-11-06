@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import PageLayout from '../../components/PageLayout';
 import { getApprovedMembersForDirectory } from '../../lib/unified-member';
 import type { UnifiedMember } from '../../lib/unified-member';
@@ -74,11 +75,13 @@ export default function DirectoryPage() {
         <main className="flex-1 bg-white">
           {/* Hero Banner */}
           <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
-            <img
+            <Image
               src="/conferenceWood.jpg"
               alt={t('page.banner_alt')}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
               style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+              priority
             />
             <div className="absolute inset-0 bg-fase-navy/40"></div>
             <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
@@ -116,11 +119,13 @@ export default function DirectoryPage() {
       <main className="flex-1 bg-white">
         {/* Hero Banner */}
         <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
-          <img
+          <Image
             src="/conferenceWood.jpg"
             alt={t('page.banner_alt')}
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            className="object-cover"
             style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+            priority
           />
           <div className="absolute inset-0 bg-fase-navy/40"></div>
           <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">

@@ -3,6 +3,7 @@
 import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Button from "../../../components/Button";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
@@ -1122,11 +1123,12 @@ export default function MembershipApplication() {
 
               {newOrgData.logoURL && (
                 <div className="flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="w-12 h-12 border border-green-300 rounded-lg overflow-hidden">
-                    <img
+                  <div className="w-12 h-12 border border-green-300 rounded-lg overflow-hidden relative">
+                    <Image
                       src={newOrgData.logoURL}
                       alt="Uploaded logo"
-                      className="w-full h-full object-contain"
+                      fill
+                      className="object-contain"
                     />
                   </div>
                   <div className="flex-1">

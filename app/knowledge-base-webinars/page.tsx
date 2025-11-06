@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import PageLayout from '../../components/PageLayout';
 import TitleHero from '../../components/TitleHero';
 import Button from '../../components/Button';
@@ -123,7 +124,7 @@ export default function KnowledgeBaseWebinarsPage() {
     };
 
     checkAccess();
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, hasMemberAccess, member]);
 
   // Load videos on component mount
   useEffect(() => {
@@ -287,10 +288,11 @@ export default function KnowledgeBaseWebinarsPage() {
     >
       {/* Category Image */}
       <div className="relative h-48 overflow-hidden">
-        <img 
+        <Image 
           src={getCategoryImage(category)} 
           alt={category}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
         <div className="absolute top-4 right-4">
@@ -353,13 +355,14 @@ export default function KnowledgeBaseWebinarsPage() {
     return (
       <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
         <div 
-          className="relative cursor-pointer"
+          className="relative cursor-pointer h-48"
           onClick={handleVideoClick}
         >
-          <img 
+          <Image 
             src={video.thumbnail} 
             alt={video.title}
-            className="w-full h-48 object-cover"
+            fill
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
             <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">

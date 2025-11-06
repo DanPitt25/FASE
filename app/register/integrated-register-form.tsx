@@ -93,7 +93,7 @@ export default function IntegratedRegisterForm() {
         }
       }
     }
-  }, [firstName, surname, email, membershipType, members.length]);
+  }, [firstName, surname, email, membershipType, members]);
 
   
   // Address fields

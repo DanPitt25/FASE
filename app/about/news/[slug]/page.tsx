@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 import { marked } from 'marked';
 import Header from '../../../../components/Header';
 import Footer from '../../../../components/Footer';
@@ -166,10 +167,12 @@ export default function NewsArticlePage() {
         {/* Hero Banner with Title */}
         {article.metadata.bannerImage ? (
           <div className="relative h-96 overflow-hidden">
-            <img 
+            <Image 
               src={article.metadata.bannerImage} 
               alt={article.metadata.bannerImageAlt || article.metadata.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              priority
             />
             <div className="absolute inset-0 bg-black bg-opacity-50"></div>
             <div className="absolute inset-0 flex items-center">
