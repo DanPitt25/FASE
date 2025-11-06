@@ -1,0 +1,450 @@
+{
+  "auth": {
+    "sign_in": "Se Connecter",
+    "sign_out": "Se Déconnecter",
+    "sign_up": "S'Inscrire",
+    "register": "S'Enregistrer",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "logged_in_as": "Connecté en tant que",
+    "signed_in_as": "Connecté en tant que :",
+    "welcome": "Bienvenue",
+    "account": "Compte",
+    "profile": "Profil",
+    "admin_portal": "Portail Administrateur"
+  },
+  "header": {
+    "search_placeholder": "Rechercher...",
+    "language_label": "Langue :",
+    "about_us": "À Propos",
+    "join_us": "Nous Rejoindre",
+    "sponsorship": "Partenariat",
+    "events": "Événements",
+    "knowledge": "Connaissances & Éducation",
+    "news": "Actualités",
+    "member_portal": "Portail Membre",
+    "sign_in": "Se Connecter",
+    "sign_out": "Se Déconnecter",
+    "logged_in_as": "Connecté en tant que",
+    "signed_in_as": "Connecté en tant que :"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Connecter les innovateurs de l'assurance européenne",
+      "subtitle": "Relier les agences de souscription, les fournisseurs de capacité, les distributeurs et les partenaires de service pour partager les connaissances, établir des relations et améliorer la souscription déléguée à travers l'Europe.",
+      "join_now": "Rejoindre Maintenant",
+      "learn_more": "En Savoir Plus"
+    },
+    "who_we_are": {
+      "title": "Voir et être vu",
+      "description": "FASE élève le profil du secteur de la souscription déléguée et de ses membres individuels. Nos membres partagent un accent sur la collaboration, la croissance responsable et des normes professionnelles élevées. Grâce à des perspectives partagées, des ressources pratiques et un réseau actif, nous aidons chaque membre à construire les partenariats qui soutiendront la croissance de son entreprise."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Événements Pan-Européens",
+        "description": "Conférences bisannuelles rassemblant les agences de souscription, les fournisseurs de capacité et les prestataires de services pour le réseautage et le développement commercial."
+      },
+      "digital_platform": {
+        "title": "Plateforme Numérique",
+        "description": "Plateforme numérique multilingue fournissant des ressources techniques, réglementaires et d'appétit pour le risque aux membres agences de souscription."
+      },
+      "market_intelligence": {
+        "title": "Intelligence de Marché",
+        "description": "Rapports annuels du marché européen démontrant le dynamisme des agences de souscription avec des statistiques précises et des perspectives pan-européennes."
+      },
+      "industry_advocacy": {
+        "title": "Plaidoyer Industriel",
+        "description": "Voix pour les agences de souscription dans les discussions réglementaires aux niveaux national et pan-européen."
+      },
+      "education_training": {
+        "title": "Éducation et Formation",
+        "description": "Modules d'éducation et de formation en ligne pour les employés d'agences de souscription dans diverses spécialités."
+      },
+      "market_research": {
+        "title": "Recherche de Marché",
+        "description": "Capacités de recherche pour les agences de souscription cherchant l'accès à de nouveaux marchés européens et opportunités de croissance."
+      },
+      "capacity_transparency": {
+        "title": "Transparence des Capacités",
+        "description": "Transparence améliorée sur l'appétit des assureurs pour les affaires issues d'agences de souscription par géographie et classe."
+      }
+    },
+    "quote": {
+      "text": "Les agences de souscription sont, en général, de petites entreprises. Alors que nos membres cherchent à se développer, ils sont parfois entravés par des obstacles réglementaires, des lacunes de données et des contraintes de capacité. FASE peut aider.",
+      "author": "Dario Spata",
+      "title": "Président d'ASASE et membre du conseil consultatif de FASE"
+    },
+    "impact": {
+      "title": "Notre Impact",
+      "networking": {
+        "title": "Réseautage et Collaboration",
+        "description": "Engagez-vous avec des pairs à travers des forums, événements et groupes de travail qui favorisent les connexions pratiques et aident les membres à trouver des solutions aux défis communs."
+      },
+      "professional_development": {
+        "title": "Développement Professionnel",
+        "description": "Accédez à des opportunités d'apprentissage ciblées et à la recherche conçues pour aider les agences de souscription à développer leur expertise et leur capacité de leadership."
+      },
+      "market_intelligence": {
+        "title": "Intelligence de Marché",
+        "description": "Bénéficiez de données et d'analyses curées qui donnent aux membres une compréhension claire des tendances actuelles, des changements réglementaires et des opportunités émergentes sur les marchés européens."
+      }
+    },
+    "standards": {
+      "title": "Vérification et Normes",
+      "subtitle": "Pour maintenir le professionnalisme de la communauté FASE, nous avons établi un protocole d'adhésion :",
+      "review_process": "Notre Processus d'Évaluation",
+      "eligibility_review": {
+        "title": "Évaluation d'Éligibilité",
+        "description": "Confirmation des références commerciales, du statut réglementaire et des antécédents éthiques."
+      },
+      "standards_alignment": {
+        "title": "Alignement des Normes",
+        "description": "Évaluation de l'alignement de chaque candidat avec les principes reconnus de souscription déléguée."
+      },
+      "peer_endorsement": {
+        "title": "Approbation par les Pairs",
+        "description": "Consultation avec notre Conseil Consultatif et les membres existants pour assurer la crédibilité et l'adéquation au sein de la communauté."
+      },
+      "ongoing_review": {
+        "title": "Examen Continu",
+        "description": "Réaffirmation périodique de la bonne réputation et de l'engagement continu envers les normes partagées."
+      },
+      "conclusion": "Ce processus garantit que FASE reste un réseau de confiance de professionnels travaillant à améliorer la cohérence, la transparence et la performance dans la souscription déléguée."
+    },
+    "why_join": {
+      "title": "Un réseau pratique pour un marché complexe",
+      "subtitle": "Que vous soyez une agence de souscription, un assureur, un courtier ou un partenaire de service, FASE vous aide à rester connecté aux personnes, informations et perspectives qui façonnent la souscription déléguée en Europe.",
+      "become_member": "Devenir Membre",
+      "view_events": "Voir les Événements À Venir",
+      "tagline": "FASE — construire une communauté de Souscription Déléguée connectée, informée et responsable"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Code de Conduite",
+      "banner_alt": "Normes professionnelles et conformité réglementaire"
+    },
+    "intro": {
+      "title": "Code de Conduite FASE",
+      "content": {
+        "paragraph1": "FASE soutient les plus hauts standards professionnels et éthiques, tels que décrits dans ce Code de Conduite, et exige que tous les membres s'engagent annuellement à respecter ces standards comme condition de leur adhésion.",
+        "paragraph2": "Les membres s'engagent par les présentes à agir de manière légale, équitable et éthique dans toutes leurs relations avec toutes les parties.",
+        "paragraph3": "Les membres s'engagent à coopérer pleinement et en tout temps avec FASE dans l'application de ce Code."
+      }
+    },
+    "sections": {
+      "title": "Sections du Code de Conduite",
+      "legal": {
+        "title": "1. Responsabilités légales",
+        "content": "Les membres se conformeront à toutes les lois et réglementations applicables dans les lieux où ils exercent leurs activités. Si cette responsabilité légale entre en conflit avec un autre devoir décrit dans ce Code, cette responsabilité légale prendra la priorité.\n\nLes membres porteront à l'attention du Comité de Conduite des Affaires de FASE toute circonstance dont ils prennent connaissance impliquant :\n\n• Un membre en violation d'une exigence réglementaire et\n\n• Toute circonstance pouvant raisonnablement conduire à des sanctions contre le membre ou un membre de son personnel ou de ses dirigeants par les autorités réglementaires pertinentes\n\nLes membres fourniront toute assistance légale raisonnable aux organisations réglementaires, professionnelles et d'application de la loi dans l'exercice de leurs fonctions, que ce soit en ce qui les concerne eux-mêmes, un autre Membre ou un non-membre."
+      },
+      "financial": {
+        "title": "2. Responsabilités financières",
+        "content": "Les membres doivent toujours honorer leurs obligations financières à temps. Cela inclut, mais ne se limite pas au paiement des dettes, des primes dues aux assureurs, des retours dus aux courtiers et assurés, des sommes dues aux employés.\n\nLes membres doivent se conformer aux exigences de solvabilité applicables ou similaires."
+      },
+      "inter_org": {
+        "title": "3. Responsabilités inter-organisationnelles",
+        "content": "Les membres rivaliseront de manière équitable et honorable sur les marchés où ils opèrent.\n\nCela inclut, mais ne se limite pas à :\n\n• ne faire aucune déclaration sur les autres Membres, concurrents ou autres participants du marché, en privé ou en public, qu'ils ne croient pas honnêtement être vraie et pertinente basée sur les meilleures informations raisonnablement disponibles ;\n\n• conclure tout accord destiné à diminuer la concurrence au sein du marché."
+      },
+      "community": {
+        "title": "4. Responsabilités communautaires",
+        "content": "Les membres de FASE doivent se conduire d'une manière digne des privilèges de l'adhésion.\n\nLes membres ne se contenteront pas seulement de respecter leurs obligations légales concernant la discrimination, mais dans toutes leurs relations prendront des mesures raisonnables pour ne pas causer de préjudice à toute personne ou organisation en raison de la race, du sexe, de l'orientation sexuelle, de la réassignation de genre, de la grossesse et de la maternité, du statut marital ou de partenariat civil, de la religion ou des croyances, de l'âge et du handicap.\n\nLes membres sont encouragés à participer aux activités civiques, caritatives et philanthropiques qui contribuent à la promotion de la bonne réputation du secteur de l'assurance, de sa contribution au bien public et du bien-être de ceux qui y travaillent.\n\nLes membres encourageront la formation continue et la formation du personnel."
+      },
+      "insurers": {
+        "title": "5. Relations avec les assureurs",
+        "content": "Les membres traiteront de manière équitable et honnête lorsqu'ils agissent au nom des assureurs. En particulier, ils devraient :\n\n• exécuter fidèlement les directives de souscription des assureurs qu'ils représentent ;\n\n• agir de la plus grande bonne foi et rassembler toutes les données nécessaires pour prendre une décision de souscription appropriée avant de mettre un assureur en risque ;\n\n• se tenir au courant des lois et réglementations dans tous les domaines où ils ont autorité, et conseiller les assureurs en conséquence de l'impact de ces lois et réglementations sur leur relation."
+      },
+      "brokers": {
+        "title": "6. Relations avec les courtiers et agents (ou assurés si opérant directement)",
+        "content": "Les membres doivent traiter de manière équitable et honnête avec les courtiers, agents ou assurés (si opérant directement), et ce faisant :\n\n• considérer en tout temps la stabilité financière des assureurs avec lesquels le Membre place des affaires ;\n\n• ne faire aucune fausse déclaration ou déclaration trompeuse sur la couverture fournie, ou les limitations ou exclusions de couverture ou imposer des limitations ou exclusions telles que la police ne fournit aucun avantage effectif à l'assuré.\n\nLes membres doivent être en mesure de démontrer qu'ils ont soigneusement considéré les assureurs qu'ils représentent comme agents de souscription et placent les affaires de leurs clients et de leurs courtiers.\n\nUne diligence raisonnable efficace et appropriée est une partie clé du processus que les Membres doivent effectuer sur les compagnies d'assurance qu'ils représentent comme sécurité pour les polices qu'ils fournissent. Il y a un risque pour les clients dans le cas où un assureur fait faillite et est incapable de payer les réclamations valides.\n\nFASE s'attend à ce que les Membres MGA soient en mesure de démontrer qu'une diligence raisonnable appropriée a été effectuée sur les assureurs qu'ils représentent et offrent comme sécurité d'assurance.\n\nLes membres doivent fournir des détails clairs et non ambigus du nom et de l'adresse de l'assureur dans toute la documentation pertinente fournie aux courtiers et assurés. Nous attendons des Membres qu'ils évitent positivement de donner au preneur d'assurance l'impression que l'MGA est l'assureur et d'obscurcir le nom de l'assureur derrière l'MGA. Il est important que les clients puissent prendre une décision éclairée sur l'endroit où leur assurance est placée."
+      }
+    },
+    "reporting": {
+      "title": "Signalement des violations",
+      "content": {
+        "paragraph1": "Tous les avis de violation potentielle faits sous ce Code doivent être adressés au Comité de Conduite des Affaires à conduct@fasemga.com."
+      }
+    }
+  },
+  "thank_you": {
+    "title": "Merci pour votre candidature !",
+    "application_submitted": "Votre demande d'adhésion FASE a été soumise avec succès et envoyée à notre équipe pour examen.",
+    "application_reference": "Référence de candidature :",
+    "what_happens_next": {
+      "title": "Que se passe-t-il ensuite ?",
+      "step1": "Vous aurez de nos nouvelles dans un jour ouvrable",
+      "step2": "Nous examinerons votre candidature et vous contacterons avec les prochaines étapes",
+      "step3": "Si approuvée, vous recevrez les détails d'adhésion et les instructions de paiement"
+    },
+    "contact": {
+      "question": "Des questions sur votre candidature ?",
+      "email_text": "Contactez-nous à"
+    },
+    "return_home": "Retour à la page d'accueil"
+  },
+  "payment_succeeded": {
+    "title": "Paiement Réussi !",
+    "message": "Merci pour votre paiement. Votre adhésion FASE est maintenant active.",
+    "what_happens_next": {
+      "title": "Que se passe-t-il ensuite :",
+      "step1": "Vous recevrez un e-mail de confirmation avec les détails de votre adhésion.",
+      "step2": "L'accès au portail des membres sera activé sous peu.",
+      "step3": "Vous recevrez un reçu de facture pour vos dossiers."
+    },
+    "contact": {
+      "question": "Des questions sur votre adhésion ?",
+      "email_text": "Contactez-nous à"
+    },
+    "return_home": "Retour à l'accueil"
+  },
+  "payment_failed": {
+    "title": "Paiement Annulé",
+    "message": "Votre paiement a été annulé. Ne vous inquiétez pas, vous pouvez toujours compléter votre demande d'adhésion.",
+    "what_you_can_do": {
+      "title": "Ce que vous pouvez faire :",
+      "step1": "Essayez à nouveau le paiement en utilisant une carte de crédit ou de débit.",
+      "step2": "Choisissez de payer par virement bancaire à la place (facture jointe dans votre e-mail original).",
+      "step3": "Contactez-nous si vous avez besoin d'aide avec le paiement."
+    },
+    "contact": {
+      "question": "Besoin d'aide avec votre paiement ?",
+      "email_text": "Contactez-nous à"
+    },
+    "try_again": "Essayer le Paiement à Nouveau",
+    "return_home": "Retour à l'accueil"
+  },
+  "people": {
+    "page": {
+      "title": "Notre Équipe",
+      "banner_alt": "Direction et équipe FASE"
+    },
+    "executive_team": {
+      "title": "Équipe Dirigeante"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Directeur Exécutif",
+        "bio": "William a fondé FASE en 2025 pour répondre à un besoin largement reconnu d'un organisme pan-européen pour représenter le secteur des agences de souscription européennes en croissance rapide, mais peu compris.\n\nAvant d'établir FASE, William a dirigé des projets de recherche et de conseil chez Lexicon Associates et Conning. Il est l'auteur de The MGA Revolution: How MGAs are reshaping the insurance value chain, publié par Lexicon Associates en novembre 2024. Il a précédemment dirigé des initiatives de conseil pour Conning aux États-Unis et était l'auteur des études annuelles d'agences de souscription de Conning.\n\nAvant de rejoindre Conning en 2021, il a servi pendant douze ans comme directeur marketing mondial chez Beazley. Plus tôt dans sa carrière, il a occupé des rôles senior en marketing et développement commercial chez Marsh & McLennan Companies et Lloyd's.\n\nWilliam a écrit extensivement sur l'assurance pour des publications incluant le Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer, et Corriere della Sera. Il est l'auteur de More Equal than Others: a Director's Guide to EU Competition Policy, publié par Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Directrice des Opérations",
+        "bio": "Aline est responsable de la prestation efficace de tous les services aux membres, travaillant étroitement avec les membres pour répondre à leurs besoins. Elle a une expérience approfondie en communications d'entreprise, programmes éducatifs et gestion d'événements.\n\nAline est partenaire chez Lexicon Associates, une entreprise de recherche et de conseil qu'elle a fondée en 2009. Elle a travaillé avec Evercore Wealth Management et Evercore Trust Company depuis 2009 comme directrice externalisée des communications et éditrice du journal trimestriel de l'entreprise, Independent Thinking ; elle a précédemment dirigé les communications pour Aviva Investors, U.S. Trust et The Private Bank of Bank of America.\n\nSes articles sur l'investissement ont été publiés dans le New York Times, l'International Herald Tribune, le Financial Times, Worth, Bloomberg, Barron's et le Wall Street Journal."
+      }
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Rejoindre FASE",
+      "banner_alt": "Adhésion FASE"
+    },
+    "membership_applications": {
+      "title": "Candidatures d'adhésion",
+      "content": [
+        "L'adhésion à FASE est ouverte aux agences de souscription qui sont en activité depuis plus d'un an et souscrivent plus de 500 000 € de primes annuelles.",
+        "L'adhésion est également ouverte aux compagnies d'assurance et de réassurance cherchant à s'associer avec des agences de souscription européennes, et aux prestataires de services qui soutiennent le secteur."
+      ],
+      "image_alt": "Réunion d'affaires européenne"
+    },
+    "member_benefits": {
+      "title": "Avantages membres FASE",
+      "items": [
+        {
+          "title": "Représentation pan-européenne",
+          "content": "Rejoignez une voix unifiée plaidant pour les agences de souscription et la souscription déléguée à travers l'Europe."
+        },
+        {
+          "title": "Réseautage et collaboration",
+          "content": "Connectez-vous avec les dirigeants d'agences de souscription, assureurs, réassureurs et prestataires de services à travers l'Europe et au-delà."
+        },
+        {
+          "title": "MGA Rendezvous annuel",
+          "content": "Accès exclusif à notre événement phare — rassemblant les professionnels des agences de souscription, influenceurs du marché et partenaires du monde entier."
+        },
+        {
+          "title": "Sessions éducatives et d'analyse",
+          "content": "Participez à des ateliers, webinaires et panels sur les tendances réglementaires, l'innovation et les meilleures pratiques."
+        },
+        {
+          "title": "Intelligence industrielle",
+          "content": "Recevez des mises à jour régulières sur les développements du marché européen des agences de souscription, opportunités et défis."
+        },
+        {
+          "title": "Reconnaissance et crédibilité",
+          "content": "Renforcez votre réputation sur le marché en tant que membre d'une association d'agences de souscription respectée et tournée vers l'avenir."
+        },
+        {
+          "title": "Opportunités de collaboration",
+          "content": "Façonnez l'avenir de la souscription déléguée à travers des groupes de travail et des initiatives transfrontalières."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Catégories d'adhésion",
+      "subtitle_with_applications": "L'adhésion FASE est ouverte aux agences de souscription qui sont en activité depuis plus d'un an et souscrivent plus de 500 000 € de prime annuelle. L'adhésion est également ouverte aux compagnies d'assurance et de réassurance cherchant à s'associer avec des agences de souscription européennes, et aux prestataires de services qui soutiennent le secteur.",
+      "mga": {
+        "title": "Agence de Souscription",
+        "description": "Agences de souscription exerçant leurs activités en Europe depuis au moins un an et avec un revenu de primes supérieur à 500 000 €.",
+        "image_alt": "Réunion d'affaires d'agence de souscription",
+        "action_text": "Postuler comme Agence de Souscription"
+      },
+      "carrier": {
+        "title": "Assureur / Courtier",
+        "description": "Compagnie d'(ré)assurance, agence de gestion Lloyd's, ou courtier en (ré)assurance traitant avec des agences de souscription.",
+        "image_alt": "Analyse de marché et données",
+        "action_text": "Postuler comme Assureur / Courtier"
+      },
+      "service_provider": {
+        "title": "Prestataire de services",
+        "description": "Prestataires de services actifs dans l'écosystème des agences de souscription.",
+        "image_alt": "Collaboration de prestataire de services",
+        "action_text": "Postuler comme Prestataire de Services"
+      }
+    },
+    "application_process": {
+      "title": "Processus de candidature",
+      "content": [
+        "Pour commencer votre candidature, complétez notre formulaire d'adhésion avec les détails de votre organisation et informations commerciales.",
+        "Les candidatures sont examinées par le comité d'adhésion FASE pour assurer l'alignement avec nos standards communautaires et objectifs."
+      ],
+      "image_alt": "Processus de candidature",
+      "buttons": {
+        "join": "Rejoindre",
+        "contact_us": "Nous Contacter"
+      }
+    },
+    "membership_pricing": {
+      "title": "Tarification des Adhésions",
+      "subtitle": "Tarifs d'adhésion annuels conçus pour différents types et tailles d'organisations",
+      "mga": {
+        "title": "Adhésion MGA",
+        "description": "Tarification échelonnée basée sur les primes brutes souscrites annuelles",
+        "tiered_label": "Échelonnée",
+        "tiers": [
+          {
+            "range": "Jusqu'à 10 M€ GWP",
+            "price": "900 €"
+          },
+          {
+            "range": "10 M€ - 20 M€ GWP",
+            "price": "1 500 €"
+          },
+          {
+            "range": "20 M€ - 50 M€ GWP",
+            "price": "2 200 €"
+          },
+          {
+            "range": "50 M€ - 100 M€ GWP",
+            "price": "2 800 €"
+          },
+          {
+            "range": "100 M€ - 500 M€ GWP",
+            "price": "4 200 €"
+          },
+          {
+            "range": "500 M€+ GWP",
+            "price": "7 000 €"
+          }
+        ],
+        "features": [
+          "Tous les avantages d'adhésion individuels",
+          "Profil d'entreprise dans l'annuaire des membres",
+          "Accès pour plusieurs membres de l'équipe",
+          "Réservation d'événements prioritaire",
+          "Opportunités de jumelage d'affaires trimestrielles"
+        ]
+      },
+      "carrier": {
+        "title": "Adhésion Assureur",
+        "description": "Pour les compagnies d'assurance et de réassurance",
+        "price": "4 000 €",
+        "period": "par an",
+        "features": [
+          "Accès direct au réseau européen d'agences de souscription",
+          "Opportunités de mise en relation de capacités",
+          "Rapports d'intelligence de marché",
+          "Opportunités de parrainage prioritaires",
+          "Événements de networking exclusifs pour assureurs"
+        ]
+      },
+      "provider": {
+        "title": "Adhésion Prestataire de Services",
+        "description": "Pour les entreprises fournissant des services au secteur MGA",
+        "price": "5 000 €",
+        "period": "par an",
+        "features": [
+          "Accès aux prospects d'agences de souscription qualifiés",
+          "Opportunités de leadership éclairé",
+          "Participation aux événements de l'industrie",
+          "Recherche et insights de marché",
+          "Support de développement commercial"
+        ]
+      },
+      "discount": {
+        "title": "Remise Multi-Association",
+        "description": "20% de remise pour les organisations membres d'autres associations MGA ou d'assurance"
+      },
+      "billing": {
+        "note": "Toutes les adhésions sont facturées annuellement. L'adhésion se renouvellera automatiquement chaque année avec préavis."
+      }
+    }
+  },
+  "footer": {
+    "description": "La Fédération des Agences de Souscription Européennes - représentant la communauté des agences de souscription à travers l'Europe.",
+    "membership": "Adhésion",
+    "join_fase": "Rejoindre FASE",
+    "member_directory": "Annuaire des Membres",
+    "resources": "Ressources",
+    "knowledge_base": "Base de Connaissances",
+    "events": "Événements",
+    "news": "Actualités",
+    "connect": "Connexion",
+    "contact_us": "Nous Contacter",
+    "member_portal": "Portail Membre",
+    "about_fase": "À Propos de FASE",
+    "copyright": "© 2025 FASE B.V. Tous droits réservés."
+  },
+  "cookie_banner": {
+    "title": "Nous utilisons des cookies",
+    "description": "Nous utilisons des cookies essentiels pour faire fonctionner notre site. Nous aimerions également définir des cookies optionnels pour nous aider à améliorer notre site web et analyser son utilisation.",
+    "customize_settings": "Personnaliser les paramètres",
+    "accept_all": "Tout Accepter",
+    "reject_all": "Tout Rejeter",
+    "preferences_title": "Préférences des Cookies",
+    "save_preferences": "Enregistrer les Préférences",
+    "necessary": {
+      "title": "Cookies Nécessaires",
+      "description": "Ces cookies sont essentiels au fonctionnement du site web et ne peuvent pas être désactivés. Ils incluent l'authentification, la sécurité et les fonctionnalités de base."
+    },
+    "analytics": {
+      "title": "Cookies d'Analyse",
+      "description": "Ces cookies nous aident à comprendre comment les visiteurs interagissent avec notre site web en collectant des informations anonymes sur les modèles d'utilisation."
+    },
+    "marketing": {
+      "title": "Cookies de Marketing",
+      "description": "Ces cookies sont utilisés pour suivre les visiteurs sur les sites web afin d'afficher des publicités pertinentes et mesurer l'efficacité des campagnes."
+    }
+  },
+  "subscription_success": {
+    "title": "Abonnement Activé !",
+    "message": "Votre abonnement d'adhésion FASE est maintenant actif ! Vous serez facturé annuellement et votre adhésion se renouvellera automatiquement chaque année.",
+    "what_happens_next": "Que se passe-t-il ensuite :",
+    "steps": {
+      "processing": "Votre demande d'adhésion est en cours de traitement",
+      "email": "Vous recevrez un email de confirmation sous peu",
+      "renewals": "Les renouvellements annuels seront automatiques",
+      "manage": "Vous pouvez gérer votre abonnement dans PayPal"
+    },
+    "buttons": {
+      "member_portal": "Aller au Portail Membre",
+      "return_home": "Retour à l'Accueil"
+    },
+    "subscription_id": "ID d'Abonnement :",
+    "cancel_note": "Vous pouvez annuler à tout moment via votre compte PayPal.",
+    "error_title": "Erreur d'Abonnement",
+    "invalid_session": "Session d'abonnement invalide",
+    "return_to_registration": "Retour à l'Inscription",
+    "processing_subscription": "Traitement de votre abonnement..."
+  }
+}

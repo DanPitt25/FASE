@@ -20,16 +20,35 @@ export const metadata = {
   metadataBase: new URL('https://fasemga.com'),
 };
 
+// Helper to merge translation files
+const mergeTranslations = async (locale: string) => {
+  const files = ['core', 'auth', 'pages', 'knowledge', 'content', 'other'];
+  const translations = {};
+  
+  for (const file of files) {
+    try {
+      const fileTranslations = (await import(`../messages/${locale}/${file}.json`)).default;
+      Object.assign(translations, fileTranslations);
+    } catch (error) {
+      console.warn(`Could not load ${locale}/${file}.json`);
+    }
+  }
+  
+  return translations;
+};
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Load all message sets for dynamic switching
-  const enMessages = (await import('../messages/en.json')).default;
-  const frMessages = (await import('../messages/fr.json')).default;
-  const deMessages = (await import('../messages/de.json')).default;
-  const allMessages = { en: enMessages, fr: frMessages, de: deMessages };
+  // Load all message sets for dynamic switching using organized structure
+  const enMessages = await mergeTranslations('en');
+  const frMessages = await mergeTranslations('fr');
+  const deMessages = await mergeTranslations('de');
+  const esMessages = await mergeTranslations('es');
+  const itMessages = await mergeTranslations('it');
+  const allMessages = { en: enMessages, fr: frMessages, de: deMessages, es: esMessages, it: itMessages };
   
   return (
     <html lang="en">

@@ -1,0 +1,69 @@
+{
+  "webinars": {
+    "page": {
+      "title": "Webinar-Serie",
+      "banner_alt": "FASE-Webinar-Serie"
+    },
+    "intro": {
+      "title": "Expertengeführte Webinar-Serie",
+      "content": [
+        "Unsere Webinar-Serie konzentriert sich auf die dringendsten Bedürfnisse europäischer MGA-Fachleute und bietet Branchenexperten und Thought Leaders. Schwerpunktbereiche umfassen regulatorische Herausforderungen, Rekrutierung, Datenmanagement-Probleme und professionelle Standards."
+      ],
+      "image_alt": "Online-Lernen und Webinare"
+    },
+    "upcoming_webinars": {
+      "title": "Kommende Webinare",
+      "regulatory_hurdles": {
+        "title": "Regulatorische Hürden",
+        "description": "Markt-für-Markt-Analyse der regulatorischen Landschaft für MGAs und wie regulatorische Barrieren überwunden werden können.",
+        "image_alt": "Regulatorische Compliance"
+      },
+      "capital_structures": {
+        "title": "Kapitalstrukturen und Anreize",
+        "description": "Beratung zur Optimierung der Ausrichtung mit Kapazitätsanbietern, um dauerhafte Kapazität zu sichern.",
+        "image_alt": "Geschäftsbeziehungen"
+      },
+      "ai_promise_peril": {
+        "title": "KI: Das Versprechen und die Gefahr",
+        "description": "KI verspricht enorme Gewinne für MGAs in operativer Effizienz, Risikopreisgestaltung und Verbesserung der Makler- und Kundenerfahrung. Aber einige Anwendungsfälle sind spekulativer als andere.",
+        "image_alt": "Digitale Transformation"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Entrepreneurialer Versicherer",
+      "banner_alt": "Entrepreneuriale Zeichnung"
+    },
+    "intro": {
+      "title": "Der Entrepreneurial Underwriter",
+      "content": [
+        "Ab 2026 wird der Entrepreneurial Underwriter – unsere Flaggschiff-Publikation – Einblicke und praktische Anleitung für Unternehmer sammeln, die die Zukunft der europäischen delegierten Zeichnung gestalten."
+      ],
+      "image_alt": "Entrepreneuriale Zeichnungseinblicke"
+    },
+    "featured_content": {
+      "title": "Hauptinhalt",
+      "market_analysis": {
+        "title": "Marktanalyse",
+        "description": "Tiefgreifende Analyse europäischer delegierter Zeichnungstrends, regulatorischer Entwicklungen und aufkommender Möglichkeiten für MGAs.",
+        "image_alt": "Marktanalyse"
+      },
+      "case_studies": {
+        "title": "Fallstudien",
+        "description": "Reale Beispiele erfolgreicher MGA-Strategien, innovativer Zeichnungsansätze und effektiver Kapazitätsbeziehungen.",
+        "image_alt": "Geschäftsfallstudien"
+      },
+      "expert_insights": {
+        "title": "Experteneinblicke",
+        "description": "Perspektiven von Branchenführern zum Aufbau nachhaltiger MGA-Geschäfte und zur Navigation in europäischen regulatorischen Umgebungen.",
+        "image_alt": "Experteneinblicke"
+      }
+    },
+    "quote": {
+      "text": "Delegierte Vollmachtszeichnung ist zum entrepreneurialsten Sektor des Versicherungsmarktes geworden. Unser Ziel bei FASE ist es, die Ressourcen zu mobilisieren, um entrepreneurialen Zeichnern zum Erfolg zu verhelfen.",
+      "author": "William Pitt",
+      "title": "Geschäftsführender Direktor, FASE"
+    }
+  }
+}

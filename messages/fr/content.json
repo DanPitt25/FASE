@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "Actualités",
+      "banner_alt": "Actualités et mises à jour FASE"
+    },
+    "intro": {
+      "title": "Actualités et Mises à Jour FASE",
+      "content": {
+        "paragraph1": "Restez informé des développements de FASE, des perspectives de l'industrie et des opportunités de croissance professionnelle et de collaboration à travers la communauté européenne des agences de souscription.",
+        "paragraph2": "Notre plateforme d'actualités sert de source principale d'informations sur l'industrie européenne de la souscription déléguée, mises à jour réglementaires et annonces organisationnelles."
+      },
+      "image_alt": "Actualités et mises à jour de l'industrie"
+    },
+    "latest_updates": {
+      "title": "Dernières Mises à Jour",
+      "cards": {
+        "foundation": {
+          "title": "Fondation FASE",
+          "description": "FASE est établie pour servir le secteur européen des agences de souscription en croissance rapide, répondant au besoin de représentation et collaboration pan-européennes.",
+          "image_alt": "Annonce de la fondation FASE"
+        },
+        "advisory_board": {
+          "title": "Formation du Conseil Consultatif",
+          "description": "Des dirigeants d'industrie distingués rejoignent le conseil consultatif de FASE pour guider la direction stratégique et représenter les intérêts divers de la communauté des agences de souscription.",
+          "image_alt": "Formation du conseil consultatif"
+        },
+        "platform_launch": {
+          "title": "Lancement de la Plateforme d'Adhésion",
+          "description": "Le portail membre FASE est mis en ligne, fournissant inscription, services d'annuaire et ressources exclusives pour les professionnels européens des agences de souscription.",
+          "image_alt": "Lancement de plateforme"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "Cet article est également disponible en :"
+    }
+  }
+}

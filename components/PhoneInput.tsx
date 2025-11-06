@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { getCountryCallingCode } from 'libphonenumber-js';
@@ -10,6 +10,8 @@ import countries from 'i18n-iso-countries';
 countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
 countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));  
 countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/es.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/it.json'));
 
 interface PhoneInputProps {
   label: string;
@@ -52,6 +54,7 @@ export default function PhoneInput({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const lastValueRef = useRef(value);
   
   const isValid = !required || value.trim() !== '';
   const shouldShowValidation = required && ((touchedFields[fieldKey] || attemptedNext) && !isValid);
@@ -109,13 +112,20 @@ export default function PhoneInput({
   useEffect(() => {
     if (selectedCountryData && phoneNumber) {
       const fullNumber = `+${selectedCountryData.callingCode} ${phoneNumber}`;
-      if (fullNumber !== value) {
+      if (fullNumber !== lastValueRef.current) {
+        lastValueRef.current = fullNumber;
         onChange(fullNumber);
       }
-    } else if (phoneNumber && phoneNumber !== value) {
+    } else if (phoneNumber && phoneNumber !== lastValueRef.current) {
+      lastValueRef.current = phoneNumber;
       onChange(phoneNumber);
     }
-  }, [selectedCountry, phoneNumber, selectedCountryData, onChange, value]);
+  }, [selectedCountry, phoneNumber, selectedCountryData]);
+
+  // Update ref when value changes externally
+  useEffect(() => {
+    lastValueRef.current = value;
+  }, [value]);
 
   return (
     <div className={className}>

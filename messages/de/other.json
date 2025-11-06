@@ -1,0 +1,450 @@
+{
+  "auth": {
+    "sign_in": "Anmelden",
+    "sign_out": "Abmelden",
+    "sign_up": "Registrieren",
+    "register": "Registrieren",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "logged_in_as": "Angemeldet als",
+    "signed_in_as": "Angemeldet als:",
+    "welcome": "Willkommen",
+    "account": "Konto",
+    "profile": "Profil",
+    "admin_portal": "Admin-Portal"
+  },
+  "header": {
+    "search_placeholder": "Suchen...",
+    "language_label": "Sprache:",
+    "about_us": "Über uns",
+    "join_us": "Machen Sie mit",
+    "sponsorship": "Sponsoring",
+    "events": "Veranstaltungen",
+    "knowledge": "Wissen & Bildung",
+    "news": "Nachrichten",
+    "member_portal": "Mitgliederportal",
+    "sign_in": "Anmelden",
+    "sign_out": "Abmelden",
+    "logged_in_as": "Angemeldet als",
+    "signed_in_as": "Angemeldet als:"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Europas Versicherungsinnovatoren verbinden",
+      "subtitle": "Verbindung von MGAs, Kapazitätsanbietern, Distributoren und Servicepartnern zum Austausch von Wissen, Aufbau von Beziehungen und Verbesserung der delegierten Zeichnung in Europa.",
+      "join_now": "Jetzt beitreten",
+      "learn_more": "Mehr erfahren"
+    },
+    "who_we_are": {
+      "title": "Sehen und gesehen werden",
+      "description": "FASE erhöht das Profil des delegierten Zeichnungssektors und seiner einzelnen Mitglieder. Unsere Mitglieder teilen einen Fokus auf Zusammenarbeit, verantwortungsvolles Wachstum und hohe professionelle Standards. Durch gemeinsame Einblicke, praktische Ressourcen und ein aktives Netzwerk helfen wir jedem Mitglied, die Partnerschaften aufzubauen, die das Wachstum seines Geschäfts unterstützen."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Paneuropäische Veranstaltungen",
+        "description": "Halbjährliche Konferenzen, die MGAs, Kapazitätsanbieter und Dienstleister für Networking und Geschäftsentwicklung zusammenbringen."
+      },
+      "digital_platform": {
+        "title": "Digitale Plattform",
+        "description": "Mehrsprachige digitale Plattform mit technischen, regulatorischen und Risikoappetit-Ressourcen für MGA-Mitglieder."
+      },
+      "market_intelligence": {
+        "title": "Marktintelligenz",
+        "description": "Jährliche europäische Marktberichte, die MGA-Dynamik mit genauen Statistiken und paneuropäischen Markteinblicken demonstrieren."
+      },
+      "industry_advocacy": {
+        "title": "Branchenvertretung",
+        "description": "Stimme für MGAs in regulatorischen Diskussionen auf nationaler und paneuropäischer Ebene."
+      },
+      "education_training": {
+        "title": "Bildung & Ausbildung",
+        "description": "Online-Bildungs- und Ausbildungsmodule für MGA-Mitarbeiter in verschiedenen Fachbereichen."
+      },
+      "market_research": {
+        "title": "Marktforschung",
+        "description": "Forschungskapazitäten für MGAs, die Zugang zu neuen europäischen Märkten und Wachstumsmöglichkeiten suchen."
+      },
+      "capacity_transparency": {
+        "title": "Kapazitätstransparenz",
+        "description": "Verbesserte Transparenz über Versichererappetit für MGA-Geschäft nach Geografie und Klasse."
+      }
+    },
+    "quote": {
+      "text": "MGAs sind hauptsächlich kleine Unternehmen. Wenn unsere Mitglieder wachsen wollen, werden sie manchmal durch regulatorische Hindernisse, Datenlücken und Kapazitätsbeschränkungen behindert. FASE kann helfen.",
+      "author": "Dario Spata",
+      "title": "Präsident von ASASE und FASE-Beiratsmitglied"
+    },
+    "impact": {
+      "title": "Unsere Wirkung",
+      "networking": {
+        "title": "Networking & Zusammenarbeit",
+        "description": "Interagieren Sie mit Kollegen durch Foren, Veranstaltungen und Arbeitsgruppen, die praktische Verbindungen fördern und Mitgliedern helfen, Lösungen für gemeinsame Herausforderungen zu finden."
+      },
+      "professional_development": {
+        "title": "Berufliche Entwicklung",
+        "description": "Zugang zu gezielten Lernmöglichkeiten und Forschung, die darauf ausgelegt sind, MGAs beim Aufbau von Expertise und Führungsfähigkeiten zu helfen."
+      },
+      "market_intelligence": {
+        "title": "Marktintelligenz",
+        "description": "Profitieren Sie von kuratierten Daten und Einblicken, die Mitgliedern ein klares Verständnis aktueller Trends, regulatorischer Veränderungen und aufkommender Möglichkeiten in europäischen Märkten geben."
+      }
+    },
+    "standards": {
+      "title": "Überprüfung & Standards",
+      "subtitle": "Um die Professionalität der FASE-Gemeinschaft zu wahren, haben wir ein Mitgliedschaftsprotokoll etabliert:",
+      "review_process": "Unser Überprüfungsprozess",
+      "eligibility_review": {
+        "title": "Berechtigung sprüfung",
+        "description": "Bestätigung von Geschäftsnachweisen, regulatorischem Status und ethischem Werdegang."
+      },
+      "standards_alignment": {
+        "title": "Standards-Ausrichtung",
+        "description": "Bewertung der Ausrichtung jedes Bewerbers mit anerkannten delegierten Zeichnungsprinzipien."
+      },
+      "peer_endorsement": {
+        "title": "Kollegiale Befürwortung",
+        "description": "Beratung mit unserem Beirat und bestehenden Mitgliedern, um Glaubwürdigkeit und Passung innerhalb der Gemeinschaft sicherzustellen."
+      },
+      "ongoing_review": {
+        "title": "Laufende Überprüfung",
+        "description": "Regelmäßige Bestätigung des guten Rufes und anhaltender Verpflichtung zu gemeinsamen Standards."
+      },
+      "conclusion": "Dieser Prozess stellt sicher, dass FASE ein vertrauenswürdiges Netzwerk von Fachleuten bleibt, die daran arbeiten, Konsistenz, Transparenz und Leistung in der delegierten Zeichnung zu erhöhen."
+    },
+    "why_join": {
+      "title": "Ein praktisches Netzwerk für einen komplexen Markt",
+      "subtitle": "Ob Sie ein MGA, Versicherer, Makler oder Servicepartner sind, FASE hilft Ihnen, mit den Menschen, Informationen und Perspektiven verbunden zu bleiben, die die delegierte Zeichnung in Europa prägen.",
+      "become_member": "Mitglied werden",
+      "view_events": "Kommende Veranstaltungen ansehen",
+      "tagline": "FASE — Aufbau einer verbundenen, informierten und verantwortlichen delegierten Zeichnungsgemeinschaft"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Verhaltenskodex",
+      "banner_alt": "Professionelle Standards und regulatorische Compliance"
+    },
+    "intro": {
+      "title": "FASE-Verhaltenskodex",
+      "content": {
+        "paragraph1": "FASE unterstützt die höchsten professionellen und ethischen Standards, wie in diesem Verhaltenskodex beschrieben, und verlangt, dass alle Mitglieder sich jährlich zur Einhaltung dieser Standards als Bedingung ihrer Mitgliedschaft verpflichten.",
+        "paragraph2": "Mitglieder verpflichten sich hiermit, in allen ihren Geschäften mit allen Parteien legal, fair und ethisch zu handeln.",
+        "paragraph3": "Mitglieder verpflichten sich, jederzeit voll mit FASE bei der Durchsetzung dieses Kodex zu kooperieren."
+      }
+    },
+    "sections": {
+      "title": "Verhaltenskodex-Abschnitte",
+      "legal": {
+        "title": "1. Rechtliche Verantwortlichkeiten",
+        "content": "Mitglieder werden alle anwendbaren Gesetze und Vorschriften in den Orten einhalten, in denen sie Geschäfte tätigen. Sollte diese rechtliche Verantwortung mit einer anderen in diesem Kodex beschriebenen Pflicht in Konflikt stehen, hat diese rechtliche Verantwortung Vorrang.\n\nMitglieder werden das FASE Business Conduct Committee auf alle Umstände aufmerksam machen, die ihnen bekannt werden und die Folgendes betreffen:\n\n• Ein Mitglied, das gegen regulatorische Anforderungen verstößt und\n\n• Jeder Umstand, der vernünftigerweise zu Sanktionen gegen das Mitglied oder ein Mitglied ihrer Mitarbeiter oder Direktoren durch die relevanten Regulierungsbehörden führen könnte\n\nMitglieder werden alle angemessene rechtmäßige Unterstützung für regulatorische, professionelle und Strafverfolgungsorganisationen bei der Erfüllung ihrer Pflichten leisten, sei es in Bezug auf sich selbst, ein anderes Mitglied oder ein Nicht-Mitglied."
+      },
+      "financial": {
+        "title": "2. Finanzielle Verantwortlichkeiten",
+        "content": "Mitglieder sollten ihre finanziellen Verpflichtungen immer rechtzeitig erfüllen. Dies umfasst, ist aber nicht beschränkt auf, Zahlung von Schulden, Prämien an Versicherer, Rückgaben an Makler und Versicherte, Beträge an Mitarbeiter.\n\nMitglieder müssen anwendbare Solvenz- oder ähnliche Anforderungen erfüllen."
+      },
+      "inter_org": {
+        "title": "3. Zwischenorganisatorische Verantwortlichkeiten",
+        "content": "Mitglieder werden fair und ehrenhaft in den Märkten konkurrieren, in denen sie tätig sind.\n\nDies umfasst, ist aber nicht beschränkt auf:\n\n• keine Aussage über Mitglieder, Konkurrenten oder andere Marktteilnehmer zu machen, privat oder öffentlich, die sie nicht ehrlich für wahr und relevant halten, basierend auf den besten ihnen vernünftigerweise verfügbaren Informationen;\n\n• keine Vereinbarung einzugehen, die darauf abzielt, den Wettbewerb innerhalb des Marktes zu verringern."
+      },
+      "community": {
+        "title": "4. Gemeinschaftsverantwortlichkeiten",
+        "content": "FASE-Mitglieder müssen sich in einer Weise verhalten, die den Privilegien der Mitgliedschaft entspricht.\n\nMitglieder werden nicht nur ihre Verpflichtungen unter dem Gesetz bezüglich Diskriminierung erfüllen, sondern in allen ihren Geschäften angemessene Schritte unternehmen, um keinen Nachteil für eine Person oder Organisation aufgrund von Rasse, Geschlecht, sexueller Orientierung, Geschlechtsumwandlung, Schwangerschaft und Mutterschaft, Ehe- oder Lebenspartnerschaftsstatus, Religion oder Überzeugung, Alter und Behinderung zu verursachen.\n\nMitglieder werden ermutigt, an bürgerlichen, wohltätigen und philanthropischen Aktivitäten teilzunehmen, die zur Förderung des guten Rufs des Versicherungssektors, seines Beitrags zum Gemeinwohl und der Wohlfahrt derer, die darin arbeiten, beitragen.\n\nMitglieder werden kontinuierliche Bildung und Ausbildung für Mitarbeiter fördern."
+      },
+      "insurers": {
+        "title": "5. Beziehungen zu Versicherern",
+        "content": "Mitglieder werden fair und ehrlich handeln, wenn sie im Namen von Versicherern agieren. Insbesondere sollten sie:\n\n• die Zeichnungsrichtlinien der Versicherer, die sie vertreten, treu ausführen;\n\n• in äußerster Treue handeln und alle notwendigen Daten sammeln, um eine ordnungsgemäße Zeichnungsentscheidung zu treffen, bevor sie einen Versicherer einem Risiko aussetzen;\n\n• sich über die Gesetze und Vorschriften in allen Bereichen, in denen sie Vollmacht haben, auf dem Laufenden halten und die Versicherer entsprechend über die Auswirkungen solcher Gesetze und Vorschriften beraten, wie sie ihre Beziehung betreffen."
+      },
+      "brokers": {
+        "title": "6. Beziehungen zu Maklern und Agenten (oder Versicherten bei direktem Betrieb)",
+        "content": "Mitglieder sollten fair und ehrlich mit Maklern, Agenten oder Versicherten (bei direktem Betrieb) umgehen und dabei:\n\n• jederzeit die finanzielle Stabilität der Versicherer berücksichtigen, bei denen das Mitglied Geschäfte platziert;\n\n• keine falschen oder irreführenden Darstellungen darüber machen, welche Deckung bereitgestellt wird, oder die Beschränkungen oder Ausschlüsse der Deckung, oder Beschränkungen oder Ausschlüsse auferlegen, so dass die Police keinen effektiven Nutzen für den Versicherten bietet.\n\nMitglieder sollten in der Lage sein zu demonstrieren, dass sie die Versicherer, die sie als Zeichnungsagenten vertreten, sorgfältig berücksichtigt haben und die Geschäfte ihrer und ihrer Makler Kunden bei ihnen platzieren.\n\nEffektive und angemessene Due Diligence ist ein wichtiger Teil des Prozesses, den Mitglieder bei den Versicherungsunternehmen durchführen sollten, die sie als Sicherheit für die von ihnen bereitgestellten Policen vertreten. Es besteht ein Risiko für Kunden im Falle, dass ein Versicherer ausfällt und nicht in der Lage ist, gültige Ansprüche zu zahlen.\n\nFASE erwartet von MGA-Mitgliedern, dass sie demonstrieren können, dass angemessene Due Diligence bei den Versicherern durchgeführt wurde, die sie vertreten und als Versicherungssicherheit anbieten.\n\nMitglieder sollten klare und eindeutige Details über Name und Adresse des Versicherers in allen relevanten Dokumentationen für Makler und Policeninhaber bereitstellen. Wir erwarten von Mitgliedern, dass sie positiv vermeiden, dem Policeninhaber den Eindruck zu vermitteln, dass der MGA der Versicherer ist und den Namen des Versicherers hinter dem MGA zu verschleiern. Es ist wichtig, dass Kunden eine informierte Entscheidung darüber treffen können, wo ihre Versicherung platziert wird."
+      }
+    },
+    "reporting": {
+      "title": "Meldung von Verstößen",
+      "content": {
+        "paragraph1": "Alle Mitteilungen über potenzielle Verstöße gegen diesen Kodex sollten an das Business Conduct Committee unter conduct@fasemga.com gerichtet werden."
+      }
+    }
+  },
+  "thank_you": {
+    "title": "Vielen Dank für Ihre Bewerbung!",
+    "application_submitted": "Ihre FASE-Mitgliedschaftsanmeldung wurde erfolgreich eingereicht und an unser Team zur Prüfung gesendet.",
+    "application_reference": "Antragsreferenz:",
+    "what_happens_next": {
+      "title": "Was passiert als Nächstes?",
+      "step1": "Sie hören innerhalb eines Geschäftstags von uns",
+      "step2": "Wir prüfen Ihre Anmeldung und kontaktieren Sie mit den nächsten Schritten",
+      "step3": "Bei Genehmigung erhalten Sie Mitgliedschaftsdetails und Zahlungsanweisungen"
+    },
+    "contact": {
+      "question": "Fragen zu Ihrer Anmeldung?",
+      "email_text": "Kontaktieren Sie uns unter"
+    },
+    "return_home": "Zur Startseite zurückkehren"
+  },
+  "payment_succeeded": {
+    "title": "Zahlung Erfolgreich!",
+    "message": "Vielen Dank für Ihre Zahlung. Ihre FASE-Mitgliedschaft ist jetzt aktiv.",
+    "what_happens_next": {
+      "title": "Was passiert als Nächstes:",
+      "step1": "Sie erhalten eine Bestätigungs-E-Mail mit Ihren Mitgliedschaftsdetails.",
+      "step2": "Der Zugang zum Mitgliederportal wird in Kürze aktiviert.",
+      "step3": "Sie erhalten eine Rechnungsquittung für Ihre Unterlagen."
+    },
+    "contact": {
+      "question": "Fragen zu Ihrer Mitgliedschaft?",
+      "email_text": "Kontaktieren Sie uns unter"
+    },
+    "return_home": "Zur Startseite"
+  },
+  "payment_failed": {
+    "title": "Zahlung Abgebrochen",
+    "message": "Ihre Zahlung wurde abgebrochen. Keine Sorge, Sie können Ihre Mitgliedschaftsanmeldung trotzdem abschließen.",
+    "what_you_can_do": {
+      "title": "Was Sie tun können:",
+      "step1": "Versuchen Sie die Zahlung erneut mit Kredit- oder Debitkarte.",
+      "step2": "Wählen Sie stattdessen die Zahlung per Banküberweisung (Rechnung in Ihrer ursprünglichen E-Mail beigefügt).",
+      "step3": "Kontaktieren Sie uns, wenn Sie Hilfe bei der Zahlung benötigen."
+    },
+    "contact": {
+      "question": "Benötigen Sie Hilfe bei Ihrer Zahlung?",
+      "email_text": "Kontaktieren Sie uns unter"
+    },
+    "try_again": "Zahlung Erneut Versuchen",
+    "return_home": "Zur Startseite"
+  },
+  "people": {
+    "page": {
+      "title": "Unsere Mitarbeiter",
+      "banner_alt": "FASE-Führung und Team"
+    },
+    "executive_team": {
+      "title": "Führungsteam"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Geschäftsführender Direktor",
+        "bio": "William gründete FASE 2025, um einem weithin anerkannten Bedarf nach einer paneuropäischen Organisation zu begegnen, die Europas schnell wachsenden, aber wenig verstandenen MGA-Sektor vertritt.\n\nVor der Gründung von FASE leitete William Forschungs- und Beratungsprojekte bei Lexicon Associates und Conning. Er ist Autor von The MGA Revolution: How MGAs are reshaping the insurance value chain, veröffentlicht von Lexicon Associates im November 2024. Zuvor leitete er Beratungsinitiativen für Conning in den Vereinigten Staaten und war Autor von Connings jährlichen MGA-Studien.\n\nVor seinem Beitritt zu Conning 2021 war er zwölf Jahre lang Global Chief Marketing Officer bei Beazley. Früher in seiner Laufbahn hatte er leitende Marketing- und Geschäftsentwicklungsrollen bei Marsh & McLennan Companies und Lloyd's.\n\nWilliam hat ausführlich über Versicherungen für Publikationen wie das Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer und Corriere della Sera geschrieben. Er ist Autor von More Equal than Others: a Director's Guide to EU Competition Policy, veröffentlicht von Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Chief Operating Officer",
+        "bio": "Aline ist verantwortlich für die effiziente Bereitstellung aller Mitgliederdienste und arbeitet eng mit Mitgliedern zusammen, um ihre Bedürfnisse zu erfüllen. Sie hat tiefe Erfahrung in Geschäftskommunikation, Bildungsprogrammen und Veranstaltungsmanagement.\n\nAline ist Partnerin bei Lexicon Associates, einem Forschungs- und Beratungsunternehmen, das sie 2009 gründete. Sie arbeitet seit 2009 mit Evercore Wealth Management und Evercore Trust Company als ausgelagerte Kommunikationsleiterin und Redakteurin der vierteljährlichen Zeitschrift des Unternehmens, Independent Thinking; sie leitete zuvor die Kommunikation für Aviva Investors, U.S. Trust und The Private Bank of Bank of America.\n\nIhre Artikel über Investitionen wurden in der New York Times, der International Herald Tribune, der Financial Times, Worth, Bloomberg, Barron's und dem Wall Street Journal veröffentlicht."
+      }
+    }
+  },
+  "join": {
+    "page": {
+      "title": "FASE beitreten",
+      "banner_alt": "FASE-Mitgliedschaft beitreten"
+    },
+    "membership_applications": {
+      "title": "Mitgliedschaftsanträge",
+      "content": [
+        "FASE-Mitgliedschaft steht MGAs offen, die seit mehr als einem Jahr im Geschäft sind und mehr als 500.000 € an jährlichen Prämien zeichnen.",
+        "Die Mitgliedschaft steht auch Versicherungs- und Rückversicherungsunternehmen offen, die Partnerschaften mit europäischen MGAs suchen, und Dienstleistern, die den Sektor unterstützen."
+      ],
+      "image_alt": "Europäisches Geschäftstreffen"
+    },
+    "member_benefits": {
+      "title": "FASE-Mitgliedschaftsvorteile",
+      "items": [
+        {
+          "title": "Paneuropäische Vertretung",
+          "content": "Treten Sie einer einheitlichen Stimme bei, die für MGAs und delegierte Zeichnung in Europa eintritt."
+        },
+        {
+          "title": "Networking & Zusammenarbeit",
+          "content": "Verbinden Sie sich mit MGA-Führern, Versicherern, Rückversicherern und Dienstleistern in ganz Europa und darüber hinaus."
+        },
+        {
+          "title": "Jährliches MGA Rendezvous",
+          "content": "Exklusiver Zugang zu unserer Flaggschiff-Veranstaltung — die MGA-Fachleute, Marktbeeinflusser und Partner aus der ganzen Welt zusammenbringt."
+        },
+        {
+          "title": "Bildungs- & Einblicksitzungen",
+          "content": "Teilnahme an Workshops, Webinaren und Panels zu regulatorischen Trends, Innovation und bewährten Praktiken."
+        },
+        {
+          "title": "Branchenintelligenz",
+          "content": "Erhalten Sie regelmäßige Updates zu europäischen MGA-Marktentwicklungen, Möglichkeiten und Herausforderungen."
+        },
+        {
+          "title": "Anerkennung & Glaubwürdigkeit",
+          "content": "Stärken Sie Ihren Marktansehen als Teil eines respektierten, zukunftsorientierten MGA-Verbandes."
+        },
+        {
+          "title": "Möglichkeiten zur Zusammenarbeit",
+          "content": "Gestalten Sie die Zukunft der delegierten Zeichnung durch Arbeitsgruppen und grenzüberschreitende Initiativen."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Mitgliedschaftskategorien",
+      "subtitle_with_applications": "Die FASE-Mitgliedschaft steht MGAs offen, die seit mehr als einem Jahr im Geschäft sind und mehr als 500.000 € an jährlicher Prämie zeichnen. Die Mitgliedschaft steht auch Versicherungs- und Rückversicherungsunternehmen offen, die eine Partnerschaft mit europäischen MGAs anstreben, sowie Dienstleistern, die den Sektor unterstützen.",
+      "mga": {
+        "title": "MGA",
+        "description": "MGAs mit Geschäftstätigkeit in Europa seit mindestens einem Jahr und mit Prämieneinnahmen von über 500.000 €.",
+        "image_alt": "MGA-Geschäftstreffen",
+        "action_text": "Als MGA bewerben"
+      },
+      "carrier": {
+        "title": "Versicherer / Makler",
+        "description": "(Rück)Versicherungsunternehmen, Lloyd's Managing Agency oder (Rück)Versicherungsmakler mit Geschäftstätigkeit mit MGAs.",
+        "image_alt": "Marktanalyse und Daten",
+        "action_text": "Als Versicherer / Makler bewerben"
+      },
+      "service_provider": {
+        "title": "Dienstleister",
+        "description": "Dienstleister, die im MGA-Ökosystem aktiv sind.",
+        "image_alt": "Dienstleister-Zusammenarbeit",
+        "action_text": "Als Dienstleister bewerben"
+      }
+    },
+    "application_process": {
+      "title": "Bewerbungsprozess",
+      "content": [
+        "Um Ihre Bewerbung zu beginnen, füllen Sie unser Mitgliedschaftsformular mit Ihren Organisationsdetails und Geschäftsinformationen aus.",
+        "Bewerbungen werden vom FASE-Mitgliedschaftskomitee geprüft, um die Übereinstimmung mit unseren Gemeinschaftsstandards und -zielen sicherzustellen."
+      ],
+      "image_alt": "Bewerbungsprozess",
+      "buttons": {
+        "join": "Beitreten",
+        "contact_us": "Kontaktieren Sie uns"
+      }
+    },
+    "membership_pricing": {
+      "title": "Mitgliedschaftspreise",
+      "subtitle": "Jährliche Mitgliedschaftsgebühren für verschiedene Organisationstypen und -größen",
+      "mga": {
+        "title": "MGA-Mitgliedschaft",
+        "description": "Gestaffelte Preise basierend auf jährlichen Bruttoprämieneinnahmen",
+        "tiered_label": "Gestaffelt",
+        "tiers": [
+          {
+            "range": "Bis zu 10 Mio. € GWP",
+            "price": "900 €"
+          },
+          {
+            "range": "10 Mio. € - 20 Mio. € GWP",
+            "price": "1.500 €"
+          },
+          {
+            "range": "20 Mio. € - 50 Mio. € GWP",
+            "price": "2.200 €"
+          },
+          {
+            "range": "50 Mio. € - 100 Mio. € GWP",
+            "price": "2.800 €"
+          },
+          {
+            "range": "100 Mio. € - 500 Mio. € GWP",
+            "price": "4.200 €"
+          },
+          {
+            "range": "500 Mio. €+ GWP",
+            "price": "7.000 €"
+          }
+        ],
+        "features": [
+          "Alle individuellen Mitgliedschaftsvorteile",
+          "Firmenprofil im Mitgliederverzeichnis",
+          "Zugang für mehrere Teammitglieder",
+          "Prioritätsbuchung für Veranstaltungen",
+          "Vierteljährliche Geschäfts-Matching-Möglichkeiten"
+        ]
+      },
+      "carrier": {
+        "title": "Versicherer-Mitgliedschaft",
+        "description": "Für Versicherungs- und Rückversicherungsunternehmen",
+        "price": "4.000 €",
+        "period": "pro Jahr",
+        "features": [
+          "Direkter Zugang zum europäischen MGA-Netzwerk",
+          "Kapazitäts-Matching-Möglichkeiten",
+          "Marktintelligenz-Berichte",
+          "Prioritäts-Sponsoring-Möglichkeiten",
+          "Exklusive Versicherer-Networking-Veranstaltungen"
+        ]
+      },
+      "provider": {
+        "title": "Dienstleister-Mitgliedschaft",
+        "description": "Für Unternehmen, die Dienstleistungen für den MGA-Sektor anbieten",
+        "price": "5.000 €",
+        "period": "pro Jahr",
+        "features": [
+          "Zugang zu qualifizierten MGA-Interessenten",
+          "Thought-Leadership-Möglichkeiten",
+          "Teilnahme an Branchenveranstaltungen",
+          "Marktforschung und Insights",
+          "Geschäftsentwicklungsunterstützung"
+        ]
+      },
+      "discount": {
+        "title": "Multi-Verbands-Rabatt",
+        "description": "20% Rabatt für Organisationen, die Mitglieder anderer MGA- oder Versicherungsverbände sind"
+      },
+      "billing": {
+        "note": "Alle Mitgliedschaften werden jährlich abgerechnet. Die Mitgliedschaft verlängert sich automatisch jedes Jahr mit Vorankündigung."
+      }
+    }
+  },
+  "footer": {
+    "description": "Die Föderation der europäischen MGAs - Vertretung der MGA-Gemeinschaft in Europa.",
+    "membership": "Mitgliedschaft",
+    "join_fase": "FASE beitreten",
+    "member_directory": "Mitgliederverzeichnis",
+    "resources": "Ressourcen",
+    "knowledge_base": "Wissensbasis",
+    "events": "Veranstaltungen",
+    "news": "Nachrichten",
+    "connect": "Verbinden",
+    "contact_us": "Kontaktieren Sie uns",
+    "member_portal": "Mitgliederportal",
+    "about_fase": "Über FASE",
+    "copyright": "© 2025 FASE B.V. Alle Rechte vorbehalten."
+  },
+  "cookie_banner": {
+    "title": "Wir verwenden Cookies",
+    "description": "Wir verwenden wesentliche Cookies, damit unsere Website funktioniert. Wir möchten auch optionale Cookies setzen, um uns bei der Verbesserung unserer Website zu helfen und zu analysieren, wie sie verwendet wird.",
+    "customize_settings": "Einstellungen anpassen",
+    "accept_all": "Alle akzeptieren",
+    "reject_all": "Alle ablehnen",
+    "preferences_title": "Cookie-Einstellungen",
+    "save_preferences": "Einstellungen speichern",
+    "necessary": {
+      "title": "Notwendige Cookies",
+      "description": "Diese Cookies sind für das Funktionieren der Website unerlässlich und können nicht deaktiviert werden. Sie umfassen Authentifizierung, Sicherheit und grundlegende Funktionalität."
+    },
+    "analytics": {
+      "title": "Analyse-Cookies",
+      "description": "Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem sie anonyme Informationen über Nutzungsmuster sammeln."
+    },
+    "marketing": {
+      "title": "Marketing-Cookies",
+      "description": "Diese Cookies werden verwendet, um Besucher über Websites hinweg zu verfolgen, um relevante Werbung anzuzeigen und die Kampagneneffektivität zu messen."
+    }
+  },
+  "subscription_success": {
+    "title": "Abonnement aktiviert!",
+    "message": "Ihr FASE-Mitgliedschaftsabonnement ist jetzt aktiv! Sie werden jährlich abgerechnet und Ihre Mitgliedschaft verlängert sich automatisch jedes Jahr.",
+    "what_happens_next": "Was passiert als Nächstes:",
+    "steps": {
+      "processing": "Ihre Mitgliedschaftsanmeldung wird bearbeitet",
+      "email": "Sie erhalten in Kürze eine Bestätigungs-E-Mail",
+      "renewals": "Jährliche Verlängerungen erfolgen automatisch",
+      "manage": "Sie können Ihr Abonnement in PayPal verwalten"
+    },
+    "buttons": {
+      "member_portal": "Zum Mitgliederportal",
+      "return_home": "Zur Startseite zurückkehren"
+    },
+    "subscription_id": "Abonnement-ID:",
+    "cancel_note": "Sie können jederzeit über Ihr PayPal-Konto kündigen.",
+    "error_title": "Abonnement-Fehler",
+    "invalid_session": "Ungültige Abonnement-Sitzung",
+    "return_to_registration": "Zur Registrierung zurückkehren",
+    "processing_subscription": "Ihr Abonnement wird verarbeitet..."
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "News",
+      "banner_alt": "FASE news and updates"
+    },
+    "intro": {
+      "title": "FASE News & Updates",
+      "content": {
+        "paragraph1": "Stay informed about FASE developments, industry insights, and opportunities for professional growth and collaboration across the European MGA community.",
+        "paragraph2": "Our news platform serves as your primary source for European delegated underwriting industry information, regulatory updates, and organisational announcements."
+      },
+      "image_alt": "Industry news and updates"
+    },
+    "latest_updates": {
+      "title": "Latest Updates",
+      "cards": {
+        "foundation": {
+          "title": "FASE Foundation",
+          "description": "FASE is established to serve the rapidly growing European MGA sector, addressing the need for pan-European representation and collaboration.",
+          "image_alt": "FASE foundation announcement"
+        },
+        "advisory_board": {
+          "title": "Advisory Board Formation",
+          "description": "Distinguished industry leaders join FASE advisory board to guide strategic direction and represent diverse MGA community interests.",
+          "image_alt": "Advisory board formation"
+        },
+        "platform_launch": {
+          "title": "Membership Platform Launch",
+          "description": "FASE member portal goes live, providing registration, directory services, and exclusive resources for European MGA professionals.",
+          "image_alt": "Platform launch"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "This article also available in:"
+    }
+  }
+}

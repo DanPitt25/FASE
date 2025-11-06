@@ -1,0 +1,69 @@
+{
+  "webinars": {
+    "page": {
+      "title": "Serie de Seminarios Web",
+      "banner_alt": "Serie de seminarios web de FASE"
+    },
+    "intro": {
+      "title": "Serie de Seminarios Web Dirigida por Expertos",
+      "content": [
+        "Nuestra serie de seminarios web se enfoca en las necesidades más apremiantes de los profesionales europeos de agencias de suscripción, presentando expertos de la industria y líderes de pensamiento. Las áreas de enfoque incluirán desafíos regulatorios, reclutamiento, problemas de gestión de datos y estándares profesionales."
+      ],
+      "image_alt": "Aprendizaje en línea y seminarios web"
+    },
+    "upcoming_webinars": {
+      "title": "Próximos Seminarios Web",
+      "regulatory_hurdles": {
+        "title": "Obstáculos Regulatorios",
+        "description": "Análisis mercado por mercado del panorama regulatorio para las agencias de suscripción y cómo superar las barreras regulatorias.",
+        "image_alt": "Cumplimiento regulatorio"
+      },
+      "capital_structures": {
+        "title": "Estructuras de Capital e Incentivos",
+        "description": "Consejos sobre cómo optimizar la alineación con proveedores de capacidad para asegurar capacidad duradera.",
+        "image_alt": "Relaciones comerciales"
+      },
+      "ai_promise_peril": {
+        "title": "IA: La Promesa y el Peligro",
+        "description": "La IA promete enormes ganancias para las agencias de suscripción en eficiencia operacional, fijación de precios de riesgo y mejora de la experiencia del corredor y del cliente. Pero algunos casos de uso son más especulativos que otros.",
+        "image_alt": "Transformación digital"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Suscriptor Empresarial",
+      "banner_alt": "Suscripción empresarial"
+    },
+    "intro": {
+      "title": "El Suscriptor Empresarial",
+      "content": [
+        "Comenzando en 2026, el Suscriptor Empresarial – nuestra publicación insignia – reunirá perspectivas y orientación práctica para empresarios que están dando forma al futuro de la suscripción delegada europea."
+      ],
+      "image_alt": "Perspectivas de suscripción empresarial"
+    },
+    "featured_content": {
+      "title": "Contenido Destacado",
+      "market_analysis": {
+        "title": "Análisis de Mercado",
+        "description": "Análisis en profundidad de las tendencias de suscripción delegada europea, desarrollos regulatorios y oportunidades emergentes para agencias de suscripción.",
+        "image_alt": "Análisis de mercado"
+      },
+      "case_studies": {
+        "title": "Estudios de Caso",
+        "description": "Ejemplos del mundo real de estrategias exitosas de agencias de suscripción, enfoques innovadores de suscripción y relaciones efectivas de capacidad.",
+        "image_alt": "Estudios de caso de negocios"
+      },
+      "expert_insights": {
+        "title": "Perspectivas de Expertos",
+        "description": "Perspectivas de líderes de la industria sobre la construcción de negocios sostenibles de agencias de suscripción y navegación de entornos regulatorios europeos.",
+        "image_alt": "Perspectivas de expertos"
+      }
+    },
+    "quote": {
+      "text": "La suscripción de autoridad delegada se ha convertido en el sector más empresarial del mercado de seguros. Nuestro objetivo en FASE es reunir los recursos para ayudar a los suscriptores empresariales a tener éxito.",
+      "author": "William Pitt",
+      "title": "Director Ejecutivo, FASE"
+    }
+  }
+}

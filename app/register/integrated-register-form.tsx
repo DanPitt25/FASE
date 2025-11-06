@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -54,6 +54,7 @@ export default function IntegratedRegisterForm() {
   const [organizationType, setOrganizationType] = useState(typeFromUrl || "");
   
   const [members, setMembers] = useState<Member[]>([]);
+  const updatingMembersRef = useRef(false);
   
   // Initialize with registrant as first member 
   useEffect(() => {
@@ -72,15 +73,24 @@ export default function IntegratedRegisterForm() {
         }]);
       }
     }
-  }, [membershipType, firstName, surname, email, members.length]);
+  }, [membershipType, firstName, surname, email]);
 
   // Update registrant member when personal info changes
   useEffect(() => {
+    if (updatingMembersRef.current) return; // Prevent infinite loop
+    
     if (membershipType === 'corporate' && members.length > 0) {
       const registrantIndex = members.findIndex(m => m.id === 'registrant');
       if (registrantIndex !== -1) {
+        const registrant = members[registrantIndex];
         const fullName = `${firstName} ${surname}`.trim();
-        if (fullName && email) {
+        // Only update if the data has actually changed
+        if (fullName && email && 
+            (registrant.firstName !== firstName || 
+             registrant.lastName !== surname || 
+             registrant.email !== email ||
+             registrant.name !== fullName)) {
+          updatingMembersRef.current = true;
           const updatedMembers = [...members];
           updatedMembers[registrantIndex] = {
             ...updatedMembers[registrantIndex],
@@ -90,6 +100,10 @@ export default function IntegratedRegisterForm() {
             email: email
           };
           setMembers(updatedMembers);
+          // Reset the flag after state update
+          setTimeout(() => {
+            updatingMembersRef.current = false;
+          }, 0);
         }
       }
     }
@@ -127,8 +141,12 @@ export default function IntegratedRegisterForm() {
   // Update grossWrittenPremiums whenever magnitude inputs change
   useEffect(() => {
     const total = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
-    setGrossWrittenPremiums(total.toString()); // Store actual total value
-  }, [gwpBillions, gwpMillions, gwpThousands]);
+    const totalString = total.toString();
+    // Only update if the value has actually changed
+    if (totalString !== grossWrittenPremiums) {
+      setGrossWrittenPremiums(totalString);
+    }
+  }, [gwpBillions, gwpMillions, gwpThousands, grossWrittenPremiums]);
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   const [step, setStep] = useState(typeFromUrl ? 0 : -1);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});

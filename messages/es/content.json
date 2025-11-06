@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "Noticias",
+      "banner_alt": "Noticias y actualizaciones de FASE"
+    },
+    "intro": {
+      "title": "Noticias y Actualizaciones de FASE",
+      "content": {
+        "paragraph1": "Manténgase informado sobre los desarrollos de FASE, perspectivas de la industria y oportunidades para el crecimiento profesional y la colaboración en toda la comunidad europea de agencias de suscripción.",
+        "paragraph2": "Nuestra plataforma de noticias sirve como su fuente principal de información de la industria europea de suscripción delegada, actualizaciones regulatorias y anuncios organizacionales."
+      },
+      "image_alt": "Noticias y actualizaciones de la industria"
+    },
+    "latest_updates": {
+      "title": "Últimas Actualizaciones",
+      "cards": {
+        "foundation": {
+          "title": "Fundación de FASE",
+          "description": "FASE se establece para servir al sector europeo de agencias de suscripción en rápido crecimiento, abordando la necesidad de representación y colaboración paneuropea.",
+          "image_alt": "Anuncio de la fundación de FASE"
+        },
+        "advisory_board": {
+          "title": "Formación del Consejo Asesor",
+          "description": "Líderes distinguidos de la industria se unen al consejo asesor de FASE para guiar la dirección estratégica y representar los diversos intereses de la comunidad de agencias de suscripción.",
+          "image_alt": "Formación del consejo asesor"
+        },
+        "platform_launch": {
+          "title": "Lanzamiento de la Plataforma de Membresía",
+          "description": "El portal de miembros de FASE se pone en marcha, proporcionando registro, servicios de directorio y recursos exclusivos para profesionales europeos de agencias de suscripción.",
+          "image_alt": "Lanzamiento de la plataforma"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "Este artículo también está disponible en:"
+    }
+  }
+}

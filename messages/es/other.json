@@ -1,0 +1,456 @@
+{
+  "auth": {
+    "sign_in": "Iniciar Sesión",
+    "sign_out": "Cerrar Sesión",
+    "sign_up": "Registrarse",
+    "register": "Registrar",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "logged_in_as": "Conectado como",
+    "signed_in_as": "Sesión iniciada como:",
+    "welcome": "Bienvenido",
+    "account": "Cuenta",
+    "profile": "Perfil",
+    "admin_portal": "Portal de Administración"
+  },
+  "header": {
+    "search_placeholder": "Buscar...",
+    "language_label": "Idioma:",
+    "about_us": "Acerca de Nosotros",
+    "join_us": "Únase a Nosotros",
+    "sponsorship": "Patrocinio",
+    "events": "Eventos",
+    "knowledge": "Conocimiento y Educación",
+    "news": "Noticias",
+    "member_portal": "Portal de Miembros",
+    "sign_in": "Iniciar Sesión",
+    "sign_out": "Cerrar Sesión",
+    "logged_in_as": "Conectado como",
+    "signed_in_as": "Sesión iniciada como:"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Conectando a los innovadores de seguros de Europa",
+      "subtitle": "Vinculando agencias de suscripción, proveedores de capacidad, distribuidores y socios de servicios para compartir conocimiento, construir relaciones y mejorar la suscripción delegada en Europa.",
+      "join_now": "Únase Ahora",
+      "learn_more": "Más Información"
+    },
+    "who_we_are": {
+      "title": "Ver y ser visto",
+      "description": "FASE eleva el perfil del sector de suscripción delegada y sus miembros individuales. Nuestros miembros comparten un enfoque en la colaboración, crecimiento responsable y altos estándares profesionales. A través de perspectivas compartidas, recursos prácticos y una red activa, ayudamos a cada miembro a construir las asociaciones que sostendrán el crecimiento de su negocio."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Eventos Paneuropeos",
+        "description": "Conferencias semestrales que reúnen agencias de suscripción, proveedores de capacidad y proveedores de servicios para networking y desarrollo empresarial."
+      },
+      "digital_platform": {
+        "title": "Plataforma Digital",
+        "description": "Plataforma digital multilingüe que proporciona recursos técnicos, regulatorios y de apetito de riesgo para miembros de agencias de suscripción."
+      },
+      "market_intelligence": {
+        "title": "Inteligencia de Mercado",
+        "description": "Informes anuales del mercado europeo que demuestran el dinamismo de las agencias de suscripción con estadísticas precisas y perspectivas del mercado paneuropeo."
+      },
+      "industry_advocacy": {
+        "title": "Defensa de la Industria",
+        "description": "Voz para las agencias de suscripción en discusiones regulatorias a nivel nacional y paneuropeo."
+      },
+      "education_training": {
+        "title": "Educación y Capacitación",
+        "description": "Módulos de educación y capacitación en línea para empleados de agencias de suscripción en varias especialidades."
+      },
+      "market_research": {
+        "title": "Investigación de Mercado",
+        "description": "Capacidades de investigación para agencias de suscripción que buscan acceso a nuevos mercados europeos y oportunidades de crecimiento."
+      },
+      "capacity_transparency": {
+        "title": "Transparencia de Capacidad",
+        "description": "Mayor transparencia sobre el apetito de las aseguradoras por negocios originados por agencias de suscripción por geografía y clase."
+      }
+    },
+    "quote": {
+      "text": "Las agencias de suscripción son, en su mayoría, pequeñas empresas. Mientras nuestros miembros buscan crecer, a veces se ven obstaculizados por barreras regulatorias, brechas de datos y restricciones de capacidad. FASE puede ayudar.",
+      "author": "Dario Spata",
+      "title": "Presidente de ASASE y miembro del consejo asesor de FASE"
+    },
+    "impact": {
+      "title": "Nuestro Impacto",
+      "networking": {
+        "title": "Networking y Colaboración",
+        "description": "Facilite la interacción con colegas a través de foros, eventos y grupos de trabajo que fomentan conexiones prácticas y ayudan a los miembros a encontrar soluciones a desafíos comunes."
+      },
+      "professional_development": {
+        "title": "Desarrollo Profesional",
+        "description": "Acceda a oportunidades de aprendizaje específicas e investigación diseñadas para ayudar a las agencias de suscripción a desarrollar experiencia y capacidad de liderazgo."
+      },
+      "market_intelligence": {
+        "title": "Inteligencia de Mercado",
+        "description": "Benefíciese de datos e insights curados que brindan a los miembros una comprensión clara de tendencias actuales, cambios regulatorios y oportunidades emergentes en mercados europeos."
+      }
+    },
+    "standards": {
+      "title": "Verificación y Estándares",
+      "subtitle": "Para mantener el profesionalismo de la comunidad FASE, hemos establecido un protocolo de membresía:",
+      "review_process": "Nuestro Proceso de Revisión",
+      "eligibility_review": {
+        "title": "Revisión de Elegibilidad",
+        "description": "Confirmación de credenciales empresariales, estado regulatorio y antecedentes éticos."
+      },
+      "standards_alignment": {
+        "title": "Alineación de Estándares",
+        "description": "Evaluación de la alineación de cada solicitante con principios reconocidos de suscripción delegada."
+      },
+      "peer_endorsement": {
+        "title": "Respaldo de Pares",
+        "description": "Consulta con nuestro Consejo Asesor y miembros existentes para asegurar credibilidad y ajuste dentro de la comunidad."
+      },
+      "ongoing_review": {
+        "title": "Revisión Continua",
+        "description": "Reafirmación periódica de la buena reputación y compromiso continuo con estándares compartidos."
+      },
+      "conclusion": "Este proceso asegura que FASE permanezca como una red confiable de profesionales trabajando para elevar la consistencia, transparencia y rendimiento en la suscripción delegada."
+    },
+    "why_join": {
+      "title": "Una red práctica para un mercado complejo",
+      "subtitle": "Ya sea que represente una agencia de suscripción, aseguradora, corredor o socio de servicios, FASE le ayuda a mantenerse conectado con las personas, información y perspectivas que dan forma a la suscripción delegada en Europa.",
+      "become_member": "Hacerse Miembro",
+      "view_events": "Ver Próximos Eventos",
+      "tagline": "FASE — construyendo una comunidad de Suscripción Delegada conectada, informada y responsable"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Código de Conducta",
+      "banner_alt": "Estándares profesionales y cumplimiento regulatorio"
+    },
+    "intro": {
+      "title": "Código de Conducta de FASE",
+      "content": {
+        "paragraph1": "FASE apoya los más altos estándares profesionales y éticos, como se describe en este Código de Conducta, y requiere que todos los miembros se comprometan anualmente a mantener estos estándares como condición de su membresía.",
+        "paragraph2": "Los miembros se comprometen a actuar de manera legal, justa y ética en todos sus tratos con todas las partes.",
+        "paragraph3": "Los miembros se comprometen a cooperar completamente y en todo momento con FASE en el cumplimiento de este Código."
+      }
+    },
+    "sections": {
+      "title": "Secciones del Código de Conducta",
+      "legal": {
+        "title": "1. Responsabilidades Legales",
+        "content": "Los miembros cumplirán con todas las leyes y regulaciones aplicables en las ubicaciones donde realizan negocios. Si esta responsabilidad legal entra en conflicto con otro deber descrito en este Código, esta responsabilidad legal tendrá prioridad.\n\nLos miembros llevarán a la atención del Comité de Conducta Empresarial de FASE cualquier circunstancia de la que tengan conocimiento que involucre:\n\n• Un miembro incumpliendo cualquier requisito regulatorio y\n\n• Cualquier circunstancia que pueda razonablemente llevar a sanciones contra el miembro o un miembro de su personal o directores por las autoridades regulatorias relevantes\n\nLos miembros proporcionarán toda la asistencia legal razonable a organizaciones regulatorias, profesionales y de aplicación de la ley en el cumplimiento de sus deberes, ya sea con respecto a ellos mismos, otro Miembro o un no miembro."
+      },
+      "financial": {
+        "title": "2. Responsabilidades Financieras",
+        "content": "Los miembros siempre deben cumplir con sus obligaciones financieras a tiempo. Esto incluye, pero no se limita a, pago de deudas, primas debidas a aseguradoras, devoluciones debidas a corredores y asegurados, sumas debidas a empleados.\n\nLos miembros deben cumplir con los requisitos de solvencia aplicables o similares."
+      },
+      "inter_org": {
+        "title": "3. Responsabilidades Inter-organizacionales",
+        "content": "Los miembros competirán de manera justa y honorable en los mercados en los que operan.\n\nEsto incluye, pero no se limita a:\n\n• no hacer declaraciones sobre otros Miembros, competidores u otros participantes del mercado, privada o públicamente, que no crean honestamente que sean verdaderas y relevantes basándose en la mejor información razonablemente disponible para ellos;\n\n• entrar en cualquier acuerdo destinado a disminuir la competencia dentro del mercado."
+      },
+      "community": {
+        "title": "4. Responsabilidades Comunitarias",
+        "content": "Los miembros de FASE deben conducirse de manera que corresponda a los privilegios de la membresía.\n\nLos miembros no solo cumplirán con sus obligaciones bajo la ley relacionada con la discriminación, sino que en todos sus tratos tomarán medidas razonables para no causar detrimento a cualquier persona u organización por motivos de raza, sexo, orientación sexual, reasignación de género, embarazo y maternidad, estado civil o de pareja civil, religión o creencias, edad y discapacidad.\n\nSe alienta a los miembros a participar en actividades cívicas, benéficas y filantrópicas que contribuyan a la promoción de la buena reputación del sector de seguros, su contribución al bien público y el bienestar de quienes trabajan en él.\n\nLos miembros alentarán la educación continua y la capacitación del personal."
+      },
+      "insurers": {
+        "title": "5. Relaciones con Aseguradoras",
+        "content": "Los miembros tratarán de manera justa y honesta cuando actúen en nombre de aseguradoras. En particular, deben:\n\n• ejecutar fielmente las pautas de suscripción de las aseguradoras que representan;\n\n• actuar con la máxima buena fe y recopilar todos los datos necesarios para tomar una decisión de suscripción adecuada antes de poner en riesgo a una aseguradora;\n\n• mantenerse actualizados sobre las leyes y regulaciones en todas las áreas en las que tienen autoridad, y asesorar a las aseguradoras en consecuencia sobre el impacto de tales leyes y regulaciones según afecten su relación."
+      },
+      "brokers": {
+        "title": "6. Relaciones con Corredores y Agentes (o Asegurados si operan directamente)",
+        "content": "Los miembros deben tratar de manera justa y honesta con corredores, agentes o asegurados (si operan directamente), y al hacerlo:\n\n• considerar en todo momento la estabilidad financiera de las aseguradoras con las que el Miembro coloca negocios;\n\n• no hacer representaciones falsas o engañosas sobre qué cobertura se está proporcionando, o las limitaciones o exclusiones de cobertura o imponer limitaciones o exclusiones de tal manera que la póliza no proporcione beneficio efectivo al asegurado.\n\nLos miembros deben poder demostrar que han considerado cuidadosamente las aseguradoras que representan como agentes de suscripción y colocan el negocio de sus clientes y de sus corredores.\n\nLa debida diligencia efectiva y apropiada es una parte clave del proceso que los Miembros deben realizar sobre las compañías de seguros que representan como seguridad para las pólizas que proporcionan. Existe un riesgo para los clientes en caso de que una aseguradora falle y no pueda pagar reclamos válidos.\n\nFASE espera que los Miembros de Agencias de Suscripción puedan demostrar que se ha realizado la debida diligencia adecuada sobre las aseguradoras que representan y ofrecen como seguridad de seguros.\n\nLos miembros deben proporcionar detalles claros e inequívocos del nombre y dirección de la aseguradora en toda la documentación relevante proporcionada para corredores y asegurados. Esperamos que los Miembros eviten positivamente dar al asegurado la impresión de que la Agencia de Suscripción es la aseguradora y oscurecer el nombre de la aseguradora detrás de la Agencia de Suscripción. Es importante que los clientes puedan tomar una decisión informada sobre dónde se está colocando su seguro."
+      }
+    },
+    "reporting": {
+      "title": "Reportar Incumplimientos",
+      "content": {
+        "paragraph1": "Todos los avisos de posible incumplimiento bajo este Código deben dirigirse al Comité de Conducta Empresarial a conduct@fasemga.com."
+      }
+    }
+  },
+  "thank_you": {
+    "title": "¡Gracias por Su Solicitud!",
+    "application_submitted": "Su solicitud de membresía de FASE ha sido enviada exitosamente y enviada a nuestro equipo para revisión.",
+    "application_reference": "Referencia de Solicitud:",
+    "what_happens_next": {
+      "title": "¿Qué sucede después?",
+      "step1": "Recibirá noticias nuestras dentro de un día hábil",
+      "step2": "Revisaremos su solicitud y le contactaremos con los siguientes pasos",
+      "step3": "Si es aprobada, recibirá detalles de membresía e instrucciones de pago"
+    },
+    "contact": {
+      "question": "¿Preguntas sobre su solicitud?",
+      "email_text": "Contáctenos en"
+    },
+    "return_home": "Regresar a la Página Principal"
+  },
+  "payment_succeeded": {
+    "title": "¡Pago Exitoso!",
+    "message": "Gracias por su pago. Su membresía de FASE ahora está activa.",
+    "what_happens_next": {
+      "title": "Qué sucede después:",
+      "step1": "Recibirá un correo electrónico de confirmación con los detalles de su membresía.",
+      "step2": "El acceso al portal de miembros se activará pronto.",
+      "step3": "Recibirá un recibo de factura para sus registros."
+    },
+    "contact": {
+      "question": "¿Preguntas sobre su membresía?",
+      "email_text": "Contáctenos en"
+    },
+    "return_home": "Regresar al Inicio"
+  },
+  "payment_failed": {
+    "title": "Pago Cancelado",
+    "message": "Su pago fue cancelado. No se preocupe, aún puede completar su solicitud de membresía.",
+    "what_you_can_do": {
+      "title": "Lo que puede hacer:",
+      "step1": "Intente el pago nuevamente usando tarjeta de crédito o débito.",
+      "step2": "Elija pagar por transferencia bancaria en su lugar (factura adjunta en su correo electrónico original).",
+      "step3": "Contáctenos si necesita ayuda con el pago."
+    },
+    "contact": {
+      "question": "¿Necesita ayuda con su pago?",
+      "email_text": "Contáctenos en"
+    },
+    "try_again": "Intentar Pago Nuevamente",
+    "return_home": "Regresar al Inicio"
+  },
+  "people": {
+    "page": {
+      "title": "Nuestro Equipo",
+      "banner_alt": "Liderazgo y equipo de FASE"
+    },
+    "executive_team": {
+      "title": "Equipo Ejecutivo"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Director Ejecutivo",
+        "bio": "William fundó FASE en 2025 para abordar una necesidad ampliamente reconocida de un organismo paneuropeo para representar el sector de agencias de suscripción europeo de rápido crecimiento, pero poco entendido.\n\nAntes de establecer FASE, William lideró proyectos de investigación y consultoría en Lexicon Associates y Conning. Es el autor de The MGA Revolution: How MGAs are reshaping the insurance value chain, publicado por Lexicon Associates en noviembre de 2024. Anteriormente lideró iniciativas de consultoría para Conning en Estados Unidos y fue el autor de los estudios anuales de agencias de suscripción de Conning.\n\nAntes de unirse a Conning en 2021, sirvió durante doce años como director global de marketing en Beazley. Más temprano en su carrera, ocupó roles senior de marketing y desarrollo empresarial en Marsh & McLennan Companies y Lloyd's.\n\nWilliam ha escrito extensamente sobre seguros para publicaciones incluyendo el Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer, y Corriere della Sera. Es el autor de More Equal than Others: a Director's Guide to EU Competition Policy, publicado por Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Directora de Operaciones",
+        "bio": "Aline es responsable de la entrega eficiente de todos los servicios para miembros, trabajando estrechamente con los miembros para abordar sus necesidades. Tiene experiencia profunda en comunicaciones empresariales, programas educativos y gestión de eventos.\n\nAline es socia en Lexicon Associates, un negocio de investigación y consultoría que fundó en 2009. Ha trabajado con Evercore Wealth Management y Evercore Trust Company desde 2009 como la jefa de comunicaciones externalizada y la editora de la revista trimestral de la firma, Independent Thinking; anteriormente lideró comunicaciones para Aviva Investors, U.S. Trust y The Private Bank of Bank of America.\n\nSus artículos sobre inversión han aparecido en el New York Times, el International Herald Tribune, el Financial Times, Worth, Bloomberg, Barron's y el Wall Street Journal."
+      }
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Únase a FASE",
+      "banner_alt": "Membresía de FASE"
+    },
+    "membership_applications": {
+      "title": "Solicitudes de membresía",
+      "content": [
+        "La membresía de FASE está abierta a agencias de suscripción que han estado en el negocio por más de un año y suscriben más de €500,000 en prima anual.",
+        "La membresía también está abierta a compañías de seguros y reaseguros que buscan asociarse con agencias de suscripción europeas, y a proveedores de servicios que apoyan al sector."
+      ],
+      "image_alt": "Reunión de negocios europea"
+    },
+    "member_benefits": {
+      "title": "Beneficios de miembro de FASE",
+      "items": [
+        {
+          "title": "Representación paneuropea",
+          "content": "Únase a una voz unificada abogando por las agencias de suscripción y la suscripción delegada en toda Europa."
+        },
+        {
+          "title": "Networking y colaboración",
+          "content": "Conecte con líderes de agencias de suscripción, aseguradoras, reaseguradoras y proveedores de servicios en toda Europa y más allá."
+        },
+        {
+          "title": "Encuentro Anual de Agencias de Suscripción",
+          "content": "Acceso exclusivo a nuestro evento insignia — reuniendo profesionales de agencias de suscripción, influenciadores del mercado y socios de todo el mundo."
+        },
+        {
+          "title": "Sesiones educativas y de perspectivas",
+          "content": "Participe en talleres, seminarios web y paneles sobre tendencias regulatorias, innovación y mejores prácticas."
+        },
+        {
+          "title": "Inteligencia de la industria",
+          "content": "Reciba actualizaciones regulares sobre desarrollos del mercado europeo de agencias de suscripción, oportunidades y desafíos."
+        },
+        {
+          "title": "Reconocimiento y credibilidad",
+          "content": "Fortalezca su reputación en el mercado como parte de una asociación de agencias de suscripción respetada y con visión de futuro."
+        },
+        {
+          "title": "Oportunidades de colaboración",
+          "content": "Dé forma al futuro de la suscripción delegada a través de grupos de trabajo e iniciativas transfronterizas."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Categorías de membresía",
+      "subtitle_with_applications": "La membresía de FASE está abierta a las agencias de suscripción que han estado en funcionamiento por más de un año y suscriben más de €500,000 en prima anual. La membresía también está abierta a compañías de seguros y reaseguros que buscan asociarse con agencias de suscripción europeas, y a proveedores de servicios que apoyan el sector.",
+      "mga": {
+        "title": "Agencia de Suscripción",
+        "description": "Agencias de suscripción que realizan negocios en Europa durante al menos un año y con ingresos de primas superiores a €500,000.",
+        "image_alt": "Reunión de negocios de agencia de suscripción",
+        "action_text": "Solicitar como Agencia de Suscripción"
+      },
+      "carrier": {
+        "title": "Aseguradora / Corredor",
+        "description": "Compañía de (re)seguros, agencia gestora de Lloyd's, o corredor de (re)seguros que realiza negocios con agencias de suscripción.",
+        "image_alt": "Análisis de mercado y datos",
+        "action_text": "Solicitar como Aseguradora / Corredor"
+      },
+      "service_provider": {
+        "title": "Proveedor de servicios",
+        "description": "Proveedores de servicios activos dentro del ecosistema de agencias de suscripción.",
+        "image_alt": "Colaboración de proveedor de servicios",
+        "action_text": "Solicitar como Proveedor de Servicios"
+      }
+    },
+    "application_process": {
+      "title": "Proceso de solicitud",
+      "content": [
+        "Para comenzar su solicitud, complete nuestro formulario de membresía con los detalles de su organización e información empresarial.",
+        "Las solicitudes son revisadas por el comité de membresía de FASE para asegurar la alineación con nuestros estándares comunitarios y objetivos."
+      ],
+      "image_alt": "Proceso de solicitud",
+      "buttons": {
+        "join": "Unirse",
+        "contact_us": "Contáctenos"
+      }
+    },
+    "membership_pricing": {
+      "title": "Cuotas de Membresía",
+      "subtitle": "Tarifas anuales de membresía diseñadas para diferentes tipos y tamaños de organizaciones",
+      "mga": {
+        "title": "Membresía de Agencia de Suscripción",
+        "description": "Precios escalonados basados en primas brutas suscritas anuales",
+        "tiered_label": "Escalonado",
+        "tiers": [
+          {
+            "range": "Hasta €10m PBS",
+            "price": "€900",
+            "period": "por año"
+          },
+          {
+            "range": "€10m - €20m PBS",
+            "price": "€1,500",
+            "period": "por año"
+          },
+          {
+            "range": "€20m - €50m PBS",
+            "price": "€2,200",
+            "period": "por año"
+          },
+          {
+            "range": "€50m - €100m PBS",
+            "price": "€2,800",
+            "period": "por año"
+          },
+          {
+            "range": "€100m - €500m PBS",
+            "price": "€4,200",
+            "period": "por año"
+          },
+          {
+            "range": "€500m+ PBS",
+            "price": "€7,000",
+            "period": "por año"
+          }
+        ],
+        "features": [
+          "Todos los beneficios de membresía individual",
+          "Perfil de empresa en directorio de miembros",
+          "Acceso para múltiples miembros del equipo",
+          "Reserva prioritaria de eventos",
+          "Oportunidades trimestrales de matching empresarial"
+        ]
+      },
+      "carrier": {
+        "title": "Membresía de Aseguradora / Corredor de (Re)seguros",
+        "description": "Para compañías de seguros y reaseguros, y corredores de (re)seguros",
+        "price": "€4,000",
+        "period": "por año",
+        "features": [
+          "Acceso directo a la red europea de agencias de suscripción",
+          "Oportunidades de matching de capacidad",
+          "Informes de inteligencia de mercado",
+          "Oportunidades prioritarias de patrocinio",
+          "Eventos exclusivos de networking para aseguradoras"
+        ]
+      },
+      "provider": {
+        "title": "Membresía de Proveedor de Servicios",
+        "description": "Para empresas que proporcionan servicios al sector de agencias de suscripción",
+        "price": "€5,000",
+        "period": "por año",
+        "features": [
+          "Acceso a prospectos calificados de agencias de suscripción",
+          "Oportunidades de liderazgo de pensamiento",
+          "Participación en eventos de la industria",
+          "Investigación de mercado e insights",
+          "Apoyo para desarrollo empresarial"
+        ]
+      },
+      "discount": {
+        "title": "Descuento Multi-Asociación",
+        "description": "Se aplica un descuento del 20% a todas las categorías de membresía para organizaciones que son miembros de otras asociaciones de agencias de suscripción (NVGA, MGAA, ASASE, AIMGA, BAUA)"
+      },
+      "billing": {
+        "note": "Todas las membresías se facturan anualmente. La membresía se renovará automáticamente cada año con aviso anticipado."
+      }
+    }
+  },
+  "footer": {
+    "description": "La Federación de Agencias de Suscripción Europeas - representando la comunidad de agencias de suscripción en Europa.",
+    "membership": "Membresía",
+    "join_fase": "Únase a FASE",
+    "member_directory": "Directorio de Miembros",
+    "resources": "Recursos",
+    "knowledge_base": "Base de Conocimiento",
+    "events": "Eventos",
+    "news": "Noticias",
+    "connect": "Conectar",
+    "contact_us": "Contáctenos",
+    "member_portal": "Portal de Miembros",
+    "about_fase": "Acerca de FASE",
+    "copyright": "© 2025 FASE B.V. Todos los derechos reservados."
+  },
+  "cookie_banner": {
+    "title": "Utilizamos cookies",
+    "description": "Utilizamos cookies esenciales para hacer que nuestro sitio funcione. También nos gustaría establecer cookies opcionales para ayudarnos a mejorar nuestro sitio web y analizar cómo se utiliza.",
+    "customize_settings": "Personalizar configuraciones",
+    "accept_all": "Aceptar Todo",
+    "reject_all": "Rechazar Todo",
+    "preferences_title": "Preferencias de Cookies",
+    "save_preferences": "Guardar Preferencias",
+    "necessary": {
+      "title": "Cookies Necesarias",
+      "description": "Estas cookies son esenciales para que el sitio web funcione y no se pueden desactivar. Incluyen autenticación, seguridad y funcionalidad básica."
+    },
+    "analytics": {
+      "title": "Cookies de Analítica",
+      "description": "Estas cookies nos ayudan a entender cómo los visitantes interactúan con nuestro sitio web recopilando información anónima sobre patrones de uso."
+    },
+    "marketing": {
+      "title": "Cookies de Marketing",
+      "description": "Estas cookies se utilizan para rastrear visitantes a través de sitios web para mostrar anuncios relevantes y medir la efectividad de campañas."
+    }
+  },
+  "subscription_success": {
+    "title": "¡Suscripción Activada!",
+    "message": "¡Su suscripción de membresía de FASE ahora está activa! Se le facturará anualmente y su membresía se renovará automáticamente cada año.",
+    "what_happens_next": "Qué sucede después:",
+    "steps": {
+      "processing": "Su solicitud de membresía está siendo procesada",
+      "email": "Recibirá un correo electrónico de confirmación pronto",
+      "renewals": "Las renovaciones anuales serán automáticas",
+      "manage": "Puede gestionar su suscripción en PayPal"
+    },
+    "buttons": {
+      "member_portal": "Ir al Portal de Miembros",
+      "return_home": "Regresar al Inicio"
+    },
+    "subscription_id": "ID de Suscripción:",
+    "cancel_note": "Puede cancelar en cualquier momento a través de su cuenta de PayPal.",
+    "error_title": "Error de Suscripción",
+    "invalid_session": "Sesión de suscripción inválida",
+    "return_to_registration": "Regresar al Registro",
+    "processing_subscription": "Procesando su suscripción..."
+  }
+}

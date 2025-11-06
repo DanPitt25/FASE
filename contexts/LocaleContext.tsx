@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 
-export type Locale = 'en' | 'fr' | 'de' ;
+export type Locale = 'en' | 'fr' | 'de' | 'es' | 'it';
 
 interface LocaleContextType {
   locale: Locale;
@@ -29,6 +29,18 @@ const detectBrowserLanguage = (): Locale => {
     if (frenchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
       return 'fr';
     }
+    
+    // Spanish-speaking regions
+    const spanishRegions = ['es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-PE', 'es-VE', 'es-CL', 'es-EC', 'es-GT', 'es-UY', 'es-PY', 'es-BO', 'es-DO', 'es-HN', 'es-NI', 'es-CR', 'es-PA', 'es-SV', 'es-US'];
+    if (spanishRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+      return 'es';
+    }
+    
+    // Italian-speaking regions
+    const italianRegions = ['it', 'it-IT', 'it-CH', 'it-SM', 'it-VA'];
+    if (italianRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+      return 'it';
+    }
   }
   
   return 'en'; // Default to English
@@ -39,7 +51,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     // Priority order: localStorage > browser language > default
     if (typeof window !== 'undefined') {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
-      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de')) {
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'es' || savedLocale === 'it')) {
         return savedLocale;
       }
       

@@ -1,0 +1,69 @@
+{
+  "webinars": {
+    "page": {
+      "title": "Serie di Webinar",
+      "banner_alt": "Serie di webinar FASE"
+    },
+    "intro": {
+      "title": "Serie di Webinar Guidata da Esperti",
+      "content": [
+        "La nostra serie di webinar si concentra sui bisogni più pressanti dei professionisti europei delle agenzie di sottoscrizione, presentando esperti del settore e leader di pensiero. Le aree di focus includeranno sfide normative, reclutamento, problemi di gestione dati e standard professionali."
+      ],
+      "image_alt": "Apprendimento online e webinar"
+    },
+    "upcoming_webinars": {
+      "title": "Prossimi Webinar",
+      "regulatory_hurdles": {
+        "title": "Ostacoli Normativi",
+        "description": "Analisi mercato per mercato del panorama normativo per le agenzie di sottoscrizione e come superare le barriere normative.",
+        "image_alt": "Conformità normativa"
+      },
+      "capital_structures": {
+        "title": "Strutture di Capitale e Incentivi",
+        "description": "Consigli su come ottimizzare l'allineamento con fornitori di capacità per assicurare capacità durevole.",
+        "image_alt": "Relazioni commerciali"
+      },
+      "ai_promise_peril": {
+        "title": "IA: La Promessa e il Pericolo",
+        "description": "L'IA promette enormi guadagni per le agenzie di sottoscrizione in efficienza operativa, pricing del rischio e miglioramento dell'esperienza del broker e del cliente. Ma alcuni casi d'uso sono più speculativi di altri.",
+        "image_alt": "Trasformazione digitale"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Sottoscrittore Imprenditoriale",
+      "banner_alt": "Sottoscrizione imprenditoriale"
+    },
+    "intro": {
+      "title": "Il Sottoscrittore Imprenditoriale",
+      "content": [
+        "A partire dal 2026, il Sottoscrittore Imprenditoriale – la nostra pubblicazione di punta – raccoglierà insights e orientamento pratico per gli imprenditori che stanno plasmando il futuro della sottoscrizione delegata europea."
+      ],
+      "image_alt": "Insights di sottoscrizione imprenditoriale"
+    },
+    "featured_content": {
+      "title": "Contenuto in Evidenza",
+      "market_analysis": {
+        "title": "Analisi di Mercato",
+        "description": "Analisi approfondite delle tendenze della sottoscrizione delegata europea, sviluppi normativi e opportunità emergenti per le agenzie di sottoscrizione.",
+        "image_alt": "Analisi di mercato"
+      },
+      "case_studies": {
+        "title": "Casi di Studio",
+        "description": "Esempi del mondo reale di strategie di successo delle agenzie di sottoscrizione, approcci innovativi alla sottoscrizione e relazioni efficaci di capacità.",
+        "image_alt": "Casi di studio aziendali"
+      },
+      "expert_insights": {
+        "title": "Insights di Esperti",
+        "description": "Prospettive dai leader del settore sulla costruzione di business sostenibili di agenzie di sottoscrizione e navigazione di ambienti normativi europei.",
+        "image_alt": "Insights di esperti"
+      }
+    },
+    "quote": {
+      "text": "La sottoscrizione con autorità delegata è diventata il settore più imprenditoriale del mercato assicurativo. Il nostro obiettivo in FASE è raccogliere le risorse per aiutare i sottoscrittori imprenditoriali ad avere successo.",
+      "author": "William Pitt",
+      "title": "Direttore Esecutivo, FASE"
+    }
+  }
+}

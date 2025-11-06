@@ -8,17 +8,9 @@ export default function JoinPage() {
   
   const sections = [
     {
-      type: 'split' as const,
-      title: t('membership_applications.title'),
-      content: t.raw('membership_applications.content'),
-      image: '/seated.jpg',
-      imageAlt: t('membership_applications.image_alt'),
-      imagePosition: 'right' as const
-    },
-    {
       type: 'cards' as const,
       title: t('membership_categories.title'),
-      subtitle: t('membership_categories.subtitle'),
+      subtitle: t('membership_categories.subtitle_with_applications'),
       cards: [
         {
           title: t('membership_categories.mga.title'),

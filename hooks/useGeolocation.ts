@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Locale = 'en' | 'fr' | 'de';
+type Locale = 'en' | 'fr' | 'de' | 'es' | 'it';
 
 interface GeolocationData {
   country?: string;
@@ -73,6 +73,14 @@ const SPANISH_SPEAKING_COUNTRIES = [
   'GQ', // Equatorial Guinea
 ];
 
+// Italian-speaking countries
+const ITALIAN_SPEAKING_COUNTRIES = [
+  'IT', // Italy
+  'CH', // Switzerland (Italian-speaking regions)
+  'SM', // San Marino
+  'VA', // Vatican City
+];
+
 
 export function useGeolocation(): GeolocationData {
   const [geolocationData, setGeolocationData] = useState<GeolocationData>({});
@@ -109,6 +117,10 @@ export function useGeolocation(): GeolocationData {
                   detectedLanguage = 'de';
                 } else if (FRENCH_SPEAKING_COUNTRIES.includes(countryCode)) {
                   detectedLanguage = 'fr';
+                } else if (SPANISH_SPEAKING_COUNTRIES.includes(countryCode)) {
+                  detectedLanguage = 'es';
+                } else if (ITALIAN_SPEAKING_COUNTRIES.includes(countryCode)) {
+                  detectedLanguage = 'it';
                 }
                 
                 setGeolocationData({
@@ -132,12 +144,17 @@ export function useGeolocation(): GeolocationData {
           const germanRegions = ['de', 'de-DE', 'de-AT', 'de-CH'];
           const frenchRegions = ['fr', 'fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'];
           const spanishRegions = ['es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-PE', 'es-VE', 'es-CL', 'es-UY', 'es-PY', 'es-BO', 'es-EC', 'es-CR', 'es-PA', 'es-GT', 'es-HN', 'es-NI', 'es-SV', 'es-DO', 'es-CU', 'es-PR'];
+          const italianRegions = ['it', 'it-IT', 'it-CH', 'it-SM', 'it-VA'];
           
           let detectedLanguage: Locale = 'en';
           if (germanRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
             detectedLanguage = 'de';
           } else if (frenchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
             detectedLanguage = 'fr';
+          } else if (spanishRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+            detectedLanguage = 'es';
+          } else if (italianRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+            detectedLanguage = 'it';
           }
           
           setGeolocationData({ detectedLanguage });

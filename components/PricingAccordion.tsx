@@ -20,7 +20,7 @@ export default function PricingAccordion() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('mga.title')}</h3>
                 <div className="text-right ml-4">
-                  <span className="text-2xl font-bold text-fase-navy">Tiered</span>
+                  <span className="text-2xl font-bold text-fase-navy">{t('mga.tiered_label')}</span>
                 </div>
               </div>
               <p className="text-fase-black mt-1">{t('mga.description')}</p>
@@ -34,9 +34,9 @@ export default function PricingAccordion() {
         </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="p-6 pt-0 border-t border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-2">
               {t.raw('mga.tiers').map((tier: any, index: number) => (
-                <div key={index} className="flex justify-between items-center p-4">
+                <div key={index} className="flex justify-between items-center p-3 border-b border-gray-100 last:border-b-0">
                   <span className="text-sm font-medium text-fase-black">{tier.range}</span>
                   <span className="text-lg font-bold text-fase-navy">{tier.price}</span>
                 </div>

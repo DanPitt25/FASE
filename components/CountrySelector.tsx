@@ -8,6 +8,8 @@ import countries from 'i18n-iso-countries';
 countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
 countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));  
 countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/es.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/it.json'));
 
 interface CountrySelectorProps {
   label?: string;
