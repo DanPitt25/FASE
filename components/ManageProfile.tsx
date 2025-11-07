@@ -64,7 +64,9 @@ export default function ManageProfile() {
   // Fetch company members
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!user || !member) return;
+      if (!user || !member) {
+        return;
+      }
 
       try {
         setLoading(true);
@@ -73,27 +75,44 @@ export default function ManageProfile() {
         const { collection, getDocs, doc, getDoc } = await import('firebase/firestore');
         const { db } = await import('../lib/firebase');
         
-        const accountsRef = collection(db, 'accounts');
-        const accountsSnapshot = await getDocs(accountsRef);
-        
         let userAccountId = null;
         let userAccountData = null;
         
-        // Search all accounts to find which one contains this user
-        for (const accountDoc of accountsSnapshot.docs) {
-          const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
-          const membersSnapshot = await getDocs(membersRef);
-          
-          for (const memberDoc of membersSnapshot.docs) {
-            const memberData = memberDoc.data();
-            if (memberData.id === user.uid) {
-              userAccountId = accountDoc.id;
-              userAccountData = accountDoc.data();
-              break;
+        // First try using organizationId from member if available
+        if (member.organizationId) {
+          try {
+            const accountRef = doc(db, 'accounts', member.organizationId);
+            const accountSnap = await getDoc(accountRef);
+            if (accountSnap.exists()) {
+              userAccountId = member.organizationId;
+              userAccountData = accountSnap.data();
             }
+          } catch (error) {
+            console.warn('Failed to load account via organizationId:', error);
           }
+        }
+        
+        // Fallback: Search all accounts to find which one contains this user
+        if (!userAccountId) {
+          const accountsRef = collection(db, 'accounts');
+          const accountsSnapshot = await getDocs(accountsRef);
           
-          if (userAccountId) break;
+          // Search all accounts to find which one contains this user
+          for (const accountDoc of accountsSnapshot.docs) {
+            const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
+            const membersSnapshot = await getDocs(membersRef);
+            
+            for (const memberDoc of membersSnapshot.docs) {
+              const memberData = memberDoc.data();
+              if (memberData.id === user.uid) {
+                userAccountId = accountDoc.id;
+                userAccountData = accountDoc.data();
+                break;
+              }
+            }
+            
+            if (userAccountId) break;
+          }
         }
         
         if (!userAccountId || !userAccountData) {
@@ -104,24 +123,26 @@ export default function ManageProfile() {
         const membersData = await getCompanyMembers(userAccountId);
         
         // Set company info from account data
-        setCompany({
+        const companyInfo = {
           id: userAccountId,
-          organizationName: userAccountData.organizationName || t('manage_profile.unknown_company'),
-          organizationType: userAccountData.organizationType || t('manage_profile.unknown'),
+          organizationName: userAccountData.organizationName || 'Unknown Company',
+          organizationType: userAccountData.organizationType || 'Unknown',
           status: userAccountData.status,
           logoURL: userAccountData.logoURL
-        });
+        };
+        setCompany(companyInfo);
         
         setMembers(membersData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('manage_profile.errors.load_members_failed'));
+        console.error('ManageProfile: Error loading company data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load members');
       } finally {
         setLoading(false);
       }
     };
 
     fetchMembers();
-  }, [user, member, t]);
+  }, [user?.uid, member?.id, member?.organizationId]);
 
   const handleEditMember = (memberToEdit: Member) => {
     setEditingMember({

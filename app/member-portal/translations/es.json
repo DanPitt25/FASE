@@ -1,0 +1,181 @@
+{
+  "portal": {
+    "loading": "Cargando...",
+    "welcome_title": "Portal de Miembros",
+    "welcome_personal": "Bienvenido, {{name}}",
+    "welcome_company": "Bienvenido, {{name}} ({{company}})",
+    "email_subtitle": "Acceda a todos los beneficios y recursos de miembros"
+  },
+  "sections": {
+    "overview": "Resumen",
+    "messages": "Mensajes",
+    "alerts": "Alertas",
+    "profile": "Gestionar Perfil"
+  },
+  "overview": {
+    "welcome_title": "Bienvenido a FASE",
+    "benefits_intro": "Sus beneficios como miembro fundador de FASE incluyen:",
+    "community": {
+      "title": "Acceso único a una comunidad MGA paneuropea",
+      "description_1": "Para proveedores de capacidad y servicios, la membresía de FASE ofrece acceso único al mercado europeo de MGA. Para MGAs, FASE ofrece acceso a proveedores de capacidad y servicios de todo el mundo que pueden ayudarles a hacer crecer su negocio.",
+      "description_2": "Publicaremos nuestro directorio inicial de miembros el 15 de diciembre - recibirá un correo electrónico con un enlace a este recurso, que esperamos crezca sustancialmente en los próximos meses."
+    },
+    "brand": {
+      "title": "Respaldo de marca",
+      "description_1": "Los miembros de FASE tienen derecho a mostrar el logo de FASE en sus sitios web y materiales de marketing, reflejando su compromiso con los más altos estándares profesionales como se refleja en el Código de Conducta de FASE.",
+      "description_2": "Por favor, envíe una copia de su logo a admin@fasemga.com, junto con un resumen breve (máx. 500 caracteres) de su negocio y lo añadiremos a nuestro directorio de miembros."
+    },
+    "matching": {
+      "title": "Emparejamiento de capacidad y distribución",
+      "description_1": "A través de la plataforma FASE, MGAs y proveedores de capacidad pueden compartir información sobre áreas de especialización (MGAs) y apetito de riesgo (proveedores de capacidad). Los corredores también pueden acceder a la plataforma FASE para identificar productos escritos localmente por MGAs.",
+      "description_2": "Lanzaremos esta interfaz el 15 de diciembre."
+    },
+    "data": {
+      "title": "Datos y perspectivas",
+      "description": "Ha recibido tres inicios de sesión de miembro para obtener acceso a una gama de recursos para apoyar el crecimiento de sus negocios en Europa, incluyendo:",
+      "regulatory": {
+        "title": "Análisis regulatorio",
+        "description_1": "Las regulaciones que afectan a los MGAs en Europa a menudo están mal adaptadas al modelo de negocio MGA y varían ampliamente entre las jurisdicciones europeas. A través de un panel de asesores legales expertos, FASE está coordinando la provisión de orientación regulatoria de alta calidad para miembros en diferentes mercados.",
+        "description_2": "Desde principios del próximo año, este portal albergará un mapa interactivo de estados europeos, reflejando las principales regulaciones que impactan a los MGAs en esos países. Un análisis más detallado de cuestiones regulatorias también se proporcionará en The Entrepreneurial Underwriter, la publicación mensual en línea de la federación, comenzando en enero de 2026."
+      },
+      "report": {
+        "title": "Informe anual del mercado",
+        "description": "El informe anual del mercado de FASE proporcionará una imagen clara del tamaño, tasa de crecimiento y composición del mercado europeo de MGA, mientras permite a los miembros comparar su rendimiento con el mercado más amplio. El primer informe anual de FASE se publicará en enero de 2027."
+      },
+      "webinars": {
+        "title": "Archivo de webinars",
+        "description": "Todos los webinars educativos de FASE, enfocados en temas de interés para MGAs, serán archivados dentro de este portal. Pronto le enviaremos invitaciones al primero de nuestra serie de webinars, que comenzará en diciembre."
+      }
+    },
+    "relationships": {
+      "title": "Construcción de relaciones",
+      "description_1": "El MGA Rendezvous, nuestra conferencia anual, unirá a la comunidad europea de MGA durante dos días de construcción de relaciones y networking, acompañado de presentaciones de líderes destacados del mercado.",
+      "description_2": "Anunciaremos las fechas y ubicación para el MGA Rendezvous 2026 en los próximos días.",
+      "description_3": "Eventos adicionales (ubicaciones reflejando la demanda de miembros) ayudarán a los MGAs a expandir sus canales de distribución y relaciones de capacidad de manera más local.",
+      "description_4": "En 2025, el MGA Rendezvous estará abierto a no miembros, pero a un precio significativamente más alto que para miembros. (Los miembros recibirán un descuento del 50% del precio de no miembro). A partir de 2026, todos los eventos de FASE serán exclusivos para miembros."
+    }
+  },
+  "messages": {
+    "no_messages": "Sin Mensajes",
+    "no_messages_desc": "Aún no tiene mensajes.",
+    "mark_read": "Marcar como Leído",
+    "delete": "Eliminar",
+    "from": "De",
+    "priority": {
+      "high": "alta",
+      "medium": "media",
+      "low": "baja"
+    }
+  },
+  "alerts": {
+    "no_alerts": "Sin Alertas",
+    "no_alerts_desc": "¡Está al día! Vuelva más tarde para actualizaciones importantes.",
+    "mark_read": "Marcar como Leído",
+    "dismiss": "Descartar",
+    "priority": {
+      "urgent": "urgente",
+      "high": "alta",
+      "medium": "media",
+      "low": "baja"
+    },
+    "types": {
+      "error": "error",
+      "warning": "advertencia",
+      "success": "éxito",
+      "info": "información"
+    }
+  },
+  "profile": {
+    "account_settings": "Configuración de Cuenta",
+    "personal_name": "Nombre Personal",
+    "company": "Empresa",
+    "company_change_note": "Contacte soporte para cambiar la información de su empresa",
+    "security": "Seguridad",
+    "password": "Contraseña",
+    "password_desc": "Restablezca su contraseña por correo electrónico",
+    "reset_password": "Restablecer Contraseña",
+    "reset_email_sent": "¡Correo de restablecimiento enviado!",
+    "sending": "Enviando...",
+    "edit": "Editar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "not_set": "No configurado",
+    "profile_updated": "¡Perfil actualizado exitosamente!",
+    "profile_update_failed": "Error al actualizar el perfil. Por favor, intente de nuevo.",
+    "password_reset_failed": "Error al enviar el correo de restablecimiento de contraseña. Por favor, intente de nuevo.",
+    "enter_name_placeholder": "Ingrese su nombre personal"
+  },
+  "manage_profile": {
+    "company_profile": "Perfil de Empresa",
+    "membership_type": "Tipo",
+    "organization_type": "Tipo de Organización",
+    "member_since": "Miembro Desde",
+    "company_settings": "Configuración de Empresa",
+    "directory_inclusion": "Incluir en el Directorio de Miembros",
+    "directory_inclusion_desc": "Mostrar su empresa en el directorio público de miembros",
+    "public_contact": "Información de Contacto Público",
+    "public_contact_desc": "Permitir que otros miembros vean sus detalles de contacto",
+    "team_members": "Miembros del Equipo",
+    "add_member": "Agregar Miembro",
+    "add_new_member": "Agregar Nuevo Miembro",
+    "email_address": "Dirección de Correo Electrónico",
+    "full_name": "Nombre Completo",
+    "job_title": "Cargo",
+    "adding": "Agregando...",
+    "cancel": "Cancelar",
+    "settings": "Configuración",
+    "account_administrator": "Administrador de Cuenta",
+    "primary_contact": "Contacto Principal",
+    "pending_invite": "Invitación Pendiente",
+    "invite": "Invitar",
+    "inviting": "Invitando...",
+    "edit_member": "Editar",
+    "remove": "Eliminar",
+    "no_members": "No se Encontraron Miembros",
+    "no_members_desc": "No se encontraron miembros del equipo para esta empresa.",
+    "corporate_only": "La gestión de miembros solo está disponible para cuentas corporativas.",
+    "member_added_success": "{{name}} ha sido agregado al equipo. Recibirá un correo electrónico de invitación.",
+    "member_update_failed": "Error al actualizar miembro. Por favor, intente de nuevo.",
+    "member_delete_failed": "Error al eliminar miembro. Por favor, intente de nuevo.",
+    "member_invite_failed": "Error al enviar invitación. Por favor, intente de nuevo.",
+    "placeholders": {
+      "email": "miembro@empresa.com",
+      "name": "Juan Pérez",
+      "job_title": "ej. Gerente de Operaciones"
+    },
+    "joined_on": "Se unió el {{date}}",
+    "confirm_remove": "¿Está seguro de que quiere eliminar a {{name}} de la empresa?",
+    "invitation_sent": "Invitación enviada a {{name}} en {{email}}",
+    "send_invite": "Enviar Invitación",
+    "you": "Usted",
+    "pending_invite_status": "Invitación Pendiente",
+    "unknown_company": "Empresa Desconocida",
+    "unknown": "Desconocido",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "sending": "Enviando...",
+    "resend_invite": "Reenviar Invitación",
+    "errors": {
+      "load_members_failed": "Error al cargar miembros",
+      "update_member_failed": "Error al actualizar miembro",
+      "cannot_remove_self": "No puede eliminarse a sí mismo de la empresa",
+      "remove_member_failed": "Error al eliminar miembro",
+      "send_invitation_email_failed": "Error al enviar correo de invitación",
+      "send_invitation_failed": "Error al enviar invitación",
+      "add_member_failed": "Error al agregar miembro"
+    },
+    "organization_types": {
+      "mga_full": "Agente General de Suscripción",
+      "carrier_full": "Compañía de Seguros",
+      "provider_full": "Proveedor de Servicios"
+    },
+    "member_statuses": {
+      "active_member": "Miembro Activo",
+      "under_review": "En Revisión",
+      "payment_required": "Pago Requerido",
+      "invoice_sent": "Factura Enviada"
+    },
+    "business_meeting_alt": "Reunión de Negocios"
+  }
+}

@@ -18,7 +18,7 @@
     "community": {
       "title": "Unique access to a pan-European MGA community",
       "description_1": "For capacity and service providers, FASE membership offers unique access to the European MGA market. For MGAs, FASE offers access to capacity and service providers from around the world that can help them grow their business.",
-      "description_2": "We will be publishing our initial membership directory on December 1 – you will receive an email with a link to this resource, which we expect to grow substantially in the coming months."
+      "description_2": "We will be publishing our initial membership directory on December 15 – you will receive an email with a link to this resource, which we expect to grow substantially in the coming months."
     },
     "brand": {
       "title": "Brand endorsement",
@@ -28,7 +28,7 @@
     "matching": {
       "title": "Capacity and distribution matching",
       "description_1": "Through the FASE platform, MGAs and capacity providers can share information on areas of specialism (MGAs) and risk appetite (capacity providers). Brokers can also access the FASE platform to identify products written locally by MGAs.",
-      "description_2": "We will be launching this interface on December 1."
+      "description_2": "We will be launching this interface on December 15."
     },
     "data": {
       "title": "Data and insights",
@@ -155,8 +155,6 @@
     "save": "Save",
     "saving": "Saving...",
     "sending": "Sending...",
-    "edit": "Edit",
-    "remove": "Remove",
     "resend_invite": "Resend Invite",
     "errors": {
       "load_members_failed": "Failed to load members",

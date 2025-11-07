@@ -18,7 +18,7 @@
     "community": {
       "title": "Einzigartiger Zugang zu einer paneuropäischen MGA-Gemeinschaft",
       "description_1": "Für Kapazitäts- und Serviceanbieter bietet die FASE-Mitgliedschaft einzigartigen Zugang zum europäischen MGA-Markt. Für MGAs bietet FASE Zugang zu Kapazitäts- und Serviceanbietern aus der ganzen Welt, die ihnen beim Wachstum ihres Geschäfts helfen können.",
-      "description_2": "Wir werden unser erstes Mitgliederverzeichnis am 1. Dezember veröffentlichen – Sie erhalten eine E-Mail mit einem Link zu dieser Ressource, von der wir erwarten, dass sie in den kommenden Monaten erheblich wachsen wird."
+      "description_2": "Wir werden unser erstes Mitgliederverzeichnis am 15. Dezember veröffentlichen – Sie erhalten eine E-Mail mit einem Link zu dieser Ressource, von der wir erwarten, dass sie in den kommenden Monaten erheblich wachsen wird."
     },
     "brand": {
       "title": "Markenunterstützung",
@@ -28,7 +28,7 @@
     "matching": {
       "title": "Kapazitäts- und Vertriebsabgleich",
       "description_1": "Über die FASE-Plattform können MGAs und Kapazitätsanbieter Informationen über Spezialisierungsbereiche (MGAs) und Risikoappetit (Kapazitätsanbieter) austauschen. Makler können auch auf die FASE-Plattform zugreifen, um lokal von MGAs geschriebene Produkte zu identifizieren.",
-      "description_2": "Wir werden diese Schnittstelle am 1. Dezember starten."
+      "description_2": "Wir werden diese Schnittstelle am 15. Dezember starten."
     },
     "data": {
       "title": "Daten und Erkenntnisse",
@@ -155,8 +155,6 @@
     "save": "Speichern",
     "saving": "Wird gespeichert...",
     "sending": "Wird gesendet...",
-    "edit": "Bearbeiten",
-    "remove": "Entfernen",
     "resend_invite": "Einladung Erneut Senden",
     "errors": {
       "load_members_failed": "Laden der Mitglieder fehlgeschlagen",
