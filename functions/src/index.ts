@@ -374,6 +374,8 @@ export const sendPasswordReset = functions.https.onCall({
   try {
     const { email, locale } = request.data;
     logger.info('sendPasswordReset called with email:', email);
+    logger.info('sendPasswordReset received locale parameter:', locale);
+    logger.info('sendPasswordReset Accept-Language header:', request.rawRequest?.headers?.['accept-language']);
 
     if (!email) {
       throw new functions.https.HttpsError('invalid-argument', 'Email is required');
@@ -432,6 +434,8 @@ export const sendPasswordReset = functions.https.onCall({
         const resetUrl = `https://fasemga.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
         const { subject, html: emailHtml } = generatePasswordResetEmail(resetUrl, userLanguage);
 
+        logger.info('Generated email content:', { subject, language: userLanguage });
+        logger.info('Email HTML preview (first 200 chars):', emailHtml.substring(0, 200));
         logger.info('Sending password reset email via Resend...');
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',

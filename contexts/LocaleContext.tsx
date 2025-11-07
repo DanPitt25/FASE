@@ -47,25 +47,30 @@ const detectBrowserLanguage = (): Locale => {
 };
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(() => {
-    // Priority order: localStorage > browser language > default
-    if (typeof window !== 'undefined') {
-      const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
-      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'es' || savedLocale === 'it')) {
-        return savedLocale;
-      }
-      
-      // If no saved preference, detect based on browser language immediately
-      return detectBrowserLanguage();
-    }
-    return 'en';
-  });
+  // Always start with 'en' to avoid hydration mismatch
+  const [locale, setLocale] = useState<Locale>('en');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const geolocationData = useGeolocation();
 
+  // Initialize locale from localStorage/browser after hydration
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isInitialized) {
+      const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'es' || savedLocale === 'it')) {
+        setLocale(savedLocale);
+      } else {
+        // If no saved preference, detect based on browser language
+        const browserLocale = detectBrowserLanguage();
+        setLocale(browserLocale);
+      }
+      setIsInitialized(true);
+    }
+  }, [isInitialized]);
+
   // Update locale based on geolocation detection (only for first-time visitors)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isInitialized) {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
       
       // Only apply geolocation detection if:
@@ -78,7 +83,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         console.log(`Auto-detected language: ${geolocationData.detectedLanguage} based on location: ${geolocationData.country || 'unknown'}`);
       }
     }
-  }, [geolocationData, locale]);
+  }, [geolocationData, locale, isInitialized]);
 
   // Save locale to localStorage when it changes
   const handleSetLocale = (newLocale: Locale) => {

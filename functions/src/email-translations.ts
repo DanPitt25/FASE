@@ -1,35 +1,80 @@
-import * as fs from 'fs';
-import * as path from 'path';
+// Removed fs and path imports - using embedded translations instead
 
 // Simple email translation loader
 export type Language = 'en' | 'fr' | 'de' | 'es' | 'it';
 
-// Load translations from JSON files
-function loadEmailTranslations(language: Language): any {
-  try {
-    const filePath = path.join(__dirname, '../../messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
+// Embedded translations to avoid file path issues in deployed Firebase Functions
+const translations: Record<Language, any> = {
+  en: {
+    password_reset: {
+      subject: "Reset your FASE password",
+      title: "Reset your FASE password",
+      intro: "You requested a password reset for your FASE account.",
+      button_text: "Reset Password",
+      button_instruction: "Click the button below to reset your password:",
+      alt_text: "Or copy and paste this link in your browser:",
+      expiry: "This link will expire in 1 hour.",
+      ignore: "If you didn't request this password reset, please ignore this email.",
+      help: "If you have any questions, please contact us at help@fasemga.com"
     }
-    // If even English fails, return hardcoded fallback
-    return {
-      password_reset: {
-        subject: "Reset your FASE password",
-        title: "Reset your FASE password",
-        intro: "You requested a password reset for your FASE account.",
-        button_text: "Reset Password",
-        button_instruction: "Click the button below to reset your password:",
-        alt_text: "Or copy and paste this link in your browser:",
-        expiry: "This link will expire in 1 hour.",
-        ignore: "If you didn't request this password reset, please ignore this email.",
-        help: "If you have any questions, please contact us at help@fasemga.com"
-      }
-    };
+  },
+  it: {
+    password_reset: {
+      subject: "Reimposti la Sua password FASE",
+      title: "Reimposti la Sua password FASE", 
+      intro: "Ha richiesto la reimpostazione della password per il Suo account FASE.",
+      button_text: "Reimposta password",
+      button_instruction: "Clicchi il pulsante qui sotto per reimpostare la Sua password:",
+      alt_text: "Oppure copi e incolli questo link nel Suo browser:",
+      expiry: "Questo link scadrà tra 1 ora.",
+      ignore: "Se non ha richiesto questa reimpostazione della password, ignori questa email.",
+      help: "Se ha domande, La preghiamo di contattarci a help@fasemga.com"
+    }
+  },
+  fr: {
+    password_reset: {
+      subject: "Réinitialisez votre mot de passe FASE",
+      title: "Réinitialisez votre mot de passe FASE",
+      intro: "Vous avez demandé une réinitialisation de mot de passe pour votre compte FASE.",
+      button_text: "Réinitialiser le mot de passe",
+      button_instruction: "Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :",
+      alt_text: "Ou copiez et collez ce lien dans votre navigateur :",
+      expiry: "Ce lien expirera dans 1 heure.",
+      ignore: "Si vous n'avez pas demandé cette réinitialisation de mot de passe, veuillez ignorer cet email.",
+      help: "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+    }
+  },
+  de: {
+    password_reset: {
+      subject: "Setzen Sie Ihr FASE-Passwort zurück",
+      title: "Setzen Sie Ihr FASE-Passwort zurück",
+      intro: "Sie haben eine Passwort-Zurücksetzung für Ihr FASE-Konto angefordert.",
+      button_text: "Passwort zurücksetzen",
+      button_instruction: "Klicken Sie auf die Schaltfläche unten, um Ihr Passwort zurückzusetzen:",
+      alt_text: "Oder kopieren Sie diesen Link und fügen ihn in Ihren Browser ein:",
+      expiry: "Dieser Link läuft in 1 Stunde ab.",
+      ignore: "Wenn Sie diese Passwort-Zurücksetzung nicht angefordert haben, ignorieren Sie diese E-Mail bitte.",
+      help: "Bei Fragen kontaktieren Sie uns bitte unter help@fasemga.com"
+    }
+  },
+  es: {
+    password_reset: {
+      subject: "Restablezca su contraseña de FASE",
+      title: "Restablezca su contraseña de FASE",
+      intro: "Ha solicitado restablecer la contraseña de su cuenta FASE.",
+      button_text: "Restablecer contraseña",
+      button_instruction: "Haga clic en el botón de abajo para restablecer su contraseña:",
+      alt_text: "O copie y pegue este enlace en su navegador:",
+      expiry: "Este enlace expirará en 1 hora.",
+      ignore: "Si no solicitó este restablecimiento de contraseña, ignore este correo electrónico.",
+      help: "Si tiene alguna pregunta, póngase en contacto con nosotros en help@fasemga.com"
+    }
   }
+};
+
+// Load translations from embedded data
+function loadEmailTranslations(language: Language): any {
+  return translations[language] || translations.en;
 }
 
 // Language detection function  
