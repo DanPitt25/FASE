@@ -20,6 +20,7 @@ export default function LanguageToggle() {
         <option value="de">Deutsch</option>
         <option value="es">Español</option>
         <option value="it">Italiano</option>
+        <option value="nl">Nederlands</option>
       </select>
     </div>
   );

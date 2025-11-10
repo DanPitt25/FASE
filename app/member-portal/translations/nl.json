@@ -1,0 +1,182 @@
+{
+  "portal": {
+    "loading": "Laden...",
+    "welcome_title": "Ledenportaal",
+    "welcome_personal": "Welkom, {{name}}",
+    "welcome_company": "Welkom, {{name}} ({{company}})",
+    "email_subtitle": "Toegang tot alle ledenvoordelen en bronnen"
+  },
+  "sections": {
+    "overview": "Overzicht",
+    "messages": "Berichten", 
+    "alerts": "Meldingen",
+    "profile": "Profiel Beheren"
+  },
+  "overview": {
+    "welcome_title": "Welkom bij FASE",
+    "benefits_intro": "Uw voordelen als FASE oprichtingslid omvatten:",
+    "community": {
+      "title": "Unieke toegang tot een pan-Europese GA-gemeenschap",
+      "description_1": "Voor capaciteits- en serviceverleners biedt FASE-lidmaatschap unieke toegang tot de Europese GA-markt. Voor GA's biedt FASE toegang tot capaciteits- en serviceverleners van over de hele wereld die hen kunnen helpen hun bedrijf te laten groeien.",
+      "description_2": "We publiceren onze eerste ledengids op 15 december – u ontvangt een e-mail met een link naar deze bron, waarvan we verwachten dat deze de komende maanden aanzienlijk zal groeien."
+    },
+    "brand": {
+      "title": "Merkendorsement",
+      "description_1": "FASE-leden mogen het FASE-logo op hun websites en marketingmateriaal weergeven, wat uw toewijding aan de hoogste professionele standaarden weergeeft zoals vastgelegd in de FASE Gedragscode.",
+      "description_2": "Stuur een kopie van uw logo naar admin@fasemga.com, samen met een korte samenvatting (max 500 tekens) van uw bedrijf en we voegen dit toe aan onze ledengids."
+    },
+    "matching": {
+      "title": "Capaciteits- en distributiematching",
+      "description_1": "Via het FASE-platform kunnen GA's en capaciteitsverleners informatie delen over specialisatiegebieden (GA's) en risicobereidheid (capaciteitsverleners). Makelaars kunnen ook toegang krijgen tot het FASE-platform om producten te identificeren die lokaal door GA's worden geschreven.",
+      "description_2": "We lanceren deze interface op 15 december."
+    },
+    "data": {
+      "title": "Data en inzichten",
+      "description": "U heeft drie ledeninloggegevens ontvangen om toegang te krijgen tot een reeks bronnen ter ondersteuning van de groei van hun bedrijven in Europa, waaronder:",
+      "regulatory": {
+        "title": "Regelgevingsanalyse",
+        "description_1": "Regelgeving die van invloed is op GA's in Europa is vaak slecht afgestemd op het GA-bedrijfsmodel en varieert sterk tussen Europese jurisdicties. Via een panel van deskundige juridische adviseurs coördineert FASE het verstrekken van hoogwaardige regelgevingsrichtlijnen voor leden in verschillende markten.",
+        "description_2": "Vanaf het begin van volgend jaar zal dit portaal een interactieve kaart van Europese staten bevatten, die de belangrijkste regelgeving weergeeft die van invloed is op GA's in die landen. Meer gedetailleerde analyse van regelgevingskwesties wordt ook verstrekt in The Entrepreneurial Underwriter, de maandelijkse online publicatie van de federatie, vanaf januari 2026."
+      },
+      "report": {
+        "title": "Jaarlijks marktrapport",
+        "description": "FASE's jaarlijkse marktrapport zal een duidelijk beeld geven van de omvang, groeisnelheid en samenstelling van de Europese GA-markt, terwijl leden hun prestaties kunnen benchmarken tegen de bredere markt. Het eerste FASE jaarrapport wordt gepubliceerd in januari 2027."
+      },
+      "webinars": {
+        "title": "Webinar archief",
+        "description": "Alle educatieve webinars van FASE, gericht op kwesties die GA's aangaan, worden gearchiveerd binnen dit portaal. We sturen u binnenkort uitnodigingen voor de eerste van onze webinarseries, die in december van start gaat."
+      }
+    },
+    "relationships": {
+      "title": "Relatieopbouw",
+      "description_1": "De GA Rendezvous, onze jaarlijkse conferentie, zal de Europese GA-gemeenschap twee dagen lang verenigen voor relatieopbouw en netwerken, vergezeld van presentaties van vooraanstaande figuren in de markt.",
+      "description_2": "We zullen de data en locatie voor de 2026 GA Rendezvous de komende dagen bekendmaken.",
+      "description_3": "Aanvullende evenementen (locaties gebaseerd op ledenvraag) zullen GA's helpen hun distributiekanalen en capaciteitsrelaties op lokaal niveau uit te breiden.",
+      "description_4": "In 2025 staat de GA Rendezvous open voor niet-leden, maar tegen een aanzienlijk hogere prijs dan voor leden. (Leden krijgen 50% korting op de niet-ledenprijs). Vanaf 2026 zijn alle FASE-evenementen uitsluitend voor leden."
+    }
+  },
+  "messages": {
+    "no_messages": "Geen Berichten",
+    "no_messages_desc": "U heeft nog geen berichten.",
+    "mark_read": "Markeer als Gelezen",
+    "delete": "Verwijderen",
+    "from": "Van",
+    "priority": {
+      "high": "hoog",
+      "medium": "gemiddeld",
+      "low": "laag"
+    }
+  },
+  "alerts": {
+    "no_alerts": "Geen Meldingen",
+    "no_alerts_desc": "U bent helemaal bijgewerkt! Kom later terug voor belangrijke updates.",
+    "mark_read": "Markeer als Gelezen", 
+    "dismiss": "Verwerpen",
+    "priority": {
+      "urgent": "urgent",
+      "high": "hoog",
+      "medium": "gemiddeld",
+      "low": "laag"
+    },
+    "types": {
+      "error": "fout",
+      "warning": "waarschuwing", 
+      "success": "succes",
+      "info": "info"
+    }
+  },
+  "profile": {
+    "account_settings": "Accountinstellingen",
+    "personal_name": "Persoonlijke Naam",
+    "company": "Bedrijf",
+    "company_change_note": "Neem contact op met ondersteuning om uw bedrijfsinformatie te wijzigen",
+    "security": "Beveiliging",
+    "password": "Wachtwoord",
+    "password_desc": "Reset uw wachtwoord via e-mail",
+    "reset_password": "Wachtwoord Resetten",
+    "reset_email_sent": "Reset e-mail verstuurd!",
+    "sending": "Verzenden...",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "cancel": "Annuleren",
+    "not_set": "Niet ingesteld",
+    "profile_updated": "Profiel succesvol bijgewerkt!",
+    "profile_update_failed": "Profiel bijwerken mislukt. Probeer het opnieuw.",
+    "password_reset_failed": "Wachtwoord reset e-mail verzenden mislukt. Probeer het opnieuw.",
+    "enter_name_placeholder": "Voer uw persoonlijke naam in"
+  },
+  "manage_profile": {
+    "company_profile": "Bedrijfsprofiel",
+    "membership_type": "Type",
+    "organization_type": "Organisatietype", 
+    "member_since": "Lid Sinds",
+    "company_settings": "Bedrijfsinstellingen",
+    "directory_inclusion": "Opnemen in Ledengids",
+    "directory_inclusion_desc": "Toon uw bedrijf in de openbare ledengids",
+    "public_contact": "Openbare Contactinformatie",
+    "public_contact_desc": "Andere leden toestaan uw contactgegevens te zien",
+    "team_members": "Teamleden",
+    "add_member": "Lid Toevoegen",
+    "add_new_member": "Nieuw Lid Toevoegen",
+    "email_address": "E-mailadres",
+    "full_name": "Volledige Naam",
+    "job_title": "Functietitel",
+    "adding": "Toevoegen...",
+    "cancel": "Annuleren",
+    "settings": "Instellingen",
+    "account_administrator": "Accountbeheerder", 
+    "primary_contact": "Primair Contact",
+    "pending_invite": "Uitnodiging In Behandeling",
+    "invite": "Uitnodigen",
+    "inviting": "Uitnodigen...",
+    "edit_member": "Bewerken",
+    "edit": "Bewerken",
+    "remove": "Verwijderen",
+    "no_members": "Geen Leden Gevonden",
+    "no_members_desc": "Geen teamleden gevonden voor dit bedrijf.",
+    "corporate_only": "Ledenbeheer is alleen beschikbaar voor zakelijke accounts.",
+    "member_added_success": "{{name}} is toegevoegd aan het team. Ze ontvangen een uitnodigings-e-mail.",
+    "member_update_failed": "Lid bijwerken mislukt. Probeer het opnieuw.",
+    "member_delete_failed": "Lid verwijderen mislukt. Probeer het opnieuw.",
+    "member_invite_failed": "Uitnodiging verzenden mislukt. Probeer het opnieuw.",
+    "placeholders": {
+      "email": "lid@bedrijf.com",
+      "name": "Jan de Vries",
+      "job_title": "bijv. Operationeel Manager"
+    },
+    "joined_on": "Lid geworden op {{date}}",
+    "confirm_remove": "Weet u zeker dat u {{name}} uit het bedrijf wilt verwijderen?",
+    "invitation_sent": "Uitnodiging verzonden naar {{name}} op {{email}}",
+    "send_invite": "Uitnodiging Verzenden",
+    "you": "U",
+    "pending_invite_status": "Uitnodiging In Behandeling",
+    "unknown_company": "Onbekend Bedrijf",
+    "unknown": "Onbekend",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "sending": "Verzenden...",
+    "resend_invite": "Uitnodiging Opnieuw Verzenden",
+    "errors": {
+      "load_members_failed": "Laden van leden mislukt",
+      "update_member_failed": "Bijwerken van lid mislukt",
+      "cannot_remove_self": "U kunt uzelf niet uit het bedrijf verwijderen",
+      "remove_member_failed": "Verwijderen van lid mislukt",
+      "send_invitation_email_failed": "Verzenden van uitnodigings-e-mail mislukt",
+      "send_invitation_failed": "Verzenden van uitnodiging mislukt",
+      "add_member_failed": "Toevoegen van lid mislukt"
+    },
+    "organization_types": {
+      "mga_full": "Gevolmachtigde Agent",
+      "carrier_full": "Verzekeringsmaatschappij",
+      "provider_full": "Serviceverlener"
+    },
+    "member_statuses": {
+      "active_member": "Actief Lid",
+      "under_review": "Onder Beoordeling",
+      "payment_required": "Betaling Vereist",
+      "invoice_sent": "Factuur Verzonden"
+    },
+    "business_meeting_alt": "Zakelijke Bijeenkomst"
+  }
+}

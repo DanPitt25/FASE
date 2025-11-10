@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Locale = 'en' | 'fr' | 'de' | 'es' | 'it';
+type Locale = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 
 interface GeolocationData {
   country?: string;
@@ -81,6 +81,16 @@ const ITALIAN_SPEAKING_COUNTRIES = [
   'VA', // Vatican City
 ];
 
+// Dutch-speaking countries
+const DUTCH_SPEAKING_COUNTRIES = [
+  'NL', // Netherlands
+  'BE', // Belgium (Dutch-speaking regions)
+  'SR', // Suriname
+  'AW', // Aruba
+  'CW', // Curaçao
+  'SX', // Sint Maarten
+];
+
 
 export function useGeolocation(): GeolocationData {
   const [geolocationData, setGeolocationData] = useState<GeolocationData>({});
@@ -121,6 +131,8 @@ export function useGeolocation(): GeolocationData {
                   detectedLanguage = 'es';
                 } else if (ITALIAN_SPEAKING_COUNTRIES.includes(countryCode)) {
                   detectedLanguage = 'it';
+                } else if (DUTCH_SPEAKING_COUNTRIES.includes(countryCode)) {
+                  detectedLanguage = 'nl';
                 }
                 
                 setGeolocationData({
@@ -145,6 +157,7 @@ export function useGeolocation(): GeolocationData {
           const frenchRegions = ['fr', 'fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'];
           const spanishRegions = ['es', 'es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-PE', 'es-VE', 'es-CL', 'es-UY', 'es-PY', 'es-BO', 'es-EC', 'es-CR', 'es-PA', 'es-GT', 'es-HN', 'es-NI', 'es-SV', 'es-DO', 'es-CU', 'es-PR'];
           const italianRegions = ['it', 'it-IT', 'it-CH', 'it-SM', 'it-VA'];
+          const dutchRegions = ['nl', 'nl-NL', 'nl-BE'];
           
           let detectedLanguage: Locale = 'en';
           if (germanRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
@@ -155,6 +168,8 @@ export function useGeolocation(): GeolocationData {
             detectedLanguage = 'es';
           } else if (italianRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
             detectedLanguage = 'it';
+          } else if (dutchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+            detectedLanguage = 'nl';
           }
           
           setGeolocationData({ detectedLanguage });

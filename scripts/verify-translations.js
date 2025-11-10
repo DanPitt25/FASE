@@ -213,7 +213,7 @@ const main = () => {
   
   // First check if all languages have complete coverage
   console.log('📋 Checking translation coverage...\n');
-  const locales = ['fr', 'de', 'es', 'it'];
+  const locales = ['fr', 'de', 'es', 'it', 'nl'];
   const results = {};
   
   locales.forEach(locale => {

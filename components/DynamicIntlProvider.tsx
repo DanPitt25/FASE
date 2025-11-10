@@ -6,7 +6,7 @@ import { ReactNode, useState, useEffect } from 'react';
 
 interface DynamicIntlProviderProps {
   children: ReactNode;
-  allMessages: { en: any; fr: any; de: any; es: any; it: any; };
+  allMessages: { en: any; fr: any; de: any; es: any; it: any; nl: any; };
 }
 
 export default function DynamicIntlProvider({ children, allMessages }: DynamicIntlProviderProps) {

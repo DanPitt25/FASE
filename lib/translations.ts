@@ -3,7 +3,7 @@ import glossaryData from '../messages/glossary.json';
 /**
  * Get a glossary term in the specified locale
  */
-export function getGlossaryTerm(key: string, locale: 'en' | 'fr' | 'es'): string {
+export function getGlossaryTerm(key: string, locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl'): string {
   return glossaryData[locale][key as keyof typeof glossaryData['en']] || key;
 }
 
@@ -19,22 +19,28 @@ export function validateTranslationKey(key: string, namespace: string = ''): boo
 /**
  * Get all available locales
  */
-export function getAvailableLocales(): Array<{ code: 'en' | 'fr' | 'es', label: string, nativeLabel: string }> {
+export function getAvailableLocales(): Array<{ code: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl', label: string, nativeLabel: string }> {
   return [
     { code: 'en', label: 'English', nativeLabel: 'English' },
     { code: 'fr', label: 'French', nativeLabel: 'Français' },
-    { code: 'es', label: 'Spanish', nativeLabel: 'Español' }
+    { code: 'es', label: 'Spanish', nativeLabel: 'Español' },
+    { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
+    { code: 'it', label: 'Italian', nativeLabel: 'Italiano' },
+    { code: 'nl', label: 'Dutch', nativeLabel: 'Nederlands' }
   ];
 }
 
 /**
  * Format locale display name
  */
-export function formatLocaleDisplayName(locale: 'en' | 'fr' | 'es'): string {
+export function formatLocaleDisplayName(locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl'): string {
   const localeMap = {
     'en': 'English',
     'fr': 'Français',
-    'es': 'Español'
+    'es': 'Español',
+    'de': 'Deutsch',
+    'it': 'Italiano',
+    'nl': 'Nederlands'
   };
   return localeMap[locale];
 }
@@ -46,15 +52,15 @@ export const translationHelpers = {
   /**
    * Get MGA term in appropriate locale
    */
-  getMGATerm: (locale: 'en' | 'fr' | 'es') => getGlossaryTerm('mga', locale),
+  getMGATerm: (locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl') => getGlossaryTerm('mga', locale),
   
   /**
    * Get full MGA term in appropriate locale
    */
-  getMGAFullTerm: (locale: 'en' | 'fr' | 'es') => getGlossaryTerm('mga_full', locale),
+  getMGAFullTerm: (locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl') => getGlossaryTerm('mga_full', locale),
   
   /**
    * Get federation term in appropriate locale
    */
-  getFederationTerm: (locale: 'en' | 'fr' | 'es') => getGlossaryTerm('federation', locale)
+  getFederationTerm: (locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'nl') => getGlossaryTerm('federation', locale)
 };

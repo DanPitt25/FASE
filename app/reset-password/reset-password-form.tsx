@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { validatePasswordResetToken, resetPassword } from '../../lib/auth';
 import { validatePassword } from '../register/form-components';
 import Button from '../../components/Button';
-import { handleAuthError } from '../../lib/auth-errors';
+import { handleAuthError, getAuthErrorKey } from '../../lib/auth-errors';
 
 export default function ResetPasswordForm() {
   const [email, setEmail] = useState('');
@@ -24,6 +24,7 @@ export default function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('reset_password');
+  const systemErrors = useTranslations('system_errors');
 
   useEffect(() => {
     // Get email and token from URL parameters
@@ -96,7 +97,8 @@ export default function ResetPasswordForm() {
         router.push('/login?reset=success');
       }, 3000);
     } catch (error: any) {
-      const errorMessage = handleAuthError(error);
+      const errorKey = getAuthErrorKey(error);
+      const errorMessage = systemErrors(errorKey);
       setError(errorMessage);
     } finally {
       setLoading(false);

@@ -9,6 +9,9 @@ import countries from 'i18n-iso-countries';
 countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
 countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));  
 countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/es.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/it.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/nl.json'));
 
 interface SearchableCountrySelectProps {
   label: string;

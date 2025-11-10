@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 
-export type Locale = 'en' | 'fr' | 'de' | 'es' | 'it';
+export type Locale = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 
 interface LocaleContextType {
   locale: Locale;
@@ -41,6 +41,12 @@ const detectBrowserLanguage = (): Locale => {
     if (italianRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
       return 'it';
     }
+    
+    // Dutch-speaking regions
+    const dutchRegions = ['nl', 'nl-NL', 'nl-BE'];
+    if (dutchRegions.some(region => browserLang.toLowerCase().startsWith(region.toLowerCase()))) {
+      return 'nl';
+    }
   }
   
   return 'en'; // Default to English
@@ -57,7 +63,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined' && !isInitialized) {
       const savedLocale = localStorage.getItem('fase-locale') as Locale | null;
-      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'es' || savedLocale === 'it')) {
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'fr' || savedLocale === 'de' || savedLocale === 'es' || savedLocale === 'it' || savedLocale === 'nl')) {
         setLocale(savedLocale);
       } else {
         // If no saved preference, detect based on browser language

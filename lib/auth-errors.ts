@@ -1,6 +1,52 @@
-// Firebase Auth error code mappings to user-friendly messages
+// Firebase Auth error code mappings to translation keys
 import { AccountPendingError, AccountNotApprovedError, AccountInvoicePendingError, AccountNotFoundError } from './auth';
 
+// Function that returns translation key for auth errors
+export const getAuthErrorTranslationKey = (errorCode: string): string => {
+  const errorKeyMap: Record<string, string> = {
+    // Authentication errors
+    'auth/user-not-found': 'auth_user_not_found',
+    'auth/wrong-password': 'auth_wrong_password',
+    'auth/invalid-credential': 'auth_invalid_credential',
+    'auth/invalid-login-credentials': 'auth_invalid_login_credentials',
+    'auth/invalid-email': 'auth_invalid_email',
+    'auth/user-disabled': 'auth_user_disabled',
+    'auth/weak-password': 'auth_weak_password',
+    'auth/account-exists-with-different-credential': 'auth_account_exists_with_different_credential',
+    
+    // Registration errors
+    'auth/email-already-in-use': 'auth_email_already_in_use',
+    'auth/operation-not-allowed': 'auth_operation_not_allowed',
+    
+    // Rate limiting
+    'auth/too-many-requests': 'auth_too_many_requests',
+    'auth/quota-exceeded': 'auth_quota_exceeded',
+    
+    // Network errors
+    'auth/network-request-failed': 'auth_network_request_failed',
+    'auth/timeout': 'auth_timeout',
+    'auth/user-token-expired': 'auth_user_token_expired',
+    
+    // Password reset
+    'auth/invalid-continue-uri': 'auth_invalid_continue_uri',
+    'auth/missing-continue-uri': 'auth_missing_continue_uri',
+    
+    // General errors
+    'auth/internal-error': 'auth_internal_error',
+    'auth/cancelled-popup-request': 'auth_cancelled_popup_request',
+    'auth/popup-blocked': 'auth_popup_blocked',
+    'auth/popup-closed-by-user': 'auth_popup_closed_by_user',
+    
+    // Custom validation errors
+    'auth/missing-password': 'auth_missing_password',
+    'auth/missing-email': 'auth_missing_email',
+    'auth/passwords-do-not-match': 'auth_passwords_do_not_match'
+  };
+
+  return errorKeyMap[errorCode] || 'default_error';
+};
+
+// Legacy function for backwards compatibility with hardcoded messages
 export const getAuthErrorMessage = (errorCode: string): string => {
   const errorMessages: Record<string, string> = {
     // Authentication errors
@@ -73,7 +119,27 @@ export const getFirebaseErrorCode = (error: any): string => {
   return 'auth/unknown-error';
 };
 
-// Main function to get user-friendly error message from any Firebase error
+// Function to get translation key for auth errors with fallback to custom errors
+export const getAuthErrorKey = (error: any): string => {
+  // Handle our custom account status errors - these are already translated
+  if (error instanceof AccountPendingError) {
+    return 'account_pending';
+  }
+  if (error instanceof AccountNotApprovedError) {
+    return 'account_not_approved';
+  }
+  if (error instanceof AccountInvoicePendingError) {
+    return 'account_invoice_pending';
+  }
+  if (error instanceof AccountNotFoundError) {
+    return 'account_not_found';
+  }
+  
+  const errorCode = getFirebaseErrorCode(error);
+  return getAuthErrorTranslationKey(errorCode);
+};
+
+// Main function to get user-friendly error message from any Firebase error (legacy)
 export const handleAuthError = (error: any): string => {
   // Handle our custom account status errors
   if (error instanceof AccountPendingError || 

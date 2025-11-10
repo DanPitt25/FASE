@@ -7,7 +7,7 @@ import { useLocale } from '../../contexts/LocaleContext';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 import { signIn, sendPasswordReset } from '../../lib/auth';
 import Button from '../../components/Button';
-import { handleAuthError } from '../../lib/auth-errors';
+import { handleAuthError, getAuthErrorKey } from '../../lib/auth-errors';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -21,6 +21,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('login_form');
+  const systemErrors = useTranslations('system_errors');
   const { locale } = useLocale();
   const { user, authError, hasMemberAccess, clearAuthError } = useUnifiedAuth();
 
@@ -53,8 +54,9 @@ export default function LoginForm() {
       } else if (authError.name === 'AccountNotFoundError') {
         setError(t('account_not_found'));
       } else {
-        // For other errors, use the existing error handler
-        const errorMessage = handleAuthError(authError);
+        // For other errors, use translated error messages
+        const errorKey = getAuthErrorKey(authError);
+        const errorMessage = systemErrors(errorKey);
         setError(errorMessage);
       }
     } else {
@@ -75,7 +77,8 @@ export default function LoginForm() {
       await signIn(email, password);
       // Redirect is now handled by useEffect watching user/hasMemberAccess/authError
     } catch (error: any) {
-      const errorMessage = handleAuthError(error);
+      const errorKey = getAuthErrorKey(error);
+      const errorMessage = systemErrors(errorKey);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -98,7 +101,8 @@ export default function LoginForm() {
       await sendPasswordReset(email, locale);
       setResetSent(true);
     } catch (error: any) {
-      const errorMessage = handleAuthError(error);
+      const errorKey = getAuthErrorKey(error);
+      const errorMessage = systemErrors(errorKey);
       setError(errorMessage);
     } finally {
       setResetLoading(false);

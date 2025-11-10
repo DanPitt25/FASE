@@ -1,0 +1,456 @@
+{
+  "auth": {
+    "sign_in": "Inloggen",
+    "sign_out": "Uitloggen",
+    "sign_up": "Aanmelden",
+    "register": "Registreren",
+    "login": "Inloggen",
+    "logout": "Uitloggen",
+    "logged_in_as": "Ingelogd als",
+    "signed_in_as": "Ingelogd als:",
+    "welcome": "Welkom",
+    "account": "Account",
+    "profile": "Profiel",
+    "admin_portal": "Beheerportaal"
+  },
+  "header": {
+    "search_placeholder": "Zoeken...",
+    "language_label": "Taal:",
+    "about_us": "Over ons",
+    "join_us": "Word lid",
+    "sponsorship": "Sponsoring",
+    "events": "Evenementen",
+    "knowledge": "Kennis & Onderwijs",
+    "news": "Nieuws",
+    "member_portal": "Ledenportaal",
+    "sign_in": "Inloggen",
+    "sign_out": "Uitloggen",
+    "logged_in_as": "Ingelogd als",
+    "signed_in_as": "Ingelogd als:"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Europese verzekeringsinnovators verbinden",
+      "subtitle": "Verbindend GA's, capaciteitsverschaffers, distributeurs en servicepartners om kennis te delen, relaties op te bouwen en gedelegeerd underwriting door heel Europa te verbeteren.",
+      "join_now": "Nu lid worden",
+      "learn_more": "Meer weten"
+    },
+    "who_we_are": {
+      "title": "Zien en gezien worden",
+      "description": "FASE verhoogt het profiel van de gedelegeerde underwritingsector en haar individuele leden. Onze leden delen een focus op samenwerking, verantwoordelijke groei en hoge professionele standaarden. Door gedeeld inzicht, praktische middelen en een actief netwerk helpen we elk lid de partnerschappen op te bouwen die de groei van het bedrijf zullen ondersteunen."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Pan-Europese Evenementen",
+        "description": "Halfjaarlijkse conferenties die GA's, capaciteitsverschaffers en serviceverleners samenbrengen voor netwerken en bedrijfsontwikkeling."
+      },
+      "digital_platform": {
+        "title": "Digitaal Platform",
+        "description": "Meertalig digitaal platform dat technische, regelgevings- en risicobereidheid middelen biedt voor GA-leden."
+      },
+      "market_intelligence": {
+        "title": "Marktintelligentie",
+        "description": "Jaarlijkse Europese marktrapporten die GA-dynamiek aantonen met nauwkeurige statistieken en pan-Europese marktinzichten."
+      },
+      "industry_advocacy": {
+        "title": "Branchevertegenwoordiging",
+        "description": "Stem voor GA's in regelgevingsdiscussies op nationaal en pan-Europees niveau."
+      },
+      "education_training": {
+        "title": "Onderwijs & Training",
+        "description": "Online onderwijs- en trainingsmodules voor GA-medewerkers in verschillende specialismen."
+      },
+      "market_research": {
+        "title": "Marktonderzoek",
+        "description": "Onderzoekscapaciteiten voor GA's die toegang zoeken tot nieuwe Europese markten en groeimogelijkheden."
+      },
+      "capacity_transparency": {
+        "title": "Capaciteitstransparantie",
+        "description": "Verbeterde transparantie over verzekeringsbereidheid voor GA-afkomstige zaken per geografie en klasse."
+      }
+    },
+    "quote": {
+      "text": "GA's zijn, over het algemeen, kleine bedrijven. Terwijl onze leden kijken om te groeien, worden ze soms belemmerd door regelgevingshindernissen, data gaps en capaciteitsbeperkingen. FASE kan helpen.",
+      "author": "Dario Spata",
+      "title": "President van ASASE en FASE adviesraadlid"
+    },
+    "impact": {
+      "title": "Onze Impact",
+      "networking": {
+        "title": "Netwerken & Samenwerking",
+        "description": "Ga in gesprek met vakgenoten via forums, evenementen en werkgroepen die praktische verbindingen bevorderen en leden helpen oplossingen voor gemeenschappelijke uitdagingen te vinden."
+      },
+      "professional_development": {
+        "title": "Professionele Ontwikkeling",
+        "description": "Toegang tot gerichte leermogelijkheden en onderzoek ontworpen om GA's te helpen expertise en leiderschapsvaardigheid op te bouwen."
+      },
+      "market_intelligence": {
+        "title": "Marktintelligentie",
+        "description": "Profiteer van geïdentificeerde data en inzichten die leden een duidelijk begrip geven van huidige trends, regelgevingsverschuivingen en opkomende kansen in Europese markten."
+      }
+    },
+    "standards": {
+      "title": "Screening & Standaarden",
+      "subtitle": "Om het professionalisme van de FASE-gemeenschap te handhaven, hebben we een lidmaatschapsprotocol opgesteld:",
+      "review_process": "Ons Beoordelingsproces",
+      "eligibility_review": {
+        "title": "Geschiktheidsonderzoek",
+        "description": "Bevestiging van bedrijfsreferenties, regelgevingsstatus en ethische track record."
+      },
+      "standards_alignment": {
+        "title": "Standaardenafstemming",
+        "description": "Beoordeling van elke aanvrager's afstemming met erkende gedelegeerde underwritingsprincipes."
+      },
+      "peer_endorsement": {
+        "title": "Vakgenoot Onderschrijving",
+        "description": "Overleg met onze Adviesraad en bestaande leden om geloofwaardigheid en passendheid binnen de gemeenschap te waarborgen."
+      },
+      "ongoing_review": {
+        "title": "Doorlopende Beoordeling",
+        "description": "Periodieke herbevestiging van goede reputatie en voortgezette toewijding aan gedeelde standaarden."
+      },
+      "conclusion": "Dit proces zorgt ervoor dat FASE een vertrouwd netwerk blijft van professionals die werken aan het verhogen van consistentie, transparantie en prestaties in gedelegeerd underwriting."
+    },
+    "why_join": {
+      "title": "Een praktisch netwerk voor een complexe markt",
+      "subtitle": "Of u nu een GA, verzekeraar, makelaar of servicepartner bent, FASE helpt u verbonden te blijven met de mensen, informatie en perspectieven die gedelegeerd underwriting in Europa vormgeven.",
+      "become_member": "Word lid",
+      "view_events": "Bekijk aankomende evenementen",
+      "tagline": "FASE — het bouwen van een verbonden, geïnformeerde en verantwoordelijke Gedelegeerde Underwriting gemeenschap"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Gedragscode",
+      "banner_alt": "Professionele standaarden en regelgevingsnaleving"
+    },
+    "intro": {
+      "title": "FASE Gedragscode",
+      "content": {
+        "paragraph1": "FASE ondersteunt de hoogste professionele en ethische standaarden, zoals beschreven in deze Gedragscode, en vereist dat alle leden zich jaarlijks committeren aan het handhaven van deze standaarden als voorwaarde voor hun lidmaatschap.",
+        "paragraph2": "Leden ondernemen hierbij om te handelen op een legale, eerlijke en ethische manier in al hun omgang met alle partijen.",
+        "paragraph3": "Leden ondernemen om volledig en te allen tijde mee te werken met FASE bij de handhaving van deze Code."
+      }
+    },
+    "sections": {
+      "title": "Gedragscode Secties",
+      "legal": {
+        "title": "1. Juridische verantwoordelijkheden",
+        "content": "Leden zullen alle toepasselijke wetten en regelgeving naleven in de locaties waar zij zaken doen. Indien deze juridische verantwoordelijkheid conflicteert met een andere plicht beschreven in deze Code, zal deze juridische verantwoordelijkheid prioriteit krijgen.\n\nLeden zullen onder de aandacht brengen van het FASE Business Conduct Committee alle omstandigheden waarvan zij op de hoogte raken betreffende:\n\n• Een lid dat in overtreding is van enige regelgevingsvereiste en\n\n• Elke omstandigheid die redelijkerwijs kan leiden tot sancties tegen het lid of een lid van hun personeel of directeuren door de relevante regelgevingsautoriteiten\n\nLeden zullen alle redelijke wettige bijstand verlenen aan regelgevings-, professionele en wetshandhavingsorganisaties bij het uitvoeren van hun taken, of het nu gaat om henzelf, een ander lid of een niet-lid."
+      },
+      "financial": {
+        "title": "2. Financiële Verantwoordelijkheden",
+        "content": "Leden moeten altijd hun financiële verplichtingen op tijd nakomen. Dit omvat, maar is niet beperkt tot, betaling van schulden, verschuldigde premies aan verzekeraars, terugbetalingen verschuldigd aan makelaars en verzekerden, bedragen verschuldigd aan werknemers.\n\nLeden moeten voldoen aan toepasselijke solvabiliteits- of soortgelijke vereisten."
+      },
+      "inter_org": {
+        "title": "3. Inter-organisatorische Verantwoordelijkheden",
+        "content": "Leden zullen eerlijk en eerbaar concurreren in de markten waarin zij opereren.\n\nDit omvat, maar is niet beperkt tot:\n\n• geen verklaring afleggen over medeleden, concurrenten of andere marktdeelnemers, privé of openbaar, waarvan zij niet eerlijk geloven dat deze waar en relevant is op basis van de beste informatie die redelijkerwijs voor hen beschikbaar is;\n\n• aangaan van enige overeenkomst bedoeld om concurrentie binnen de markt te verminderen."
+      },
+      "community": {
+        "title": "4. Gemeenschapsverantwoordelijkheden",
+        "content": "FASE-leden moeten zich gedragen op een manier die past bij de privileges van het lidmaatschap.\n\nLeden zullen niet alleen voldoen aan hun verplichtingen onder de wet betreffende discriminatie, maar in alle hun omgang redelijke stappen ondernemen om geen nadeel te veroorzaken aan enige persoon of organisatie voortvloeiend uit ras, geslacht, seksuele gerichtheid, geslachtsverandering, zwangerschap en moederschap, getrouwde of burgerlijke partnerschapsstatus, religie of overtuiging, leeftijd en handicap.\n\nLeden worden aangemoedigd deel te nemen aan maatschappelijke, liefdadigheids- en filantropische activiteiten die bijdragen aan de bevordering van de goede reputatie van de verzekeringssector, haar bijdrage aan het algemeen belang en het welzijn van degenen die erin werken.\n\nLeden zullen voortgezet onderwijs en training voor personeel aanmoedigen."
+      },
+      "insurers": {
+        "title": "5. Relaties met Verzekeraars",
+        "content": "Leden zullen eerlijk en eerlijk handelen wanneer zij optreden namens verzekeraars. In het bijzonder moeten zij:\n\n• trouw uitvoeren van de underwriting-richtlijnen van de verzekeraars die zij vertegenwoordigen;\n\n• handelen in de uiterste goede trouw en alle gegevens verzamelen die nodig zijn om een ​​juiste underwriting-beslissing te nemen voordat een verzekeraar risico loopt;\n\n• zichzelf op de hoogte houden van de wetten en regelgeving in alle gebieden waarin zij bevoegdheid hebben, en verzekeraars dienovereenkomstig adviseren over de impact van dergelijke wetten en regelgeving zoals zij hun relatie beïnvloeden."
+      },
+      "brokers": {
+        "title": "6. Relaties met Makelaars en Agenten (of Verzekerden indien direct opereren)",
+        "content": "Leden moeten eerlijk en eerlijk handelen met makelaars, agenten of verzekerden (indien direct opereren), en daarbij zullen:\n\n• te allen tijde de financiële stabiliteit overwegen van verzekeraars waarbij het lid zaken plaatst;\n\n• geen valse of misleidende voorstelling maken van welke dekking wordt geboden, of de beperkingen of uitsluitingen van dekking of beperkingen of uitsluitingen opleggen zodanig dat de polis geen effectief voordeel biedt aan de verzekerde.\n\nLeden moeten kunnen aantonen dat zij zorgvuldig de verzekeraars hebben overwogen die zij vertegenwoordigen als underwriting-agenten en hun en hun makelaars' klanten zaken bij plaatsen.\n\nEffectieve en passende due diligence is een belangrijk onderdeel van het proces dat leden moeten uitvoeren op de verzekeringsmaatschappijen die zij vertegenwoordigen als zekerheid voor de polissen die zij verstrekken. Er is een risico voor klanten in het geval dat een verzekeraar faalt en niet in staat is geldige claims te betalen.\n\nFASE verwacht dat GA-leden kunnen aantonen dat geschikte due diligence is uitgevoerd op de verzekeraars die zij vertegenwoordigen en aanbieden als verzekeringszekerheid.\n\nLeden moeten duidelijke en ondubbelzinnige details verstrekken van de naam en het adres van de verzekeraar in alle relevante documentatie verstrekt voor makelaars en polishouders. We verwachten van leden dat zij positief vermijden de polishouder de indruk te geven dat de GA de verzekeraar is en de naam van de verzekeraar achter de GA te verhullen. Het is belangrijk dat klanten een geïnformeerde beslissing kunnen nemen over waar hun verzekering wordt geplaatst."
+      }
+    },
+    "reporting": {
+      "title": "Melden van Overtredingen",
+      "content": {
+        "paragraph1": "Alle kennisgevingen van mogelijke overtreding gemaakt onder deze Code moeten worden gemaakt aan het Business Conduct Committee op conduct@fasemga.com."
+      }
+    }
+  },
+  "thank_you": {
+    "title": "Dank u voor uw aanvraag!",
+    "application_submitted": "Uw FASE-lidmaatschapsaanvraag is succesvol ingediend en verzonden naar ons team ter beoordeling.",
+    "application_reference": "Aanvraagreferentie:",
+    "what_happens_next": {
+      "title": "Wat gebeurt er nu?",
+      "step1": "U hoort binnen één werkdag van ons",
+      "step2": "We beoordelen uw aanvraag en nemen contact met u op met volgende stappen",
+      "step3": "Bij goedkeuring ontvangt u lidmaatschapsdetails en betaalinstructies"
+    },
+    "contact": {
+      "question": "Vragen over uw aanvraag?",
+      "email_text": "Neem contact met ons op via"
+    },
+    "return_home": "Terug naar startpagina"
+  },
+  "payment_succeeded": {
+    "title": "Betaling succesvol!",
+    "message": "Dank u voor uw betaling. Uw FASE-lidmaatschap is nu actief.",
+    "what_happens_next": {
+      "title": "Wat gebeurt er nu:",
+      "step1": "U ontvangt een bevestigingsmail met uw lidmaatschapsdetails.",
+      "step2": "Toegang tot het ledenportaal wordt binnenkort geactiveerd.",
+      "step3": "U ontvangt een factuurontvangst voor uw administratie."
+    },
+    "contact": {
+      "question": "Vragen over uw lidmaatschap?",
+      "email_text": "Neem contact met ons op via"
+    },
+    "return_home": "Terug naar startpagina"
+  },
+  "payment_failed": {
+    "title": "Betaling geannuleerd",
+    "message": "Uw betaling is geannuleerd. Geen zorgen, u kunt nog steeds uw lidmaatschapsaanvraag voltooien.",
+    "what_you_can_do": {
+      "title": "Wat u kunt doen:",
+      "step1": "Probeer de betaling opnieuw met een credit- of debitcard.",
+      "step2": "Kies ervoor om per bankoverschrijving te betalen (factuur bijgevoegd in uw oorspronkelijke e-mail).",
+      "step3": "Neem contact met ons op als u hulp nodig heeft bij de betaling."
+    },
+    "contact": {
+      "question": "Hulp nodig bij uw betaling?",
+      "email_text": "Neem contact met ons op via"
+    },
+    "try_again": "Probeer betaling opnieuw",
+    "return_home": "Terug naar startpagina"
+  },
+  "people": {
+    "page": {
+      "title": "Onze mensen",
+      "banner_alt": "FASE leiderschap en team"
+    },
+    "executive_team": {
+      "title": "Directieteam"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Uitvoerend directeur",
+        "bio": "William richtte FASE op in 2025 om een ​​breed erkende behoefte aan te pakken voor een pan-Europees orgaan om Europa's snel groeiende, maar weinig begrepen GA-sector te vertegenwoordigen.\n\nVoordat hij FASE oprichtte, leidde William onderzoeks- en adviesprojecten bij Lexicon Associates en Conning. Hij is de auteur van The MGA Revolution: How MGAs are reshaping the insurance value chain, gepubliceerd door Lexicon Associates in november 2024. Hij leidde eerder adviesinitiatieven voor Conning in de Verenigde Staten en was de auteur van Conning's jaarlijkse GA-studies.\n\nVoordat hij in 2021 bij Conning kwam, diende hij twaalf jaar als globaal chief marketing officer bij Beazley. Eerder in zijn carrière bekleedde hij senior marketing- en bedrijfsontwikkelingsfuncties bij Marsh & McLennan Companies en Lloyd's.\n\nWilliam heeft uitgebreid geschreven over verzekeringen voor publicaties waaronder de Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer en Corriere della Sera. Hij is de auteur van More Equal than Others: a Director's Guide to EU Competition Policy, gepubliceerd door Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Chief Operating Officer",
+        "bio": "Aline is verantwoordelijk voor de efficiënte levering van alle ledenservices en werkt nauw samen met leden om hun behoeften aan te pakken. Zij heeft diepe ervaring in bedrijfscommunicatie, educatieve programma's en evenementenmanagement.\n\nAline is een partner bij Lexicon Associates, een onderzoeks- en adviesbedrijf dat zij in 2009 oprichtte. Zij heeft sinds 2009 gewerkt met Evercore Wealth Management en Evercore Trust Company als de uitbestede hoofd communicatie en de redacteur van de kwartaaljournal van het bedrijf, Independent Thinking; zij leidde eerder communicatie voor Aviva Investors, U.S. Trust en The Private Bank of Bank of America.\n\nHaar artikelen over beleggen zijn verschenen in de New York Times, de International Herald Tribune, de Financial Times, Worth, Bloomberg, Barron's en de Wall Street Journal."
+      }
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Word lid van FASE",
+      "banner_alt": "Word lid van FASE lidmaatschap"
+    },
+    "membership_applications": {
+      "title": "Lidmaatschapsaanvragen",
+      "content": [
+        "FASE-lidmaatschap staat open voor GA's die meer dan een jaar in bedrijf zijn en meer dan €500.000 aan jaarlijkse premie onderschrijven.",
+        "Lidmaatschap staat ook open voor verzekerings- en herverzekeringsmaatschappijen die partnerschappen zoeken met Europese GA's, en voor serviceverleners die de sector ondersteunen."
+      ],
+      "image_alt": "Europese zakelijke bijeenkomst"
+    },
+    "member_benefits": {
+      "title": "FASE-ledenvoordelen",
+      "items": [
+        {
+          "title": "Pan-Europese vertegenwoordiging",
+          "content": "Sluit u aan bij een eensgezinde stem die pleit voor GA's en gedelegeerd underwriting door heel Europa."
+        },
+        {
+          "title": "Netwerken & samenwerking",
+          "content": "Verbind met GA-leiders, verzekeraars, herverzekeraars en serviceverleners door heel Europa en daarbuiten."
+        },
+        {
+          "title": "Jaarlijkse GA Rendezvous",
+          "content": "Exclusieve toegang tot ons vlaggenschip evenement — dat GA-professionals, marktbeïnvloeders en partners van over de hele wereld samenbrengt."
+        },
+        {
+          "title": "Educatieve & inzicht sessies",
+          "content": "Deelnemen aan workshops, webinars en panels over regelgevingstrends, innovatie en best practices."
+        },
+        {
+          "title": "Branche-intelligentie",
+          "content": "Ontvang regelmatige updates over Europese GA-marktontwikkelingen, kansen en uitdagingen."
+        },
+        {
+          "title": "Erkenning & geloofwaardigheid",
+          "content": "Versterk uw marktreputatie als onderdeel van een gerespecteerde, vooruitkijkende GA-vereniging."
+        },
+        {
+          "title": "Kansen voor samenwerking",
+          "content": "Vorm de toekomst van gedelegeerd underwriting door werkgroepen en grensoverschrijdende initiatieven."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Lidmaatschapscategorieën",
+      "subtitle_with_applications": "FASE-lidmaatschap staat open voor GA's die meer dan een jaar in bedrijf zijn en meer dan €500.000 aan jaarlijkse premie onderschrijven. Lidmaatschap staat ook open voor verzekerings- en herverzekeringsmaatschappijen die partnerschappen zoeken met Europese GA's, en voor serviceverleners die de sector ondersteunen.",
+      "mga": {
+        "title": "GA",
+        "description": "GA's die zaken doen in Europa voor ten minste een jaar en met premie-inkomsten van meer dan €500.000.",
+        "image_alt": "GA zakelijke bijeenkomst",
+        "action_text": "Aanmelden als GA"
+      },
+      "carrier": {
+        "title": "Verzekeraar / Makelaar",
+        "description": "(Her)verzekeringsmaatschappij, Lloyd's managing agency, of (her)verzekeringsmakelaar die zaken doet met GA's.",
+        "image_alt": "Marktanalyse en data",
+        "action_text": "Aanmelden als Verzekeraar / Makelaar"
+      },
+      "service_provider": {
+        "title": "Serviceverlener",
+        "description": "Serviceverleners actief binnen het GA-ecosysteem.",
+        "image_alt": "Serviceverlener samenwerking",
+        "action_text": "Aanmelden als Serviceverlener"
+      }
+    },
+    "application_process": {
+      "title": "Aanmeldingsproces",
+      "content": [
+        "Om uw aanmelding te beginnen, vul ons lidmaatschapsformulier in met uw organisatiedetails en bedrijfsinformatie.",
+        "Aanmeldingen worden beoordeeld door de FASE-lidmaatschapscommissie om afstemming met onze gemeenschapsstandaarden en doelstellingen te waarborgen."
+      ],
+      "image_alt": "Aanmeldingsproces",
+      "buttons": {
+        "join": "Word lid",
+        "contact_us": "Neem contact op"
+      }
+    },
+    "membership_pricing": {
+      "title": "Lidmaatschapskosten",
+      "subtitle": "Jaarlijkse lidmaatschapstarieven ontworpen voor verschillende organisatietypes en -groottes",
+      "mga": {
+        "title": "GA-lidmaatschap",
+        "description": "Gelaagde prijsstelling gebaseerd op jaarlijkse bruto geschreven premies",
+        "tiered_label": "Gelaagd",
+        "tiers": [
+          {
+            "range": "Tot €10m BGP",
+            "price": "€900",
+            "period": "per jaar"
+          },
+          {
+            "range": "€10m - €20m BGP",
+            "price": "€1.500",
+            "period": "per jaar"
+          },
+          {
+            "range": "€20m - €50m BGP",
+            "price": "€2.200",
+            "period": "per jaar"
+          },
+          {
+            "range": "€50m - €100m BGP",
+            "price": "€2.800",
+            "period": "per jaar"
+          },
+          {
+            "range": "€100m - €500m BGP",
+            "price": "€4.200",
+            "period": "per jaar"
+          },
+          {
+            "range": "€500m+ BGP",
+            "price": "€7.000",
+            "period": "per jaar"
+          }
+        ],
+        "features": [
+          "Alle individuele ledenvoordelen",
+          "Bedrijfsprofiel in ledengids",
+          "Toegang voor meerdere teamleden",
+          "Prioriteit evenementboekingen",
+          "Driemaandelijkse zakelijke matching mogelijkheden"
+        ]
+      },
+      "carrier": {
+        "title": "Verzekeringsmaatschappij / (Her)verzekeringsmakelaar Lidmaatschap",
+        "description": "Voor verzekerings- en herverzekeringsmaatschappijen, en (her)verzekeringmakelaars",
+        "price": "€4.000",
+        "period": "per jaar",
+        "features": [
+          "Directe toegang tot Europees GA-netwerk",
+          "Capaciteitsmatching mogelijkheden",
+          "Marktintelligentie rapporten",
+          "Prioriteit sponsoring mogelijkheden",
+          "Exclusieve verzekeraar netwerk evenementen"
+        ]
+      },
+      "provider": {
+        "title": "Serviceverlener Lidmaatschap",
+        "description": "Voor bedrijven die diensten verlenen aan de GA-sector",
+        "price": "€5.000",
+        "period": "per jaar",
+        "features": [
+          "Toegang tot gekwalificeerde GA-prospects",
+          "Thought leadership mogelijkheden",
+          "Deelname aan branche-evenementen",
+          "Marktonderzoek en inzichten",
+          "Bedrijfsontwikkelingsondersteuning"
+        ]
+      },
+      "discount": {
+        "title": "Multi-Vereniging Korting",
+        "description": "20% korting geldt voor alle lidmaatschapscategorieën voor organisaties die lid zijn van andere GA-verenigingen (NVGA, MGAA, ASASE, AIMGA, BAUA)"
+      },
+      "billing": {
+        "note": "Alle lidmaatschappen worden jaarlijks gefactureerd. Lidmaatschap zal automatisch elk jaar vernieuwen met voorafgaande kennisgeving."
+      }
+    }
+  },
+  "footer": {
+    "description": "De Federatie van Europese GA's - vertegenwoordigend de GA-gemeenschap door heel Europa.",
+    "membership": "Lidmaatschap",
+    "join_fase": "Word lid van FASE",
+    "member_directory": "Ledengids",
+    "resources": "Middelen",
+    "knowledge_base": "Kennisbank",
+    "events": "Evenementen",
+    "news": "Nieuws",
+    "connect": "Verbinden",
+    "contact_us": "Neem contact op",
+    "member_portal": "Ledenportaal",
+    "about_fase": "Over FASE",
+    "copyright": "© 2025 FASE B.V. Alle rechten voorbehouden."
+  },
+  "cookie_banner": {
+    "title": "We gebruiken cookies",
+    "description": "We gebruiken essentiële cookies om onze site te laten werken. We willen ook optionele cookies instellen om ons te helpen onze website te verbeteren en te analyseren hoe deze wordt gebruikt.",
+    "customize_settings": "Instellingen aanpassen",
+    "accept_all": "Alles accepteren",
+    "reject_all": "Alles afwijzen",
+    "preferences_title": "Cookievoorkeuren",
+    "save_preferences": "Voorkeuren opslaan",
+    "necessary": {
+      "title": "Noodzakelijke Cookies",
+      "description": "Deze cookies zijn essentieel voor het functioneren van de website en kunnen niet worden uitgeschakeld. Ze omvatten authenticatie, beveiliging en basisfunctionaliteit."
+    },
+    "analytics": {
+      "title": "Analytische Cookies",
+      "description": "Deze cookies helpen ons begrijpen hoe bezoekers omgaan met onze website door anonieme informatie over gebruikspatronen te verzamelen."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "Deze cookies worden gebruikt om bezoekers te volgen over websites om relevante advertenties weer te geven en campagne-effectiviteit te meten."
+    }
+  },
+  "subscription_success": {
+    "title": "Abonnement geactiveerd!",
+    "message": "Uw FASE-lidmaatschapsabonnement is nu actief! U wordt jaarlijks gefactureerd en uw lidmaatschap zal automatisch elk jaar vernieuwen.",
+    "what_happens_next": "Wat gebeurt er nu:",
+    "steps": {
+      "processing": "Uw lidmaatschapsaanvraag wordt verwerkt",
+      "email": "U ontvangt binnenkort een bevestigingsmail",
+      "renewals": "Jaarlijkse verlengingen zullen automatisch zijn",
+      "manage": "U kunt uw abonnement beheren in PayPal"
+    },
+    "buttons": {
+      "member_portal": "Ga naar ledenportaal",
+      "return_home": "Terug naar startpagina"
+    },
+    "subscription_id": "Abonnements-ID:",
+    "cancel_note": "U kunt op elk moment annuleren via uw PayPal-account.",
+    "error_title": "Abonnementsfout",
+    "invalid_session": "Ongeldige abonnementssessie",
+    "return_to_registration": "Terug naar registratie",
+    "processing_subscription": "Uw abonnement verwerken..."
+  }
+}

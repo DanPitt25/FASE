@@ -1,7 +1,7 @@
 // Removed fs and path imports - using embedded translations instead
 
 // Simple email translation loader
-export type Language = 'en' | 'fr' | 'de' | 'es' | 'it';
+export type Language = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 
 // Embedded translations to avoid file path issues in deployed Firebase Functions
 const translations: Record<Language, any> = {
@@ -311,6 +311,64 @@ const translations: Record<Language, any> = {
       total_amount: "Monto total: €{totalAmount}",
       payment_info: "Las instrucciones de pago se han incluido en el PDF adjunto.",
       help: "Si tiene preguntas, contáctenos en help@fasemga.com"
+    }
+  },
+  nl: {
+    password_reset: {
+      subject: "Reset uw FASE wachtwoord",
+      title: "Reset uw FASE wachtwoord",
+      intro: "U heeft een wachtwoord reset aangevraagd voor uw FASE-account.",
+      button_text: "Wachtwoord resetten",
+      button_instruction: "Klik op de onderstaande knop om uw wachtwoord te resetten:",
+      alt_text: "Of kopieer en plak deze link in uw browser:",
+      expiry: "Deze link verloopt binnen 1 uur.",
+      ignore: "Als u deze wachtwoord reset niet heeft aangevraagd, negeer dan deze e-mail.",
+      help: "Als u vragen heeft, neem dan contact met ons op via help@fasemga.com"
+    },
+    membership_acceptance_admin: {
+      subject: "Welkom bij FASE - Lidmaatschap goedgekeurd",
+      welcome: "Welkom bij FASE",
+      dear: "Beste",
+      dear_m: "Beste",
+      dear_f: "Beste",
+      welcome_text: "Welkom bij FASE. Uw aanvraag voor {organizationName} is goedgekeurd.",
+      payment_text: "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount} met een van de volgende methoden:",
+      payment_options: "Betalingsopties:",
+      paypal_option: "PayPal:",
+      pay_online: "Online betalen",
+      bank_transfer: "Bankoverschrijving:",
+      invoice_attached: "Factuur bijgevoegd met betalingsdetails",
+      engagement: "We kijken uit naar uw betrokkenheid bij FASE en we nemen zeer binnenkort contact op met een link naar ons ledenportaal. In de tussentijd kunt u contact opnemen met admin@fasemga.com voor eventuele vragen.",
+      regards: "Vriendelijke groeten,",
+      signature: "Aline Sullivan",
+      title: "Chief Operating Officer, FASE"
+    },
+    pdf_invoice: {
+      invoice: "FACTUUR",
+      bill_to: "Factureren aan:",
+      invoice_number: "Factuur #:",
+      date: "Datum:",
+      due_date: "Vervaldatum:",
+      terms: "Voorwaarden: Netto 30",
+      description: "Beschrijving",
+      quantity: "Aantal",
+      unit_price: "Eenheidsprijs",
+      total: "Totaal",
+      total_amount_due: "Totaal verschuldigd bedrag:",
+      payment_instructions: "Betaalinstructies:",
+      payment_company: "Lexicon Associates, LLC accepteert betalingen namens Fédération des Agences de Souscription (FASE B.V.)",
+      account_number: "Rekeningnummer: 1255828998",
+      payment_reference: "Betalingsreferentie: {invoiceNumber}"
+    },
+    invoice: {
+      subject: "FASE-lidmaatschapsfactuur {invoiceNumber} - €{totalAmount}",
+      title: "FASE-lidmaatschapsfactuur",
+      intro: "Dank u voor uw FASE-lidmaatschap. U vindt uw factuur hieronder.",
+      invoice_number: "Factuurnummer: {invoiceNumber}",
+      organization: "Organisatie: {organizationName}",
+      total_amount: "Totaalbedrag: €{totalAmount}",
+      payment_info: "Betaalinstructies zijn opgenomen in de bijgevoegde PDF.",
+      help: "Als u vragen heeft, neem dan contact met ons op via help@fasemga.com"
     }
   }
 };

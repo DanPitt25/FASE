@@ -48,7 +48,8 @@ export default async function RootLayout({
   const deMessages = await mergeTranslations('de');
   const esMessages = await mergeTranslations('es');
   const itMessages = await mergeTranslations('it');
-  const allMessages = { en: enMessages, fr: frMessages, de: deMessages, es: esMessages, it: itMessages };
+  const nlMessages = await mergeTranslations('nl');
+  const allMessages = { en: enMessages, fr: frMessages, de: deMessages, es: esMessages, it: itMessages, nl: nlMessages };
   
   return (
     <html lang="en">
