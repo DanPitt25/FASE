@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateInvoiceEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail, generateMembershipAcceptanceEmail } from "./email-translations";
+import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail, generateMembershipAcceptanceEmail } from "./email-translations";
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // Initialize Firebase Admin with default credentials
@@ -227,16 +227,9 @@ export const sendInvoiceEmail = functions.https.onCall({
       try {
         logger.info('Sending invoice email via Resend...');
         
-        // Detect user's preferred language
-        const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language']);
-        logger.info(`Detected language for invoice ${email}: ${userLanguage}`);
-        
-        // Generate localized email content
-        const { subject: generatedSubject, html: generatedHtml } = generateInvoiceEmail(invoiceNumber, organizationName || 'Organization', totalAmount || '0', userLanguage);
-        
-        // Use custom HTML/subject if provided, otherwise use generated content
-        const emailHtml = invoiceHTML || generatedHtml;
-        const emailSubject = subject || generatedSubject;
+        // Use provided HTML and subject (all callers provide custom content)
+        const emailHtml = invoiceHTML || `<p>Invoice ${invoiceNumber} for ${organizationName}: €${totalAmount}</p>`;
+        const emailSubject = subject || `FASE Invoice ${invoiceNumber}`;
         
         const emailPayload: any = {
           from: 'FASE <admin@fasemga.com>',
