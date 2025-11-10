@@ -22,7 +22,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const t = useTranslations('login_form');
   const { locale } = useLocale();
-  const { user, authError, hasMemberAccess } = useUnifiedAuth();
+  const { user, authError, hasMemberAccess, clearAuthError } = useUnifiedAuth();
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -57,6 +57,9 @@ export default function LoginForm() {
         const errorMessage = handleAuthError(authError);
         setError(errorMessage);
       }
+    } else {
+      // Clear error when authError is null
+      setError('');
     }
   }, [authError, t]);
 
@@ -66,6 +69,7 @@ export default function LoginForm() {
     
     setLoading(true);
     setError('');
+    clearAuthError(); // Clear any previous auth errors
 
     try {
       await signIn(email, password);

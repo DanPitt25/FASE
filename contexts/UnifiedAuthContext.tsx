@@ -14,6 +14,7 @@ interface UnifiedAuthContextType {
   isAdmin: boolean;
   hasMemberAccess: boolean;
   authError: Error | null; // Account status errors
+  clearAuthError: () => void; // Clear auth error
   refreshMemberData: () => Promise<void>;
 }
 
@@ -24,6 +25,7 @@ const UnifiedAuthContext = createContext<UnifiedAuthContextType>({
   isAdmin: false,
   hasMemberAccess: false,
   authError: null,
+  clearAuthError: () => {},
   refreshMemberData: async () => {},
 });
 
@@ -49,51 +51,47 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
 
   const loadMemberData = async (firebaseUser: User) => {
     try {
-      console.log('[AUTH DEBUG] Loading member data for user:', firebaseUser.uid);
       setAuthError(null); // Clear any previous errors
       
       // Try to get existing unified member
       let memberData = await getUnifiedMember(firebaseUser.uid);
-      console.log('[AUTH DEBUG] Member data loaded:', memberData?.status || 'No member found');
       
       // If no unified member exists, throw account not found error
       if (!memberData) {
-        console.log('[AUTH DEBUG] No member data found - throwing AccountNotFoundError');
         const error = new AccountNotFoundError('No account found for this email. Please contact help@fasemga.com if you think this is an error.');
         setAuthError(error);
         throw error;
       }
       
-      // Check account status and throw appropriate errors for specific statuses
+      // Check account status and sign out users with non-approved statuses
       switch (memberData.status) {
         case 'pending':
-          console.log('[AUTH DEBUG] Account pending - throwing AccountPendingError');
           const pendingError = new AccountPendingError('Your application is under review. You will be contacted shortly once the review is complete.');
           setAuthError(pendingError);
-          throw pendingError;
+          await auth.signOut();
+          return;
           
         case 'invoice_sent':
-          console.log('[AUTH DEBUG] Invoice sent - throwing AccountInvoicePendingError');
           const invoiceError = new AccountInvoicePendingError('Your account status is pending. Please check your email for a billing invoice. For questions, contact help@fasemga.com');
           setAuthError(invoiceError);
-          throw invoiceError;
+          await auth.signOut();
+          return;
           
         case 'rejected':
-          console.log('[AUTH DEBUG] Account rejected - throwing AccountNotApprovedError');
           const rejectedError = new AccountNotApprovedError('Your application has been declined. For more information, please contact help@fasemga.com', 'rejected');
           setAuthError(rejectedError);
-          throw rejectedError;
+          await auth.signOut();
+          return;
           
         case 'approved':
         case 'admin':
-          console.log('[AUTH DEBUG] Account approved/admin - proceeding with normal flow');
           break;
           
         default:
-          console.log('[AUTH DEBUG] Unknown status:', memberData.status, '- throwing generic error');
           const unknownError = new AccountNotApprovedError('Your account status is under review. You will be notified when it has been processed.', memberData.status);
           setAuthError(unknownError);
-          throw unknownError;
+          await auth.signOut();
+          return;
       }
       
       setMember(memberData);
@@ -111,7 +109,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
           // Reload the user to get the new claims
           await firebaseUser.reload();
         } catch (error) {
-          console.log('[AUTH DEBUG] Failed to set admin claim:', error);
+          // Silently handle admin claim setting errors
         }
       }
       
@@ -119,8 +117,6 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       setHasMemberAccess(memberClaim || ['approved', 'admin'].includes(memberData.status));
       
     } catch (error: any) {
-      console.log('[AUTH DEBUG] Error in loadMemberData:', error?.name, error?.message);
-      
       // If it's one of our custom account status errors, keep the user signed in but show the error
       if (error instanceof AccountPendingError || 
           error instanceof AccountInvoicePendingError || 
@@ -142,6 +138,10 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
     }
   };
 
+  const clearAuthError = () => {
+    setAuthError(null);
+  };
+
   const refreshMemberData = async () => {
     if (user) {
       await loadMemberData(user);
@@ -159,7 +159,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
         setMember(null);
         setIsAdmin(false);
         setHasMemberAccess(false);
-        setAuthError(null);
+        // Don't clear authError here - let it persist to show the account status message
       }
       
       setLoading(false);
@@ -175,6 +175,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
     isAdmin,
     hasMemberAccess,
     authError,
+    clearAuthError,
     refreshMemberData,
   };
 
