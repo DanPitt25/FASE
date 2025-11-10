@@ -73,6 +73,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
           
         case 'pending_invoice':
         case 'pending_payment':
+        case 'invoice_sent':
           const invoiceError = new AccountInvoicePendingError('Your account status is pending. Please check your email for a billing invoice. For questions, contact help@fasemga.com');
           setAuthError(invoiceError);
           await auth.signOut();

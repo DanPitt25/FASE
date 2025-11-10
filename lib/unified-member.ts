@@ -50,7 +50,7 @@ export interface OrganizationAccount {
   membershipType: 'corporate' | 'individual';
   organizationName: string;
   organizationType?: 'MGA' | 'carrier' | 'provider';
-  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment';
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent';
   
   // Organization data only - NO personal identifiers
   createdAt: any;
@@ -148,7 +148,7 @@ export interface UnifiedMember {
   membershipType: 'corporate' | 'individual';
   
   // Access control - inherited from organization for corporate members
-  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment';
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent';
   
   // Organization data (populated from organization account for corporate members)
   portfolio?: {
