@@ -307,7 +307,7 @@ function EmailsTab({ prefilledData = null }: { prefilledData?: any }) {
               variant="primary"
               size="medium"
             >
-              {sending ? 'Sending...' : 'Send Email'}
+              {sending ? 'Sending...' : 'TNIs'}
             </Button>
           </div>
         </form>

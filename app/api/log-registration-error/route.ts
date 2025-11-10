@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           data: {
-            email: 'tech@fasemga.com', // Send to tech team
+            email: 'applications@fasemga.com', // Send to tech team
             invoiceHTML: emailContent,
             invoiceNumber: `ERROR-${Date.now()}`,
             organizationName: 'Registration Error Alert',
