@@ -71,15 +71,10 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
           await auth.signOut();
           return;
           
-        case 'invoice_sent':
+        case 'pending_invoice':
+        case 'pending_payment':
           const invoiceError = new AccountInvoicePendingError('Your account status is pending. Please check your email for a billing invoice. For questions, contact help@fasemga.com');
           setAuthError(invoiceError);
-          await auth.signOut();
-          return;
-          
-        case 'rejected':
-          const rejectedError = new AccountNotApprovedError('Your application has been declined. For more information, please contact help@fasemga.com', 'rejected');
-          setAuthError(rejectedError);
           await auth.signOut();
           return;
           
