@@ -100,7 +100,6 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   </div>
                 )}
                 
-{/* Temporarily suppressed login button 
                 {!loading && !user && (
                   <a 
                     href="/login" 
@@ -109,7 +108,6 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     {tAuth('login')}
                   </a>
                 )}
-                */}
                 
                 <div className="relative">
                   <input
@@ -382,9 +380,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <div className="mt-4 pt-4 border-t border-fase-light-gold space-y-2">
                 {!loading && !user && (
                   <>
-                    {/* Temporarily suppressed login button 
                     <Button href="/login" variant="secondary" size="medium" className="w-full text-center">{tAuth('login')}</Button>
-                    */}
                     <Button href="/join" variant="primary" size="medium" className="w-full text-center">{tNav('join_us')}</Button>
                   </>
                 )}

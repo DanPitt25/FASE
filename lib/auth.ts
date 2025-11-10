@@ -32,6 +32,20 @@ export class AccountNotApprovedError extends Error {
   }
 }
 
+export class AccountInvoicePendingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AccountInvoicePendingError';
+  }
+}
+
+export class AccountNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AccountNotFoundError';
+  }
+}
+
 
 
 // Sign in existing user - now checks member status before allowing login
@@ -40,57 +54,8 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Check account status after successful authentication
-    try {
-      const { collection, query, where, getDocs, doc, getDoc } = await import('firebase/firestore');
-      const { db } = await import('./firebase');
-      
-      let accountId = null;
-      let accountData = null;
-      
-      // Step 1: Find which account this user belongs to by searching all accounts' members subcollections
-      const accountsRef = collection(db, 'accounts');
-      const accountsSnapshot = await getDocs(accountsRef);
-      
-      for (const accountDoc of accountsSnapshot.docs) {
-        // Check all members in this account by their 'id' field
-        const membersRef = collection(db, 'accounts', accountDoc.id, 'members');
-        const membersSnapshot = await getDocs(membersRef);
-        
-        // Look for a member whose 'id' field matches the Firebase Auth UID
-        for (const memberDoc of membersSnapshot.docs) {
-          const memberData = memberDoc.data();
-          if (memberData.id === user.uid) {
-            accountId = accountDoc.id;
-            accountData = accountDoc.data();
-            break;
-          }
-        }
-        
-        if (accountId) break; // Exit outer loop if we found the user
-      }
-      
-      if (accountId && accountData) {
-        // Step 2: Check the account's status (not the member's status)
-        if (!['approved', 'admin'].includes(accountData.status)) {
-          await firebaseSignOut(auth);
-          throw new AccountPendingError('Access restricted to administrators only.');
-        }
-        // User belongs to an approved or admin account - allow login
-      } else {
-        // User not found in any account's members subcollection
-        await firebaseSignOut(auth);
-        throw new AccountPendingError('Access restricted to administrators only.');
-      }
-    } catch (statusError) {
-      // If it's our custom error, re-throw it
-      if (statusError instanceof AccountPendingError || statusError instanceof AccountNotApprovedError) {
-        throw statusError;
-      }
-      // For other errors (e.g., member data not found), deny access
-      await firebaseSignOut(auth);
-      throw new AccountPendingError('Access restricted to administrators only.');
-    }
+    // Account status checking moved to UnifiedAuthContext after authentication
+    // This allows the user to sign in first, then we check their account status with proper permissions
     
     return {
       uid: user.uid,

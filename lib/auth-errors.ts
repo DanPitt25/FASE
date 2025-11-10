@@ -1,5 +1,5 @@
 // Firebase Auth error code mappings to user-friendly messages
-import { AccountPendingError, AccountNotApprovedError } from './auth';
+import { AccountPendingError, AccountNotApprovedError, AccountInvoicePendingError, AccountNotFoundError } from './auth';
 
 export const getAuthErrorMessage = (errorCode: string): string => {
   const errorMessages: Record<string, string> = {
@@ -76,7 +76,10 @@ export const getFirebaseErrorCode = (error: any): string => {
 // Main function to get user-friendly error message from any Firebase error
 export const handleAuthError = (error: any): string => {
   // Handle our custom account status errors
-  if (error instanceof AccountPendingError || error instanceof AccountNotApprovedError) {
+  if (error instanceof AccountPendingError || 
+      error instanceof AccountNotApprovedError ||
+      error instanceof AccountInvoicePendingError ||
+      error instanceof AccountNotFoundError) {
     return error.message;
   }
   

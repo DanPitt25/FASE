@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from '../../contexts/LocaleContext';
-import { signIn, sendPasswordReset, AccountPendingError, AccountNotApprovedError } from '../../lib/auth';
+import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
+import { signIn, sendPasswordReset } from '../../lib/auth';
 import Button from '../../components/Button';
 import { handleAuthError } from '../../lib/auth-errors';
 
@@ -21,6 +22,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const t = useTranslations('login_form');
   const { locale } = useLocale();
+  const { user, authError, hasMemberAccess } = useUnifiedAuth();
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -31,6 +33,33 @@ export default function LoginForm() {
     }
   }, [searchParams]);
 
+  // Handle successful authentication and redirect
+  useEffect(() => {
+    if (user && hasMemberAccess && !authError) {
+      router.push('/member-portal');
+    }
+  }, [user, hasMemberAccess, authError, router]);
+
+  // Display auth errors from context with proper translations
+  useEffect(() => {
+    if (authError) {
+      // Handle custom account status errors with translations
+      if (authError.name === 'AccountPendingError') {
+        setError(t('account_pending'));
+      } else if (authError.name === 'AccountInvoicePendingError') {
+        setError(t('account_invoice_pending'));
+      } else if (authError.name === 'AccountNotApprovedError') {
+        setError(t('account_rejected'));
+      } else if (authError.name === 'AccountNotFoundError') {
+        setError(t('account_not_found'));
+      } else {
+        // For other errors, use the existing error handler
+        const errorMessage = handleAuthError(authError);
+        setError(errorMessage);
+      }
+    }
+  }, [authError, t]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
@@ -40,11 +69,10 @@ export default function LoginForm() {
 
     try {
       await signIn(email, password);
-      router.push('/member-portal');
+      // Redirect is now handled by useEffect watching user/hasMemberAccess/authError
     } catch (error: any) {
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
-      
     } finally {
       setLoading(false);
     }
