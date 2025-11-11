@@ -231,12 +231,6 @@ Detailed information about FASE's offerings.
 - **Function**: Store membership details and prepare for payment
 - **Process**: Updates user account with membership information
 
-#### **Generate Invoice (/api/generate-invoice)**
-- **Purpose**: Create and send membership invoices
-- **Features**:
-  - PDF invoice generation with FASE branding
-  - Email delivery with attachments
-  - Bank transfer payment instructions
   - Membership fee calculation with discounts
 - **Integration**: Firebase Functions for email delivery
 

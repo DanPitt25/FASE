@@ -328,9 +328,9 @@ const translations: Record<Language, any> = {
     membership_acceptance_admin: {
       subject: "Welkom bij FASE - Lidmaatschap goedgekeurd",
       welcome: "Welkom bij FASE",
-      dear: "Beste",
-      dear_m: "Beste",
-      dear_f: "Beste",
+      dear: "Geachte",
+      dear_m: "Geachte",
+      dear_f: "Geachte",
       welcome_text: "Welkom bij FASE. Uw aanvraag voor {organizationName} is goedgekeurd.",
       payment_text: "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount} met een van de volgende methoden:",
       payment_options: "Betalingsopties:",
@@ -385,7 +385,7 @@ export function detectUserLanguage(email?: string, userAgent?: string, acceptLan
   // 2. Accept-Language header
   // 3. Default to English
   
-  if (locale && ['en', 'fr', 'de', 'es', 'it'].includes(locale)) {
+  if (locale && ['en', 'fr', 'de', 'es', 'it', 'nl'].includes(locale)) {
     return locale as Language;
   }
   
@@ -404,6 +404,9 @@ export function detectUserLanguage(email?: string, userAgent?: string, acceptLan
       }
       if (langCode.startsWith('it')) {
         return 'it';
+      }
+      if (langCode.startsWith('nl')) {
+        return 'nl';
       }
     }
   }

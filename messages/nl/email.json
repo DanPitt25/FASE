@@ -63,9 +63,9 @@
   "membership_acceptance_admin": {
     "subject": "Welkom bij FASE - Lidmaatschap goedgekeurd",
     "welcome": "Welkom bij FASE",
-    "dear": "Beste",
-    "dear_m": "Beste",
-    "dear_f": "Beste",
+    "dear": "Geachte",
+    "dear_m": "Geachte",
+    "dear_f": "Geachte",
     "welcome_text": "Welkom bij FASE. Uw aanvraag voor {organizationName} is goedgekeurd.",
     "payment_text": "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount} met een van de volgende methoden:",
     "payment_options": "Betalingsopties:",

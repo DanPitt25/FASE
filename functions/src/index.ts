@@ -102,7 +102,7 @@ export const sendVerificationCode = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <admin@fasemga.com>',
+            from: 'FASE <aline.sullivan@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -232,7 +232,7 @@ export const sendInvoiceEmail = functions.https.onCall({
         const emailSubject = subject || `FASE Invoice ${invoiceNumber}`;
         
         const emailPayload: any = {
-          from: 'FASE <admin@fasemga.com>',
+          from: 'FASE <aline.sullivan@fasemga.com>',
           to: email,
           subject: emailSubject,
           html: emailHtml,
@@ -331,7 +331,7 @@ export const sendJoinRequestNotification = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <admin@fasemga.com>',
+            from: 'FASE <aline.sullivan@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -437,7 +437,7 @@ export const sendPasswordReset = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <admin@fasemga.com>',
+            from: 'FASE <aline.sullivan@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -640,7 +640,7 @@ export const sendInviteEmail = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <admin@fasemga.com>',
+            from: 'FASE <aline.sullivan@fasemga.com>',
             to: email,
             subject: `Invitation to join ${companyName} on FASE`,
             html: emailHtml,
@@ -888,7 +888,7 @@ export const sendMembershipAcceptanceEmail = functions.https.onCall({
         logger.info('Sending membership acceptance email via Resend...');
         
         const emailPayload: any = {
-          from: 'FASE <admin@fasemga.com>',
+          from: 'FASE <aline.sullivan@fasemga.com>',
           to: email,
           subject: subject,
           html: emailHtml,
