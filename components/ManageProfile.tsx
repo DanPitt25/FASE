@@ -227,6 +227,7 @@ export default function ManageProfile() {
         companyId: member.organizationId,
         email: memberToInvite.email,
         name: memberToInvite.personalName,
+        companyName: member.organizationName,
         timestamp: Date.now()
       })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
@@ -317,6 +318,7 @@ export default function ManageProfile() {
           companyId: member.organizationId,
           email: newMember.email,
           name: newMember.personalName,
+          companyName: member.organizationName,
           timestamp: Date.now()
         })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 

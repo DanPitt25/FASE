@@ -19,10 +19,10 @@ const initializeAdmin = async () => {
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, inviteData } = await request.json();
+    const { email, password, inviteData, linkExistingUser } = await request.json();
 
     // Validate required fields
-    if (!email || !password || !inviteData) {
+    if (!email || !inviteData) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -31,14 +31,36 @@ export async function POST(request: NextRequest) {
 
     const { auth, db } = await initializeAdmin();
 
-    // Create Firebase Auth user
-    const userRecord = await auth.createUser({
-      email: email,
-      password: password,
-      emailVerified: true // Since they came from an invite
-    });
+    let userRecord;
+    
+    if (linkExistingUser) {
+      // For existing users, get their user record
+      try {
+        userRecord = await auth.getUserByEmail(email);
+        console.log('Found existing Firebase Auth user:', userRecord.uid);
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'No existing account found with this email address' },
+          { status: 404 }
+        );
+      }
+    } else {
+      // For new users, create Firebase Auth user
+      if (!password) {
+        return NextResponse.json(
+          { error: 'Password is required for new accounts' },
+          { status: 400 }
+        );
+      }
+      
+      userRecord = await auth.createUser({
+        email: email,
+        password: password,
+        emailVerified: true // Since they came from an invite
+      });
 
-    console.log('Created Firebase Auth user:', userRecord.uid);
+      console.log('Created Firebase Auth user:', userRecord.uid);
+    }
 
     // Update the existing member document with Firebase Auth UID
     const memberRef = db.collection('accounts').doc(inviteData.companyId).collection('members').doc(inviteData.memberId);
@@ -46,8 +68,10 @@ export async function POST(request: NextRequest) {
     // Check if member document exists
     const memberDoc = await memberRef.get();
     if (!memberDoc.exists) {
-      // Clean up the auth user we just created
-      await auth.deleteUser(userRecord.uid);
+      // Only clean up auth user if we created a new one
+      if (!linkExistingUser) {
+        await auth.deleteUser(userRecord.uid);
+      }
       return NextResponse.json(
         { error: 'Member invitation not found or has already been used' },
         { status: 404 }
