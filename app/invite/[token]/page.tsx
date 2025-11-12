@@ -8,6 +8,7 @@ import Button from '../../../components/Button';
 import Link from 'next/link';
 import Image from 'next/image';
 import LanguageToggle from '../../../components/LanguageToggle';
+import { useInviteTranslations } from '../hooks/useInviteTranslations';
 
 interface InviteData {
   memberId: string;
@@ -20,6 +21,7 @@ interface InviteData {
 
 export default function InvitePage({ params }: { params: { token: string } }) {
   const router = useRouter();
+  const { t, loading: translationsLoading } = useInviteTranslations();
   const [inviteData, setInviteData] = useState<InviteData | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,7 +40,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       
       // Validate token structure
       if (!decodedData.memberId || !decodedData.companyId || !decodedData.email || !decodedData.name) {
-        throw new Error('Invalid invitation link');
+        throw new Error(t('page.errors.invalid_link'));
       }
       
       // Add fallback for company name if not present (for old tokens)
@@ -49,7 +51,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       // Check if token is not too old (24 hours)
       const tokenAge = Date.now() - decodedData.timestamp;
       if (tokenAge > 24 * 60 * 60 * 1000) {
-        throw new Error('Invitation link has expired. Please request a new invitation.');
+        throw new Error(t('page.errors.expired_link'));
       }
 
       setInviteData(decodedData);
@@ -197,14 +199,14 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     }
   };
 
-  if (loading) {
+  if (loading || translationsLoading) {
     return (
       <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border-4 border-fase-gold shadow-xl">
           <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-4 py-6 pt-8 text-center sm:px-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mb-4"></div>
-            <p className="text-fase-black">Validating invitation...</p>
+            <p className="text-fase-black">{translationsLoading ? 'Loading...' : t('page.validating')}</p>
           </div>
         </div>
       </div>
@@ -232,12 +234,12 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             <svg className="w-12 h-12 text-red-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="text-xl font-noto-serif font-semibold text-red-900">Invalid Invitation</h3>
+            <h3 className="text-xl font-noto-serif font-semibold text-red-900">{t('page.invalid_invitation')}</h3>
             <p className="text-sm text-red-700">{error}</p>
           </div>
           <div className="bg-white px-4 py-8 sm:px-16 text-center">
             <Button href="/" variant="secondary" size="medium">
-              Return to Home
+              {t('page.return_home')}
             </Button>
           </div>
         </div>
@@ -290,17 +292,19 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
               />
             </Link>
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Welcome to {inviteData?.companyName || 'the Team'}!</h3>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">
+              {t('page.welcome_title', { companyName: inviteData?.companyName || 'the Team' })}
+            </h3>
             <p className="text-sm text-fase-black">
-              Hi {inviteData?.name}! You've been invited to join as a team member.
+              {t('page.welcome_message', { name: inviteData?.name || '' })}
             </p>
             <p className="text-sm text-gray-600">
-              Email: {inviteData?.email}
+              {t('page.email_label')} {inviteData?.email}
             </p>
           </div>
           <div className="bg-white px-4 py-8 sm:px-16 space-y-4">
             <p className="text-sm text-fase-black text-center mb-6">
-              Do you already have a FASE account with this email address?
+              {t('page.account_question')}
             </p>
             
             <div className="space-y-3">
@@ -310,7 +314,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 size="large"
                 className="w-full"
               >
-                Yes, I have an account - Sign In
+                {t('page.have_account')}
               </Button>
               
               <Button
@@ -319,7 +323,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 size="large"
                 className="w-full"
               >
-                No, I need to create an account
+                {t('page.need_account')}
               </Button>
             </div>
           </div>

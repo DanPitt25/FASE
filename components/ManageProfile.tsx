@@ -244,7 +244,8 @@ export default function ManageProfile() {
           name: memberToInvite.personalName,
           companyName: member.organizationName,
           inviteUrl: inviteUrl,
-          inviterName: user.displayName || user.email
+          inviterName: user.displayName || user.email,
+          locale: localStorage.getItem('locale') || 'en'
         })
       });
 
@@ -334,7 +335,8 @@ export default function ManageProfile() {
             name: newMember.personalName,
             companyName: member.organizationName,
             inviteUrl: inviteUrl,
-            inviterName: user.displayName || user.email
+            inviterName: user.displayName || user.email,
+            locale: localStorage.getItem('locale') || 'en'
           })
         });
 

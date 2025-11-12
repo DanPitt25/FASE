@@ -1,0 +1,60 @@
+{
+  "page": {
+    "validating": "Validating invitation...",
+    "invalid_invitation": "Invalid Invitation",
+    "return_home": "Return to Home",
+    "welcome_title": "Welcome to {{companyName}}!",
+    "welcome_message": "Hi {{name}}! You've been invited to join as a team member.",
+    "email_label": "Email:",
+    "account_question": "Do you already have a FASE account with this email address?",
+    "have_account": "Yes, I have an account - Sign In",
+    "need_account": "No, I need to create an account",
+    "signin_title": "Sign In to Join Team",
+    "signin_message": "Enter your FASE account password to join {{companyName}}.",
+    "password_label": "Password",
+    "password_placeholder": "Enter your FASE password",
+    "signin_button": "Sign In & Join Team",
+    "signin_loading": "Signing In...",
+    "back_button": "Back",
+    "create_title": "Complete Your Account",
+    "create_message": "Welcome {{name}}! Create a secure password to access your FASE account.",
+    "email_address_label": "Email Address",
+    "password_requirements": {
+      "length": "At least 8 characters",
+      "capital": "At least one capital letter", 
+      "special": "At least one special character"
+    },
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Confirm your password",
+    "password_placeholder_create": "Create a secure password",
+    "passwords_no_match": "Passwords do not match",
+    "create_account_button": "Create Account",
+    "creating_account": "Creating Account...",
+    "account_created_title": "Account Created!",
+    "account_created_message": "Welcome to FASE! Redirecting to member portal...",
+    "errors": {
+      "invalid_link": "Invalid invitation link",
+      "expired_link": "Invitation link has expired. Please request a new invitation.",
+      "passwords_no_match": "Passwords do not match",
+      "weak_password": "Password must be at least 8 characters with at least one capital letter and one special character",
+      "create_account_failed": "Failed to create account",
+      "signin_failed": "Failed to sign in",
+      "wrong_password": "Incorrect password. Please try again.",
+      "user_not_found": "No account found with this email. Please create a new account instead.",
+      "join_team_failed": "Failed to join team"
+    }
+  },
+  "email": {
+    "subject": "You're invited to join {{companyName}} on FASE",
+    "title": "You're invited to join {{companyName}} on FASE",
+    "greeting": "Hi {{name}},",
+    "invitation_text": "{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the Federation of European MGAs (FASE) platform.",
+    "instruction": "To complete your account setup and gain access to your company's member portal, please click the button below:",
+    "button_text": "Complete Account Setup",
+    "guide_text": "This link will guide you through creating your secure account password and accessing all member benefits.",
+    "regards": "Best regards,",
+    "team_signature": "The FASE Team",
+    "help_text": "If you have any questions, please contact us at",
+    "help_email": "help@fasemga.com"
+  }
+}
