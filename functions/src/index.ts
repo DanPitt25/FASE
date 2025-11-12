@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail, generateMembershipAcceptanceEmail } from "./email-translations";
+import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail, generateMembershipAcceptanceAdminEmail } from "./email-translations";
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // Initialize Firebase Admin with default credentials
@@ -710,11 +710,7 @@ export const sendMembershipAcceptanceEmail = functions.https.onCall({
     logger.info(`Detected language for membership acceptance ${email}: ${userLanguage}`);
 
     // Generate localized email content
-    const invoiceText = userLanguage === 'fr' ? 'Facture PDF jointe' : 
-                       userLanguage === 'de' ? 'PDF-Rechnung beigefügt' :
-                       userLanguage === 'es' ? 'Factura PDF adjunta' :
-                       userLanguage === 'it' ? 'Fattura PDF allegata' : 'PDF Invoice attached';
-    const { subject, html: emailHtml } = generateMembershipAcceptanceEmail(fullName, organizationName, paypalLink, invoiceText, totalAmount.toString(), userLanguage);
+    const { subject, html: emailHtml } = generateMembershipAcceptanceAdminEmail(fullName, organizationName, paypalLink, totalAmount.toString(), undefined, userLanguage);
 
     // Generate PDF invoice attachment
     let pdfAttachment: string | null = null;

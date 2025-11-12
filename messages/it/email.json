@@ -79,10 +79,12 @@
     "pay_online": "Paga online",
     "bank_transfer": "Bonifico bancario:",
     "invoice_attached": "Fattura allegata con dettagli di pagamento",
-    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE e ci metteremo in contatto molto presto con un link al nostro portale membri. Nel frattempo, contatti admin@fasemga.com per qualsiasi domanda.",
+    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE e ci metteremo in contatto molto presto con un link al nostro portale membri. Nel frattempo, mi contatti per qualsiasi domanda.",
     "regards": "Cordiali saluti,",
-    "signature": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE"
+    "signature": "Aline",
+    "name": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE",
+    "email": "aline.sullivan@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "FATTURA",

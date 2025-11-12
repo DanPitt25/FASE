@@ -67,9 +67,9 @@
     "welcome": "Willkommen bei FASE",
     "welcome_m": "Willkommen bei FASE",
     "welcome_f": "Willkommen bei FASE",
-    "dear": "Liebe/r",
-    "dear_m": "Lieber",
-    "dear_f": "Liebe",
+    "dear": "Sehr geehrte/r",
+    "dear_m": "Sehr geehrter",
+    "dear_f": "Sehr geehrte",
     "welcome_text": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
     "welcome_text_m": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
     "welcome_text_f": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
@@ -79,10 +79,12 @@
     "pay_online": "Online bezahlen",
     "bank_transfer": "Banküberweisung:",
     "invoice_attached": "Rechnung mit Zahlungsdetails beigefügt",
-    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie bitte admin@fasemga.com bei Fragen.",
+    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie mich bitte bei Fragen.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE"
+    "signature": "Aline",
+    "name": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE",
+    "email": "aline.sullivan@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "RECHNUNG",
