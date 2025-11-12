@@ -187,10 +187,10 @@ export default function ManageProfile() {
   const handleRemoveMember = async (memberToRemove: Member) => {
     if (!user || !member) return;
     
-    // Check if current user is account administrator
+    // This function should only be called by administrators (UI prevents non-admin access)
     const currentUserMember = members.find(m => m.id === user.uid);
     if (!currentUserMember?.isAccountAdministrator) {
-      setError(t('manage_profile.errors.admin_only_action'));
+      // Silently return - this should never happen due to UI restrictions
       return;
     }
     
@@ -262,14 +262,14 @@ export default function ManageProfile() {
   const handleAddMember = async () => {
     if (!user || !member || !newMember.email || !newMember.personalName) return;
 
-    // Check if current user is account administrator
+    // This function should only be called by administrators (UI prevents non-admin access)
     const currentUserMember = members.find(m => m.id === user.uid);
     if (!currentUserMember?.isAccountAdministrator) {
-      setError(t('manage_profile.errors.admin_only_action'));
+      // Silently return - this should never happen due to UI restrictions
       return;
     }
 
-    // Check member limit (maximum 3 members total)
+    // Check member limit (maximum 3 members total) - show error for this since it's a business rule
     if (members.length >= 3) {
       setError(t('manage_profile.errors.member_limit_reached'));
       return;
