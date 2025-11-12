@@ -20,21 +20,9 @@ function PaymentContent() {
       return;
     }
 
-    // Auto-redirect to PayPal when page loads
-    const initiatePayment = async () => {
-      setIsProcessing(true);
-      try {
-        // Redirect directly to the generate-payment-link endpoint
-        // This will let the server handle the redirect properly
-        window.location.href = `/api/generate-payment-link?amount=${amount}&email=${email}&organization=${organization}`;
-      } catch (error) {
-        console.error('Payment initiation failed:', error);
-        router.push('/payment-failed');
-      }
-    };
-
-    initiatePayment();
-  }, [amount, email, organization, router]);
+    // Immediate redirect to PayPal
+    window.location.href = `/api/generate-payment-link?amount=${amount}&email=${email}&organization=${organization}`;
+  }, [amount, email, organization]);
 
   if (error) {
     return (
