@@ -158,7 +158,6 @@
     "sending": "Sending...",
     "resend_invite": "Resend Invite",
     "member_limit_reached_message": "Maximum 3 members allowed",
-    "admin_only_message": "Only account administrators can manage members",
     "errors": {
       "load_members_failed": "Failed to load members",
       "update_member_failed": "Failed to update member",
@@ -182,5 +181,35 @@
       "invoice_sent": "Invoice Sent"
     },
     "business_meeting_alt": "Business Meeting"
+  },
+  "logo_management": {
+    "title": "Logo Management",
+    "company_logo": "Your Company Logo",
+    "upload_logo": "Upload Logo",
+    "uploading": "Uploading...",
+    "file_requirements": "PNG, JPG up to 5MB",
+    "admin_only": "Account administrators can upload company logos",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Download FASE logos for your marketing materials and website",
+    "standard_rgb": "Standard RGB",
+    "logo_mark": "Logo Mark", 
+    "stacked": "Stacked",
+    "full_lockup": "Full Lockup",
+    "download": "Download",
+    "errors": {
+      "invalid_file_type": "Please select an image file",
+      "file_too_large": "File size must be less than 5MB",
+      "upload_failed": "Failed to upload logo. Please try again."
+    },
+    "success": {
+      "upload_successful": "Logo uploaded successfully!"
+    },
+    "alt_text": {
+      "company_logo": "Company Logo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo Mark", 
+      "fase_logo_stacked": "FASE Logo Stacked",
+      "fase_logo_lockup": "FASE Logo Lockup"
+    }
   }
 }

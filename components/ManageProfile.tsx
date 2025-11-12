@@ -5,7 +5,8 @@ import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getCompanyMembers } from '../lib/unified-member';
 import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
+import { db, storage } from '../lib/firebase';
 import { usePortalTranslations } from '../app/member-portal/hooks/usePortalTranslations';
 
 
@@ -55,6 +56,8 @@ export default function ManageProfile() {
     jobTitle: ''
   });
   const [adding, setAdding] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
 
   // Helper function to check if member needs an invite (has generated ID and hasn't confirmed account)
   const memberNeedsInvite = (member: Member) => {
@@ -363,7 +366,83 @@ export default function ManageProfile() {
     }
   };
 
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files[0] || !user || !company) return;
+    
+    const file = event.target.files[0];
+    
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      alert(t('logo_management.errors.invalid_file_type'));
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert(t('logo_management.errors.file_too_large'));
+      return;
+    }
+    
+    try {
+      setUploadingLogo(true);
+      
+      // Check auth state
+      const token = await user.getIdToken();
+      const authClaims = await user.getIdTokenResult();
+      
+      console.log('Upload debug:', {
+        userId: user.uid,
+        companyId: company.id,
+        fileName: file.name,
+        storageAvailable: !!storage,
+        hasToken: !!token,
+        authClaims: authClaims.claims
+      });
+      
+      // Create storage reference with standard filename
+      const fileExtension = file.name.split('.').pop();
+      const logoRef = ref(storage, `graphics/logos/${company.id}_logo.${fileExtension}`);
+      
+      // Upload file
+      await uploadBytes(logoRef, file);
+      
+      // Get download URL
+      const logoURL = await getDownloadURL(logoRef);
+      
+      // Update company document with logo URL
+      const companyRef = doc(db, 'accounts', company.id);
+      await updateDoc(companyRef, {
+        logoURL: logoURL,
+        updatedAt: serverTimestamp()
+      });
+      
+      // Update local state
+      setCompany(prev => prev ? { ...prev, logoURL } : null);
+      
+      alert(t('logo_management.success.upload_successful'));
+    } catch (err) {
+      console.error('Error uploading logo:', err);
+      console.error('Error details:', {
+        code: err.code,
+        message: err.message,
+        serverResponse: err.serverResponse,
+        fullError: err
+      });
+      alert(t('logo_management.errors.upload_failed'));
+    } finally {
+      setUploadingLogo(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
 
+  const downloadFASELogo = (filename: string) => {
+    const link = document.createElement('a');
+    link.href = `/${filename}`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (loading) {
     return (
@@ -469,6 +548,144 @@ export default function ManageProfile() {
         </div>
       )}
 
+      {/* Logo Management */}
+      <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-fase-light-gold">
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
+            {t('logo_management.title')}
+          </h3>
+        </div>
+        <div className="px-6 py-4 space-y-6">
+          {/* Company Logo Upload */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">{t('logo_management.company_logo')}</h4>
+            {company?.logoURL && (
+              <div className="mb-4">
+                <img 
+                  src={company.logoURL} 
+                  alt={t('logo_management.alt_text.company_logo')} 
+                  className="h-16 w-auto object-contain border border-gray-200 rounded p-2"
+                />
+              </div>
+            )}
+            {(() => {
+              const currentUserMember = members.find(m => m.id === user?.uid);
+              const isAdmin = currentUserMember?.isAccountAdministrator;
+              
+              if (isAdmin) {
+                return (
+                  <div className="flex items-center space-x-4">
+                    <label className="relative cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                        className="sr-only"
+                      />
+                      <span className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                        uploadingLogo 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer'
+                      }`}>
+                        {uploadingLogo ? t('logo_management.uploading') : t('logo_management.upload_logo')}
+                      </span>
+                    </label>
+                    <span className="text-xs text-gray-500">
+                      {t('logo_management.file_requirements')}
+                    </span>
+                  </div>
+                );
+              } else {
+                return (
+                  <span className="text-sm text-gray-500">
+                    {t('logo_management.admin_only')}
+                  </span>
+                );
+              }
+            })()}
+          </div>
+
+          {/* FASE Logo Downloads */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">{t('logo_management.fase_downloads')}</h4>
+            <p className="text-xs text-gray-500 mb-4">
+              {t('logo_management.fase_downloads_desc')}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/fase-logo-rgb.png" 
+                    alt={t('logo_management.alt_text.fase_logo_rgb')} 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm">{t('logo_management.standard_rgb')}</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('fase-logo-rgb.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  {t('logo_management.download')}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/fase-logo-mark.png" 
+                    alt={t('logo_management.alt_text.fase_logo_mark')} 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm">{t('logo_management.logo_mark')}</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('fase-logo-mark.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  {t('logo_management.download')}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/fase-logo-stacked.png" 
+                    alt={t('logo_management.alt_text.fase_logo_stacked')} 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm">{t('logo_management.stacked')}</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('fase-logo-stacked.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  {t('logo_management.download')}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/FASE-Logo-Lockup-RGB.png" 
+                    alt={t('logo_management.alt_text.fase_logo_lockup')} 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm">{t('logo_management.full_lockup')}</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  {t('logo_management.download')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Members List */}
       <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-fase-light-gold">
@@ -492,11 +709,7 @@ export default function ManageProfile() {
                   </Button>
                 );
               } else if (!isAdmin) {
-                return (
-                  <span className="text-sm text-gray-500">
-                    {t('manage_profile.admin_only_message')}
-                  </span>
-                );
+                return null;
               }
               // For atLimit case, show nothing
             })()}

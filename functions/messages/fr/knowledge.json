@@ -1,0 +1,69 @@
+{
+  "webinars": {
+    "page": {
+      "title": "Série de Webinaires",
+      "banner_alt": "Série de webinaires FASE"
+    },
+    "intro": {
+      "title": "Série de Webinaires Dirigée par des Experts",
+      "content": [
+        "Notre série de webinaires se concentre sur les besoins les plus pressants des professionnels européens des agences de souscription avec des experts de l'industrie et des leaders d'opinion. Les domaines d'intérêt incluront les défis réglementaires, le recrutement, les questions de gestion des données et les standards professionnels."
+      ],
+      "image_alt": "Apprentissage en ligne et webinaires"
+    },
+    "upcoming_webinars": {
+      "title": "Webinaires à Venir",
+      "regulatory_hurdles": {
+        "title": "Obstacles Réglementaires",
+        "description": "Analyse marché par marché du paysage réglementaire pour les agences de souscription et comment surmonter les barrières réglementaires.",
+        "image_alt": "Conformité réglementaire"
+      },
+      "capital_structures": {
+        "title": "Structures de Capital et Incitations",
+        "description": "Conseils sur comment optimiser l'alignement avec les fournisseurs de capacité pour sécuriser une capacité durable.",
+        "image_alt": "Relations d'affaires"
+      },
+      "ai_promise_peril": {
+        "title": "IA : La Promesse et le Péril",
+        "description": "L'IA promet d'énormes gains pour les agences de souscription en efficacité opérationnelle, tarification des risques et amélioration de l'expérience courtier et client. Mais certains cas d'usage sont plus spéculatifs que d'autres.",
+        "image_alt": "Transformation numérique"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Entrepreneurial Underwriter",
+      "banner_alt": "Souscription entrepreneuriale"
+    },
+    "intro": {
+      "title": "The Entrepreneurial Underwriter",
+      "content": [
+        "À partir de 2026, The Entrepreneurial Underwriter – notre publication phare – rassemblera des analyses et des conseils pratiques pour les entrepreneurs qui façonnent l'avenir de la souscription déléguée européenne."
+      ],
+      "image_alt": "Analyses de souscription entrepreneuriale"
+    },
+    "featured_content": {
+      "title": "Contenu en Vedette",
+      "market_analysis": {
+        "title": "Analyse de Marché",
+        "description": "Analyse approfondie des tendances de la souscription déléguée européenne, développements réglementaires et opportunités émergentes pour les agences de souscription.",
+        "image_alt": "Analyse de marché"
+      },
+      "case_studies": {
+        "title": "Études de Cas",
+        "description": "Exemples concrets de stratégies d'agences de souscription réussies, approches de souscription innovantes et relations de capacité efficaces.",
+        "image_alt": "Études de cas d'affaires"
+      },
+      "expert_insights": {
+        "title": "Analyses d'Experts",
+        "description": "Perspectives de dirigeants de l'industrie sur la construction d'entreprises d'agences de souscription durables et la navigation dans les environnements réglementaires européens.",
+        "image_alt": "Analyses d'experts"
+      }
+    },
+    "quote": {
+      "text": "La souscription d'autorité déléguée est devenue le secteur le plus entrepreneurial du marché de l'assurance. Notre objectif chez FASE est de rassembler les ressources pour aider les souscripteurs entrepreneuriaux à réussir.",
+      "author": "William Pitt",
+      "title": "Directeur Exécutif, FASE"
+    }
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "about": {
+    "page": {
+      "title": "Acerca de FASE",
+      "banner_alt": "Paisaje urbano europeo moderno"
+    },
+    "voice_for_innovators": {
+      "title": "Una voz para los innovadores de seguros de Europa",
+      "content": {
+        "paragraph1": "FASE es una federación paneuropea establecida para servir las necesidades de las agencias de suscripción de Europa, conectándolas con proveedores de capacidad aseguradora, distribuidores, inversores y proveedores de servicios.",
+        "paragraph2": "Compartimos mejores prácticas en un sector del mercado de rápido crecimiento, ofreciendo una variedad de servicios informativos y educativos para agencias de suscripción a través de seminarios web, boletines y nuestra revista digital mensual, The Entrepreneurial Underwriter."
+      },
+      "image_alt": "Innovadores europeos de seguros"
+    },
+    "quote": {
+      "text": "El modelo de agencia de suscripción está ganando impulso a nivel mundial, y esperamos que esta tendencia continúe, particularmente en Europa. Las asociaciones de agencias de suscripción bien gestionadas y altamente profesionales pueden desempeñar un papel fundamental en contribuir al crecimiento del sector. Vemos a FASE adentrándose en este espacio para mejorar y fortalecer el ecosistema de agencias de suscripción en Europa.",
+      "author": "Olaf Jonda",
+      "title": "CEO, DUAL Europe"
+    },
+    "building_connections": {
+      "title": "Construyendo conexiones en toda Europa",
+      "content": {
+        "paragraph1": "Las agencias de suscripción aportan innovación de productos y un estándar muy alto de servicio al cliente a los mercados que sirven. Pero dependen de relaciones cercanas con proveedores de capacidad – compañías de seguros y reaseguros y sindicatos de Lloyd's – para sostener su negocio.",
+        "paragraph2": "FASE ofrece oportunidades para que las agencias de suscripción de toda Europa amplíen sus relaciones con proveedores de capacidad y distribuidores a través de una serie de eventos, incluyendo el Encuentro Paneuropeo de Agencias de Suscripción."
+      },
+      "image_alt": "Evento de networking profesional"
+    },
+    "cta": {
+      "title": "¿Listo para unirse a FASE?",
+      "description": "Las solicitudes de membresía de FASE están abiertas para agencias de suscripción que han estado en funcionamiento por más de un año y suscriben más de €500,000 en prima anual. La membresía también está abierta a compañías de seguros y reaseguros que buscan asociarse con agencias de suscripción europeas, y a proveedores de servicios que apoyan el sector.",
+      "buttons": {
+        "become_member": "Hágase Miembro",
+        "contact_us": "Contáctenos"
+      }
+    }
+  },
+  "mission": {
+    "page": {
+      "title": "Misión",
+      "banner_alt": "Paisaje empresarial europeo moderno"
+    },
+    "intro": {
+      "title": "Nuestra misión e impacto en el mercado",
+      "content": {
+        "paragraph1": "FASE representa los intereses de las agencias de suscripción que hacen negocios en toda Europa, incluyendo el Área Económica Europea, el Reino Unido, Suiza, países de Europa del Este que actualmente no están dentro del AEE, y Turquía.",
+        "paragraph2": "Nuestra misión es proporcionar un foro y una voz para las agencias de suscripción en toda Europa:",
+        "paragraph3": "• Un foro para que las agencias de suscripción amplíen las relaciones con proveedores de capacidad, distribuidores, inversores y proveedores de servicios.",
+        "paragraph4": "• Una voz para crear conciencia sobre el papel crucial que las agencias de suscripción desempeñan en la construcción de un mercado de seguros europeo dinámico, innovador y receptivo."
+      },
+      "image_alt": "Conexiones de red de seguros europeos"
+    }
+  },
+  "leadership": {
+    "page": {
+      "title": "Liderazgo",
+      "banner_alt": "Equipo de liderazgo de FASE"
+    },
+    "advisory_board": {
+      "title": "Consejo Asesor",
+      "content": {
+        "paragraph1": "Nuestro consejo asesor comprende líderes distinguidos de la industria que guían la dirección estratégica de FASE y representan los diversos intereses de la comunidad europea de agencias de suscripción.",
+        "paragraph2": "Estos profesionales experimentados aportan décadas de experiencia en suscripción delegada, provisión de capacidad y asuntos regulatorios en los mercados europeos."
+      },
+      "image_alt": "Liderazgo empresarial y estrategia"
+    },
+    "members": {
+      "title": "Miembros del Consejo Asesor",
+      "olaf_jonda": {
+        "role": "CEO",
+        "company": "DUAL Europe",
+        "bio": "Olaf Jonda es director ejecutivo de DUAL Europe. Fue nombrado para el cargo en 2022 y es responsable de liderar el crecimiento y la rentabilidad de los equipos de gestión y suscripción de DUAL Europe, junto con impulsar la visión estratégica en 13 países. También es miembro del Comité Ejecutivo del Grupo DUAL.\n\nOlaf se unió a DUAL en 2011 como suscriptor y ocupó varios roles, incluyendo Jefe de Suscripción, antes de ser nombrado MD de DUAL Deutschland en 2019. Comenzó su carrera en seguros con Winterthur en 2002 y también trabajó en Creditreform con responsabilidad de calificar empresas. Olaf estudió Administración de Empresas en la Universidad de Ciencias Aplicadas de Colonia."
+      },
+      "tim_quayle": {
+        "role": "CEO",
+        "company": "OneAdvent",
+        "bio": "Tim Quayle es director ejecutivo de OneAdvent.\n\nTim comenzó su carrera en seguros desarrollando sistemas de administración de pólizas y reclamos para intermediarios y aseguradoras. En 2017 se unió a un grupo de seguros respaldado por capital privado que perseguía una estrategia centrada en agencias de suscripción. Lideró una compra por parte de la gerencia, formando OneAdvent a finales de 2023.\n\nLa misión de OneAdvent es apoyar a las agencias de suscripción en cada etapa de su ciclo de vida y ha construido una suite integral de servicios para agencias de suscripción en múltiples geografías. La plataforma lanzó exitosamente cinco agencias de suscripción en 2024 y está en camino de duplicar esa cifra en 2025."
+      },
+      "stuart_mcmurdo": {
+        "role": "CEO",
+        "company": "Accredited Insurance Limited - Europe & UK",
+        "bio": "Stuart McMurdo es director ejecutivo de Accredited Insurance Limited - Europe & UK.\n\nStuart se unió a Accredited en octubre de 2024, aportando más de 30 años de experiencia en seguros del Reino Unido, Sudáfrica y Europa. Antes de unirse ocupó varios roles de creciente responsabilidad en SCOR, más recientemente como CEO de Reinsurance SCOR P&C y miembro del Equipo de Gestión de SCOR P&C.\n\nStuart aporta una sólida formación tanto en reaseguros como en liderazgo, habiendo pasado tiempo con Santam en Sudáfrica y con Hannover Reinsurance Group en varias posiciones gerenciales."
+      },
+      "marc_van_der_veer": {
+        "role": "Director General Europa",
+        "company": "Optio",
+        "bio": "Marc van der Veer es director general, Europa, en Optio.\n\nMarc es responsable de originar, orquestar y gestionar adquisiciones europeas para Optio. Se unió a Optio en agosto de 2024, aportando más de 30 años de experiencia en la industria. Anteriormente había servido como director ejecutivo, European Ventures, en Nexus Group."
+      },
+      "mike_keating": {
+        "role": "CEO",
+        "company": "Managing General Agents' Association",
+        "bio": "Mike ha sido director ejecutivo de la Managing General Agents' Association desde septiembre de 2020.\n\nComenzó su carrera como suscriptor en el mercado de compañías antes de unirse a AXA Commercial en 1999, donde gestionó asociaciones estratégicas con agencias de suscripción y autoridad delegada. Posteriormente se convirtió en Director General del negocio de Líneas Personales de AXA (excluyendo canales directos). En 2011, Mike se unió a la junta de UK General, una de las agencias de suscripción más grandes del Reino Unido, donde lideró la cartera Comercial e implementó una estrategia dirigida para pequeños corredores regionales en todo el Reino Unido.\n\nDesde 2016, ocupó roles ejecutivos en el sector de corretaje, y posteriormente colaboró con West Hill Capital para lanzar la startup insurtech de agencia de suscripción, Qlaims.\n\nEl liderazgo e influencia de Mike han sido reconocidos a escala global, con su inclusión en la lista Insurance Business Global 100 por segundo año consecutivo en 2024."
+      },
+      "dario_spata": {
+        "role": "Presidente",
+        "company": "ASASE",
+        "bio": "Darío es presidente de ASASE (Asociación de Agencias de Suscripción de España), la asociación española de agencias de suscripción, un cargo que ha ocupado desde abril de 2023.\n\nEs socio fundador de Iberian Insurance Group, una de las agencias de suscripción más grandes de España. Ha servido como CEO de Iberian desde noviembre de 2014.\n\nDarío fue nombrado 40 under 40 del sector de seguros en 2020, 2021 y 2022."
+      },
+      "enrico_bertagna": {
+        "role": "Director General",
+        "company": "Bowood Europe",
+        "bio": "Enrico Bertagna, ejecutivo de seguros con más de 30 años de experiencia en la industria europea de P&C, es director general de Bowood Europe, la división especializada en autoridad vinculante/agencia de suscripción de Howden.\n\nA lo largo de los años ha tenido la oportunidad de construir valor empresarial en una variedad de posiciones en Lloyd's y el mercado de compañías con un enfoque particular en establecer y dirigir operaciones, gestionar relaciones de corredores/agencias de suscripción/clientes y desarrollar una red de conexiones profesionales a nivel global. En estos roles ha sido responsable de gestionar y reestructurar operaciones, liderar el desarrollo/implementación de sistemas de TI a medida, desarrollar recursos humanos, construir redes de distribución y tratar con reguladores. También inició, negoció y cerró una variedad de acuerdos comerciales.\n\nLa experiencia de Enrico incluye comenzar su carrera como corredor en Richards Longstaff en Londres y roles senior en Lloyd's of London, Allied World y Zurich Insurance."
+      },
+      "martin_mankabady": {
+        "role": "Socio de M&A",
+        "company": "Eversheds Sutherland",
+        "bio": "Martin Mankabady es socio de fusiones y adquisiciones dentro del Grupo Comercial Corporativo de Eversheds Sutherland. Asesora a clientes en el sector de servicios financieros, en particular seguros.\n\nMartin asesora sobre reorganizaciones, joint ventures, start-ups, asuntos comerciales y regulatorios, así como productos de seguros (incluyendo seguros W&I y de crédito)."
+      }
+    }
+  },
+  "contact": {
+    "page": {
+      "title": "Contacto",
+      "banner_alt": "Comunicación profesional y contacto"
+    },
+    "contact_info": {
+      "title": "Información de Contacto",
+      "content": [
+        "Fédération des Agences de Souscription Européennes (FASE)"
+      ]
+    }
+  },
+  "directory": {
+    "page": {
+      "title": "Directorio",
+      "banner_alt": "Directorio de Miembros"
+    },
+    "loading": {
+      "message": "Cargando directorio..."
+    },
+    "coming_soon": {
+      "title": "Directorio de Miembros Próximamente",
+      "description": "El Directorio de Miembros de FASE se lanzará el 15 de diciembre de 2025, proporcionando una vista integral de nuestra comunidad europea de agencias de suscripción.",
+      "what_to_expect": {
+        "title": "Qué Esperar",
+        "features": {
+          "searchable": "Perfiles de miembros e información de contacto que se pueden buscar",
+          "filtering": "Filtrado por país, tipo de organización y líneas de negocio",
+          "direct_access": "Acceso directo para conectar con profesionales europeos de agencias de suscripción"
+        }
+      },
+      "become_member": "Hágase Miembro"
+    },
+    "search_and_filters": {
+      "search_label": "Buscar Directorio",
+      "search_placeholder": "Buscar por nombre, organización o ubicación...",
+      "filter_by_country": "Filtrar por País",
+      "all_countries": "Todos los Países",
+      "filter_by_type": "Filtrar por Tipo",
+      "all_types": "Todos los Tipos",
+      "filter_by_business_line": "Filtrar por Línea de Negocio",
+      "all_business_lines": "Todas las Líneas de Negocio"
+    },
+    "results": {
+      "title": "Miembros de FASE",
+      "count_singular": "miembro",
+      "count_plural": "miembros",
+      "found": "encontrado"
+    },
+    "empty_state": {
+      "no_members_title": "No se encontraron miembros",
+      "try_adjusting": "Intente ajustar sus criterios de búsqueda o filtro.",
+      "will_be_populated": "El directorio se poblará a medida que los miembros se unan a FASE."
+    }
+  },
+  "sponsors": {
+    "page": {
+      "title": "Asociarse con FASE",
+      "banner_alt": "Asociación empresarial estratégica"
+    },
+    "partnership_opportunities": {
+      "title": "Oportunidades de Asociación Estratégica",
+      "content": [
+        "Asóciese con FASE para conectar con las agencias de suscripción líderes de Europa, proveedores de capacidad y profesionales de seguros. Nuestras oportunidades de patrocinio proporcionan acceso directo a tomadores de decisiones clave en los mercados europeos de seguros.",
+        "Desde patrocinio de conferencias hasta plataformas de liderazgo intelectual, ofrecemos paquetes de asociación personalizados que se alinean con sus objetivos empresariales y metas de alcance de mercado."
+      ],
+      "image_alt": "Conferencia profesional y networking"
+    },
+    "partnership_benefits": {
+      "title": "Beneficios de la Asociación",
+      "subtitle": "Conecte con la comunidad de agencias de suscripción más influyente de Europa a través de oportunidades de asociación estratégica.",
+      "network_access": {
+        "title": "Acceso a la Red",
+        "description": "Acceso directo a ejecutivos de nivel C de las agencias de suscripción y proveedores de capacidad líderes de Europa a través de eventos exclusivos de networking.",
+        "image_alt": "Evento de networking ejecutivo"
+      },
+      "thought_leadership": {
+        "title": "Liderazgo Intelectual",
+        "description": "Posicione su organización como líder de la industria a través de oportunidades de presentación y asociaciones de contenido.",
+        "image_alt": "Conferencia de liderazgo de la industria"
+      },
+      "market_intelligence": {
+        "title": "Inteligencia de Mercado",
+        "description": "Obtenga insights exclusivos sobre las tendencias del mercado europeo de agencias de suscripción y oportunidades a través de nuestra investigación y eventos.",
+        "image_alt": "Análisis e investigación de mercado"
+      }
+    }
+  },
+  "events": {
+    "page": {
+      "title": "Eventos",
+      "banner_alt": "Paisaje urbano europeo y distrito empresarial"
+    },
+    "intro": {
+      "title": "Eventos FASE",
+      "content": {
+        "paragraph1": "Nuestros eventos reúnen a agencias de suscripción, proveedores de capacidad, corredores y proveedores de servicios clave de toda Europa para fomentar la colaboración y hacer crecer las relaciones comerciales.",
+        "paragraph2": "Los eventos de FASE crean oportunidades para conexiones significativas que impulsan el mercado europeo de suscripción delegada hacia adelante."
+      },
+      "image_alt": "Evento de networking empresarial europeo"
+    },
+    "features": {
+      "title": "Características del evento",
+      "cards": {
+        "capacity": {
+          "title": "Expandir relaciones de capacidad",
+          "description": "Presentaciones directas entre agencias de suscripción que buscan capacidad y proveedores que buscan oportunidades de negocio de calidad en los mercados europeos.",
+          "image_alt": "Emparejamiento de negocios"
+        },
+        "insights": {
+          "title": "Insights de mercado",
+          "description": "Paneles de expertos y presentaciones sobre desarrollos regulatorios europeos, tendencias del mercado y oportunidades emergentes en suscripción delegada.",
+          "image_alt": "Análisis de mercado"
+        },
+        "development": {
+          "title": "Desarrollo profesional",
+          "description": "Sesiones educativas y talleres diseñados específicamente para profesionales de agencias de suscripción que operan en el mercado europeo.",
+          "image_alt": "Desarrollo profesional"
+        }
+      }
+    },
+    "cta": {
+      "title": "Únase a Nuestros Eventos",
+      "subtitle": "Conecte con la Comunidad Europea de Agencias de Suscripción",
+      "description": "Los detalles de registro y horarios de eventos serán anunciados a los miembros de FASE. Hágase miembro para asegurar su lugar en nuestros eventos premier de networking.",
+      "buttons": {
+        "become_member": "Hágase Miembro",
+        "mga_rendezvous": "Rendezvous de Agencias de Suscripción"
+      }
+    }
+  },
+  "rendezvous": {
+    "page": {
+      "title": "Rendezvous de Agencias de Suscripción",
+      "banner_alt": "Networking paneuropeo de agencias de suscripción"
+    },
+    "intro": {
+      "title": "Rendezvous Paneuropeo de Agencias de Suscripción",
+      "content": {
+        "paragraph1": "Durante dos días, nuestra conferencia anual de primavera reunirá a agencias de suscripción, proveedores de capacidad y proveedores de servicios seleccionados para expandir las oportunidades de negocio en Europa. Nuestro enfoque principal será fomentar las oportunidades de networking y construcción de relaciones, pero también estamos planeando un programa de eventos que establezca el estándar para los eventos europeos de agencias de suscripción."
+      },
+      "image_alt": "Conferencia empresarial europea"
+    },
+    "coming_soon": {
+      "title": "Próximamente",
+      "content": {
+        "paragraph1": "El Rendezvous de FASE está actualmente en desarrollo. Únase a nuestra comunidad para ser el primero en conocer sobre esta próxima oportunidad insignia de networking.",
+        "paragraph2": "Estamos planeando un programa integral diseñado para fomentar la colaboración y el crecimiento en el ecosistema europeo de agencias de suscripción."
+      },
+      "image_alt": "Evento futuro de networking",
+      "button": {
+        "text": "Únase a Nosotros"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "Notizie",
+      "banner_alt": "Notizie e aggiornamenti FASE"
+    },
+    "intro": {
+      "title": "Notizie e Aggiornamenti FASE",
+      "content": {
+        "paragraph1": "Si mantenga informato sui sviluppi di FASE, insights del settore e opportunità per la crescita professionale e collaborazione in tutta la comunità europea delle agenzie di sottoscrizione.",
+        "paragraph2": "La nostra piattaforma di notizie serve come La Sua fonte principale per informazioni dell'industria europea della sottoscrizione delegata, aggiornamenti normativi e annunci organizzativi."
+      },
+      "image_alt": "Notizie e aggiornamenti del settore"
+    },
+    "latest_updates": {
+      "title": "Ultimi Aggiornamenti",
+      "cards": {
+        "foundation": {
+          "title": "Fondazione di FASE",
+          "description": "FASE si stabilisce per servire il settore europeo delle agenzie di sottoscrizione in rapida crescita, affrontando il bisogno di rappresentanza e collaborazione paneuropea.",
+          "image_alt": "Annuncio della fondazione di FASE"
+        },
+        "advisory_board": {
+          "title": "Formazione del Consiglio Consultivo",
+          "description": "Leader distinti del settore si uniscono al consiglio consultivo di FASE per guidare la direzione strategica e rappresentare i diversi interessi della comunità delle agenzie di sottoscrizione.",
+          "image_alt": "Formazione del consiglio consultivo"
+        },
+        "platform_launch": {
+          "title": "Lancio della Piattaforma di Adesione",
+          "description": "Il portale membri di FASE viene lanciato, fornendo registrazione, servizi di directory e risorse esclusive per professionisti europei delle agenzie di sottoscrizione.",
+          "image_alt": "Lancio della piattaforma"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "Questo articolo è disponibile anche in:"
+    }
+  }
+}

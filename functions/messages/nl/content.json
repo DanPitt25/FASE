@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "Nieuws",
+      "banner_alt": "FASE nieuws en updates"
+    },
+    "intro": {
+      "title": "FASE Nieuws & Updates",
+      "content": {
+        "paragraph1": "Blijf geïnformeerd over FASE-ontwikkelingen, branche-inzichten en mogelijkheden voor professionele groei en samenwerking binnen de Europese GA-gemeenschap.",
+        "paragraph2": "Ons nieuwsplatform dient als uw primaire bron voor informatie over de Europese gedelegeerde underwriting-industrie, regelgevingsupdates en organisatorische aankondigingen."
+      },
+      "image_alt": "Branche nieuws en updates"
+    },
+    "latest_updates": {
+      "title": "Laatste Updates",
+      "cards": {
+        "foundation": {
+          "title": "FASE Oprichting",
+          "description": "FASE wordt opgericht om de snel groeiende Europese GA-sector te dienen, om de behoefte aan pan-Europese vertegenwoordiging en samenwerking aan te pakken.",
+          "image_alt": "FASE oprichtingsaankondiging"
+        },
+        "advisory_board": {
+          "title": "Adviesraad Formatie",
+          "description": "Vooraanstaande brancheleiders sluiten zich aan bij de FASE-adviesraad om strategische richting te geven en diverse GA-gemeenschapsbelangen te vertegenwoordigen.",
+          "image_alt": "Adviesraad formatie"
+        },
+        "platform_launch": {
+          "title": "Ledenmplatform Lancering",
+          "description": "FASE-ledenportaal gaat live en biedt registratie-, gids- en exclusieve diensten voor Europese GA-professionals.",
+          "image_alt": "Platform lancering"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "Dit artikel is ook beschikbaar in:"
+    }
+  }
+}

@@ -178,5 +178,35 @@
       "invoice_sent": "Rechnung Gesendet"
     },
     "business_meeting_alt": "Geschäftstreffen"
+  },
+  "logo_management": {
+    "title": "Logo-Verwaltung",
+    "company_logo": "Ihr Firmenlogo",
+    "upload_logo": "Logo hochladen",
+    "uploading": "Wird hochgeladen...",
+    "file_requirements": "PNG, JPG bis 5MB",
+    "admin_only": "Kontoadministratoren können Firmenlogos hochladen",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Laden Sie FASE-Logos für Ihre Marketingmaterialien und Website herunter",
+    "standard_rgb": "Standard RGB",
+    "logo_mark": "Logo-Zeichen",
+    "stacked": "Gestapelt",
+    "full_lockup": "Vollständiges Logo",
+    "download": "Herunterladen",
+    "errors": {
+      "invalid_file_type": "Bitte wählen Sie eine Bilddatei aus",
+      "file_too_large": "Dateigröße muss weniger als 5MB betragen",
+      "upload_failed": "Logo-Upload fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "success": {
+      "upload_successful": "Logo erfolgreich hochgeladen!"
+    },
+    "alt_text": {
+      "company_logo": "Firmenlogo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo-Zeichen",
+      "fase_logo_stacked": "FASE Logo Gestapelt",
+      "fase_logo_lockup": "FASE Vollständiges Logo"
+    }
   }
 }

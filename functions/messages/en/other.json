@@ -1,0 +1,456 @@
+{
+  "auth": {
+    "sign_in": "Sign In",
+    "sign_out": "Sign Out",
+    "sign_up": "Sign Up",
+    "register": "Register",
+    "login": "Login",
+    "logout": "Logout",
+    "logged_in_as": "Logged in as",
+    "signed_in_as": "Signed in as:",
+    "welcome": "Welcome",
+    "account": "Account",
+    "profile": "Profile",
+    "admin_portal": "Admin Portal"
+  },
+  "header": {
+    "search_placeholder": "Search...",
+    "language_label": "Language:",
+    "about_us": "About Us",
+    "join_us": "Join Us",
+    "sponsorship": "Sponsorship",
+    "events": "Events",
+    "knowledge": "Knowledge & Education",
+    "news": "News",
+    "member_portal": "Member Portal",
+    "sign_in": "Sign In",
+    "sign_out": "Sign Out",
+    "logged_in_as": "Logged in as",
+    "signed_in_as": "Signed in as:"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Connecting Europe's insurance innovators",
+      "subtitle": "Linking MGAs, capacity providers, distributors and service partners to share knowledge, build relationships, and improve delegated underwriting across Europe.",
+      "join_now": "Join Now",
+      "learn_more": "Learn More"
+    },
+    "who_we_are": {
+      "title": "See and be seen",
+      "description": "FASE raises the profile of the delegated underwriting sector and its individual members. Our members share a focus on collaboration, responsible growth, and high professional standards. Through shared insight, practical resources and an active network, we help each member build the partnerships that will sustain the growth of its business."
+    },
+    "services": {
+      "pan_european_events": {
+        "title": "Pan-European Events",
+        "description": "Biannual conferences bringing together MGAs, capacity providers, and service providers for networking and business development."
+      },
+      "digital_platform": {
+        "title": "Digital Platform",
+        "description": "Multi-lingual digital platform providing technical, regulatory, and risk appetite resources for MGA members."
+      },
+      "market_intelligence": {
+        "title": "Market Intelligence",
+        "description": "Annual European market reports demonstrating MGA dynamism with accurate statistics and pan-European market insights."
+      },
+      "industry_advocacy": {
+        "title": "Industry Advocacy",
+        "description": "Voice for MGAs in regulatory discussions at national and pan-European levels."
+      },
+      "education_training": {
+        "title": "Education & Training",
+        "description": "Online education and training modules for MGA employees across various specialisms."
+      },
+      "market_research": {
+        "title": "Market Research",
+        "description": "Research capabilities for MGAs seeking access to new European markets and growth opportunities."
+      },
+      "capacity_transparency": {
+        "title": "Capacity Transparency",
+        "description": "Enhanced transparency on insurer appetite for MGA-sourced business by geography and class."
+      }
+    },
+    "quote": {
+      "text": "MGAs are, in the main, small businesses. As our members look to grow, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help.",
+      "author": "Dario Spata",
+      "title": "President of ASASE and FASE advisory board member"
+    },
+    "impact": {
+      "title": "Our Impact",
+      "networking": {
+        "title": "Networking & Collaboration",
+        "description": "Engage with peers through forums, events, and working groups that foster practical connections and help members find solutions to common challenges."
+      },
+      "professional_development": {
+        "title": "Professional Development",
+        "description": "Access targeted learning opportunities and research designed to help MGAs build expertise and leadership capability."
+      },
+      "market_intelligence": {
+        "title": "Market Intelligence",
+        "description": "Benefit from curated data and insights that give members a clear understanding of current trends, regulatory shifts, and emerging opportunities across European markets."
+      }
+    },
+    "standards": {
+      "title": "Vetting & Standards",
+      "subtitle": "To uphold the professionalism of the FASE community, we have established a membership protocol:",
+      "review_process": "Our Review Process",
+      "eligibility_review": {
+        "title": "Eligibility Review",
+        "description": "Confirmation of business credentials, regulatory status, and ethical track record."
+      },
+      "standards_alignment": {
+        "title": "Standards Alignment",
+        "description": "Assessment of each applicant's alignment with recognised delegated underwriting principles."
+      },
+      "peer_endorsement": {
+        "title": "Peer Endorsement",
+        "description": "Consultation with our Advisory Board and existing members to ensure credibility and fit within the community."
+      },
+      "ongoing_review": {
+        "title": "Ongoing Review",
+        "description": "Periodic reaffirmation of good standing and continued commitment to shared standards."
+      },
+      "conclusion": "This process ensures FASE remains a trusted network of professionals working to raise consistency, transparency, and performance in delegated underwriting."
+    },
+    "why_join": {
+      "title": "A practical network for a complex market",
+      "subtitle": "Whether you're an MGA, insurer, broker, or service partner, FASE helps you stay connected to the people, information, and perspectives shaping delegated underwriting in Europe.",
+      "become_member": "Become a Member",
+      "view_events": "View Upcoming Events",
+      "tagline": "FASE — building a connected, informed, and responsible Delegated Underwriting community"
+    }
+  },
+  "code_of_conduct": {
+    "page": {
+      "title": "Code of Conduct",
+      "banner_alt": "Professional standards and regulatory compliance"
+    },
+    "intro": {
+      "title": "FASE Code of Conduct",
+      "content": {
+        "paragraph1": "FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.",
+        "paragraph2": "Members hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.",
+        "paragraph3": "Members undertake to cooperate fully and at all times with FASE in its enforcement of this Code."
+      }
+    },
+    "sections": {
+      "title": "Code of Conduct Sections",
+      "legal": {
+        "title": "1. Legal responsibilities",
+        "content": "Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.\n\nMembers will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:\n\n• A member being in breach of any regulatory requirement and\n\n• Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities\n\nMembers will provide all reasonable lawful assistance to regulatory, professional and law enforcement organisation in the discharge of their duties, whether in respect of themselves, another Member or a non-member."
+      },
+      "financial": {
+        "title": "2. Financial Responsibilities",
+        "content": "Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.\n\nMembers must comply with applicable solvency or like requirements."
+      },
+      "inter_org": {
+        "title": "3. Inter-organisational Responsibilities",
+        "content": "Members will compete fairly and honourably in the markets in which they operate.\n\nThis includes, but is not limited to:\n\n• making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;\n\n• entering into any agreement intended to diminish competition within the market."
+      },
+      "community": {
+        "title": "4. Community Responsibilities",
+        "content": "FASE members must conduct themselves in a manner befitting the privileges of membership.\n\nMembers will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.\n\nMembers are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.\n\nMembers will encourage continuing education and training for staff."
+      },
+      "insurers": {
+        "title": "5. Relationships with Insurers",
+        "content": "Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:\n\n• faithfully execute the underwriting guidelines of the insurers they represent;\n\n• act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;\n\n• keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship."
+      },
+      "brokers": {
+        "title": "6. Relationships with Brokers and Agents (or Insureds if operating directly)",
+        "content": "Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:\n\n• consider at all times the financial stability of insurers with which the Member places business;\n\n• make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.\n\nMembers should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.\n\nEffective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.\n\nFASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.\n\nMembers should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed."
+      }
+    },
+    "reporting": {
+      "title": "Reporting Breaches",
+      "content": {
+        "paragraph1": "All notices of potential breach made under this Code should be made to the Business Conduct Committee at conduct@fasemga.com."
+      }
+    }
+  },
+  "thank_you": {
+    "title": "Thank You for Your Application!",
+    "application_submitted": "Your FASE membership application has been successfully submitted and sent to our team for review.",
+    "application_reference": "Application Reference:",
+    "what_happens_next": {
+      "title": "What happens next?",
+      "step1": "You will hear back from us within one business day",
+      "step2": "We'll review your application and contact you with next steps",
+      "step3": "If approved, you'll receive membership details and payment instructions"
+    },
+    "contact": {
+      "question": "Questions about your application?",
+      "email_text": "Contact us at"
+    },
+    "return_home": "Return to Homepage"
+  },
+  "payment_succeeded": {
+    "title": "Payment Successful!",
+    "message": "Thank you for your payment. Your FASE membership is now active.",
+    "what_happens_next": {
+      "title": "What happens next:",
+      "step1": "You will receive a confirmation email with your membership details.",
+      "step2": "Access to the member portal will be activated shortly.",
+      "step3": "You will receive an invoice receipt for your records."
+    },
+    "contact": {
+      "question": "Questions about your membership?",
+      "email_text": "Contact us at"
+    },
+    "return_home": "Return Home"
+  },
+  "payment_failed": {
+    "title": "Payment Cancelled",
+    "message": "Your payment was cancelled. Don't worry, you can still complete your membership application.",
+    "what_you_can_do": {
+      "title": "What you can do:",
+      "step1": "Try the payment again using credit or debit card.",
+      "step2": "Choose to pay by bank transfer instead (invoice attached in your original email).",
+      "step3": "Contact us if you need assistance with payment."
+    },
+    "contact": {
+      "question": "Need help with your payment?",
+      "email_text": "Contact us at"
+    },
+    "try_again": "Try Payment Again",
+    "return_home": "Return Home"
+  },
+  "people": {
+    "page": {
+      "title": "Our People",
+      "banner_alt": "FASE leadership and team"
+    },
+    "executive_team": {
+      "title": "Executive Team"
+    },
+    "members": {
+      "william_pitt": {
+        "name": "William Pitt",
+        "role": "Executive Director",
+        "bio": "William founded FASE in 2025 to address a widely recognized need for a pan-European body to represent Europe's fast-growing, but little understood, MGA sector.\n\nPrior to establishing FASE, William led research and consulting projects at Lexicon Associates and Conning. He is the author of The MGA Revolution: How MGAs are reshaping the insurance value chain, published by Lexicon Associates in November 2024. He previously led consulting initiatives for Conning in the United States and was the author of Conning's annual MGA studies.\n\nPrior to joining Conning in 2021, he served for twelve years as global chief marketing officer at Beazley. Earlier in his career, he held senior marketing and business development roles at Marsh & McLennan Companies and Lloyd's.\n\nWilliam has written extensively on insurance for publications including the Wall Street Journal, Harvard Business Review, Institutional Investor, the Insurer, and Corriere della Sera. He is the author of More Equal than Others: a Director's Guide to EU Competition Policy, published by Director Books."
+      },
+      "aline_sullivan": {
+        "name": "Aline Sullivan",
+        "role": "Chief Operating Officer",
+        "bio": "Aline is responsible for the efficient delivery of all member services, working closely with members to address their needs. She has deep experience in business communications, educational programmes, and event management.\n\nAline is a partner at Lexicon Associates, a research and consulting business she founded in 2009. She has worked with Evercore Wealth Management and Evercore Trust Company since 2009 as the outsourced head of communications and the editor of the firm's quarterly journal, Independent Thinking; she earlier led communications for Aviva Investors, U.S. Trust and The Private Bank of Bank of America.\n\nHer articles on investing have featured in the New York Times, the International Herald Tribune, the Financial Times, Worth, Bloomberg, Barron's and the Wall Street Journal."
+      }
+    }
+  },
+  "join": {
+    "page": {
+      "title": "Join FASE",
+      "banner_alt": "Join FASE membership"
+    },
+    "membership_applications": {
+      "title": "Membership applications",
+      "content": [
+        "FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium.",
+        "Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector."
+      ],
+      "image_alt": "European business meeting"
+    },
+    "member_benefits": {
+      "title": "FASE member benefits",
+      "items": [
+        {
+          "title": "Pan-European representation",
+          "content": "Join a unified voice advocating for MGAs and delegated underwriting across Europe."
+        },
+        {
+          "title": "Networking & collaboration",
+          "content": "Connect with MGA leaders, insurers, reinsurers, and service providers throughout Europe and beyond."
+        },
+        {
+          "title": "Annual MGA Rendezvous",
+          "content": "Exclusive access to our flagship event — bringing together MGA professionals, market influencers, and partners from around the world."
+        },
+        {
+          "title": "Educational & insight sessions",
+          "content": "Participate in workshops, webinars, and panels on regulatory trends, innovation, and best practices."
+        },
+        {
+          "title": "Industry intelligence",
+          "content": "Receive regular updates on European MGA market developments, opportunities, and challenges."
+        },
+        {
+          "title": "Recognition & credibility",
+          "content": "Strengthen your market reputation as part of a respected, forward-looking MGA association."
+        },
+        {
+          "title": "Opportunities for collaboration",
+          "content": "Shape the future of delegated underwriting through working groups and cross-border initiatives."
+        }
+      ]
+    },
+    "membership_categories": {
+      "title": "Membership categories", 
+      "subtitle_with_applications": "FASE membership is open to MGAs that have been in business for more than a year and underwrite more than €500,000 in annual premium. Membership is also open to insurance and reinsurance companies seeking to partner with European MGAs, and to service providers that support the sector.",
+      "mga": {
+        "title": "MGA",
+        "description": "MGAs transacting business in Europe for at least a year and with premium income in excess of €500,000.",
+        "image_alt": "MGA business meeting",
+        "action_text": "Apply as MGA"
+      },
+      "carrier": {
+        "title": "Carrier / Broker",
+        "description": "(Re)insurance company, Lloyd's managing agency, or (re)insurance broker transacting business with MGAs.",
+        "image_alt": "Market analysis and data",
+        "action_text": "Apply as Carrier / Broker"
+      },
+      "service_provider": {
+        "title": "Service provider",
+        "description": "Service providers active within the MGA ecosystem.",
+        "image_alt": "Service provider collaboration",
+        "action_text": "Apply as Service Provider"
+      }
+    },
+    "application_process": {
+      "title": "Application process",
+      "content": [
+        "To begin your application, complete our membership form with your organisation details and business information.",
+        "Applications are reviewed by the FASE membership committee to ensure alignment with our community standards and objectives."
+      ],
+      "image_alt": "Application process",
+      "buttons": {
+        "join": "Join",
+        "contact_us": "Contact Us"
+      }
+    },
+    "membership_pricing": {
+      "title": "Membership Dues",
+      "subtitle": "Annual membership fees designed for different organization types and sizes",
+      "mga": {
+        "title": "MGA Membership",
+        "description": "Tiered pricing based on annual gross written premiums",
+        "tiered_label": "Tiered",
+        "tiers": [
+          {
+            "range": "Up to €10m GWP",
+            "price": "€900",
+            "period": "per year"
+          },
+          {
+            "range": "€10m - €20m GWP",
+            "price": "€1,500",
+            "period": "per year"
+          },
+          {
+            "range": "€20m - €50m GWP",
+            "price": "€2,200",
+            "period": "per year"
+          },
+          {
+            "range": "€50m - €100m GWP",
+            "price": "€2,800",
+            "period": "per year"
+          },
+          {
+            "range": "€100m - €500m GWP",
+            "price": "€4,200",
+            "period": "per year"
+          },
+          {
+            "range": "€500m+ GWP",
+            "price": "€7,000",
+            "period": "per year"
+          }
+        ],
+        "features": [
+          "All individual membership benefits",
+          "Company profile in member directory",
+          "Multiple team member access",
+          "Priority event booking",
+          "Quarterly business matching opportunities"
+        ]
+      },
+      "carrier": {
+        "title": "Insurance Carrier / (Re)insurance Broker Membership",
+        "description": "For insurance and reinsurance companies, and (re)insurance brokers",
+        "price": "€4,000",
+        "period": "per year",
+        "features": [
+          "Direct access to European MGA network",
+          "Capacity matching opportunities",
+          "Market intelligence reports",
+          "Priority sponsorship opportunities",
+          "Exclusive carrier networking events"
+        ]
+      },
+      "provider": {
+        "title": "Service Provider Membership",
+        "description": "For companies providing services to the MGA sector",
+        "price": "€5,000",
+        "period": "per year",
+        "features": [
+          "Access to qualified MGA prospects",
+          "Thought leadership opportunities",
+          "Industry event participation",
+          "Market research and insights",
+          "Business development support"
+        ]
+      },
+      "discount": {
+        "title": "Multi-Association Discount",
+        "description": "20% discount applies to all membership categories for organizations that are members of other MGA associations (NVGA, MGAA, ASASE, AIMGA, BAUA)"
+      },
+      "billing": {
+        "note": "All memberships are billed annually. Membership will automatically renew each year with advance notice."
+      }
+    }
+  },
+  "footer": {
+    "description": "The Federation of European MGAs - representing the MGA community across Europe.",
+    "membership": "Membership",
+    "join_fase": "Join FASE",
+    "member_directory": "Member Directory",
+    "resources": "Resources",
+    "knowledge_base": "Knowledge Base",
+    "events": "Events",
+    "news": "News",
+    "connect": "Connect",
+    "contact_us": "Contact Us",
+    "member_portal": "Member Portal",
+    "about_fase": "About FASE",
+    "copyright": "© 2025 FASE B.V. All rights reserved."
+  },
+  "cookie_banner": {
+    "title": "We use cookies",
+    "description": "We use essential cookies to make our site work. We'd also like to set optional cookies to help us improve our website and analyze how it's used.",
+    "customize_settings": "Customize settings",
+    "accept_all": "Accept All",
+    "reject_all": "Reject All",
+    "preferences_title": "Cookie Preferences",
+    "save_preferences": "Save Preferences",
+    "necessary": {
+      "title": "Necessary Cookies",
+      "description": "These cookies are essential for the website to function and cannot be disabled. They include authentication, security, and basic functionality."
+    },
+    "analytics": {
+      "title": "Analytics Cookies",
+      "description": "These cookies help us understand how visitors interact with our website by collecting anonymous information about usage patterns."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "These cookies are used to track visitors across websites to display relevant advertisements and measure campaign effectiveness."
+    }
+  },
+  "subscription_success": {
+    "title": "Subscription Activated!",
+    "message": "Your FASE membership subscription is now active! You'll be billed annually and your membership will automatically renew each year.",
+    "what_happens_next": "What happens next:",
+    "steps": {
+      "processing": "Your membership application is being processed",
+      "email": "You'll receive a confirmation email shortly",
+      "renewals": "Annual renewals will be automatic",
+      "manage": "You can manage your subscription in PayPal"
+    },
+    "buttons": {
+      "member_portal": "Go to Member Portal",
+      "return_home": "Return to Home"
+    },
+    "subscription_id": "Subscription ID:",
+    "cancel_note": "You can cancel anytime through your PayPal account.",
+    "error_title": "Subscription Error",
+    "invalid_session": "Invalid subscription session",
+    "return_to_registration": "Return to Registration",
+    "processing_subscription": "Processing your subscription..."
+  }
+}

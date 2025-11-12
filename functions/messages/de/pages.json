@@ -1,0 +1,265 @@
+{
+  "about": {
+    "page": {
+      "title": "Über FASE",
+      "banner_alt": "Moderne europäische Stadtlandschaft"
+    },
+    "voice_for_innovators": {
+      "title": "Eine Stimme für Europas Versicherungsinnovatoren",
+      "content": {
+        "paragraph1": "FASE ist eine paneuropäische Föderation, die gegründet wurde, um den Bedürfnissen der europäischen Managing General Agents zu dienen und sie mit Versicherungskapazitätsanbietern, Distributoren, Investoren und Dienstleistern zu verbinden.",
+        "paragraph2": "Wir teilen bewährte Praktiken in einem schnell wachsenden Marktsektor und bieten eine Reihe von informativen und bildenden Dienstleistungen für MGAs durch Webinare, Bulletins und unser monatliches digitales Magazin, The Entrepreneurial Underwriter."
+      },
+      "image_alt": "Europäische Versicherungsinnovatoren"
+    },
+    "quote": {
+      "text": "Das MGA-Modell gewinnt global an Dynamik, und wir erwarten, dass sich dieser Trend fortsetzt, insbesondere in Europa. Gut geführte und hoch professionelle MGA-Verbände können eine zentrale Rolle beim Beitrag zum Wachstum des Sektors spielen. Wir sehen FASE in diesen Bereich eintreten, um das MGA-Ökosystem in Europa zu verbessern und zu stärken.",
+      "author": "Olaf Jonda",
+      "title": "CEO, DUAL Europe"
+    },
+    "building_connections": {
+      "title": "Aufbau von Verbindungen in Europa",
+      "content": {
+        "paragraph1": "MGAs bringen Produktinnovation und einen sehr hohen Standard des Kundenservice in die Märkte, denen sie dienen. Aber sie hängen von engen Beziehungen zu Kapazitätsanbietern - Versicherungs- und Rückversicherungsunternehmen und Lloyd's-Syndikate - ab, um ihr Geschäft zu erhalten.",
+        "paragraph2": "FASE bietet Möglichkeiten für MGAs aus ganz Europa, ihre Beziehungen zu Kapazitätsanbietern und Distributoren durch eine Reihe von Veranstaltungen zu erweitern, einschließlich des paneuropäischen MGA Rendezvous."
+      },
+      "image_alt": "Professionelle Networking-Veranstaltung"
+    },
+    "cta": {
+      "title": "Bereit, FASE beizutreten?",
+      "description": "Anträge für FASE-Mitgliedschaft stehen MGAs offen, die seit mehr als einem Jahr im Geschäft sind und mehr als 500.000 € an jährlichen Prämien zeichnen. Die Mitgliedschaft steht auch Versicherungs- und Rückversicherungsunternehmen offen, die Partnerschaften mit europäischen MGAs suchen, und Dienstleistern, die den Sektor unterstützen.",
+      "buttons": {
+        "become_member": "Mitglied werden",
+        "contact_us": "Kontaktieren Sie uns"
+      }
+    }
+  },
+  "mission": {
+    "page": {
+      "title": "Mission",
+      "banner_alt": "Moderne europäische Geschäftslandschaft"
+    },
+    "intro": {
+      "title": "Unsere Mission & Marktwirkung",
+      "content": {
+        "paragraph1": "FASE vertritt die Interessen von MGAs, die Geschäfte in Europa tätigen, einschließlich des Europäischen Wirtschaftsraums, des Vereinigten Königreichs, der Schweiz, osteuropäischer Länder, die derzeit nicht im EWR sind, und der Türkei.",
+        "paragraph2": "Unsere Mission ist es, ein Forum und eine Stimme für MGAs in Europa zu bieten:",
+        "paragraph3": "• Ein Forum für MGAs, um Beziehungen zu Kapazitätsanbietern, Distributoren, Investoren und Dienstleistern zu erweitern.",
+        "paragraph4": "• Eine Stimme, um das Bewusstsein für die entscheidende Rolle zu schärfen, die MGAs beim Aufbau eines dynamischen, innovativen und reaktionsschnellen europäischen Versicherungsmarktes spielen."
+      },
+      "image_alt": "Europäische Versicherungsnetzwerkverbindungen"
+    }
+  },
+  "leadership": {
+    "page": {
+      "title": "Führung",
+      "banner_alt": "FASE-Führungsteam"
+    },
+    "advisory_board": {
+      "title": "Beirat",
+      "content": {
+        "paragraph1": "Unser Beirat besteht aus angesehenen Branchenführern, die FASEs strategische Richtung leiten und die vielfältigen Interessen der europäischen MGA-Gemeinschaft vertreten.",
+        "paragraph2": "Diese erfahrenen Fachleute bringen jahrzehntelange Expertise in delegierter Zeichnung, Kapazitätsbereitstellung und regulatorischen Angelegenheiten in europäischen Märkten mit."
+      },
+      "image_alt": "Geschäftsführung und Strategie"
+    },
+    "members": {
+      "title": "Beiratsmitglieder",
+      "olaf_jonda": {
+        "role": "CEO",
+        "company": "DUAL Europe",
+        "bio": "Olaf Jonda ist Chief Executive Officer bei DUAL Europe. Er wurde 2022 in diese Rolle berufen und ist verantwortlich für die Führung des Wachstums und der Rentabilität von DUAL Europes Management- und Zeichnungsteams sowie für die strategische Vision in 13 Ländern. Er ist auch Mitglied des DUAL Group Executive Committee.\n\nOlaf kam 2011 als Zeichner zu DUAL und hatte mehrere Rollen, einschließlich Head of Underwriting, bevor er 2019 zum MD von DUAL Deutschland ernannt wurde. Er begann seine Versicherungslaufbahn 2002 bei Winterthur und arbeitete auch bei Creditreform mit Verantwortung für die Bewertung von Unternehmen. Olaf studierte Betriebswirtschaft an der Fachhochschule in Köln."
+      },
+      "tim_quayle": {
+        "role": "CEO",
+        "company": "OneAdvent",
+        "bio": "Tim Quayle ist Chief Executive Officer bei OneAdvent.\n\nTim begann seine Versicherungslaufbahn mit der Entwicklung von Policenverwaltungs- und Schadensystemen für Vermittler und Versicherer. 2017 schloss er sich einer Private-Equity-unterstützten Versicherungsgruppe an, die eine MGA-fokussierte Strategie verfolgte. Er führte ein Management-Buyout durch und gründete Ende 2023 OneAdvent.\n\nOneAdvents Mission ist es, MGAs in jeder Phase ihres Lebenszyklus zu unterstützen und hat eine umfassende Suite von MGA-Services in mehreren Geografien aufgebaut. Die Plattform startete erfolgreich fünf MGAs im Jahr 2024 und ist auf dem richtigen Weg, dies 2025 zu verdoppeln."
+      },
+      "stuart_mcmurdo": {
+        "role": "CEO",
+        "company": "Accredited Insurance Limited - Europe & UK",
+        "bio": "Stuart McMurdo ist Chief Executive Officer, Accredited Insurance Limited - Europe & UK.\n\nStuart kam im Oktober 2024 zu Accredited und bringt über 30 Jahre Versicherungserfahrung aus Großbritannien, Südafrika und Europa mit. Vor seinem Beitritt hatte er mehrere Rollen mit zunehmender Verantwortung bei SCOR, zuletzt als CEO von Reinsurance SCOR P&C und Mitglied des SCOR P&C Management Teams.\n\nStuart bringt einen starken Hintergrund sowohl in Rückversicherung als auch in Führung mit, nachdem er Zeit bei Santam in Südafrika und bei der Hannover Rückversicherungsgruppe in verschiedenen Managementpositionen verbracht hat."
+      },
+      "marc_van_der_veer": {
+        "role": "Managing Director Europe",
+        "company": "Optio",
+        "bio": "Marc van der Veer ist Managing Director, Europe, bei Optio.\n\nMarc ist verantwortlich für die Initiierung, Orchestrierung und Verwaltung europäischer Akquisitionen für Optio. Er kam im August 2024 zu Optio und bringt mehr als 30 Jahre Branchenerfahrung mit. Zuvor war er Chief Executive Officer, European Ventures, bei der Nexus Group."
+      },
+      "mike_keating": {
+        "role": "CEO",
+        "company": "Managing General Agents' Association",
+        "bio": "Mike ist seit September 2020 Chief Executive Officer der Managing General Agents' Association.\n\nEr begann seine Laufbahn als Zeichner im Firmenmarkt, bevor er 1999 zu AXA Commercial kam, wo er strategische MGA- und delegierte Vollmachtspartnerschaften verwaltete. Später wurde er Managing Director von AXAs Personal Lines-Geschäft (ausgenommen direkte Kanäle). 2011 trat Mike dem Vorstand von UK General bei, einem der größten MGAs Großbritanniens, wo er das Commercial-Portfolio leitete und eine gezielte Strategie für kleine regionale Makler in ganz Großbritannien implementierte.\n\nAb 2016 hatte er Führungsrollen im Maklersektor und arbeitete später mit West Hill Capital zusammen, um das Insurtech-MGA-Startup Qlaims zu gründen.\n\nMikes Führung und Einfluss wurden auf globaler Ebene anerkannt, mit seiner Aufnahme in die Insurance Business Global 100-Liste für das zweite Jahr in Folge im Jahr 2024."
+      },
+      "dario_spata": {
+        "role": "Präsident",
+        "company": "ASASE",
+        "bio": "Darío ist Präsident von ASASE (Asociación de Agencias de Suscripción de España), dem spanischen MGA-Verband, eine Rolle, die er seit April 2023 innehat.\n\nEr ist Gründungspartner der Iberian Insurance Group, einer der größten Zeichnungsagenturen in Spanien. Er ist seit November 2014 CEO von Iberian.\n\nDarío wurde 2020, 2021 und 2022 als 40 unter 40 des Versicherungssektors ausgezeichnet."
+      },
+      "enrico_bertagna": {
+        "role": "Managing Director",
+        "company": "Bowood Europe",
+        "bio": "Enrico Bertagna, eine Versicherungsführungskraft mit über 30 Jahren Erfahrung in der europäischen Schaden- und Unfallversicherungsbranche, ist Managing Director von Bowood Europe, Howdens spezialisierter Binding Authority/MGA-Division.\n\nÜber die Jahre hatte er die Gelegenheit, Unternehmenswert in verschiedenen Positionen bei Lloyd's und dem Firmenmarkt aufzubauen, mit besonderem Fokus auf die Einrichtung und den Betrieb von Operationen, das Management von Makler-/MGA-/Kundenbeziehungen und die Entwicklung eines Netzwerks professioneller Verbindungen auf globaler Ebene. In diesen Rollen war er verantwortlich für die Verwaltung und Umstrukturierung von Operationen, die Leitung der Entwicklung/Implementierung maßgeschneiderter IT-Systeme, die Entwicklung von Humanressourcen, den Aufbau von Vertriebsnetzen und den Umgang mit Regulierungsbehörden. Er initiierte, verhandelte und schloss auch eine Vielzahl von Geschäftsabschlüssen ab.\n\nEnricos Erfahrung umfasst den Beginn seiner Laufbahn als Makler bei Richards Longstaff in London und Führungsrollen bei Lloyd's of London, Allied World und Zurich Insurance."
+      },
+      "martin_mankabady": {
+        "role": "M&A Partner",
+        "company": "Eversheds Sutherland",
+        "bio": "Martin Mankabady ist ein Fusionen & Akquisitionen-Partner innerhalb von Eversheds Sutherlands Company Commercial Group. Er berät Kunden im Finanzdienstleistungssektor, insbesondere Versicherungen.\n\nMartin berät zu Umstrukturierungen, Joint Ventures, Startups, kommerziellen und regulatorischen Angelegenheiten sowie Versicherungsprodukten (einschließlich W&I und Kreditversicherung)."
+      }
+    }
+  },
+  "contact": {
+    "page": {
+      "title": "Kontaktieren Sie uns",
+      "banner_alt": "Professionelle Kommunikation und Kontakt"
+    },
+    "contact_info": {
+      "title": "Kontaktinformationen",
+      "content": [
+        "Fédération des Agences de Souscription Européennes (FASE)"
+      ]
+    }
+  },
+  "directory": {
+    "page": {
+      "title": "Verzeichnis",
+      "banner_alt": "Mitgliederverzeichnis"
+    },
+    "loading": {
+      "message": "Verzeichnis wird geladen..."
+    },
+    "coming_soon": {
+      "title": "Mitgliederverzeichnis kommt bald",
+      "description": "Das FASE-Mitgliederverzeichnis wird am 15. Dezember 2025 gestartet und bietet einen umfassenden Überblick über unsere europäische MGA-Gemeinschaft.",
+      "what_to_expect": {
+        "title": "Was Sie erwarten können",
+        "features": {
+          "searchable": "Durchsuchbare Mitgliederprofile und Kontaktinformationen",
+          "filtering": "Filterung nach Land, Organisationstyp und Geschäftsbereichen",
+          "direct_access": "Direkter Zugang zur Verbindung mit europäischen MGA-Fachleuten"
+        }
+      },
+      "become_member": "Mitglied werden"
+    },
+    "search_and_filters": {
+      "search_label": "Verzeichnis durchsuchen",
+      "search_placeholder": "Nach Name, Organisation oder Standort suchen...",
+      "filter_by_country": "Nach Land filtern",
+      "all_countries": "Alle Länder",
+      "filter_by_type": "Nach Typ filtern",
+      "all_types": "Alle Typen",
+      "filter_by_business_line": "Nach Geschäftsbereich filtern",
+      "all_business_lines": "Alle Geschäftsbereiche"
+    },
+    "results": {
+      "title": "FASE-Mitglieder",
+      "count_singular": "Mitglied",
+      "count_plural": "Mitglieder",
+      "found": "gefunden"
+    },
+    "empty_state": {
+      "no_members_title": "Keine Mitglieder gefunden",
+      "try_adjusting": "Versuchen Sie, Ihre Such- oder Filterkriterien anzupassen.",
+      "will_be_populated": "Das Verzeichnis wird gefüllt, sobald Mitglieder FASE beitreten."
+    }
+  },
+  "sponsors": {
+    "page": {
+      "title": "Partner von FASE",
+      "banner_alt": "Strategische Geschäftspartnerschaft"
+    },
+    "partnership_opportunities": {
+      "title": "Strategische Partnerschaftsmöglichkeiten",
+      "content": [
+        "Partnerschaft mit FASE, um sich mit Europas führenden MGAs, Kapazitätsanbietern und Versicherungsfachleuten zu verbinden. Unsere Sponsoring-Möglichkeiten bieten direkten Zugang zu wichtigen Entscheidungsträgern in europäischen Versicherungsmärkten.",
+        "Von Konferenz-Sponsoring bis hin zu Thought-Leadership-Plattformen bieten wir maßgeschneiderte Partnerschaftspakete, die sich an Ihren Geschäftszielen und Marktreichweitenzielen orientieren."
+      ],
+      "image_alt": "Professionelle Konferenz und Networking"
+    },
+    "partnership_benefits": {
+      "title": "Partnerschaftsvorteile",
+      "subtitle": "Verbinden Sie sich mit Europas einflussreichster MGA-Gemeinschaft durch strategische Partnerschaftsmöglichkeiten.",
+      "network_access": {
+        "title": "Netzwerkzugang",
+        "description": "Direkter Zugang zu C-Level-Führungskräften von Europas führenden MGAs und Kapazitätsanbietern durch exklusive Networking-Veranstaltungen.",
+        "image_alt": "Executive-Networking-Veranstaltung"
+      },
+      "thought_leadership": {
+        "title": "Thought Leadership",
+        "description": "Positionieren Sie Ihre Organisation als Branchenführer durch Sprechmöglichkeiten und Content-Partnerschaften.",
+        "image_alt": "Branchenführungskonferenz"
+      },
+      "market_intelligence": {
+        "title": "Marktintelligenz",
+        "description": "Erhalten Sie exklusive Einblicke in europäische MGA-Markttrends und -möglichkeiten durch unsere Forschung und Veranstaltungen.",
+        "image_alt": "Marktanalyse und Forschung"
+      }
+    }
+  },
+  "events": {
+    "page": {
+      "title": "Veranstaltungen",
+      "banner_alt": "Europäische Stadtlandschaft und Geschäftsviertel"
+    },
+    "intro": {
+      "title": "FASE-Veranstaltungen",
+      "content": {
+        "paragraph1": "Unsere Veranstaltungen bringen MGAs, Kapazitätsanbieter, Makler und wichtige Dienstleister aus ganz Europa zusammen, um Zusammenarbeit zu fördern und Geschäftsbeziehungen zu entwickeln.",
+        "paragraph2": "FASE-Veranstaltungen schaffen Möglichkeiten für bedeutungsvolle Verbindungen, die den europäischen delegierten Zeichnungsmarkt voranbringen."
+      },
+      "image_alt": "Europäische Geschäfts-Networking-Veranstaltung"
+    },
+    "features": {
+      "title": "Veranstaltungsmerkmale",
+      "cards": {
+        "capacity": {
+          "title": "Kapazitätsbeziehungen erweitern",
+          "description": "Direkte Einführungen zwischen MGAs, die Kapazität suchen, und Anbietern, die nach qualitativ hochwertigen Geschäftsmöglichkeiten in europäischen Märkten suchen.",
+          "image_alt": "Geschäftsvermittlung"
+        },
+        "insights": {
+          "title": "Markteinblicke",
+          "description": "Expertenpanels und Präsentationen zu europäischen regulatorischen Entwicklungen, Markttrends und aufkommenden Möglichkeiten in der delegierten Zeichnung.",
+          "image_alt": "Marktanalyse"
+        },
+        "development": {
+          "title": "Berufliche Entwicklung",
+          "description": "Bildungssitzungen und Workshops, die speziell für MGA-Fachleute entwickelt wurden, die im europäischen Marktplatz tätig sind.",
+          "image_alt": "Berufliche Entwicklung"
+        }
+      }
+    },
+    "cta": {
+      "title": "Nehmen Sie an unseren Veranstaltungen teil",
+      "subtitle": "Verbinden Sie sich mit der europäischen MGA-Gemeinschaft",
+      "description": "Registrierungsdetails und Veranstaltungspläne werden FASE-Mitgliedern bekannt gegeben. Werden Sie Mitglied, um sich Ihren Platz bei unseren erstklassigen Networking-Veranstaltungen zu sichern.",
+      "buttons": {
+        "become_member": "Mitglied werden",
+        "mga_rendezvous": "MGA Rendezvous"
+      }
+    }
+  },
+  "rendezvous": {
+    "page": {
+      "title": "MGA Rendezvous",
+      "banner_alt": "Paneuropäisches MGA-Networking"
+    },
+    "intro": {
+      "title": "Paneuropäisches MGA Rendezvous",
+      "content": {
+        "paragraph1": "Über zwei Tage wird unsere jährliche Frühjahrskonferenz MGAs, Kapazitätsanbieter und ausgewählte Dienstleister zusammenbringen, um Geschäftsmöglichkeiten in Europa zu erweitern. Unser Hauptfokus liegt auf der Förderung von Networking- und Beziehungsaufbaumöglichkeiten, aber wir planen auch ein Veranstaltungsprogramm, das den Standard für europäische MGA-Veranstaltungen setzt."
+      },
+      "image_alt": "Europäische Geschäftskonferenz"
+    },
+    "coming_soon": {
+      "title": "Demnächst",
+      "content": {
+        "paragraph1": "Das FASE Rendezvous befindet sich derzeit in der Entwicklung. Treten Sie unserer Gemeinschaft bei, um als Erste über diese kommende Flaggschiff-Networking-Möglichkeit informiert zu werden.",
+        "paragraph2": "Wir planen ein umfassendes Programm, das darauf ausgelegt ist, Zusammenarbeit und Wachstum im europäischen MGA-Ökosystem zu fördern."
+      },
+      "image_alt": "Zukünftige Networking-Veranstaltung",
+      "button": {
+        "text": "Machen Sie mit"
+      }
+    }
+  }
+}

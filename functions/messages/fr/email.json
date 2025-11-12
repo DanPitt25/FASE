@@ -1,0 +1,100 @@
+{
+  "password_reset": {
+    "subject": "Réinitialisez votre mot de passe FASE",
+    "title": "Réinitialisez votre mot de passe FASE",
+    "intro": "Vous avez demandé une réinitialisation de mot de passe pour votre compte FASE.",
+    "button_text": "Réinitialiser le mot de passe",
+    "button_instruction": "Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :",
+    "alt_text": "Ou copiez et collez ce lien dans votre navigateur :",
+    "expiry": "Ce lien expirera dans 1 heure.",
+    "ignore": "Si vous n'avez pas demandé cette réinitialisation de mot de passe, veuillez ignorer cet e-mail.",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "verification_code": {
+    "subject": "Vérifiez votre compte FASE",
+    "title": "Vérifiez votre compte FASE",
+    "intro": "Merci de vous être inscrit chez FASE. Veuillez vérifier votre adresse e-mail pour compléter la configuration de votre compte.",
+    "code_text": "Votre code de vérification est :",
+    "code_instruction": "Entrez ce code dans le formulaire de vérification :",
+    "expiry": "Ce code expirera dans 20 minutes.",
+    "ignore": "Si vous n'avez pas créé de compte FASE, veuillez ignorer cet e-mail.",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "invoice": {
+    "subject": "Facture d'adhésion FASE {invoiceNumber} - €{totalAmount}",
+    "title": "Facture d'adhésion FASE",
+    "intro": "Merci pour votre adhésion à FASE. Veuillez trouver votre facture ci-dessous.",
+    "invoice_number": "Numéro de facture : {invoiceNumber}",
+    "organization": "Organisation : {organizationName}",
+    "total_amount": "Montant total : €{totalAmount}",
+    "payment_info": "Les instructions de paiement ont été incluses dans le PDF joint.",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "join_request_approved": {
+    "subject": "Bienvenue chez FASE ! Votre demande d'adhésion pour {companyName} a été approuvée",
+    "title": "Bienvenue chez FASE !",
+    "intro": "Félicitations ! Votre demande d'adhésion pour {companyName} a été approuvée.",
+    "next_steps": "Prochaines étapes :",
+    "step_1": "Effectuez votre paiement pour activer votre adhésion",
+    "step_2": "Accédez à votre portail membre et aux ressources",
+    "step_3": "Rejoignez nos événements et opportunités de réseautage à venir",
+    "admin_notes_label": "Informations supplémentaires :",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "join_request_update": {
+    "subject": "Mise à jour de votre demande d'adhésion FASE pour {companyName}",
+    "title": "Mise à jour de la demande d'adhésion FASE",
+    "intro": "Nous avons une mise à jour concernant votre demande d'adhésion pour {companyName}.",
+    "status_label": "Statut actuel : {status}",
+    "admin_notes_label": "Informations supplémentaires :",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "membership_acceptance": {
+    "subject": "Bienvenue chez FASE ! Complétez la configuration de votre adhésion {organizationName}",
+    "title": "Bienvenue chez FASE !",
+    "intro": "Félicitations {fullName} ! Votre organisation {organizationName} a été acceptée comme membre FASE.",
+    "payment_instruction": "Pour compléter la configuration de votre adhésion, veuillez procéder au paiement :",
+    "paypal_button": "Payer avec PayPal",
+    "invoice_text": "Votre facture d'adhésion ({invoiceText}) est jointe à cet e-mail.",
+    "amount_due": "Montant dû : €{totalAmount}",
+    "next_steps": "Une fois le paiement effectué, vous aurez accès à tous les avantages et ressources des membres.",
+    "help": "Si vous avez des questions, veuillez nous contacter à help@fasemga.com"
+  },
+  "membership_acceptance_admin": {
+    "subject": "Bienvenue à FASE - Adhésion Approuvée",
+    "welcome": "Bienvenue à FASE",
+    "dear": "Cher/Chère",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "welcome_text": "Bienvenue à FASE. Votre candidature pour {organizationName} a été approuvée.",
+    "payment_text": "Pour compléter votre adhésion, veuillez effectuer le paiement de €{totalAmount} en utilisant l'une des méthodes suivantes :",
+    "payment_options": "Options de paiement :",
+    "paypal_option": "PayPal :",
+    "pay_online": "Payer en ligne",
+    "bank_transfer": "Virement bancaire :",
+    "invoice_attached": "Facture jointe avec les détails de paiement",
+    "engagement": "Nous nous réjouissons de votre engagement dans FASE et nous vous contacterons très prochainement avec un lien vers notre portail des membres. En attendant, veuillez me contacter pour toute question.",
+    "regards": "Meilleures salutations,",
+    "signature": "Aline",
+    "name": "Aline Sullivan",
+    "title": "Directrice des Opérations, FASE",
+    "email": "aline.sullivan@fasemga.com"
+  },
+  "pdf_invoice": {
+    "invoice": "FACTURE",
+    "bill_to": "Facturer à :",
+    "invoice_number": "Facture #:",
+    "date": "Date :",
+    "due_date": "Date d'échéance :",
+    "terms": "Conditions : Net 30",
+    "description": "Description",
+    "quantity": "Qté",
+    "unit_price": "Prix unitaire",
+    "total": "Total",
+    "total_amount_due": "Montant total dû :",
+    "payment_instructions": "Instructions de paiement :",
+    "payment_company": "Lexicon Associates, LLC accepte les paiements au nom de la Fédération des Agences de Souscription (FASE B.V.)",
+    "account_number": "Numéro de compte : 1255828998",
+    "payment_reference": "Référence de paiement : {invoiceNumber}"
+  }
+}

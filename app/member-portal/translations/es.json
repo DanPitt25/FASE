@@ -178,5 +178,35 @@
       "invoice_sent": "Factura Enviada"
     },
     "business_meeting_alt": "Reunión de Negocios"
+  },
+  "logo_management": {
+    "title": "Gestión de Logos",
+    "company_logo": "Logo de Su Empresa",
+    "upload_logo": "Subir Logo",
+    "uploading": "Subiendo...",
+    "file_requirements": "PNG, JPG hasta 5MB",
+    "admin_only": "Los administradores de cuenta pueden subir logos de empresa",
+    "fase_downloads": "Descargas Logo FASE",
+    "fase_downloads_desc": "Descargue logos FASE para sus materiales de marketing y sitio web",
+    "standard_rgb": "RGB Estándar",
+    "logo_mark": "Marca Logo",
+    "stacked": "Apilado",
+    "full_lockup": "Logo Completo",
+    "download": "Descargar",
+    "errors": {
+      "invalid_file_type": "Por favor seleccione un archivo de imagen",
+      "file_too_large": "El tamaño del archivo debe ser menor a 5MB",
+      "upload_failed": "Error al subir el logo. Por favor inténtelo de nuevo."
+    },
+    "success": {
+      "upload_successful": "Logo subido exitosamente!"
+    },
+    "alt_text": {
+      "company_logo": "Logo de la Empresa",
+      "fase_logo_rgb": "Logo FASE RGB",
+      "fase_logo_mark": "Marca Logo FASE",
+      "fase_logo_stacked": "Logo FASE Apilado",
+      "fase_logo_lockup": "Logo FASE Completo"
+    }
   }
 }

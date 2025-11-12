@@ -178,5 +178,35 @@
       "invoice_sent": "Factuur Verzonden"
     },
     "business_meeting_alt": "Zakelijke Bijeenkomst"
+  },
+  "logo_management": {
+    "title": "Logo Beheer",
+    "company_logo": "Uw Bedrijfslogo",
+    "upload_logo": "Logo Uploaden",
+    "uploading": "Uploaden...",
+    "file_requirements": "PNG, JPG tot 5MB",
+    "admin_only": "Accountbeheerders kunnen bedrijfslogo's uploaden",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Download FASE logo's voor uw marketingmaterialen en website",
+    "standard_rgb": "Standaard RGB",
+    "logo_mark": "Logo Merk",
+    "stacked": "Gestapeld",
+    "full_lockup": "Volledig Logo",
+    "download": "Downloaden",
+    "errors": {
+      "invalid_file_type": "Gelieve een afbeeldingsbestand te selecteren",
+      "file_too_large": "Bestandsgrootte moet minder dan 5MB zijn",
+      "upload_failed": "Logo uploaden mislukt. Gelieve opnieuw te proberen."
+    },
+    "success": {
+      "upload_successful": "Logo succesvol geupload!"
+    },
+    "alt_text": {
+      "company_logo": "Bedrijfslogo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo Merk",
+      "fase_logo_stacked": "FASE Logo Gestapeld",
+      "fase_logo_lockup": "FASE Volledig Logo"
+    }
   }
 }

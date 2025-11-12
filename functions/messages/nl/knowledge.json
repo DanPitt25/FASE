@@ -1,0 +1,69 @@
+{
+  "webinars": {
+    "page": {
+      "title": "Webinar Serie",
+      "banner_alt": "FASE webinar serie"
+    },
+    "intro": {
+      "title": "Door Experts Geleide Webinar Serie",
+      "content": [
+        "Onze webinar serie richt zich op de meest dringende behoeften van Europese GA-professionals met branche-experts en thought leaders. Focusgebieden omvatten regelgevingsuitdagingen, werving, datamanagement-kwesties en professionele standaarden."
+      ],
+      "image_alt": "Online leren en webinars"
+    },
+    "upcoming_webinars": {
+      "title": "Aankomende Webinars",
+      "regulatory_hurdles": {
+        "title": "Regelgevingshindernissen",
+        "description": "Markt voor markt analyse van het regelgevingslandschap voor GA's en hoe regelgevingsbarrières te overwinnen.",
+        "image_alt": "Regelgevingsnaleving"
+      },
+      "capital_structures": {
+        "title": "Kapitaalstructuren en Prikkels",
+        "description": "Advies over hoe afstemming met capaciteitsverschaffers te optimaliseren om duurzame capaciteit te verzekeren.",
+        "image_alt": "Zakelijke relaties"
+      },
+      "ai_promise_peril": {
+        "title": "AI: De Belofte en het Gevaar",
+        "description": "AI belooft enorme winsten voor GA's in operationele efficiëntie, risicoprijsstelling en verbetering van de makelaar- en klantervaring. Maar sommige gebruikscases zijn meer speculatief dan anderen.",
+        "image_alt": "Digitale transformatie"
+      }
+    }
+  },
+  "entrepreneurial_underwriter": {
+    "page": {
+      "title": "Entrepreneurial Underwriter",
+      "banner_alt": "Entrepreneurial underwriting"
+    },
+    "intro": {
+      "title": "De Entrepreneurial Underwriter",
+      "content": [
+        "Beginnend in 2026 zal de Entrepreneurial Underwriter – onze vlaggenschip publicatie – inzichten en praktische begeleiding verzamelen voor ondernemers die de toekomst van Europees gedelegeerd underwriting vormgeven."
+      ],
+      "image_alt": "Entrepreneurial underwriting inzichten"
+    },
+    "featured_content": {
+      "title": "Uitgelichte Inhoud",
+      "market_analysis": {
+        "title": "Marktanalyse",
+        "description": "Diepgaande analyse van Europese gedelegeerde underwriting trends, regelgevingsontwikkelingen en opkomende kansen voor GA's.",
+        "image_alt": "Marktanalyse"
+      },
+      "case_studies": {
+        "title": "Casestudies",
+        "description": "Echte voorbeelden van succesvolle GA-strategieën, innovatieve underwriting-benaderingen en effectieve capaciteitsrelaties.",
+        "image_alt": "Zakelijke casestudies"
+      },
+      "expert_insights": {
+        "title": "Expert Inzichten",
+        "description": "Perspectieven van brancheleiders over het bouwen van duurzame GA-bedrijven en het navigeren van Europese regelgevingsomgevingen.",
+        "image_alt": "Expert inzichten"
+      }
+    },
+    "quote": {
+      "text": "Gedelegeerd autoriteit underwriting is de meest ondernemende sector van de verzekeringsmarkt geworden. Ons doel bij FASE is de middelen te verzamelen om ondernemende underwriters te helpen slagen.",
+      "author": "William Pitt",
+      "title": "Uitvoerend Directeur, FASE"
+    }
+  }
+}

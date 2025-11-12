@@ -28,6 +28,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [step, setStep] = useState<'validate' | 'check-existing' | 'create-password' | 'sign-in' | 'complete'>('validate');
 
   const validateInviteToken = useCallback(async () => {
@@ -57,7 +58,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       setInviteData(decodedData);
       setStep('check-existing');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid invitation link');
+      setValidationError(err instanceof Error ? err.message : 'Invalid invitation link');
     } finally {
       setLoading(false);
     }
@@ -187,9 +188,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
     } catch (err) {
       console.error('Error signing in existing user:', err);
-      if (err instanceof Error && err.message.includes('wrong-password')) {
+      if (err instanceof Error && (err.message.includes('auth/wrong-password') || err.message.includes('auth/invalid-credential'))) {
         setError(t('page.errors.wrong_password'));
-      } else if (err instanceof Error && err.message.includes('user-not-found')) {
+      } else if (err instanceof Error && err.message.includes('auth/user-not-found')) {
         setError(t('page.errors.user_not_found'));
       } else {
         setError(err instanceof Error ? err.message : t('page.errors.signin_failed'));
@@ -213,7 +214,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     );
   }
 
-  if (error) {
+  if (validationError) {
     return (
       <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -235,7 +236,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <h3 className="text-xl font-noto-serif font-semibold text-red-900">{t('page.invalid_invitation')}</h3>
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700">{validationError}</p>
           </div>
           <div className="bg-white px-4 py-8 sm:px-16 text-center">
             <Button href="/" variant="secondary" size="medium" className="text-sm">
@@ -377,7 +378,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null); // Clear error when user types
+                  }}
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   placeholder={t('page.password_placeholder')}
                 />
@@ -462,7 +466,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError(null); // Clear error when user types
+                }}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 placeholder={t('page.password_placeholder_create')}
               />
@@ -488,7 +495,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               <input
                 type="password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (error) setError(null); // Clear error when user types
+                }}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 placeholder={t('page.confirm_password_placeholder')}
               />

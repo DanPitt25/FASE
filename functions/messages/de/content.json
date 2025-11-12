@@ -1,0 +1,39 @@
+{
+  "news": {
+    "page": {
+      "title": "Nachrichten",
+      "banner_alt": "FASE-Nachrichten und Updates"
+    },
+    "intro": {
+      "title": "FASE-Nachrichten & Updates",
+      "content": {
+        "paragraph1": "Bleiben Sie über FASE-Entwicklungen, Brancheneinblicke und Möglichkeiten für berufliches Wachstum und Zusammenarbeit in der europäischen MGA-Gemeinschaft informiert.",
+        "paragraph2": "Unsere Nachrichtenplattform dient als Ihre primäre Quelle für Informationen der europäischen delegierten Zeichnungsbranche, regulatorische Updates und organisatorische Ankündigungen."
+      },
+      "image_alt": "Branchennachrichten und Updates"
+    },
+    "latest_updates": {
+      "title": "Neueste Updates",
+      "cards": {
+        "foundation": {
+          "title": "FASE-Gründung",
+          "description": "FASE wird gegründet, um dem schnell wachsenden europäischen MGA-Sektor zu dienen und den Bedarf nach paneuropäischer Vertretung und Zusammenarbeit zu adressieren.",
+          "image_alt": "FASE-Gründungsankündigung"
+        },
+        "advisory_board": {
+          "title": "Beiratsbildung",
+          "description": "Angesehene Branchenführer treten dem FASE-Beirat bei, um die strategische Richtung zu leiten und vielfältige MGA-Gemeinschaftsinteressen zu vertreten.",
+          "image_alt": "Beiratsbildung"
+        },
+        "platform_launch": {
+          "title": "Start der Mitgliedschaftsplattform",
+          "description": "Das FASE-Mitgliederportal geht live und bietet Registrierung, Verzeichnisdienste und exklusive Ressourcen für europäische MGA-Fachleute.",
+          "image_alt": "Plattform-Start"
+        }
+      }
+    },
+    "article": {
+      "also_available_in": "Dieser Artikel ist auch verfügbar in:"
+    }
+  }
+}
