@@ -309,6 +309,14 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
     const corporateQuery = query(accountsRef, where('membershipType', '==', 'corporate'));
     const corporateSnapshot = await getDocs(corporateQuery);
     
+    // First, collect all matching memberships to implement priority logic
+    const matchingMemberships: Array<{
+      memberData: any;
+      orgData: any;
+      orgDocId: string;
+      isEmailMatch: boolean;
+    }> = [];
+    
     for (const orgDoc of corporateSnapshot.docs) {
       // Query members subcollection by the 'id' field (Firebase Auth UID)
       const membersRef = collection(db, 'accounts', orgDoc.id, 'members');
@@ -320,29 +328,49 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
         const memberData = memberDoc.data();
         const orgData = orgDoc.data();
         
-        return {
-          id: uid,
-          email: memberData.email,
-          personalName: memberData.personalName || memberData.name || 'Unknown',
-          jobTitle: memberData.jobTitle,
-          isPrimaryContact: memberData.isPrimaryContact,
-          memberJoinedAt: memberData.joinedAt,
-          membershipType: 'corporate',
-          organizationId: orgDoc.id, // This will be primary contact's Firebase UID after migration
-          organizationName: orgData.organizationName,
-          organizationType: orgData.organizationType,
-          status: orgData.status || 'approved',
-          // Organization data (from main accounts document)
-          portfolio: orgData.portfolio,
-          hasOtherAssociations: orgData.hasOtherAssociations,
-          primaryContact: orgData.primaryContact,
-          registeredAddress: orgData.registeredAddress,
-          logoURL: orgData.logoURL,
-          linesOfBusiness: orgData.linesOfBusiness,
-          createdAt: memberData.createdAt,
-          updatedAt: memberData.updatedAt
-        } as UnifiedMember;
+        // Check if user's email matches the main account email (primary contact)
+        const isEmailMatch = orgData.email === memberData.email;
+        
+        matchingMemberships.push({
+          memberData,
+          orgData,
+          orgDocId: orgDoc.id,
+          isEmailMatch
+        });
       }
+    }
+    
+    // Apply priority logic: 
+    // 1. Prioritize accounts where user's email matches the main account email
+    // 2. If multiple email matches (shouldn't happen), take the first
+    // 3. If no email matches, take the first membership found
+    let selectedMembership = matchingMemberships.find(m => m.isEmailMatch) || matchingMemberships[0];
+    
+    if (selectedMembership) {
+      const { memberData, orgData, orgDocId } = selectedMembership;
+      
+      return {
+        id: uid,
+        email: memberData.email,
+        personalName: memberData.personalName || memberData.name || 'Unknown',
+        jobTitle: memberData.jobTitle,
+        isPrimaryContact: memberData.isPrimaryContact,
+        memberJoinedAt: memberData.joinedAt,
+        membershipType: 'corporate',
+        organizationId: orgDocId, // This will be primary contact's Firebase UID after migration
+        organizationName: orgData.organizationName,
+        organizationType: orgData.organizationType,
+        status: orgData.status || 'approved',
+        // Organization data (from main accounts document)
+        portfolio: orgData.portfolio,
+        hasOtherAssociations: orgData.hasOtherAssociations,
+        primaryContact: orgData.primaryContact,
+        registeredAddress: orgData.registeredAddress,
+        logoURL: orgData.logoURL,
+        linesOfBusiness: orgData.linesOfBusiness,
+        createdAt: memberData.createdAt,
+        updatedAt: memberData.updatedAt
+      } as UnifiedMember;
     }
     
     return null;
