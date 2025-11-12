@@ -24,16 +24,9 @@ function PaymentContent() {
     const initiatePayment = async () => {
       setIsProcessing(true);
       try {
-        // Call the generate-payment-link API
-        const response = await fetch(`/api/generate-payment-link?amount=${amount}&email=${email}&organization=${organization}`);
-        
-        if (response.redirected) {
-          // If we get a redirect, follow it (likely to PayPal)
-          window.location.href = response.url;
-        } else {
-          // If no redirect, something went wrong
-          router.push('/payment-failed');
-        }
+        // Redirect directly to the generate-payment-link endpoint
+        // This will let the server handle the redirect properly
+        window.location.href = `/api/generate-payment-link?amount=${amount}&email=${email}&organization=${organization}`;
       } catch (error) {
         console.error('Payment initiation failed:', error);
         router.push('/payment-failed');
