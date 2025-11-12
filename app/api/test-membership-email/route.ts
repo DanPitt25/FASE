@@ -336,8 +336,9 @@ export async function POST(request: NextRequest) {
       currentY -= sectionGap + 20;
       
       // TOTAL SECTION
-      const totalSectionWidth = 200;
+      const totalSectionWidth = 240; // Increased width to accommodate longer text
       const totalX = width - margins.right - totalSectionWidth;
+      const fixedGapBetweenTextAndAmount = 20; // Fixed 20px gap between text and amount
       
       firstPage.drawRectangle({
         x: totalX,
@@ -348,16 +349,22 @@ export async function POST(request: NextRequest) {
         borderWidth: 2,
       });
       
+      // Draw the label text
+      const labelX = totalX + 15;
       firstPage.drawText(pdfTexts.totalAmountDue, {
-        x: totalX + 15,
+        x: labelX,
         y: currentY - 22,
         size: 12,
         font: boldFont,
         color: faseNavy,
       });
       
+      // Calculate text width to position amount with fixed gap
+      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
+      const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
+      
       firstPage.drawText(formatEuro(testData.totalAmount), {
-        x: totalX + totalSectionWidth - 60,
+        x: amountX,
         y: currentY - 22,
         size: 13,
         font: boldFont,
