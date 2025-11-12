@@ -487,19 +487,14 @@ export default function ManageProfile() {
                     {showAddForm ? t('manage_profile.cancel') : t('manage_profile.add_member')}
                   </Button>
                 );
-              } else if (atLimit) {
-                return (
-                  <span className="text-sm text-gray-500">
-                    {t('manage_profile.member_limit_reached_message')}
-                  </span>
-                );
-              } else {
+              } else if (!isAdmin) {
                 return (
                   <span className="text-sm text-gray-500">
                     {t('manage_profile.admin_only_message')}
                   </span>
                 );
               }
+              // For atLimit case, show nothing
             })()}
           </div>
         </div>
