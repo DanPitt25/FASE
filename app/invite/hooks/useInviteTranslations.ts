@@ -74,7 +74,7 @@ export function useInviteTranslations() {
     const loadTranslations = async () => {
       try {
         // Get locale from localStorage or default to English
-        const savedLocale = localStorage.getItem('locale') || 'en';
+        const savedLocale = localStorage.getItem('fase-locale') || 'en';
         setLocale(savedLocale);
         
         // Load translations for the locale

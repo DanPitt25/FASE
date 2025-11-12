@@ -40,7 +40,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       
       // Validate token structure
       if (!decodedData.memberId || !decodedData.companyId || !decodedData.email || !decodedData.name) {
-        throw new Error(t('page.errors.invalid_link'));
+        throw new Error('Invalid invitation link');
       }
       
       // Add fallback for company name if not present (for old tokens)
@@ -51,7 +51,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
       // Check if token is not too old (24 hours)
       const tokenAge = Date.now() - decodedData.timestamp;
       if (tokenAge > 24 * 60 * 60 * 1000) {
-        throw new Error(t('page.errors.expired_link'));
+        throw new Error('Invitation link has expired. Please request a new invitation.');
       }
 
       setInviteData(decodedData);
@@ -87,13 +87,13 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
       // Validate passwords match
       if (password !== confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error(t('page.errors.passwords_no_match'));
       }
 
       // Validate password strength
       const { isValid } = validatePassword(password);
       if (!isValid) {
-        throw new Error('Password must be at least 8 characters with at least one capital letter and one special character');
+        throw new Error(t('page.errors.weak_password'));
       }
 
       // Call server-side API to create account and update member document
@@ -188,11 +188,11 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     } catch (err) {
       console.error('Error signing in existing user:', err);
       if (err instanceof Error && err.message.includes('wrong-password')) {
-        setError('Incorrect password. Please try again.');
+        setError(t('page.errors.wrong_password'));
       } else if (err instanceof Error && err.message.includes('user-not-found')) {
-        setError('No account found with this email. Please create a new account instead.');
+        setError(t('page.errors.user_not_found'));
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to sign in');
+        setError(err instanceof Error ? err.message : t('page.errors.signin_failed'));
       }
     } finally {
       setProcessing(false);
@@ -238,7 +238,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             <p className="text-sm text-red-700">{error}</p>
           </div>
           <div className="bg-white px-4 py-8 sm:px-16 text-center">
-            <Button href="/" variant="secondary" size="medium">
+            <Button href="/" variant="secondary" size="medium" className="text-sm">
               {t('page.return_home')}
             </Button>
           </div>
@@ -311,8 +311,8 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               <Button
                 onClick={() => setStep('sign-in')}
                 variant="primary"
-                size="large"
-                className="w-full"
+                size="medium"
+                className="w-full text-sm"
               >
                 {t('page.have_account')}
               </Button>
@@ -320,8 +320,8 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               <Button
                 onClick={() => setStep('create-password')}
                 variant="secondary"
-                size="large"
-                className="w-full"
+                size="medium"
+                className="w-full text-sm"
               >
                 {t('page.need_account')}
               </Button>
@@ -394,19 +394,19 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                   onClick={handleSignInExisting}
                   disabled={processing || !password}
                   variant="primary"
-                  size="large"
-                  className="w-full"
+                  size="medium"
+                  className="w-full text-sm"
                 >
-                  {processing ? 'Signing In...' : 'Sign In & Join Team'}
+                  {processing ? t('page.signin_loading') : t('page.signin_button')}
                 </Button>
                 
                 <Button
                   onClick={() => setStep('check-existing')}
                   variant="secondary"
-                  size="large"
-                  className="w-full"
+                  size="medium"
+                  className="w-full text-sm"
                 >
-                  Back
+                  {t('page.back_button')}
                 </Button>
               </div>
             </div>
@@ -445,7 +445,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-2">
-                Email Address
+                {t('page.email_address_label')}
               </label>
               <input
                 type="email"
@@ -469,13 +469,13 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               {password && (
                 <div className="mt-2 text-xs space-y-1">
                   <div className={passwordValidation.requirements.length ? 'text-green-600' : 'text-red-600'}>
-                    ✓ At least 8 characters
+                    ✓ {t('page.password_requirements.length')}
                   </div>
                   <div className={passwordValidation.requirements.capital ? 'text-green-600' : 'text-red-600'}>
-                    ✓ At least one capital letter
+                    ✓ {t('page.password_requirements.capital')}
                   </div>
                   <div className={passwordValidation.requirements.special ? 'text-green-600' : 'text-red-600'}>
-                    ✓ At least one special character
+                    ✓ {t('page.password_requirements.special')}
                   </div>
                 </div>
               )}
@@ -493,7 +493,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 placeholder="Confirm your password"
               />
               {confirmPassword && password !== confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+                <p className="mt-1 text-xs text-red-600">{t('page.passwords_no_match')}</p>
               )}
             </div>
 
@@ -507,10 +507,10 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               onClick={handleCreateAccount}
               disabled={processing || !passwordValidation.isValid || password !== confirmPassword}
               variant="primary"
-              size="large"
-              className="w-full"
+              size="medium"
+              className="w-full text-sm"
             >
-              {processing ? 'Creating Account...' : 'Create Account'}
+              {processing ? t('page.creating_account') : t('page.create_account_button')}
             </Button>
           </div>
         </div>
