@@ -265,8 +265,8 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             <svg className="w-12 h-12 text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <h3 className="text-xl font-noto-serif font-semibold text-green-900">Account Created!</h3>
-            <p className="text-sm text-green-700">Welcome to FASE! Redirecting to member portal...</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-green-900">{t('page.account_created_title')}</h3>
+            <p className="text-sm text-green-700">{t('page.account_created_message')}</p>
           </div>
         </div>
       </div>
@@ -351,9 +351,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
               />
             </Link>
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Sign In to Join Team</h3>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('page.signin_title')}</h3>
             <p className="text-sm text-fase-black">
-              Enter your FASE account password to join {inviteData?.companyName || 'the team'}.
+              {t('page.signin_message', { companyName: inviteData?.companyName || 'the team' })}
             </p>
           </div>
           <div className="bg-white px-4 py-8 sm:px-16">
@@ -372,14 +372,14 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-2">
-                  Password *
+                  {t('page.password_label')} *
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  placeholder="Enter your FASE password"
+                  placeholder={t('page.password_placeholder')}
                 />
               </div>
 
@@ -436,9 +436,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
               className="h-12 w-auto object-contain mb-4 cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">Complete Your Account</h3>
+          <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('page.create_title')}</h3>
           <p className="text-sm text-fase-black">
-            Welcome {inviteData?.name}! Create a secure password to access your FASE account.
+            {t('page.create_message', { name: inviteData?.name || '' })}
           </p>
         </div>
         <div className="bg-white px-4 py-8 sm:px-16">
@@ -457,14 +457,14 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-2">
-                Password *
+                {t('page.password_label')} *
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                placeholder="Create a secure password"
+                placeholder={t('page.password_placeholder_create')}
               />
               {password && (
                 <div className="mt-2 text-xs space-y-1">
@@ -483,14 +483,14 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-2">
-                Confirm Password *
+                {t('page.confirm_password_label')} *
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                placeholder="Confirm your password"
+                placeholder={t('page.confirm_password_placeholder')}
               />
               {confirmPassword && password !== confirmPassword && (
                 <p className="mt-1 text-xs text-red-600">{t('page.passwords_no_match')}</p>
