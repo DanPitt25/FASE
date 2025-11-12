@@ -135,7 +135,12 @@ export default function ManageProfile() {
         };
         setCompany(companyInfo);
         
-        setMembers(membersData);
+        // Transform CompanyMember[] to Member[] by mapping isPrimaryContact to isAccountAdministrator
+        const transformedMembers: Member[] = membersData.map(member => ({
+          ...member,
+          isAccountAdministrator: member.isPrimaryContact
+        }));
+        setMembers(transformedMembers);
       } catch (err) {
         console.error('ManageProfile: Error loading company data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load members');
@@ -422,9 +427,9 @@ export default function ManageProfile() {
     } catch (err) {
       console.error('Error uploading logo:', err);
       console.error('Error details:', {
-        code: err.code,
-        message: err.message,
-        serverResponse: err.serverResponse,
+        code: (err as any).code,
+        message: (err as any).message,
+        serverResponse: (err as any).serverResponse,
         fullError: err
       });
       alert(t('logo_management.errors.upload_failed'));
