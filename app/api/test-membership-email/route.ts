@@ -87,13 +87,14 @@ export async function POST(request: NextRequest) {
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
-    // Create payment link with amount and user email for PayPal
+    // Create payment link with amount and PayPal email (can be different from recipient email)
+    const paypalEmail = requestData.paypalEmail || testData.email; // Use separate PayPal email if provided
     const paypalParams = new URLSearchParams({
       amount: testData.totalAmount.toString(),
-      email: testData.email,
+      email: paypalEmail,
       organization: testData.organizationName
     });
-    const paypalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/generate-payment-link?${paypalParams.toString()}`;
+    const paypalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment?${paypalParams.toString()}`;
     
     console.log('✅ Payment link generated:', paypalLink);
     

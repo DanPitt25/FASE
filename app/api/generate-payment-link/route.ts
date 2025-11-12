@@ -28,17 +28,18 @@ export async function GET(request: NextRequest) {
     
     console.log('Generating PayPal subscription for amount:', amount);
     
-    // Create fresh PayPal subscription
-    const paypalResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/create-paypal-subscription`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentData),
-    });
+    // Import the POST function directly instead of making HTTP request
+    const { POST: createPayPalSubscription } = await import('../create-paypal-subscription/route');
     
-    if (!paypalResponse.ok) {
-      console.error('PayPal subscription creation failed:', paypalResponse.status);
+    // Create fresh PayPal subscription by calling the function directly
+    const mockRequest = {
+      json: async () => paymentData
+    } as NextRequest;
+    
+    const paypalResponse = await createPayPalSubscription(mockRequest);
+    
+    if (!paypalResponse || paypalResponse.status !== 200) {
+      console.error('PayPal subscription creation failed');
       return NextResponse.redirect(new URL('/payment-failed', request.url));
     }
     
