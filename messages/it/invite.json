@@ -1,0 +1,60 @@
+{
+  "page": {
+    "validating": "Convalida dell'invito...",
+    "invalid_invitation": "Invito non valido",
+    "return_home": "Torna alla home",
+    "welcome_title": "Benvenuto in {{companyName}}!",
+    "welcome_message": "Ciao {{name}}! Sei stato invitato a unirti al team.",
+    "email_label": "Email:",
+    "account_question": "Hai già un account FASE con questo indirizzo email?",
+    "have_account": "Sì, ho un account - Accedi",
+    "need_account": "No, devo creare un account",
+    "signin_title": "Accedi per unirti al team",
+    "signin_message": "Inserisci la password del tuo account FASE per unirti a {{companyName}}.",
+    "password_label": "Password",
+    "password_placeholder": "Inserisci la tua password FASE",
+    "signin_button": "Accedi e unisciti al team",
+    "signin_loading": "Accesso in corso...",
+    "back_button": "Indietro",
+    "create_title": "Completa il tuo account",
+    "create_message": "Benvenuto {{name}}! Crea una password sicura per accedere al tuo account FASE.",
+    "email_address_label": "Indirizzo email",
+    "password_requirements": {
+      "length": "Almeno 8 caratteri",
+      "capital": "Almeno una lettera maiuscola",
+      "special": "Almeno un carattere speciale"
+    },
+    "confirm_password_label": "Conferma password",
+    "confirm_password_placeholder": "Conferma la tua password",
+    "password_placeholder_create": "Crea una password sicura",
+    "passwords_no_match": "Le password non corrispondono",
+    "create_account_button": "Crea account",
+    "creating_account": "Creazione account...",
+    "account_created_title": "Account creato!",
+    "account_created_message": "Benvenuto in FASE! Reindirizzamento al portale membri...",
+    "errors": {
+      "invalid_link": "Link di invito non valido",
+      "expired_link": "Il link di invito è scaduto. Richiedi un nuovo invito.",
+      "passwords_no_match": "Le password non corrispondono",
+      "weak_password": "La password deve avere almeno 8 caratteri con almeno una lettera maiuscola e un carattere speciale",
+      "create_account_failed": "Impossibile creare l'account",
+      "signin_failed": "Accesso fallito",
+      "wrong_password": "Password errata. Riprova.",
+      "user_not_found": "Nessun account trovato con questa email. Crea invece un nuovo account.",
+      "join_team_failed": "Impossibile unirsi al team"
+    }
+  },
+  "email": {
+    "subject": "Sei invitato a unirti a {{companyName}} su FASE",
+    "title": "Sei invitato a unirti a {{companyName}} su FASE",
+    "greeting": "Ciao {{name}},",
+    "invitation_text": "{{inviterName}} ti ha invitato a unirti a <strong>{{companyName}}</strong> sulla piattaforma della Federazione degli AGM Europei (FASE).",
+    "instruction": "Per completare la configurazione del tuo account e ottenere accesso al portale membri della tua azienda, clicca sul pulsante qui sotto:",
+    "button_text": "Completa configurazione account",
+    "guide_text": "Questo link ti guiderà nella creazione della tua password di account sicura e nell'accesso a tutti i vantaggi per i membri.",
+    "regards": "Cordiali saluti,",
+    "team_signature": "Il team FASE",
+    "help_text": "Se hai domande, contattaci a",
+    "help_email": "help@fasemga.com"
+  }
+}

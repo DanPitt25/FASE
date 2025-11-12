@@ -1,0 +1,60 @@
+{
+  "page": {
+    "validating": "Uitnodiging valideren...",
+    "invalid_invitation": "Ongeldige uitnodiging",
+    "return_home": "Terug naar home",
+    "welcome_title": "Welkom bij {{companyName}}!",
+    "welcome_message": "Hallo {{name}}! Je bent uitgenodigd om het team te vervoegen.",
+    "email_label": "Email:",
+    "account_question": "Heb je al een FASE account met dit emailadres?",
+    "have_account": "Ja, ik heb een account - Inloggen",
+    "need_account": "Nee, ik moet een account aanmaken",
+    "signin_title": "Inloggen om het team te vervoegen",
+    "signin_message": "Voer je FASE account wachtwoord in om {{companyName}} te vervoegen.",
+    "password_label": "Wachtwoord",
+    "password_placeholder": "Voer je FASE wachtwoord in",
+    "signin_button": "Inloggen en team vervoegen",
+    "signin_loading": "Inloggen...",
+    "back_button": "Terug",
+    "create_title": "Voltooi je account",
+    "create_message": "Welkom {{name}}! Maak een veilig wachtwoord aan om toegang te krijgen tot je FASE account.",
+    "email_address_label": "Emailadres",
+    "password_requirements": {
+      "length": "Minimaal 8 karakters",
+      "capital": "Minimaal één hoofdletter",
+      "special": "Minimaal één speciaal karakter"
+    },
+    "confirm_password_label": "Bevestig wachtwoord",
+    "confirm_password_placeholder": "Bevestig je wachtwoord",
+    "password_placeholder_create": "Maak een veilig wachtwoord aan",
+    "passwords_no_match": "Wachtwoorden komen niet overeen",
+    "create_account_button": "Account aanmaken",
+    "creating_account": "Account aanmaken...",
+    "account_created_title": "Account aangemaakt!",
+    "account_created_message": "Welkom bij FASE! Doorsturen naar ledenportaal...",
+    "errors": {
+      "invalid_link": "Ongeldige uitnodigingslink",
+      "expired_link": "De uitnodigingslink is verlopen. Vraag een nieuwe uitnodiging aan.",
+      "passwords_no_match": "Wachtwoorden komen niet overeen",
+      "weak_password": "Wachtwoord moet minimaal 8 karakters hebben met minimaal één hoofdletter en één speciaal karakter",
+      "create_account_failed": "Account aanmaken mislukt",
+      "signin_failed": "Inloggen mislukt",
+      "wrong_password": "Onjuist wachtwoord. Probeer opnieuw.",
+      "user_not_found": "Geen account gevonden met dit emailadres. Maak in plaats daarvan een nieuw account aan.",
+      "join_team_failed": "Team vervoegen mislukt"
+    }
+  },
+  "email": {
+    "subject": "Je bent uitgenodigd om {{companyName}} te vervoegen op FASE",
+    "title": "Je bent uitgenodigd om {{companyName}} te vervoegen op FASE",
+    "greeting": "Hallo {{name}},",
+    "invitation_text": "{{inviterName}} heeft je uitgenodigd om <strong>{{companyName}}</strong> te vervoegen op het platform van de Federatie van Europese MGA's (FASE).",
+    "instruction": "Om je account setup te voltooien en toegang te krijgen tot het ledenportaal van je bedrijf, klik op de knop hieronder:",
+    "button_text": "Account setup voltooien",
+    "guide_text": "Deze link begeleidt je bij het aanmaken van je veilige account wachtwoord en toegang tot alle ledenvoordelen.",
+    "regards": "Met vriendelijke groet,",
+    "team_signature": "Het FASE team",
+    "help_text": "Als je vragen hebt, neem contact met ons op via",
+    "help_email": "help@fasemga.com"
+  }
+}

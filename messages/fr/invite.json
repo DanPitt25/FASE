@@ -1,0 +1,60 @@
+{
+  "page": {
+    "validating": "Validation de l'invitation...",
+    "invalid_invitation": "Invitation invalide",
+    "return_home": "Retour à l'accueil",
+    "welcome_title": "Bienvenue chez {{companyName}} !",
+    "welcome_message": "Salut {{name}} ! Vous avez été invité à rejoindre l'équipe.",
+    "email_label": "Email :",
+    "account_question": "Avez-vous déjà un compte FASE avec cette adresse email ?",
+    "have_account": "Oui, j'ai un compte - Se connecter",
+    "need_account": "Non, je dois créer un compte",
+    "signin_title": "Se connecter pour rejoindre l'équipe",
+    "signin_message": "Entrez le mot de passe de votre compte FASE pour rejoindre {{companyName}}.",
+    "password_label": "Mot de passe",
+    "password_placeholder": "Entrez votre mot de passe FASE",
+    "signin_button": "Se connecter et rejoindre l'équipe",
+    "signin_loading": "Connexion en cours...",
+    "back_button": "Retour",
+    "create_title": "Complétez votre compte",
+    "create_message": "Bienvenue {{name}} ! Créez un mot de passe sécurisé pour accéder à votre compte FASE.",
+    "email_address_label": "Adresse email",
+    "password_requirements": {
+      "length": "Au moins 8 caractères",
+      "capital": "Au moins une lettre majuscule",
+      "special": "Au moins un caractère spécial"
+    },
+    "confirm_password_label": "Confirmer le mot de passe",
+    "confirm_password_placeholder": "Confirmez votre mot de passe",
+    "password_placeholder_create": "Créez un mot de passe sécurisé",
+    "passwords_no_match": "Les mots de passe ne correspondent pas",
+    "create_account_button": "Créer un compte",
+    "creating_account": "Création du compte...",
+    "account_created_title": "Compte créé !",
+    "account_created_message": "Bienvenue chez FASE ! Redirection vers le portail membre...",
+    "errors": {
+      "invalid_link": "Lien d'invitation invalide",
+      "expired_link": "Le lien d'invitation a expiré. Veuillez demander une nouvelle invitation.",
+      "passwords_no_match": "Les mots de passe ne correspondent pas",
+      "weak_password": "Le mot de passe doit contenir au moins 8 caractères avec au moins une lettre majuscule et un caractère spécial",
+      "create_account_failed": "Impossible de créer le compte",
+      "signin_failed": "Échec de la connexion",
+      "wrong_password": "Mot de passe incorrect. Veuillez réessayer.",
+      "user_not_found": "Aucun compte trouvé avec cet email. Veuillez créer un nouveau compte à la place.",
+      "join_team_failed": "Impossible de rejoindre l'équipe"
+    }
+  },
+  "email": {
+    "subject": "Vous êtes invité à rejoindre {{companyName}} sur FASE",
+    "title": "Vous êtes invité à rejoindre {{companyName}} sur FASE",
+    "greeting": "Salut {{name}},",
+    "invitation_text": "{{inviterName}} vous a invité à rejoindre <strong>{{companyName}}</strong> sur la plateforme de la Fédération des AGM Européennes (FASE).",
+    "instruction": "Pour terminer la configuration de votre compte et accéder au portail membre de votre entreprise, veuillez cliquer sur le bouton ci-dessous :",
+    "button_text": "Terminer la configuration du compte",
+    "guide_text": "Ce lien vous guidera dans la création de votre mot de passe de compte sécurisé et l'accès à tous les avantages membre.",
+    "regards": "Cordialement,",
+    "team_signature": "L'équipe FASE",
+    "help_text": "Si vous avez des questions, contactez-nous à",
+    "help_email": "help@fasemga.com"
+  }
+}
