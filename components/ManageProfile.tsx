@@ -682,15 +682,26 @@ export default function ManageProfile() {
                       const isAdmin = currentUserMember?.isAccountAdministrator;
                       
                       if (memberNeedsInvite(memberItem)) {
+                        // For pending invites, show both resend and remove buttons
                         return isAdmin ? (
-                          <Button
-                            onClick={() => handleInviteMember(memberItem)}
-                            disabled={inviting === memberItem.id}
-                            variant="primary"
-                            size="small"
-                          >
-                            {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
-                          </Button>
+                          <>
+                            <Button
+                              onClick={() => handleInviteMember(memberItem)}
+                              disabled={inviting === memberItem.id}
+                              variant="primary"
+                              size="small"
+                            >
+                              {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
+                            </Button>
+                            <Button
+                              onClick={() => handleRemoveMember(memberItem)}
+                              variant="secondary"
+                              size="small"
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              {t('manage_profile.remove')}
+                            </Button>
+                          </>
                         ) : null;
                       } else {
                         return (
