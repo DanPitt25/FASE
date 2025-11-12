@@ -157,6 +157,8 @@
     "saving": "Saving...",
     "sending": "Sending...",
     "resend_invite": "Resend Invite",
+    "member_limit_reached_message": "Maximum 3 members allowed",
+    "admin_only_message": "Only account administrators can manage members",
     "errors": {
       "load_members_failed": "Failed to load members",
       "update_member_failed": "Failed to update member",
@@ -164,7 +166,9 @@
       "remove_member_failed": "Failed to remove member",
       "send_invitation_email_failed": "Failed to send invitation email",
       "send_invitation_failed": "Failed to send invitation",
-      "add_member_failed": "Failed to add member"
+      "add_member_failed": "Failed to add member",
+      "admin_only_action": "Only account administrators can perform this action",
+      "member_limit_reached": "Cannot add more members. Maximum of 3 members allowed per company."
     },
     "organization_types": {
       "mga_full": "Managing General Agent",

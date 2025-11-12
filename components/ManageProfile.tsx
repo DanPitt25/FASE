@@ -22,7 +22,7 @@ interface Member {
   email: string;
   personalName: string;
   jobTitle?: string;
-  isPrimaryContact: boolean; // Note: This is actually accountAdministrator in the data
+  isAccountAdministrator: boolean;
   joinedAt: any;
   addedBy?: string;
   createdAt: any;
@@ -34,7 +34,7 @@ interface EditingMember {
   id: string;
   personalName: string;
   jobTitle: string;
-  isPrimaryContact: boolean; // Note: This is actually accountAdministrator in the data
+  isAccountAdministrator: boolean;
 }
 
 export default function ManageProfile() {
@@ -149,7 +149,7 @@ export default function ManageProfile() {
       id: memberToEdit.id,
       personalName: memberToEdit.personalName,
       jobTitle: memberToEdit.jobTitle || '',
-      isPrimaryContact: memberToEdit.isPrimaryContact
+      isAccountAdministrator: memberToEdit.isAccountAdministrator
     });
   };
 
@@ -164,7 +164,7 @@ export default function ManageProfile() {
       await updateDoc(memberRef, {
         personalName: editingMember.personalName,
         jobTitle: editingMember.jobTitle,
-        isPrimaryContact: editingMember.isPrimaryContact,
+        isAccountAdministrator: editingMember.isAccountAdministrator,
         updatedAt: serverTimestamp()
       });
 
@@ -186,6 +186,13 @@ export default function ManageProfile() {
 
   const handleRemoveMember = async (memberToRemove: Member) => {
     if (!user || !member) return;
+    
+    // Check if current user is account administrator
+    const currentUserMember = members.find(m => m.id === user.uid);
+    if (!currentUserMember?.isAccountAdministrator) {
+      setError(t('manage_profile.errors.admin_only_action'));
+      return;
+    }
     
     if (!confirm(t('manage_profile.confirm_remove', { name: memberToRemove.personalName }))) {
       return;
@@ -255,6 +262,19 @@ export default function ManageProfile() {
   const handleAddMember = async () => {
     if (!user || !member || !newMember.email || !newMember.personalName) return;
 
+    // Check if current user is account administrator
+    const currentUserMember = members.find(m => m.id === user.uid);
+    if (!currentUserMember?.isAccountAdministrator) {
+      setError(t('manage_profile.errors.admin_only_action'));
+      return;
+    }
+
+    // Check member limit (maximum 3 members total)
+    if (members.length >= 3) {
+      setError(t('manage_profile.errors.member_limit_reached'));
+      return;
+    }
+
     try {
       setAdding(true);
       setError(null);
@@ -269,7 +289,6 @@ export default function ManageProfile() {
         email: newMember.email.toLowerCase().trim(),
         personalName: newMember.personalName.trim(),
         jobTitle: newMember.jobTitle.trim() || '',
-        isPrimaryContact: false,
         isAccountAdministrator: false,
         isRegistrant: false,
         accountConfirmed: false,
@@ -451,15 +470,37 @@ export default function ManageProfile() {
         <div className="px-6 py-4 border-b border-fase-light-gold">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              {t('manage_profile.team_members')} ({members.length})
+              {t('manage_profile.team_members')} ({members.length}/3)
             </h3>
-            <Button
-              onClick={() => setShowAddForm(!showAddForm)}
-              variant="primary"
-              size="small"
-            >
-              {showAddForm ? t('manage_profile.cancel') : t('manage_profile.add_member')}
-            </Button>
+            {(() => {
+              const currentUserMember = members.find(m => m.id === user?.uid);
+              const isAdmin = currentUserMember?.isAccountAdministrator;
+              const atLimit = members.length >= 3;
+              
+              if (isAdmin && !atLimit) {
+                return (
+                  <Button
+                    onClick={() => setShowAddForm(!showAddForm)}
+                    variant="primary"
+                    size="small"
+                  >
+                    {showAddForm ? t('manage_profile.cancel') : t('manage_profile.add_member')}
+                  </Button>
+                );
+              } else if (atLimit) {
+                return (
+                  <span className="text-sm text-gray-500">
+                    {t('manage_profile.member_limit_reached_message')}
+                  </span>
+                );
+              } else {
+                return (
+                  <span className="text-sm text-gray-500">
+                    {t('manage_profile.admin_only_message')}
+                  </span>
+                );
+              }
+            })()}
           </div>
         </div>
 
@@ -571,9 +612,9 @@ export default function ManageProfile() {
                     <input
                       type="checkbox"
                       id={`primary-${memberItem.id}`}
-                      checked={editingMember.isPrimaryContact}
+                      checked={editingMember.isAccountAdministrator}
                       onChange={(e) => setEditingMember(prev => 
-                        prev ? { ...prev, isPrimaryContact: e.target.checked } : null
+                        prev ? { ...prev, isAccountAdministrator: e.target.checked } : null
                       )}
                       className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-fase-light-gold rounded"
                     />
@@ -614,7 +655,7 @@ export default function ManageProfile() {
                         <h4 className="font-medium text-fase-navy">
                           {memberItem.personalName}
                         </h4>
-                        {memberItem.isPrimaryContact && (
+                        {memberItem.isAccountAdministrator && (
                           <span className="text-xs font-medium text-gray-600">
                             ({t('manage_profile.account_administrator')})
                           </span>
@@ -641,34 +682,47 @@ export default function ManageProfile() {
                   </div>
 
                   <div className="flex space-x-2">
-                    {memberNeedsInvite(memberItem) ? (
-                      <Button
-                        onClick={() => handleInviteMember(memberItem)}
-                        disabled={inviting === memberItem.id}
-                        variant="primary"
-                        size="small"
-                      >
-                        {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => handleEditMember(memberItem)}
-                        variant="secondary"
-                        size="small"
-                      >
-                        {t('manage_profile.edit')}
-                      </Button>
-                    )}
-                    {memberItem.id !== user?.uid && (
-                      <Button
-                        onClick={() => handleRemoveMember(memberItem)}
-                        variant="secondary"
-                        size="small"
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        {t('manage_profile.remove')}
-                      </Button>
-                    )}
+                    {(() => {
+                      const currentUserMember = members.find(m => m.id === user?.uid);
+                      const isAdmin = currentUserMember?.isAccountAdministrator;
+                      
+                      if (memberNeedsInvite(memberItem)) {
+                        return isAdmin ? (
+                          <Button
+                            onClick={() => handleInviteMember(memberItem)}
+                            disabled={inviting === memberItem.id}
+                            variant="primary"
+                            size="small"
+                          >
+                            {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
+                          </Button>
+                        ) : null;
+                      } else {
+                        return (
+                          <>
+                            {(isAdmin || memberItem.id === user?.uid) && (
+                              <Button
+                                onClick={() => handleEditMember(memberItem)}
+                                variant="secondary"
+                                size="small"
+                              >
+                                {t('manage_profile.edit')}
+                              </Button>
+                            )}
+                            {isAdmin && memberItem.id !== user?.uid && (
+                              <Button
+                                onClick={() => handleRemoveMember(memberItem)}
+                                variant="secondary"
+                                size="small"
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                {t('manage_profile.remove')}
+                              </Button>
+                            )}
+                          </>
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
               )}
