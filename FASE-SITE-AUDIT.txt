@@ -173,19 +173,21 @@ COMPLETE SITE STRUCTURE ANALYSIS
 22. **/register/thank-you** - Registration confirmation
 23. **/reset-password** - Password reset
 24. **/invite/[token]** - Invitation acceptance
-25. **/knowledge** - Knowledge base hub
-26. **/knowledge-base-webinars** - Knowledge base webinars
-27. **/knowledge-base-webinars/video/[slug]** - Individual videos
-28. **/industry-advocacy** - Industry advocacy
-29. **/market-intelligence** - Market intelligence  
-30. **/sponsorship** - Sponsorship information
-31. **/payment** - Payment processing
-32. **/payment-success** - Payment success
-33. **/payment-succeeded** - Alternative payment success
-34. **/payment-failed** - Payment failure
-35. **/subscription-success** - Subscription success
-36. **/coming-soon** - Coming soon placeholder
-37. **/protected** - Protected test page
+25. **/knowledge-base-webinars** - Knowledge base webinars
+26. **/knowledge-base-webinars/video/[slug]** - Individual videos
+27. **/payment** - Payment processing
+28. **/payment-success** - Payment success
+29. **/payment-succeeded** - Alternative payment success
+30. **/payment-failed** - Payment failure
+31. **/subscription-success** - Subscription success
+32. **/protected** - Protected test page
+
+### 🗑️ REMOVED DEPRECATED PAGES:
+- ~~/sponsorship~~ (replaced by /sponsors)
+- ~~/coming-soon~~ (placeholder page)
+- ~~/market-intelligence~~ (deprecated feature)
+- ~~/industry-advocacy~~ (deprecated feature)  
+- ~~/knowledge~~ (index page, promoting subdirectories instead)
 
 ### Header Navigation Structure:
 - **About FASE** (dropdown): /about, /about/mission, /about/code-of-conduct, /about/leadership, /about/people, /about/news

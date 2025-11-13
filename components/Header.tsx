@@ -227,10 +227,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     </span>
                     <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-2">
-                        <a href="/knowledge/entrepreneurial-underwriter" className={`block px-4 py-2 text-sm ${
+                        <a href="/entrepreneurial-underwriter" className={`block px-4 py-2 text-sm ${
                           currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>Entrepreneurial Underwriter</a>
-                        <a href="/knowledge/webinars" className={`block px-4 py-2 text-sm ${
+                        <a href="/webinars" className={`block px-4 py-2 text-sm ${
                           currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>{tNav('webinars')}</a>
                       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import ContentPageLayout from '../../../components/ContentPageLayout';
+import ContentPageLayout from '../../components/ContentPageLayout';
 import { useTranslations } from 'next-intl';
 
 export default function WebinarsPage() {
