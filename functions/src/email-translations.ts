@@ -7,7 +7,7 @@ export type Language = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 // Load translations from JSON files
 function loadEmailTranslations(language: Language): any {
   try {
-    const filePath = path.join(__dirname, '..', '..', 'functions', 'messages', language, 'email.json');
+    const filePath = path.join(__dirname, 'messages', language, 'email.json');
     const translationFile = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(translationFile);
   } catch (error) {

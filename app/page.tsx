@@ -2,26 +2,22 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import CTASection from '../components/CTASection';
-import ContentHero from '../components/ContentHero';
 import Button from '../components/Button';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import RibbonSeparator from '../components/RibbonSeparator';
+import QuoteSection from '../components/QuoteSection';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useTranslations } from 'next-intl';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentSection, setCurrentSection] = useState('hero');
-  const [currentServiceIndex, setCurrentServiceIndex] = useState(-1);
   const [currentStandardIndex, setCurrentStandardIndex] = useState(-1);
-  const [currentImpactIndex, setCurrentImpactIndex] = useState(-1); // No card selected initially
+  const [currentImpactIndex, setCurrentImpactIndex] = useState(-1);
   
-  // Translation hooks
   const tHomepage = useTranslations('homepage');
-  const tNav = useTranslations('navigation');
   
-  // Scroll animation hooks
   const { elementRef: whoWeAreRef, isVisible: whoWeAreVisible } = useScrollAnimation();
   const { elementRef: impactRef, isVisible: impactVisible } = useScrollAnimation();
   const { elementRef: standardsRef, isVisible: standardsVisible } = useScrollAnimation();
@@ -37,110 +33,21 @@ export default function Page() {
     { name: 'Airplane', image: '/airplane.jpeg' }
   ];
 
-  const services = [
-    {
-      title: tHomepage('services.pan_european_events.title'),
-      description: tHomepage('services.pan_european_events.description'),
-      image: "/conferenceWood.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.digital_platform.title'),
-      description: tHomepage('services.digital_platform.description'),
-      image: "/data.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.market_intelligence.title'),
-      description: tHomepage('services.market_intelligence.description'),
-      image: "/market.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.industry_advocacy.title'),
-      description: tHomepage('services.industry_advocacy.description'),
-      image: "/regulatory.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.education_training.title'),
-      description: tHomepage('services.education_training.description'),
-      image: "/training.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.market_research.title'),
-      description: tHomepage('services.market_research.description'),
-      image: "/market.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9V3" />
-        </svg>
-      )
-    },
-    {
-      title: tHomepage('services.capacity_transparency.title'),
-      description: tHomepage('services.capacity_transparency.description'),
-      image: "/capacity.jpg",
-      icon: (
-        <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    }
-  ];
-
   const impacts = [
     {
       title: tHomepage('impact.networking.title'),
       description: tHomepage('impact.networking.description'),
-      image: "/earlyMorning.jpg",
-      icon: (
-        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
+      image: "/earlyMorning.jpg"
     },
     {
       title: tHomepage('impact.professional_development.title'),
       description: tHomepage('impact.professional_development.description'),
-      image: "/hivan.jpg",
-      icon: (
-        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      )
+      image: "/hivan.jpg"
     },
     {
       title: tHomepage('impact.market_intelligence.title'),
       description: tHomepage('impact.market_intelligence.description'),
-      image: "/market.jpg",
-      icon: (
-        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
+      image: "/market.jpg"
     }
   ];
 
@@ -169,21 +76,15 @@ export default function Page() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % cities.length);
-    }, 7000); // Change image every 7 seconds
+    }, 7000);
 
     return () => clearInterval(interval);
   }, [cities.length]);
-
-
-
-
-  // Track current section on scroll
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight / 3;
       
-      // Find which section is currently in view
-      let foundSection = 'hero'; // default
+      let foundSection = 'hero';
       
       for (const section of sections) {
         const element = document.getElementById(section.id);
@@ -191,7 +92,6 @@ export default function Page() {
           const rect = element.getBoundingClientRect();
           const offsetTop = window.scrollY + rect.top;
           
-          // If we've scrolled past the start of this section
           if (scrollPosition >= offsetTop) {
             foundSection = section.id;
           }
@@ -202,20 +102,16 @@ export default function Page() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial position
+    handleScroll();
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections]);
 
   return (
     <div className="flex min-h-screen bg-white font-lato overflow-x-hidden">
-      {/* Main Content Container */}
       <div className="flex-1 relative">
         <Header currentPage="home" />
-
-      {/* Hero Section */}
       <section id="hero" className="relative min-h-[calc(100vh-5.5rem)] flex items-center overflow-hidden">
-        {/* Background Images */}
         <div className="hidden md:block absolute top-0 right-0 w-3/5 xl:w-2/3 2xl:w-3/4 h-full">
           {cities.map((city, index) => (
             <div
@@ -239,7 +135,6 @@ export default function Page() {
               />
             </div>
           ))}
-          {/* Simple gradient overlay */}
           <div 
             className="absolute inset-0" 
             style={{
@@ -247,8 +142,6 @@ export default function Page() {
             }}
           />
         </div>
-        
-        {/* Content */}
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
           <div className="max-w-lg xl:max-w-xl 2xl:max-w-2xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-relaxed">
@@ -269,18 +162,11 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Blue ribbon separator */}
-      <div ref={ribbon1Ref} className="relative h-12">
-        <div className={`absolute right-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
-          ribbon1Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
-        }`} style={{ width: '61.8%' }}></div>
-      </div>
+      <RibbonSeparator direction="right" animated={ribbon1Visible} ref={ribbon1Ref} />
 
-      {/* Who We Are Section */}
       <section ref={whoWeAreRef} id="services" className="bg-white py-24 lg:py-32 2xl:py-40 relative overflow-hidden">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left side - Image */}
             <div className={`relative group transition-all duration-700 ${
               whoWeAreVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
             }`}>
@@ -295,8 +181,6 @@ export default function Page() {
                 <div className="absolute inset-0 bg-fase-navy/10 rounded-lg transition-opacity duration-300 group-hover:bg-fase-navy/5"></div>
               </div>
             </div>
-            
-            {/* Right side - Content */}
             <div className={`transition-all duration-700 delay-200 ${
               whoWeAreVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
             }`}>
@@ -309,37 +193,18 @@ export default function Page() {
             </div>
           </div>
         </div>
-        
       </section>
 
-      {/* Blue ribbon separator */}
-      <div className="relative h-12">
-        <div className="absolute right-0 h-12 bg-fase-navy shadow-lg" style={{ width: '61.8%' }}></div>
-      </div>
+      <RibbonSeparator direction="right" />
 
-      {/* Quote Section */}
-      <section className="bg-white py-16">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <blockquote className="text-xl sm:text-2xl font-noto-serif text-fase-navy leading-relaxed mb-8">
-              &ldquo;{tHomepage('quote.text')}&rdquo;
-            </blockquote>
-            <div className="flex flex-col items-center">
-              <cite className="text-fase-black font-medium text-lg not-italic">{tHomepage('quote.author')}</cite>
-              <p className="text-fase-black text-sm mt-1">{tHomepage('quote.title')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <QuoteSection 
+        quote={tHomepage('quote.text')}
+        author={tHomepage('quote.author')}
+        title={tHomepage('quote.title')}
+      />
 
-      {/* Blue ribbon separator */}
-      <div ref={ribbon2Ref} className="relative h-12">
-        <div className={`absolute left-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
-          ribbon2Visible ? 'scroll-visible-left' : 'scroll-hidden-left'
-        }`} style={{ width: '61.8%' }}></div>
-      </div>
+      <RibbonSeparator direction="left" animated={ribbon2Visible} ref={ribbon2Ref} />
 
-      {/* Our Impact Section */}
       <section ref={impactRef} id="conference" className="bg-white py-24 lg:py-32 2xl:py-40 overflow-hidden">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-12">
@@ -347,8 +212,6 @@ export default function Page() {
               impactVisible ? 'scroll-visible' : 'scroll-hidden'
             }`}>{tHomepage('impact.title')}</h2>
           </div>
-          
-          {/* Impact Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {impacts.map((impact, index) => {
               const isExpanded = currentImpactIndex === index;
@@ -374,14 +237,10 @@ export default function Page() {
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-fase-navy/20 transition-all duration-300 group-hover:bg-fase-navy/10"></div>
-                  
-                  {/* Title overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                     <h4 className="text-white font-noto-serif font-medium text-lg">{impact.title}</h4>
                   </div>
                 </div>
-                
-                {/* Expandable content */}
                 <div 
                   className={`transition-all duration-500 ease-in-out overflow-hidden ${
                     isExpanded ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
@@ -405,17 +264,10 @@ export default function Page() {
             })}
           </div>
         </div>
-        
       </section>
 
-      {/* Blue ribbon separator */}
-      <div ref={ribbon3Ref} className="relative h-12">
-        <div className={`absolute right-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
-          ribbon3Visible ? 'scroll-visible-right' : 'scroll-hidden-right'
-        }`} style={{ width: '61.8%' }}></div>
-      </div>
+      <RibbonSeparator direction="right" animated={ribbon3Visible} ref={ribbon3Ref} />
 
-      {/* Vetting & Standards Section */}
       <section ref={standardsRef} className="bg-white py-24 lg:py-32 2xl:py-40 relative overflow-hidden">
         <div className="relative z-20 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-8">
@@ -495,7 +347,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Why Join FASE Section */}
       <section 
         className="relative min-h-[75vh] flex items-center" 
         style={{
@@ -505,7 +356,6 @@ export default function Page() {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-fase-navy/75"></div>
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center py-20 max-w-6xl mx-auto">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-noto-serif font-medium text-white mb-4">{tHomepage('why_join.title')}</h2>

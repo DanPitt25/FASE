@@ -136,9 +136,10 @@ export default function ManageProfile() {
         setCompany(companyInfo);
         
         // Transform CompanyMember[] to Member[] by mapping isPrimaryContact to isAccountAdministrator
+        // Handle both old data (with isPrimaryContact) and new data (with isAccountAdministrator already set)
         const transformedMembers: Member[] = membersData.map(member => ({
           ...member,
-          isAccountAdministrator: member.isPrimaryContact
+          isAccountAdministrator: member.isAccountAdministrator ?? member.isPrimaryContact ?? false
         }));
         setMembers(transformedMembers);
       } catch (err) {

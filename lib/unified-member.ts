@@ -36,7 +36,10 @@ export interface CompanyMember {
   email: string;
   personalName: string;
   jobTitle?: string;
-  isPrimaryContact: boolean;
+  isPrimaryContact?: boolean; // Legacy field
+  isAccountAdministrator?: boolean; // New field
+  accountConfirmed?: boolean;
+  isRegistrant?: boolean;
   joinedAt: any; // Firestore timestamp
   addedBy?: string; // Admin who added them
   // Keep basic profile info

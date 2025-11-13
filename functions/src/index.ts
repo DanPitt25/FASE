@@ -520,8 +520,7 @@ export const validatePasswordResetToken = functions.https.onCall({
       throw new functions.https.HttpsError('deadline-exceeded', 'Reset token has expired');
     }
 
-    // Mark token as used
-    await resetDoc.ref.update({ used: true });
+    // Don't mark as used during validation - only mark as used when password is actually changed
 
     logger.info(`Password reset token validated for: ${email}`);
     return { success: true, email: email };
