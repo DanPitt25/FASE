@@ -433,7 +433,7 @@ export default function ManageProfile() {
       setPasswordResetSent(true);
       setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
     } catch (error) {
-      alert('Failed to send password reset email. Please try again.');
+      alert(t('profile.password_reset_failed'));
     } finally {
       setSendingPasswordReset(false);
     }
@@ -564,15 +564,15 @@ export default function ManageProfile() {
 
               {/* Security Section */}
               <div className="border-t border-gray-100 pt-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">Security</h5>
+                <h5 className="text-sm font-medium text-gray-900 mb-3">{t('profile.security')}</h5>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-medium text-gray-700">Password</span>
-                    <p className="text-xs text-gray-500">Reset your password via email</p>
+                    <span className="text-sm font-medium text-gray-700">{t('profile.password')}</span>
+                    <p className="text-xs text-gray-500">{t('profile.password_desc')}</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     {passwordResetSent && (
-                      <span className="text-sm text-green-600 font-medium">Reset email sent</span>
+                      <span className="text-sm text-green-600 font-medium">{t('profile.reset_email_sent')}</span>
                     )}
                     <Button
                       onClick={handlePasswordReset}
@@ -580,7 +580,7 @@ export default function ManageProfile() {
                       variant="secondary"
                       size="small"
                     >
-                      {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                      {sendingPasswordReset ? t('profile.sending') : t('profile.reset_password')}
                     </Button>
                   </div>
                 </div>
