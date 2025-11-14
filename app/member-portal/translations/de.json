@@ -208,5 +208,18 @@
       "fase_logo_stacked": "FASE Logo Gestapelt",
       "fase_logo_lockup": "FASE Vollständiges Logo"
     }
+  },
+  "logo_access": {
+    "title": "FASE Logo-Zugang",
+    "description": "FASE-Mitglieder sind berechtigt, das FASE-Logo auf ihren Websites und Marketingmaterialien zu verwenden, was Ihr Bekenntnis zu den höchsten professionellen Standards widerspiegelt, wie sie im FASE-Verhaltenskodex definiert sind. Sie können das Logo in Ihrer bevorzugten Form unten herunterladen:",
+    "horizontal_logo": "Horizontales Logo",
+    "vertical_logo": "Vertikales Logo",
+    "download": "Herunterladen",
+    "directory_title": "Mitgliederverzeichnis-Eintrag",
+    "directory_description": "Um in unserem Mitgliederverzeichnis aufgeführt zu werden, senden Sie bitte Folgendes an",
+    "directory_requirements": {
+      "logo": "Eine Kopie Ihres Firmenlogos",
+      "summary": "Eine kurze Unternehmensbeschreibung (maximal 500 Zeichen)"
+    }
   }
 }

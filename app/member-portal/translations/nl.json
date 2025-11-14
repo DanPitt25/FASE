@@ -208,5 +208,18 @@
       "fase_logo_stacked": "FASE Logo Gestapeld",
       "fase_logo_lockup": "FASE Volledig Logo"
     }
+  },
+  "logo_access": {
+    "title": "FASE Logo Toegang",
+    "description": "FASE-leden zijn gerechtigd het FASE-logo te tonen op hun websites en marketingmaterialen, wat uw toewijding aan de hoogste professionele standaarden weergeeft zoals gedefinieerd in de FASE Gedragscode. U kunt het logo in uw gewenste vorm hieronder benaderen:",
+    "horizontal_logo": "Horizontaal logo",
+    "vertical_logo": "Verticaal logo",
+    "download": "Downloaden",
+    "directory_title": "Ledenregister vermelding",
+    "directory_description": "Om opgenomen te worden in ons ledenregister, stuurt u het volgende naar",
+    "directory_requirements": {
+      "logo": "Een kopie van uw bedrijfslogo",
+      "summary": "Een korte bedrijfssamenvatting (maximaal 500 tekens)"
+    }
   }
 }

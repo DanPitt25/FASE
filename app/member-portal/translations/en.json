@@ -211,5 +211,18 @@
       "fase_logo_stacked": "FASE Logo Stacked",
       "fase_logo_lockup": "FASE Logo Lockup"
     }
+  },
+  "logo_access": {
+    "title": "FASE Logo Access",
+    "description": "FASE members are entitled to display the FASE logo on their websites and marketing materials, reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct. You can access the logo in your preferred form below:",
+    "horizontal_logo": "Horizontal Logo",
+    "vertical_logo": "Vertical Logo",
+    "download": "Download",
+    "directory_title": "Member Directory Listing",
+    "directory_description": "To be featured in our member directory, please send the following to",
+    "directory_requirements": {
+      "logo": "A copy of your company logo",
+      "summary": "A brief business summary (maximum 500 characters)"
+    }
   }
 }

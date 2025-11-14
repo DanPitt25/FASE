@@ -292,9 +292,9 @@ export default function MemberContent() {
 
           {/* FASE Logo Download */}
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">FASE Logo Access</h3>
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('logo_access.title')}</h3>
             <p className="text-fase-black mb-6 leading-relaxed">
-              FASE members are entitled to display the FASE logo on their websites and marketing materials, reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct. You can access the logo in your preferred form below:
+              {t('logo_access.description')}
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -305,14 +305,14 @@ export default function MemberContent() {
                     alt="FASE Logo Horizontal Lockup" 
                     className="h-8 w-auto object-contain"
                   />
-                  <span className="text-sm font-medium text-fase-navy">Horizontal Logo</span>
+                  <span className="text-sm font-medium text-fase-navy">{t('logo_access.horizontal_logo')}</span>
                 </div>
                 <Button
                   onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
                   variant="secondary"
                   size="small"
                 >
-                  Download
+                  {t('logo_access.download')}
                 </Button>
               </div>
               
@@ -323,31 +323,31 @@ export default function MemberContent() {
                     alt="FASE Logo Vertical Lockup" 
                     className="h-8 w-auto object-contain"
                   />
-                  <span className="text-sm font-medium text-fase-navy">Vertical Logo</span>
+                  <span className="text-sm font-medium text-fase-navy">{t('logo_access.vertical_logo')}</span>
                 </div>
                 <Button
                   onClick={() => downloadFASELogo('fase-logo-stacked.png')}
                   variant="secondary"
                   size="small"
                 >
-                  Download
+                  {t('logo_access.download')}
                 </Button>
               </div>
             </div>
             
             <div className="border-t border-gray-200 pt-6">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">Member Directory Listing</h4>
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h4>
               <p className="text-fase-black leading-relaxed mb-4">
-                To be featured in our member directory, please send the following to <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
+                {t('logo_access.directory_description')} <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
               </p>
               <ul className="space-y-2 text-fase-black">
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  A copy of your company logo
+                  {t('logo_access.directory_requirements.logo')}
                 </li>
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  A brief business summary (maximum 500 characters)
+                  {t('logo_access.directory_requirements.summary')}
                 </li>
               </ul>
             </div>

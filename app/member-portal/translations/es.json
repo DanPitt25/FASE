@@ -208,5 +208,18 @@
       "fase_logo_stacked": "Logo FASE Apilado",
       "fase_logo_lockup": "Logo FASE Completo"
     }
+  },
+  "logo_access": {
+    "title": "Acceso a logotipos FASE",
+    "description": "Los miembros de FASE tienen derecho a mostrar el logotipo de FASE en sus sitios web y materiales de marketing, reflejando su compromiso con los más altos estándares profesionales según se define en el Código de Conducta de FASE. Puede acceder al logotipo en su forma preferida a continuación:",
+    "horizontal_logo": "Logo horizontal",
+    "vertical_logo": "Logo vertical",
+    "download": "Descargar",
+    "directory_title": "Listado en el directorio de miembros",
+    "directory_description": "Para aparecer en nuestro directorio de miembros, envíe lo siguiente a",
+    "directory_requirements": {
+      "logo": "Una copia del logotipo de su empresa",
+      "summary": "Un breve resumen empresarial (máximo 500 caracteres)"
+    }
   }
 }
