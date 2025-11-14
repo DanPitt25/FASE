@@ -49,5 +49,52 @@
     "directory": "Verzeichnis",
     "contact": "Kontakt",
     "search_site": "Website durchsuchen"
+  },
+  "logo_management": {
+    "title": "Logo & Profil Verwaltung",
+    "company_logo": "Ihr Unternehmenslogo",
+    "company_bio": "Unternehmensbio",
+    "upload_logo": "Logo hochladen",
+    "upload_bio": "Bio hochladen",
+    "upload_profile": "Profil hochladen",
+    "uploading": "Lade hoch...",
+    "file_requirements": "PNG, JPG, SVG oder WebP. Max 5MB.",
+    "bio_requirements": "Kurze Unternehmensbeschreibung für das Mitgliederverzeichnis.",
+    "admin_only": "Hinweis: Logo-Änderungen werden von FASE-Administratoren geprüft",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Laden Sie FASE-Logos für Ihre Marketingmaterialien herunter",
+    "download": "Herunterladen",
+    "standard_rgb": "Standard (RGB)",
+    "logo_mark": "Logo-Marke",
+    "stacked": "Gestapelt",
+    "full_lockup": "Vollständiges Logo",
+    "usage_consent": {
+      "title": "Nutzungserlaubnis",
+      "description": "Durch das Hochladen gewähren Sie FASE die Erlaubnis:",
+      "logo_use": "Ihr Logo im Mitgliederverzeichnis und anderen öffentlichen Materialien zu verwenden",
+      "bio_edit": "Ihre Unternehmensbio zu bearbeiten, zu übersetzen und zu veröffentlichen",
+      "agreement": "Ich stimme diesen Nutzungsbedingungen zu",
+      "required": "Erlaubnis ist erforderlich, um fortzufahren"
+    },
+    "alt_text": {
+      "company_logo": "Unternehmenslogo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo-Marke",
+      "fase_logo_stacked": "FASE Logo Gestapelt",
+      "fase_logo_lockup": "FASE Vollständiges Logo"
+    },
+    "success": {
+      "upload_successful": "Profil erfolgreich hochgeladen! Unser Team wird Ihre Einreichung prüfen.",
+      "bio_updated": "Unternehmensbio erfolgreich aktualisiert"
+    },
+    "errors": {
+      "upload_failed": "Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "invalid_file_type": "Ungültiger Dateityp. Bitte verwenden Sie PNG, JPG, SVG oder WebP.",
+      "file_too_large": "Datei zu groß. Maximalgröße ist 5MB.",
+      "bio_required": "Unternehmensbio ist erforderlich.",
+      "consent_required": "Sie müssen den Nutzungsbedingungen zustimmen.",
+      "missing_fields": "Bitte füllen Sie alle erforderlichen Felder aus.",
+      "provide_content_and_consent": "Bitte stellen Sie entweder ein Logo oder eine Bio bereit und stimmen Sie den Nutzungsbedingungen zu"
+    }
   }
 }

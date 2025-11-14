@@ -33,7 +33,7 @@ FASE bietet MGAs aus ganz Europa Möglichkeiten, ihre Beziehungen zu Kapazitäts
 
 &nbsp;
 
-„MGAs sind größtenteils kleine Unternehmen", sagte Dario Spata, Präsident von ASASE (Asociación de Agencias de Suscripción Españolas), Spaniens MGA-Verband, und Mitglied des Beirats von FASE. „In der Versicherungsbranche kann das ein großer Vorteil sein, weil man schneller agieren kann. Aber wenn unsere Mitglieder ihr Geschäft ausbauen möchten, werden sie manchmal durch regulatorische Hindernisse, Datenlücken und Kapazitätsbeschränkungen behindert. FASE kann helfen."
+„MGAs sind größtenteils kleine Unternehmen", sagte Darío Spata, Präsident von ASASE (Asociación de Agencias de Suscripción Españolas), Spaniens MGA-Verband, und Mitglied des Beirats von FASE. „In der Versicherungsbranche kann das ein großer Vorteil sein, weil man schneller agieren kann. Aber wenn unsere Mitglieder ihr Geschäft ausbauen möchten, werden sie manchmal durch regulatorische Hindernisse, Datenlücken und Kapazitätsbeschränkungen behindert. FASE kann helfen."
 
 &nbsp;
 

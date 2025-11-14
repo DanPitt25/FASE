@@ -33,7 +33,7 @@ FASE offre opportunità alle agenzie di sottoscrizione di tutta Europa di amplia
 
 &nbsp;
 
-"Le agenzie di sottoscrizione sono, per la maggior parte, piccole imprese," ha affermato Dario Spata, presidente di ASASE (Asociación de Agencias de Suscripción Españolas), l'associazione delle agenzie di sottoscrizione spagnola, e membro del consiglio consultivo di FASE. "Nell'assicurazione questo può essere un grande vantaggio, perché si può agire più rapidamente. Ma quando i nostri membri cercano di far crescere il loro business, a volte sono impediti da ostacoli normativi, lacune nei dati e vincoli di capacità. FASE può aiutare."
+"Le agenzie di sottoscrizione sono, per la maggior parte, piccole imprese," ha affermato Darío Spata, presidente di ASASE (Asociación de Agencias de Suscripción Españolas), l'associazione delle agenzie di sottoscrizione spagnola, e membro del consiglio consultivo di FASE. "Nell'assicurazione questo può essere un grande vantaggio, perché si può agire più rapidamente. Ma quando i nostri membri cercano di far crescere il loro business, a volte sono impediti da ostacoli normativi, lacune nei dati e vincoli di capacità. FASE può aiutare."
 
 &nbsp;
 

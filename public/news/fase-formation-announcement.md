@@ -33,7 +33,7 @@ FASE offers opportunities for MGAs from across Europe to broaden their relations
 
 &nbsp;
 
-"MGAs are, in the main, small businesses," said Dario Spata, president of ASASE (Asociación de Agencias de Suscripción Españolas), Spain's MGA association, and a member of FASE's advisory board. "In insurance that can be a big advantage, because you can move faster. But as our members look to grow their business, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help."
+"MGAs are, in the main, small businesses," said Darío Spata, president of ASASE (Asociación de Agencias de Suscripción Españolas), Spain's MGA association, and a member of FASE's advisory board. "In insurance that can be a big advantage, because you can move faster. But as our members look to grow their business, they are sometimes hampered by regulatory obstacles, data gaps, and capacity constraints. FASE can help."
 
 &nbsp;
 

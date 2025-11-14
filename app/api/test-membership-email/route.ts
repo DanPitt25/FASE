@@ -82,7 +82,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Sending test membership acceptance email to ${testData.email}...`, testData);
+    // Check if this is a preview request
+    const isPreview = requestData.preview === true;
+    
+    if (isPreview) {
+      console.log(`Generating email preview for ${testData.email}...`, testData);
+    } else {
+      console.log(`Sending test membership acceptance email to ${testData.email}...`, testData);
+    }
     
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
@@ -514,7 +521,27 @@ export async function POST(request: NextRequest) {
       })
     };
 
-    // Call Firebase Function directly via HTTP (server-side)
+    // For preview mode, return preview data instead of sending email
+    if (isPreview) {
+      // Create a temporary PDF file URL for preview (in production, you'd generate and store it temporarily)
+      const pdfPreviewUrl = pdfAttachment ? `data:application/pdf;base64,${pdfAttachment}` : null;
+      
+      return NextResponse.json({
+        success: true,
+        preview: true,
+        to: testData.email,
+        cc: requestData.cc || null,
+        subject: emailContent.subject,
+        htmlContent: emailData.invoiceHTML,
+        textContent: null, // Could add plain text version
+        pdfUrl: pdfPreviewUrl,
+        attachments: pdfAttachment ? ['Invoice PDF'] : [],
+        invoiceNumber: invoiceNumber,
+        totalAmount: testData.totalAmount
+      });
+    }
+
+    // Call Firebase Function directly via HTTP (server-side) for actual sending
     const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
       method: 'POST',
       headers: {

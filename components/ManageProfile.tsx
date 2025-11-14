@@ -5,9 +5,10 @@ import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getCompanyMembers } from '../lib/unified-member';
 import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
-import { db, storage } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { usePortalTranslations } from '../app/member-portal/hooks/usePortalTranslations';
+import { sendPasswordReset } from '../lib/auth';
+import { updateProfile } from 'firebase/auth';
 
 
 interface CompanyInfo {
@@ -48,7 +49,6 @@ export default function ManageProfile() {
   const [editingMember, setEditingMember] = useState<EditingMember | null>(null);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newMember, setNewMember] = useState({
     email: '',
@@ -56,7 +56,13 @@ export default function ManageProfile() {
     jobTitle: ''
   });
   const [adding, setAdding] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
+  
+  // Account settings state
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({ displayName: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
 
 
   // Helper function to check if member needs an invite (has generated ID and hasn't confirmed account)
@@ -372,83 +378,68 @@ export default function ManageProfile() {
     }
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || !event.target.files[0] || !user || !company) return;
-    
-    const file = event.target.files[0];
-    
-    // Basic validation
-    if (!file.type.startsWith('image/')) {
-      alert(t('logo_management.errors.invalid_file_type'));
-      return;
+  // Initialize profile data when user and member load
+  useEffect(() => {
+    if (user || member) {
+      setProfileData({
+        displayName: member?.personalName || user?.displayName || ''
+      });
     }
-    
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert(t('logo_management.errors.file_too_large'));
-      return;
-    }
+  }, [user, member]);
+
+  // Account settings functions
+  const handleEditProfile = () => {
+    setEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
     
     try {
-      setUploadingLogo(true);
+      setSavingProfile(true);
       
-      // Check auth state
-      const token = await user.getIdToken();
-      const authClaims = await user.getIdTokenResult();
-      
-      console.log('Upload debug:', {
-        userId: user.uid,
-        companyId: company.id,
-        fileName: file.name,
-        storageAvailable: !!storage,
-        hasToken: !!token,
-        authClaims: authClaims.claims
+      // Update Firebase Auth profile
+      await updateProfile(user, {
+        displayName: profileData.displayName.trim() || null
       });
       
-      // Create storage reference with standard filename
-      const fileExtension = file.name.split('.').pop();
-      const logoRef = ref(storage, `graphics/logos/${company.id}_logo.${fileExtension}`);
+      // Force reload user data
+      await user.reload();
       
-      // Upload file
-      await uploadBytes(logoRef, file);
-      
-      // Get download URL
-      const logoURL = await getDownloadURL(logoRef);
-      
-      // Update company document with logo URL
-      const companyRef = doc(db, 'accounts', company.id);
-      await updateDoc(companyRef, {
-        logoURL: logoURL,
-        updatedAt: serverTimestamp()
-      });
-      
-      // Update local state
-      setCompany(prev => prev ? { ...prev, logoURL } : null);
-      
-      alert(t('logo_management.success.upload_successful'));
-    } catch (err) {
-      console.error('Error uploading logo:', err);
-      console.error('Error details:', {
-        code: (err as any).code,
-        message: (err as any).message,
-        serverResponse: (err as any).serverResponse,
-        fullError: err
-      });
-      alert(t('logo_management.errors.upload_failed'));
+      setEditingProfile(false);
+      alert('Profile updated successfully');
+    } catch (error) {
+      alert('Failed to update profile. Please try again.');
     } finally {
-      setUploadingLogo(false);
-      // Reset file input
-      event.target.value = '';
+      setSavingProfile(false);
     }
   };
 
-  const downloadFASELogo = (filename: string) => {
-    const link = document.createElement('a');
-    link.href = `/${filename}`;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleCancelEdit = () => {
+    // Reset to original values
+    setProfileData({
+      displayName: member?.personalName || user?.displayName || ''
+    });
+    setEditingProfile(false);
   };
+
+  // Password reset handler
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    
+    try {
+      setSendingPasswordReset(true);
+      await sendPasswordReset(user.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
+    } catch (error) {
+      alert('Failed to send password reset email. Please try again.');
+    } finally {
+      setSendingPasswordReset(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -508,189 +499,125 @@ export default function ManageProfile() {
             </div>
           </div>
           
-          {/* Settings button on separate line, left-aligned */}
-          <div className="mb-4">
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-sm text-gray-600 hover:text-gray-900 flex items-center space-x-1"
-            >
-              <span>{t('manage_profile.settings')}</span>
-              <svg className={`w-4 h-4 transition-transform ${showSettings ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-          
-          {/* Company Settings - Collapsible */}
-          {showSettings && (
-            <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('manage_profile.company_settings')}</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">{t('manage_profile.directory_inclusion')}</span>
-                    <p className="text-xs text-gray-500">{t('manage_profile.directory_inclusion_desc')}</p>
+          {/* Account & Company Settings - Always visible */}
+          <div className="border-t border-gray-100 pt-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-4">Account & Company Settings</h4>
+            <div className="space-y-6">
+              
+              {/* Personal Information */}
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
+                {editingProfile ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={profileData.displayName}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      placeholder="Enter your name"
+                    />
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={handleSaveProfile}
+                        disabled={savingProfile}
+                        variant="primary"
+                        size="small"
+                      >
+                        {savingProfile ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        onClick={handleCancelEdit}
+                        variant="secondary"
+                        size="small"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact')}</span>
-                    <p className="text-xs text-gray-500">{t('manage_profile.public_contact_desc')}</p>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
+                      {member?.personalName || user?.displayName || 'Not set'}
+                    </div>
+                    <Button
+                      onClick={handleEditProfile}
+                      variant="secondary"
+                      size="small"
+                      className="ml-3"
+                    >
+                      Edit
+                    </Button>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                )}
+              </div>
+              
+              {/* Show company name separately for corporate members */}
+              {member?.membershipType === 'corporate' && member?.organizationName && (
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
+                  <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
+                    {member.organizationName}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Contact support to change your company information</p>
                 </div>
+              )}
 
+              {/* Security Section */}
+              <div className="border-t border-gray-100 pt-4">
+                <h5 className="text-sm font-medium text-gray-900 mb-3">Security</h5>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">Password</span>
+                    <p className="text-xs text-gray-500">Reset your password via email</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {passwordResetSent && (
+                      <span className="text-sm text-green-600 font-medium">Reset email sent</span>
+                    )}
+                    <Button
+                      onClick={handlePasswordReset}
+                      disabled={sendingPasswordReset}
+                      variant="secondary"
+                      size="small"
+                    >
+                      {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Company Settings */}
+              <div className="border-t border-gray-100 pt-4">
+                <h5 className="text-sm font-medium text-gray-900 mb-3">Company Settings</h5>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">{t('manage_profile.directory_inclusion')}</span>
+                      <p className="text-xs text-gray-500">{t('manage_profile.directory_inclusion_desc')}</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" defaultChecked />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact')}</span>
+                      <p className="text-xs text-gray-500">{t('manage_profile.public_contact_desc')}</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" defaultChecked />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* Logo Management */}
-      <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-fase-light-gold">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            {t('logo_management.title')}
-          </h3>
-        </div>
-        <div className="px-6 py-4 space-y-6">
-          {/* Company Logo Upload */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">{t('logo_management.company_logo')}</h4>
-            {company?.logoURL && (
-              <div className="mb-4">
-                <img 
-                  src={company.logoURL} 
-                  alt={t('logo_management.alt_text.company_logo')} 
-                  className="h-16 w-auto object-contain border border-gray-200 rounded p-2"
-                />
-              </div>
-            )}
-            {(() => {
-              const currentUserMember = members.find(m => m.id === user?.uid);
-              const isAdmin = currentUserMember?.isAccountAdministrator;
-              
-              if (isAdmin) {
-                return (
-                  <div className="flex items-center space-x-4">
-                    <label className="relative cursor-pointer">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        disabled={uploadingLogo}
-                        className="sr-only"
-                      />
-                      <span className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        uploadingLogo 
-                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
-                          : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300 cursor-pointer'
-                      }`}>
-                        {uploadingLogo ? t('logo_management.uploading') : t('logo_management.upload_logo')}
-                      </span>
-                    </label>
-                    <span className="text-xs text-gray-500">
-                      {t('logo_management.file_requirements')}
-                    </span>
-                  </div>
-                );
-              } else {
-                return (
-                  <span className="text-sm text-gray-500">
-                    {t('logo_management.admin_only')}
-                  </span>
-                );
-              }
-            })()}
-          </div>
-
-          {/* FASE Logo Downloads */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">{t('logo_management.fase_downloads')}</h4>
-            <p className="text-xs text-gray-500 mb-4">
-              {t('logo_management.fase_downloads_desc')}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/fase-logo-rgb.png" 
-                    alt={t('logo_management.alt_text.fase_logo_rgb')} 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm">{t('logo_management.standard_rgb')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('fase-logo-rgb.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_management.download')}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/fase-logo-mark.png" 
-                    alt={t('logo_management.alt_text.fase_logo_mark')} 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm">{t('logo_management.logo_mark')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('fase-logo-mark.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_management.download')}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/fase-logo-stacked.png" 
-                    alt={t('logo_management.alt_text.fase_logo_stacked')} 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm">{t('logo_management.stacked')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('fase-logo-stacked.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_management.download')}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/FASE-Logo-Lockup-RGB.png" 
-                    alt={t('logo_management.alt_text.fase_logo_lockup')} 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm">{t('logo_management.full_lockup')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_management.download')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Members List */}
       <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">

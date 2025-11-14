@@ -21,6 +21,8 @@ interface DashboardLayoutProps {
   headerActions?: ReactNode;
   statusBadge?: ReactNode;
   defaultActiveSection?: string;
+  activeSection?: string;
+  onActiveSectionChange?: (sectionId: string) => void;
 }
 
 export default function DashboardLayout({
@@ -32,9 +34,22 @@ export default function DashboardLayout({
   currentPage,
   headerActions,
   statusBadge,
-  defaultActiveSection
+  defaultActiveSection,
+  activeSection: controlledActiveSection,
+  onActiveSectionChange
 }: DashboardLayoutProps) {
-  const [activeSection, setActiveSection] = useState(defaultActiveSection || sections[0]?.id);
+  const [internalActiveSection, setInternalActiveSection] = useState(defaultActiveSection || sections[0]?.id);
+  
+  // Use controlled activeSection if provided, otherwise use internal state
+  const activeSection = controlledActiveSection !== undefined ? controlledActiveSection : internalActiveSection;
+  
+  const handleSectionChange = (sectionId: string) => {
+    if (onActiveSectionChange) {
+      onActiveSectionChange(sectionId);
+    } else {
+      setInternalActiveSection(sectionId);
+    }
+  };
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -136,7 +151,7 @@ export default function DashboardLayout({
                 {sections.map(section => (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => handleSectionChange(section.id)}
                     className={`py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap flex items-center space-x-2 transition-colors ${
                       activeSection === section.id
                         ? 'border-fase-navy text-fase-navy'

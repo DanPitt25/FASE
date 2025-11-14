@@ -63,7 +63,7 @@
   "membership_acceptance_admin": {
     "subject": "Welcome to FASE - Membership Approved",
     "welcome": "Welcome to FASE",
-    "dear": "Dear",
+    " ": "Dear",
     "dear_m": "Dear",
     "dear_f": "Dear",
     "welcome_text": "Welcome to FASE. Your application for {organizationName} has been approved.",

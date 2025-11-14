@@ -7,8 +7,6 @@ import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
 import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
-import { sendPasswordReset } from "../../lib/auth";
-import { updateProfile } from "firebase/auth";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
 export default function MemberContent() {
@@ -18,13 +16,18 @@ export default function MemberContent() {
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
-  const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
-  const [passwordResetSent, setPasswordResetSent] = useState(false);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState({ displayName: '' });
-  const [savingProfile, setSavingProfile] = useState(false);
   
   const router = useRouter();
+
+  // Logo download function
+  const downloadFASELogo = (filename: string) => {
+    const link = document.createElement('a');
+    link.href = `/${filename}`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -62,14 +65,6 @@ export default function MemberContent() {
     loadData();
   }, [user, member]);
 
-  // Initialize profile data when user and member load
-  useEffect(() => {
-    if (user || member) {
-      setProfileData({
-        displayName: member?.personalName || user?.displayName || ''
-      });
-    }
-  }, [user, member]);
 
   // Alert handlers
   const handleMarkAlertAsRead = async (alertId: string) => {
@@ -109,57 +104,6 @@ export default function MemberContent() {
     }
   };
 
-  // Password reset handler
-  const handlePasswordReset = async () => {
-    if (!user?.email) return;
-    
-    try {
-      setSendingPasswordReset(true);
-      await sendPasswordReset(user.email);
-      setPasswordResetSent(true);
-      setTimeout(() => setPasswordResetSent(false), 5000); // Hide success message after 5 seconds
-    } catch (error) {
-      alert(t('profile.password_reset_failed'));
-    } finally {
-      setSendingPasswordReset(false);
-    }
-  };
-
-  // Profile editing handlers
-  const handleEditProfile = () => {
-    setEditingProfile(true);
-  };
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-    
-    try {
-      setSavingProfile(true);
-      
-      // Update Firebase Auth profile
-      await updateProfile(user, {
-        displayName: profileData.displayName.trim() || null
-      });
-      
-      // Force reload user data
-      await user.reload();
-      
-      setEditingProfile(false);
-      alert(t('profile.profile_updated'));
-    } catch (error) {
-      alert(t('profile.profile_update_failed'));
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    // Reset to original values
-    setProfileData({
-      displayName: member?.personalName || user?.displayName || ''
-    });
-    setEditingProfile(false);
-  };
 
 
   if (loading || translationsLoading) {
@@ -343,6 +287,69 @@ export default function MemberContent() {
                   </p>
                 </div>
               </details>
+            </div>
+          </div>
+
+          {/* FASE Logo Download */}
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">FASE Logo Access</h3>
+            <p className="text-fase-black mb-6 leading-relaxed">
+              FASE members are entitled to display the FASE logo on their websites and marketing materials, reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct. You can access the logo in your preferred form below:
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/FASE-Logo-Lockup-RGB.png" 
+                    alt="FASE Logo Horizontal Lockup" 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm font-medium text-fase-navy">Horizontal Logo</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  Download
+                </Button>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/fase-logo-stacked.png" 
+                    alt="FASE Logo Vertical Lockup" 
+                    className="h-8 w-auto object-contain"
+                  />
+                  <span className="text-sm font-medium text-fase-navy">Vertical Logo</span>
+                </div>
+                <Button
+                  onClick={() => downloadFASELogo('fase-logo-stacked.png')}
+                  variant="secondary"
+                  size="small"
+                >
+                  Download
+                </Button>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-200 pt-6">
+              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">Member Directory Listing</h4>
+              <p className="text-fase-black leading-relaxed mb-4">
+                To be featured in our member directory, please send the following to <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
+              </p>
+              <ul className="space-y-2 text-fase-black">
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  A copy of your company logo
+                </li>
+                <li className="flex items-start">
+                  <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  A brief business summary (maximum 500 characters)
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -593,96 +600,7 @@ export default function MemberContent() {
       ),
       content: (
         <div className="space-y-6">
-          {/* Account Settings */}
-          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('profile.account_settings')}</h3>
-            
-            {/* Account Information */}
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.personal_name')}</label>
-                {editingProfile ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={profileData.displayName}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                      placeholder={t('profile.enter_name_placeholder')}
-                    />
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={handleSaveProfile}
-                        disabled={savingProfile}
-                        variant="primary"
-                        size="small"
-                      >
-                        {savingProfile ? t('profile.saving') : t('profile.save')}
-                      </Button>
-                      <Button
-                        onClick={handleCancelEdit}
-                        variant="secondary"
-                        size="small"
-                      >
-                        {t('profile.cancel')}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                      {member?.personalName || user?.displayName || t('profile.not_set')}
-                    </div>
-                    <Button
-                      onClick={handleEditProfile}
-                      variant="secondary"
-                      size="small"
-                      className="ml-3"
-                    >
-                      {t('profile.edit')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
-              {/* Show company name separately for corporate members */}
-              {member?.membershipType === 'corporate' && member?.organizationName && (
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-1">{t('profile.company')}</label>
-                  <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                    {member.organizationName}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{t('profile.company_change_note')}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Password Reset */}
-            <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">{t('profile.security')}</h4>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-sm font-medium text-gray-700">{t('profile.password')}</span>
-                  <p className="text-xs text-gray-500">{t('profile.password_desc')}</p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  {passwordResetSent && (
-                    <span className="text-sm text-green-600 font-medium">{t('profile.reset_email_sent')}</span>
-                  )}
-                  <Button
-                    onClick={handlePasswordReset}
-                    disabled={sendingPasswordReset}
-                    variant="secondary"
-                    size="small"
-                  >
-                    {sendingPasswordReset ? t('profile.sending') : t('profile.reset_password')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Company Management (if applicable) */}
+          {/* Company Management */}
           <ManageProfile />
         </div>
       )

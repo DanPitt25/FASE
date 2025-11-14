@@ -50,5 +50,52 @@
     "directory": "Directory",
     "contact": "Contatto",
     "search_site": "Cerca nel Sito"
+  },
+  "logo_management": {
+    "title": "Gestione Logo e Profilo",
+    "company_logo": "Logo della Sua Azienda",
+    "company_bio": "Biografia Aziendale",
+    "upload_logo": "Carica Logo",
+    "upload_bio": "Carica Biografia",
+    "upload_profile": "Carica Profilo",
+    "uploading": "Caricamento...",
+    "file_requirements": "PNG, JPG, SVG o WebP. Max 5MB.",
+    "bio_requirements": "Breve descrizione aziendale per la directory dei membri.",
+    "admin_only": "Nota: Le modifiche al logo sono esaminate dagli amministratori FASE",
+    "fase_downloads": "Download Logo FASE",
+    "fase_downloads_desc": "Scarica i loghi FASE per i tuoi materiali di marketing",
+    "download": "Scarica",
+    "standard_rgb": "Standard (RGB)",
+    "logo_mark": "Marchio Logo",
+    "stacked": "Impilato",
+    "full_lockup": "Logo Completo",
+    "usage_consent": {
+      "title": "Permesso d'Uso",
+      "description": "Caricando, concedi a FASE il permesso di:",
+      "logo_use": "Usare il tuo logo nella directory dei membri e altri materiali pubblici",
+      "bio_edit": "Modificare, tradurre e pubblicare la biografia della tua azienda",
+      "agreement": "Accetto questi termini d'uso",
+      "required": "Il permesso è necessario per continuare"
+    },
+    "alt_text": {
+      "company_logo": "Logo Aziendale",
+      "fase_logo_rgb": "Logo FASE RGB",
+      "fase_logo_mark": "Marchio Logo FASE",
+      "fase_logo_stacked": "Logo FASE Impilato",
+      "fase_logo_lockup": "Logo FASE Completo"
+    },
+    "success": {
+      "upload_successful": "Profilo caricato con successo! Il nostro team esaminerà la tua richiesta.",
+      "bio_updated": "Biografia aziendale aggiornata con successo"
+    },
+    "errors": {
+      "upload_failed": "Caricamento fallito. Riprova.",
+      "invalid_file_type": "Tipo di file non valido. Usa PNG, JPG, SVG o WebP.",
+      "file_too_large": "File troppo grande. La dimensione massima è 5MB.",
+      "bio_required": "La biografia aziendale è obbligatoria.",
+      "consent_required": "Devi accettare i termini d'uso.",
+      "missing_fields": "Compila tutti i campi obbligatori.",
+      "provide_content_and_consent": "Per favore fornisci un logo o biografia e accetta i termini d'uso"
+    }
   }
 }

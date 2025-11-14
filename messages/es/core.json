@@ -50,5 +50,52 @@
     "directory": "Directorio",
     "contact": "Contacto",
     "search_site": "Buscar en el Sitio"
+  },
+  "logo_management": {
+    "title": "Gestión de Logo y Perfil",
+    "company_logo": "Logo de Su Empresa",
+    "company_bio": "Biografía de la Empresa",
+    "upload_logo": "Subir Logo",
+    "upload_bio": "Subir Biografía",
+    "upload_profile": "Subir Perfil",
+    "uploading": "Subiendo...",
+    "file_requirements": "PNG, JPG, SVG o WebP. Máx 5MB.",
+    "bio_requirements": "Breve descripción de la empresa para el directorio de miembros.",
+    "admin_only": "Nota: Los cambios de logo son revisados por administradores de FASE",
+    "fase_downloads": "Descargas de Logo FASE",
+    "fase_downloads_desc": "Descargue logos de FASE para sus materiales de marketing",
+    "download": "Descargar",
+    "standard_rgb": "Estándar (RGB)",
+    "logo_mark": "Marca del Logo",
+    "stacked": "Apilado",
+    "full_lockup": "Logo Completo",
+    "usage_consent": {
+      "title": "Permiso de Uso",
+      "description": "Al subir, otorga a FASE permiso para:",
+      "logo_use": "Usar su logo en el directorio de miembros y otros materiales públicos",
+      "bio_edit": "Editar, traducir y publicar la biografía de su empresa",
+      "agreement": "Acepto estos términos de uso",
+      "required": "El permiso es necesario para continuar"
+    },
+    "alt_text": {
+      "company_logo": "Logo de la Empresa",
+      "fase_logo_rgb": "Logo FASE RGB",
+      "fase_logo_mark": "Marca del Logo FASE",
+      "fase_logo_stacked": "Logo FASE Apilado",
+      "fase_logo_lockup": "Logo FASE Completo"
+    },
+    "success": {
+      "upload_successful": "¡Perfil subido con éxito! Nuestro equipo revisará su envío.",
+      "bio_updated": "Biografía de la empresa actualizada con éxito"
+    },
+    "errors": {
+      "upload_failed": "La subida falló. Por favor, inténtelo de nuevo.",
+      "invalid_file_type": "Tipo de archivo inválido. Use PNG, JPG, SVG o WebP.",
+      "file_too_large": "Archivo demasiado grande. El tamaño máximo es 5MB.",
+      "bio_required": "La biografía de la empresa es obligatoria.",
+      "consent_required": "Debe aceptar los términos de uso.",
+      "missing_fields": "Por favor, complete todos los campos requeridos.",
+      "provide_content_and_consent": "Por favor, proporcione un logo o biografía y acepte los términos de uso"
+    }
   }
 }

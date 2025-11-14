@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -48,17 +49,19 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
     xl: 'max-w-xl'
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Overlay */}
-        <div 
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-          onClick={onClose}
-        />
+      {/* Overlay */}
+      <div 
+        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        onClick={onClose}
+      />
 
-        {/* Modal */}
-        <div className={`inline-block w-full ${maxWidthClasses[maxWidth]} my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
+      {/* Modal */}
+      <div 
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${maxWidthClasses[maxWidth]} overflow-hidden text-left transition-all bg-white shadow-xl rounded-lg z-10 max-h-[90vh] overflow-y-auto`}
+        style={{ maxWidth: 'calc(100vw - 2rem)' }}
+      >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-fase-light-gold">
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy">{title}</h2>
@@ -73,11 +76,13 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4">
-            {children}
-          </div>
+        <div className="px-6 py-4">
+          {children}
         </div>
       </div>
     </div>
   );
+
+  // Use portal to render modal at document body level, breaking out of page layout
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }

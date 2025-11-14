@@ -151,7 +151,7 @@ export interface UnifiedMember {
   membershipType: 'corporate' | 'individual';
   
   // Access control - inherited from organization for corporate members
-  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent';
+  status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent' | 'flagged';
   
   // Organization data (populated from organization account for corporate members)
   portfolio?: {

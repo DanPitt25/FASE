@@ -49,5 +49,52 @@
     "directory": "Directory",
     "contact": "Contact",
     "search_site": "Search Site"
+  },
+  "logo_management": {
+    "title": "Logo & Profile Management",
+    "company_logo": "Your Company Logo",
+    "company_bio": "Company Bio",
+    "upload_logo": "Upload Logo",
+    "upload_bio": "Upload Bio",
+    "upload_profile": "Upload Profile",
+    "uploading": "Uploading...",
+    "file_requirements": "PNG, JPG, SVG, or WebP. Max 5MB.",
+    "bio_requirements": "Brief company description for the member directory.",
+    "admin_only": "Note: Logo changes are reviewed by FASE administrators",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Download FASE logos for your marketing materials",
+    "download": "Download",
+    "standard_rgb": "Standard (RGB)",
+    "logo_mark": "Logo Mark",
+    "stacked": "Stacked",
+    "full_lockup": "Full Lockup",
+    "usage_consent": {
+      "title": "Usage Permission",
+      "description": "By uploading, you grant FASE permission to:",
+      "logo_use": "Use your logo in the member directory and other public materials",
+      "bio_edit": "Edit, translate, and publish your company bio",
+      "agreement": "I agree to these usage terms",
+      "required": "Permission is required to proceed"
+    },
+    "alt_text": {
+      "company_logo": "Company Logo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo Mark",
+      "fase_logo_stacked": "FASE Logo Stacked",
+      "fase_logo_lockup": "FASE Logo Lockup"
+    },
+    "success": {
+      "upload_successful": "Profile uploaded successfully! Our team will review your submission.",
+      "bio_updated": "Company bio updated successfully"
+    },
+    "errors": {
+      "upload_failed": "Upload failed. Please try again.",
+      "invalid_file_type": "Invalid file type. Please use PNG, JPG, SVG, or WebP.",
+      "file_too_large": "File too large. Maximum size is 5MB.",
+      "bio_required": "Company bio is required.",
+      "consent_required": "You must agree to the usage terms.",
+      "missing_fields": "Please fill in all required fields.",
+      "provide_content_and_consent": "Please provide either a logo or bio and agree to usage terms"
+    }
   }
 }

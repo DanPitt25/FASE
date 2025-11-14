@@ -342,10 +342,10 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             
             <div className="space-y-1">
               <div className="px-3 py-2 text-sm font-semibold text-fase-navy">{tNav('knowledge')}</div>
-              <a href="/knowledge/entrepreneurial-underwriter" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+              <a href="/entrepreneurial-underwriter" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Entrepreneurial Underwriter</a>
-              <a href="/knowledge/webinars" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+              <a href="/webinars" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>{tNav('webinars')}</a>
             </div>

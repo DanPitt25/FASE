@@ -49,5 +49,52 @@
     "directory": "Annuaire",
     "contact": "Contact",
     "search_site": "Rechercher sur le Site"
+  },
+  "logo_management": {
+    "title": "Gestion Logo et Profil",
+    "company_logo": "Logo de Votre Entreprise",
+    "company_bio": "Biographie d'Entreprise",
+    "upload_logo": "Télécharger Logo",
+    "upload_bio": "Télécharger Bio",
+    "upload_profile": "Télécharger Profil",
+    "uploading": "Téléchargement...",
+    "file_requirements": "PNG, JPG, SVG ou WebP. Max 5 Mo.",
+    "bio_requirements": "Brève description d'entreprise pour l'annuaire des membres.",
+    "admin_only": "Note : Les changements de logo sont examinés par les administrateurs FASE",
+    "fase_downloads": "Téléchargements Logo FASE",
+    "fase_downloads_desc": "Téléchargez les logos FASE pour vos supports marketing",
+    "download": "Télécharger",
+    "standard_rgb": "Standard (RGB)",
+    "logo_mark": "Marque Logo",
+    "stacked": "Empilé",
+    "full_lockup": "Logo Complet",
+    "usage_consent": {
+      "title": "Permission d'Usage",
+      "description": "En téléchargeant, vous accordez à FASE la permission de :",
+      "logo_use": "Utiliser votre logo dans l'annuaire des membres et autres supports publics",
+      "bio_edit": "Éditer, traduire et publier votre biographie d'entreprise",
+      "agreement": "J'accepte ces conditions d'usage",
+      "required": "La permission est requise pour continuer"
+    },
+    "alt_text": {
+      "company_logo": "Logo d'Entreprise",
+      "fase_logo_rgb": "Logo FASE RGB",
+      "fase_logo_mark": "Marque Logo FASE",
+      "fase_logo_stacked": "Logo FASE Empilé",
+      "fase_logo_lockup": "Logo FASE Complet"
+    },
+    "success": {
+      "upload_successful": "Profil téléchargé avec succès ! Notre équipe examinera votre soumission.",
+      "bio_updated": "Biographie d'entreprise mise à jour avec succès"
+    },
+    "errors": {
+      "upload_failed": "Échec du téléchargement. Veuillez réessayer.",
+      "invalid_file_type": "Type de fichier invalide. Veuillez utiliser PNG, JPG, SVG ou WebP.",
+      "file_too_large": "Fichier trop volumineux. Taille maximale 5 Mo.",
+      "bio_required": "La biographie d'entreprise est requise.",
+      "consent_required": "Vous devez accepter les conditions d'usage.",
+      "missing_fields": "Veuillez remplir tous les champs requis.",
+      "provide_content_and_consent": "Veuillez fournir soit un logo soit une bio et accepter les conditions d'usage"
+    }
   }
 }

@@ -80,6 +80,26 @@
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
   },
+  "payment_confirmed_welcome": {
+    "subject": "Welkom bij FASE",
+    "subject_m": "Welkom bij FASE",
+    "subject_f": "Welkom bij FASE",
+    "welcome": "Welkom bij FASE",
+    "welcome_m": "Welkom bij FASE", 
+    "welcome_f": "Welkom bij FASE",
+    "dear": "Geachte",
+    "dear_m": "Geachte heer",
+    "dear_f": "Geachte mevrouw",
+    "congratulations": "Wij zijn verheugd u te verwelkomen bij FASE. Uw lidmaatschap voor {organizationName} is nu actief.",
+    "congratulations_m": "Wij zijn verheugd u te verwelkomen bij FASE. Uw lidmaatschap voor {organizationName} is nu actief.",
+    "congratulations_f": "Wij zijn verheugd u te verwelkomen bij FASE. Uw lidmaatschap voor {organizationName} is nu actief.",
+    "portal_description": "Uw ledenportaal is nu beschikbaar. Hier kunt u uw bedrijf presenteren met een bedrijfsprofiel, FASE-marketingmaterialen downloaden voor uw eigen communicatie, en het volledige scala aan ledenvoordelen ontdekken die tot uw beschikking staan.",
+    "logo_info": "Als FASE-lid bent u gerechtigd het FASE-logo te tonen op uw websites en marketingmaterialen. U kunt zowel horizontale als verticale logo-versies downloaden vanuit uw portaal. Om opgenomen te worden in ons ledenregister, stuurt u uw bedrijfslogo en een korte bedrijfssamenvatting (max. 500 tekens) naar admin@fasemga.com.",
+    "access_portal": "Ga naar uw Ledenportaal",
+    "support": "Ons team staat tot uw beschikking voor verdere ondersteuning.",
+    "regards": "Met vriendelijke groet,",
+    "signature": "Het FASE-team"
+  },
   "pdf_invoice": {
     "invoice": "FACTUUR",
     "bill_to": "Factureren aan:",

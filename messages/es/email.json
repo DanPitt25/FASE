@@ -86,6 +86,26 @@
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
   },
+  "payment_confirmed_welcome": {
+    "subject": "Bienvenido a FASE",
+    "subject_m": "Bienvenido a FASE",
+    "subject_f": "Bienvenida a FASE",
+    "welcome": "Bienvenido a FASE",
+    "welcome_m": "Bienvenido a FASE",
+    "welcome_f": "Bienvenida a FASE",
+    "dear": "Estimado/a",
+    "dear_m": "Estimado",
+    "dear_f": "Estimada",
+    "congratulations": "Nos complace darle la bienvenida a FASE. Su membresía para {organizationName} está ahora activa.",
+    "congratulations_m": "Nos complace darle la bienvenida a FASE. Su membresía para {organizationName} está ahora activa.",
+    "congratulations_f": "Nos complace darle la bienvenida a FASE. Su membresía para {organizationName} está ahora activa.",
+    "portal_description": "Su portal de miembros está ahora disponible. Allí puede presentar su empresa con un perfil de empresa, descargar materiales de comunicación de FASE para su marketing, y explorar toda la gama de beneficios de miembros a su disposición.",
+    "logo_info": "Como miembro de FASE, está autorizado a mostrar el logo de FASE en sus sitios web y materiales de marketing. Puede descargar las versiones horizontal y vertical del logo desde su portal. Para aparecer en nuestro directorio de miembros, envíe el logo de su empresa y un breve resumen empresarial (máx. 500 caracteres) a admin@fasemga.com.",
+    "access_portal": "Acceder a su Portal de Miembros",
+    "support": "Nuestro equipo está a su disposición para cualquier asistencia.",
+    "regards": "Saludos cordiales,",
+    "signature": "El equipo FASE"
+  },
   "pdf_invoice": {
     "invoice": "FACTURA",
     "bill_to": "Facturar a:",

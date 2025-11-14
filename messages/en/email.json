@@ -80,6 +80,26 @@
     "title": "Chief Operating Officer, FASE", 
     "email": "aline.sullivan@fasemga.com"
   },
+  "payment_confirmed_welcome": {
+    "subject": "Welcome to FASE",
+    "subject_m": "Welcome to FASE",
+    "subject_f": "Welcome to FASE", 
+    "welcome": "Welcome to FASE",
+    "welcome_m": "Welcome to FASE",
+    "welcome_f": "Welcome to FASE",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "congratulations": "We're pleased to welcome you to FASE. Your membership for {organizationName} is now active.",
+    "congratulations_m": "We're pleased to welcome you to FASE. Your membership for {organizationName} is now active.",
+    "congratulations_f": "We're pleased to welcome you to FASE. Your membership for {organizationName} is now active.",
+    "portal_description": "Your member portal is now ready. Here you can showcase your company with a professional profile, download FASE branding materials for your own marketing, and explore the full range of member benefits available to you.",
+    "logo_info": "As a FASE member, you are entitled to display the FASE logo on your websites and marketing materials. You can download both horizontal and vertical logo versions from your portal. To be featured in our member directory, please send your company logo and a brief business summary (max 500 characters) to admin@fasemga.com.",
+    "access_portal": "Access Your Member Portal",
+    "support": "If you need any assistance getting started, our team is here to help.",
+    "regards": "Best regards,",
+    "signature": "The FASE Team"
+  },
   "pdf_invoice": {
     "invoice": "INVOICE",
     "bill_to": "Bill To:",

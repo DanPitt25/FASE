@@ -58,5 +58,52 @@
     "member_portal": "Ledenportaal",
     "admin_portal": "Beheerportaal",
     "search_site": "Zoek website"
+  },
+  "logo_management": {
+    "title": "Logo & Profiel Beheer",
+    "company_logo": "Uw Bedrijfslogo",
+    "company_bio": "Bedrijfsbiografie",
+    "upload_logo": "Logo Uploaden",
+    "upload_bio": "Biografie Uploaden",
+    "upload_profile": "Profiel Uploaden",
+    "uploading": "Uploaden...",
+    "file_requirements": "PNG, JPG, SVG of WebP. Max 5MB.",
+    "bio_requirements": "Korte bedrijfsomschrijving voor de ledengids.",
+    "admin_only": "Opmerking: Logowijzigingen worden beoordeeld door FASE-beheerders",
+    "fase_downloads": "FASE Logo Downloads",
+    "fase_downloads_desc": "Download FASE-logo's voor uw marketingmateriaal",
+    "download": "Download",
+    "standard_rgb": "Standaard (RGB)",
+    "logo_mark": "Logo Merk",
+    "stacked": "Gestapeld",
+    "full_lockup": "Volledig Logo",
+    "usage_consent": {
+      "title": "Gebruikstoestemming",
+      "description": "Door te uploaden geeft u FASE toestemming om:",
+      "logo_use": "Uw logo te gebruiken in de ledengids en andere openbare materialen",
+      "bio_edit": "Uw bedrijfsbiografie te bewerken, vertalen en publiceren",
+      "agreement": "Ik ga akkoord met deze gebruiksvoorwaarden",
+      "required": "Toestemming is vereist om door te gaan"
+    },
+    "alt_text": {
+      "company_logo": "Bedrijfslogo",
+      "fase_logo_rgb": "FASE Logo RGB",
+      "fase_logo_mark": "FASE Logo Merk",
+      "fase_logo_stacked": "FASE Logo Gestapeld",
+      "fase_logo_lockup": "FASE Volledig Logo"
+    },
+    "success": {
+      "upload_successful": "Profiel succesvol geüpload! Ons team zal uw inzending beoordelen.",
+      "bio_updated": "Bedrijfsbiografie succesvol bijgewerkt"
+    },
+    "errors": {
+      "upload_failed": "Upload mislukt. Probeer het opnieuw.",
+      "invalid_file_type": "Ongeldig bestandstype. Gebruik PNG, JPG, SVG of WebP.",
+      "file_too_large": "Bestand te groot. Maximale grootte is 5MB.",
+      "bio_required": "Bedrijfsbiografie is verplicht.",
+      "consent_required": "U moet akkoord gaan met de gebruiksvoorwaarden.",
+      "missing_fields": "Vul alle verplichte velden in.",
+      "provide_content_and_consent": "Geef een logo of biografie en ga akkoord met de gebruiksvoorwaarden"
+    }
   }
 }

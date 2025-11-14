@@ -33,7 +33,7 @@ FASE offre aux agences de souscription de toute l'Europe des opportunités d'él
 
 &nbsp;
 
-"Les agences de souscription sont, pour la plupart, de petites entreprises," a déclaré Dario Spata, président de ASASE (Asociación de Agencias de Suscripción Españolas), l'association des agences de souscription d'Espagne, et membre du conseil consultatif de FASE. "Dans l'assurance, cela peut être un gros avantage, car on peut agir plus rapidement. Mais lorsque nos membres cherchent à développer leur activité, ils sont parfois entravés par des obstacles réglementaires, des lacunes de données et des contraintes de capacité. FASE peut aider."
+"Les agences de souscription sont, pour la plupart, de petites entreprises," a déclaré Darío Spata, président de ASASE (Asociación de Agencias de Suscripción Españolas), l'association des agences de souscription d'Espagne, et membre du conseil consultatif de FASE. "Dans l'assurance, cela peut être un gros avantage, car on peut agir plus rapidement. Mais lorsque nos membres cherchent à développer leur activité, ils sont parfois entravés par des obstacles réglementaires, des lacunes de données et des contraintes de capacité. FASE peut aider."
 
 &nbsp;
 

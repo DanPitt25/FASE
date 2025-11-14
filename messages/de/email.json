@@ -86,6 +86,26 @@
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
   },
+  "payment_confirmed_welcome": {
+    "subject": "Willkommen bei FASE",
+    "subject_m": "Willkommen bei FASE",
+    "subject_f": "Willkommen bei FASE",
+    "welcome": "Willkommen bei FASE",
+    "welcome_m": "Willkommen bei FASE",
+    "welcome_f": "Willkommen bei FASE",
+    "dear": "Sehr geehrte Damen und Herren",
+    "dear_m": "Sehr geehrter Herr",
+    "dear_f": "Sehr geehrte Frau",
+    "congratulations": "Wir freuen uns, Sie bei FASE begrüßen zu können. Ihre Mitgliedschaft für {organizationName} ist nun aktiv.",
+    "congratulations_m": "Wir freuen uns, Sie bei FASE begrüßen zu können. Ihre Mitgliedschaft für {organizationName} ist nun aktiv.",
+    "congratulations_f": "Wir freuen uns, Sie bei FASE begrüßen zu können. Ihre Mitgliedschaft für {organizationName} ist nun aktiv.",
+    "portal_description": "Ihr Mitgliederportal steht Ihnen nun zur Verfügung. Hier können Sie Ihr Unternehmen mit einem Firmenprofil präsentieren, FASE-Marketingmaterialien für Ihre eigene Kommunikation herunterladen und das vollständige Spektrum Ihrer Mitgliedervorteile entdecken.",
+    "logo_info": "Als FASE-Mitglied sind Sie berechtigt, das FASE-Logo auf Ihren Websites und Marketingmaterialien zu verwenden. Sie können sowohl horizontale als auch vertikale Logo-Versionen von Ihrem Portal herunterladen. Um in unserem Mitgliederverzeichnis aufgeführt zu werden, senden Sie bitte Ihr Firmenlogo und eine kurze Unternehmensbeschreibung (max. 500 Zeichen) an admin@fasemga.com.",
+    "access_portal": "Zu Ihrem Mitgliederportal",
+    "support": "Unser Team steht Ihnen gerne für weitere Unterstützung zur Verfügung.",
+    "regards": "Mit freundlichen Grüßen,",
+    "signature": "Das FASE-Team"
+  },
   "pdf_invoice": {
     "invoice": "RECHNUNG",
     "bill_to": "Rechnung an:",

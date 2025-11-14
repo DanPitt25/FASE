@@ -98,7 +98,12 @@ interface PricingSection {
   subtitle: string;
 }
 
-type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection | ContentOnlySection | PricingSection;
+interface CustomSection {
+  type: 'custom';
+  content: ReactNode;
+}
+
+type ContentSection = SplitSection | CardsSection | CTASection | AccordionSection | QuoteSection | ContactSection | PeopleSection | ContentOnlySection | PricingSection | CustomSection;
 
 interface ContentPageLayoutProps {
   title: string;
@@ -702,6 +707,29 @@ export default function ContentPageLayout({
                   </div>
                   
                   <PricingAccordion />
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+
+      case 'custom':
+        return (
+          <div key={index}>
+            {/* Blue ribbon separator */}
+            <div ref={ribbonAnimations[index].elementRef} className="relative h-12">
+              <div className={`absolute ${isEven ? 'right-0' : 'left-0'} h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+                ribbonAnimations[index].isVisible ? (isEven ? 'scroll-visible-right' : 'scroll-visible-left') : (isEven ? 'scroll-hidden-right' : 'scroll-hidden-left')
+              }`} style={{ width: '61.8%' }}></div>
+            </div>
+
+            {/* Custom Content Section */}
+            <section ref={animation.elementRef} className="bg-white py-24 lg:py-32 2xl:py-40">
+              <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+                <div className={`transition-all duration-700 ${
+                  animation.isVisible ? 'scroll-visible' : 'scroll-hidden'
+                }`}>
+                  {section.content}
                 </div>
               </div>
             </section>
