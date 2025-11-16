@@ -10,6 +10,7 @@
     "overview": "Overview",
     "messages": "Messages", 
     "alerts": "Alerts",
+    "map": "Member Map",
     "profile": "Manage Profile"
   },
   "overview": {
@@ -223,6 +224,35 @@
     "directory_requirements": {
       "logo": "A copy of your company logo",
       "summary": "A brief business summary (maximum 500 characters)"
+    }
+  },
+  "map": {
+    "title": "Member Map",
+    "description": "Explore the geographic distribution of FASE members across Europe",
+    "loading": "Loading member locations...",
+    "member_count": "{{count}} members",
+    "click_marker": "Click a marker to view member details",
+    "no_members": "No members found",
+    "no_members_desc": "No approved members with location data are currently available.",
+    "member_details": {
+      "organization": "Organization",
+      "type": "Type",
+      "location": "Location",
+      "contact": "Contact",
+      "visit_profile": "View Profile"
+    },
+    "legend": {
+      "title": "Member Types",
+      "mga": "Managing General Agent", 
+      "carrier": "Insurance Carrier",
+      "provider": "Service Provider"
+    },
+    "filters": {
+      "all_types": "All Types",
+      "show_type": "Show {{type}}",
+      "all_locations": "All Locations",
+      "business_locations": "Business Locations Only",
+      "market_locations": "Market Locations Only"
     }
   }
 }

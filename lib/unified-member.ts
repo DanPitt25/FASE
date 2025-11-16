@@ -430,12 +430,15 @@ export const updateMemberStatus = async (
 // Get all members by status
 export const getMembersByStatus = async (status: UnifiedMember['status']): Promise<UnifiedMember[]> => {
   try {
+    console.log(`🔍 getMembersByStatus: Querying for status '${status}'...`);
     const allMembers: UnifiedMember[] = [];
     
     // 1. Get individual accounts with matching status
     const accountsRef = collection(db, 'accounts');
     const individualQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'individual'));
+    console.log('🔍 getMembersByStatus: Running individual accounts query...');
     const individualSnapshot = await getDocs(individualQuery);
+    console.log(`🔍 getMembersByStatus: Found ${individualSnapshot.docs.length} individual accounts with status '${status}'`);
     
     individualSnapshot.docs.forEach(doc => {
       const data = doc.data();
@@ -460,13 +463,17 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
     });
     
     // 2. Get corporate accounts with matching status and their members
+    console.log('🔍 getMembersByStatus: Running corporate accounts query...');
     const corporateQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'corporate'));
     const corporateSnapshot = await getDocs(corporateQuery);
+    console.log(`🔍 getMembersByStatus: Found ${corporateSnapshot.docs.length} corporate accounts with status '${status}'`);
     
     for (const orgDoc of corporateSnapshot.docs) {
       const orgData = orgDoc.data();
+      console.log(`🔍 getMembersByStatus: Processing corporate account ${orgDoc.id} (${orgData.organizationName})`);
       const membersRef = collection(db, 'accounts', orgDoc.id, 'members');
       const membersSnapshot = await getDocs(membersRef);
+      console.log(`🔍 getMembersByStatus: Found ${membersSnapshot.docs.length} members in corporate account ${orgDoc.id}`);
       
       membersSnapshot.docs.forEach(memberDoc => {
         const memberData = memberDoc.data();
@@ -495,6 +502,13 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
       });
     }
     
+    console.log(`🔍 getMembersByStatus: Total members found with status '${status}':`, {
+      total: allMembers.length,
+      individual: allMembers.filter(m => m.membershipType === 'individual').length,
+      corporate: allMembers.filter(m => m.membershipType === 'corporate').length,
+      withLocation: allMembers.filter(m => m.registeredAddress?.country).length
+    });
+    
     return allMembers;
   } catch (error) {
     console.error('Error getting members by status:', error);
@@ -505,15 +519,20 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
 // Get accounts by status (for admin portal - returns account-level data only)
 export const getAccountsByStatus = async (status: UnifiedMember['status']): Promise<UnifiedMember[]> => {
   try {
+    console.log(`🏢 getAccountsByStatus: Querying for accounts with status '${status}'...`);
     const allAccounts: UnifiedMember[] = [];
     const accountsRef = collection(db, 'accounts');
     
     // Get all accounts (individual + corporate) with matching status
+    // Query without any field restrictions to ensure we get all document data
     const accountsQuery = query(accountsRef, where('status', '==', status));
     const accountsSnapshot = await getDocs(accountsQuery);
     
+    console.log(`🏢 getAccountsByStatus: Found ${accountsSnapshot.docs.length} accounts with status '${status}'`);
+    
     accountsSnapshot.docs.forEach(doc => {
       const data = doc.data();
+      
       allAccounts.push({
         id: doc.id, // This is the account ID, not member ID
         email: data.email,
@@ -528,9 +547,16 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
         portfolio: data.portfolio,
         hasOtherAssociations: data.hasOtherAssociations,
         primaryContact: data.primaryContact,
-        registeredAddress: data.registeredAddress
-      } as UnifiedMember);
+        registeredAddress: data.registeredAddress,
+        // Include the actual business address and markets from the account document
+        ...(data.businessAddress && { businessAddress: data.businessAddress }),
+        markets: data.portfolio?.markets || [], // Markets are in portfolio.markets
+        // Include other account fields that might be needed
+        linesOfBusiness: data.linesOfBusiness,
+        accountAdministrator: data.accountAdministrator
+      } as UnifiedMember & { businessAddress?: any; markets?: string[] });
     });
+    
     
     return allAccounts;
   } catch (error) {
@@ -541,7 +567,7 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
 
 // Get all approved members for directory
 export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]> => {
-  return getMembersByStatus('approved');
+  return await getAccountsByStatus('approved');
 };
 
 // Get members with member portal access (approved + admin)
