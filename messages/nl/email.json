@@ -102,9 +102,9 @@
   },
   "member_portal_welcome": {
     "subject": "Welkom bij FASE - toegang tot uw ledenportaal",
-    "dear": "Beste",
-    "dear_m": "Beste",
-    "dear_f": "Beste",
+    "dear": "Geachte",
+    "dear_m": "Geachte heer",
+    "dear_f": "Geachte mevrouw",
     "welcome_intro": "Welkom bij FASE, de pan-Europese GA-federatie. Wij zijn verheugd om {organizationName} als oprichtend lid te verwelkomen.",
     "portal_access": "U kunt hier toegang krijgen tot ons ledenportaal. In de komende weken zullen wij via het portaal nieuwe tools en databronnen blijven publiceren om de groei van uw bedrijf in Europa te ondersteunen.",
     "member_directory": "Volgende maand zullen wij de eerste versie van FASE's ledenregister publiceren. U kunt het portaal gebruiken om relevante details van {organizationName} te delen die u wilt delen met andere leden via het portaal en met de bredere markt via onze website.",

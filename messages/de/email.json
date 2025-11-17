@@ -108,9 +108,9 @@
   },
   "member_portal_welcome": {
     "subject": "Willkommen bei FASE - Zugang zu Ihrem Mitgliederportal",
-    "dear": "Liebe",
-    "dear_m": "Lieber",
-    "dear_f": "Liebe",
+    "dear": "Sehr geehrte",
+    "dear_m": "Sehr geehrter",
+    "dear_f": "Sehr geehrte",
     "welcome_intro": "Willkommen bei FASE, der paneuropäischen MGA-Föderation. Wir freuen uns sehr, {organizationName} als Gründungsmitglied begrüßen zu dürfen.",
     "portal_access": "Sie können hier auf unser Mitgliederportal zugreifen. In den kommenden Wochen werden wir über das Portal weiterhin neue Tools und Datenressourcen veröffentlichen, um das Wachstum Ihres Unternehmens in Europa zu unterstützen.",
     "member_directory": "Nächsten Monat werden wir die erste Version des FASE-Mitgliederverzeichnisses veröffentlichen. Sie können das Portal nutzen, um relevante Details von {organizationName} zu teilen, die Sie mit anderen Mitgliedern über das Portal und mit dem breiteren Markt über unsere Website teilen möchten.",
