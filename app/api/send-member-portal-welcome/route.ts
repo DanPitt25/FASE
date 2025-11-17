@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
       dear: getGenderedText('dear', "Dear"),
       welcomeIntro: (welcomeEmail.welcome_intro || "Welcome to FASE, the pan-European MGA federation. We're delighted to have {organizationName} as a founder member.").replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
       portalAccess: welcomeEmail.portal_access || "You can access our member portal here. In the coming weeks, we will continue to release, through the portal, new tools and data resources to support the growth of your business in Europe.",
-      mgaRendezvous: welcomeEmail.mga_rendezvous || "We will shortly be announcing details of our 2026 MGA Rendezvous, a unique event for European MGAs to connect with capacity providers and service providers from around the world to deepen existing relationships and establish new relationships.",
       memberDirectory: (welcomeEmail.member_directory || "Next month we will also be publishing the first iteration of FASE's member directory. You can use the portal to share relevant details of {organizationName} that you would like to share with other members through the portal and with the broader market through our website.").replace('{organizationName}', testData.organizationName),
       closing: welcomeEmail.closing || "Please do not hesitate to reach out if you have any questions.",
       regards: welcomeEmail.regards || "Best regards,",
@@ -118,10 +117,6 @@ export async function POST(request: NextRequest) {
             <div style="text-align: center; margin: 25px 0;">
               <a href="${emailContent.portalUrl}" style="display: inline-block; background-color: #2D5574; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">${emailContent.accessPortal}</a>
             </div>
-            
-            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 20px 0;">
-              ${emailContent.mgaRendezvous}
-            </p>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 20px 0 20px 0;">
               ${emailContent.memberDirectory}
