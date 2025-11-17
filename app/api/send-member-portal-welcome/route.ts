@@ -133,8 +133,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>${emailContent.signatureName}</strong><br><br>
-              ${emailContent.signatureFull}<br>
+              <strong>${emailContent.signatureName}</strong><br>
               ${emailContent.signatureTitle}
             </p>
           </div>
