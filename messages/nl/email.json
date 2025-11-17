@@ -130,5 +130,32 @@
     "payment_company": "Lexicon Associates, LLC accepteert betalingen namens Fédération des Agences de Souscription (FASE B.V.)",
     "account_number": "Rekeningnummer: 1255828998",
     "payment_reference": "Betalingsreferentie: {invoiceNumber}"
+  },
+  "signatures": {
+    "william_pitt": {
+      "regards": "Met vriendelijke groet,",
+      "name": "William Pitt",
+      "title": "Uitvoerend Directeur, FASE"
+    },
+    "aline_sullivan": {
+      "regards": "Met vriendelijke groet,",
+      "name": "Aline Sullivan",
+      "title": "Chief Operating Officer, FASE"
+    },
+    "admin_team": {
+      "regards": "Met vriendelijke groet,",
+      "name": "Het FASE Team",
+      "title": ""
+    },
+    "info_team": {
+      "regards": "Met vriendelijke groet,",
+      "name": "Het FASE Team",
+      "title": ""
+    },
+    "media_team": {
+      "regards": "Met vriendelijke groet,",
+      "name": "FASE Media Team",
+      "title": ""
+    }
   }
 }

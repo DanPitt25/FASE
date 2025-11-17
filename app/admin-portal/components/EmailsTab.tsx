@@ -7,7 +7,7 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'payment_confirmed_welcome' | 'member_portal_welcome' | 'reminder';
+type EmailTemplate = 'invoice' | 'member_portal_welcome' | 'reminder' | 'freeform';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -29,7 +29,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       county: prefilledData?.businessAddress?.county || prefilledData?.registeredAddress?.county || '',
       postcode: prefilledData?.businessAddress?.postcode || prefilledData?.registeredAddress?.postcode || '',
       country: prefilledData?.businessAddress?.country || prefilledData?.registeredAddress?.country || ''
-    }
+    },
+    // Freeform email fields
+    freeformSubject: '',
+    freeformBody: '',
+    freeformAttachments: [] as File[],
+    freeformSender: 'admin@fasemga.com'
   });
 
   const [sending, setSending] = useState(false);
@@ -74,15 +79,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       generatesPDF: true,
       available: true
     },
-    payment_confirmed_welcome: {
-      title: 'Payment Confirmed - Welcome',
-      description: 'Confirm payment and welcome to member portal',
-      apiEndpoint: '/api/send-welcome-email',
-      previewEndpoint: '/api/send-welcome-email',
-      requiresPricing: false,
-      generatesPDF: false,
-      available: true
-    },
     member_portal_welcome: {
       title: 'Member Portal Welcome',
       description: 'Welcome email with portal access for new members',
@@ -100,6 +96,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       requiresPricing: true,
       generatesPDF: true,
       available: false // API endpoint needs to be created
+    },
+    freeform: {
+      title: 'Freeform Email',
+      description: 'Send custom email with attachments',
+      apiEndpoint: '/api/send-freeform-email',
+      previewEndpoint: '/api/send-freeform-email',
+      requiresPricing: false,
+      generatesPDF: false,
+      available: true
     }
   };
 
@@ -125,11 +130,26 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
       }
 
-      const response = await fetch(template.previewEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      let response;
+      if (selectedTemplate === 'freeform') {
+        const formDataObj = new FormData();
+        Object.keys(payload).forEach(key => {
+          if (key !== 'freeformAttachments') {
+            formDataObj.append(key, payload[key]);
+          }
+        });
+        // Don't add files for preview
+        response = await fetch(template.previewEndpoint, {
+          method: 'POST',
+          body: formDataObj,
+        });
+      } else {
+        response = await fetch(template.previewEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
 
       const data = await response.json();
       setPreview(data);
@@ -162,11 +182,29 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
       }
 
-      const response = await fetch(template.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      let response;
+      if (selectedTemplate === 'freeform') {
+        const formDataObj = new FormData();
+        Object.keys(payload).forEach(key => {
+          if (key !== 'freeformAttachments') {
+            formDataObj.append(key, payload[key]);
+          }
+        });
+        // Add files for actual sending
+        formData.freeformAttachments.forEach((file, index) => {
+          formDataObj.append(`attachments`, file);
+        });
+        response = await fetch(template.apiEndpoint, {
+          method: 'POST',
+          body: formDataObj,
+        });
+      } else {
+        response = await fetch(template.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
 
       const data = await response.json();
       setResult(data);
@@ -220,7 +258,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
 
           {/* Language Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {selectedTemplate === 'freeform' ? 'Signature Language' : 'Language'}
+            </label>
             <select
               value={formData.userLocale}
               onChange={(e) => setFormData(prev => ({ ...prev, userLocale: e.target.value }))}
@@ -259,9 +299,28 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 />
               </div>
             </div>
+            {/* Sender Selection - Only for freeform template */}
+            {selectedTemplate === 'freeform' && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Send From *</label>
+                <select
+                  value={formData.freeformSender}
+                  onChange={(e) => setFormData(prev => ({ ...prev, freeformSender: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  required
+                >
+                  <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
+                  <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
+                  <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
+                  <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
+                  <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+                </select>
+              </div>
+            )}
           </div>
 
-          {/* Contact Details */}
+          {/* Contact Details - Only for non-freeform templates */}
+          {selectedTemplate !== 'freeform' && (
           <div>
             <h4 className="text-md font-semibold mb-4 text-fase-navy">Contact Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -298,8 +357,10 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Organization Details */}
+          {/* Organization Details - Only for non-freeform templates */}
+          {selectedTemplate !== 'freeform' && (
           <div>
             <h4 className="text-md font-semibold mb-4 text-fase-navy">Organization Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -340,6 +401,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
               </div>
             )}
           </div>
+          )}
 
           {/* MGA Pricing Tier - Only for MGA organization type and pricing templates */}
           {(emailTemplates[selectedTemplate].requiresPricing && formData.organizationType === 'MGA') && (
@@ -465,6 +527,60 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <div>Discount (20%): -€{originalAmount - finalAmount}</div>
                 )}
                 <div className="font-semibold">Total: €{finalAmount}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Freeform Email Fields - Only for freeform template */}
+          {selectedTemplate === 'freeform' && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Content</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                  <input
+                    type="text"
+                    value={formData.freeformSubject}
+                    onChange={(e) => setFormData(prev => ({ ...prev, freeformSubject: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    required
+                    placeholder="Enter email subject"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Message Body *</label>
+                  <textarea
+                    value={formData.freeformBody}
+                    onChange={(e) => setFormData(prev => ({ ...prev, freeformBody: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    rows={8}
+                    required
+                    placeholder="Enter your email message..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Attachments</label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setFormData(prev => ({ ...prev, freeformAttachments: files }));
+                    }}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+                  />
+                  {formData.freeformAttachments.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      <span className="font-medium">Selected files:</span>
+                      <ul className="list-disc list-inside mt-1">
+                        {formData.freeformAttachments.map((file, index) => (
+                          <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

@@ -38,3 +38,6 @@ yarn-error.log*
 
 # test endpoints
 app/api/test-membership-email/
+
+# media kit
+media-kit/
