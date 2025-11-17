@@ -213,10 +213,10 @@
     }
   },
   "logo_access": {
-    "title": "FASE Logo Access",
-    "description": "FASE members are entitled to display the FASE logo on their websites and marketing materials, reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct. You can access the logo in your preferred form below:",
+    "title": "FASE Logo",
+    "description": "As a FASE member, you are entitled to display the FASE logo on your website and marketing materials, reflecting your commitment to the highest professional standards.",
     "horizontal_logo": "Horizontal Logo",
-    "vertical_logo": "Vertical Logo",
+    "vertical_logo": "Vertical Logo", 
     "download": "Download",
     "directory_title": "Member Directory Listing",
     "directory_description": "To be featured in our member directory, please send the following to",

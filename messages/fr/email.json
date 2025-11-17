@@ -100,6 +100,22 @@
     "regards": "Cordialement,",
     "signature": "L'équipe FASE"
   },
+  "member_portal_welcome": {
+    "subject": "Bienvenue chez FASE - accès à votre portail membre",
+    "dear": "Cher",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "welcome_intro": "Bienvenue chez FASE, la fédération pan-européenne des MGA. Nous sommes ravis d'avoir {organizationName} comme membre fondateur.",
+    "portal_access": "Vous pouvez accéder à notre portail membre ici. Dans les semaines à venir, nous continuerons à publier, via le portail, de nouveaux outils et ressources de données pour soutenir la croissance de votre entreprise en Europe.",
+    "mga_rendezvous": "Nous annoncerons prochainement les détails de notre MGA Rendezvous 2026, un événement unique permettant aux MGA européens de se connecter avec des fournisseurs de capacité et de services du monde entier pour approfondir les relations existantes et établir de nouvelles relations.",
+    "member_directory": "Le mois prochain, nous publierons également la première version du répertoire des membres de FASE. Vous pouvez utiliser le portail pour partager les détails pertinents de {organizationName} que vous souhaitez partager avec d'autres membres via le portail et avec le marché plus large via notre site web.",
+    "closing": "N'hésitez pas à nous contacter si vous avez des questions.",
+    "regards": "Cordialement,",
+    "signature_name": "William",
+    "signature_full": "William Pitt",
+    "signature_title": "Directeur Exécutif, FASE",
+    "access_portal": "Accéder au Portail Membre"
+  },
   "pdf_invoice": {
     "invoice": "FACTURE",
     "bill_to": "Facturer à :",

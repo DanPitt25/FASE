@@ -145,7 +145,88 @@ export default function MemberContent() {
             <p className="text-fase-black mb-6">{t('overview.benefits_intro')}</p>
             
             <div className="space-y-4">
-              {/* Unique access to a pan-European MGA community */}
+              {/* Brand endorsement - moved to top */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.brand.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.brand.description_1')}
+                  </p>
+                  <p className="text-fase-black mb-6">
+                    {t('overview.brand.description_2')}
+                  </p>
+                  
+                  {/* FASE Logo section integrated here */}
+                  <div className="border-t border-gray-100 pt-6">
+                    <h4 className="text-lg font-semibold text-fase-navy mb-4">{t('logo_access.title')}</h4>
+                    <p className="text-fase-black mb-6 leading-relaxed">
+                      {t('logo_access.description')}
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                        <div className="flex items-center space-x-3">
+                          <img 
+                            src="/FASE-Logo-Lockup-RGB.png" 
+                            alt="FASE Logo Horizontal Lockup" 
+                            className="h-8 w-auto object-contain"
+                          />
+                          <span className="text-sm font-medium text-fase-navy">{t('logo_access.horizontal_logo')}</span>
+                        </div>
+                        <Button
+                          onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
+                          variant="secondary"
+                          size="small"
+                        >
+                          {t('logo_access.download')}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                        <div className="flex items-center space-x-3">
+                          <img 
+                            src="/FASE-Logo-Lockup-Stacked-RGB.png" 
+                            alt="FASE Logo Vertical Lockup" 
+                            className="h-8 w-auto object-contain"
+                          />
+                          <span className="text-sm font-medium text-fase-navy">{t('logo_access.vertical_logo')}</span>
+                        </div>
+                        <Button
+                          onClick={() => downloadFASELogo('FASE-Logo-Lockup-Stacked-RGB.png')}
+                          variant="secondary"
+                          size="small"
+                        >
+                          {t('logo_access.download')}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-gray-200 pt-6">
+                      <h5 className="text-base font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h5>
+                      <p className="text-fase-black leading-relaxed mb-4">
+                        {t('logo_access.directory_description')} <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
+                      </p>
+                      <ul className="space-y-2 text-fase-black">
+                        <li className="flex items-start">
+                          <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                          {t('logo_access.directory_requirements.logo')}
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                          {t('logo_access.directory_requirements.summary')}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </details>
+
+              {/* Unique access to a pan-European MGA community - moved down */}
               <details className="group border border-gray-200 rounded-lg">
                 <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
                   <h3 className="text-lg font-semibold text-fase-navy">{t('overview.community.title')}</h3>
@@ -159,24 +240,6 @@ export default function MemberContent() {
                   </p>
                   <p className="text-fase-black">
                     {t('overview.community.description_2')}
-                  </p>
-                </div>
-              </details>
-
-              {/* Brand endorsement */}
-              <details className="group border border-gray-200 rounded-lg">
-                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.brand.title')}</h3>
-                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="p-4 pt-0 border-t border-gray-100">
-                  <p className="text-fase-black mb-4">
-                    {t('overview.brand.description_1')}
-                  </p>
-                  <p className="text-fase-black">
-                    {t('overview.brand.description_2')}
                   </p>
                 </div>
               </details>
@@ -290,68 +353,6 @@ export default function MemberContent() {
             </div>
           </div>
 
-          {/* FASE Logo Download */}
-          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('logo_access.title')}</h3>
-            <p className="text-fase-black mb-6 leading-relaxed">
-              {t('logo_access.description')}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/FASE-Logo-Lockup-RGB.png" 
-                    alt="FASE Logo Horizontal Lockup" 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm font-medium text-fase-navy">{t('logo_access.horizontal_logo')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('FASE-Logo-Lockup-RGB.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_access.download')}
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
-                <div className="flex items-center space-x-3">
-                  <img 
-                    src="/fase-logo-stacked.png" 
-                    alt="FASE Logo Vertical Lockup" 
-                    className="h-8 w-auto object-contain"
-                  />
-                  <span className="text-sm font-medium text-fase-navy">{t('logo_access.vertical_logo')}</span>
-                </div>
-                <Button
-                  onClick={() => downloadFASELogo('fase-logo-stacked.png')}
-                  variant="secondary"
-                  size="small"
-                >
-                  {t('logo_access.download')}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-200 pt-6">
-              <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h4>
-              <p className="text-fase-black leading-relaxed mb-4">
-                {t('logo_access.directory_description')} <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
-              </p>
-              <ul className="space-y-2 text-fase-black">
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  {t('logo_access.directory_requirements.logo')}
-                </li>
-                <li className="flex items-start">
-                  <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  {t('logo_access.directory_requirements.summary')}
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       )
     },

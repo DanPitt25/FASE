@@ -2,9 +2,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:stable": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rm -rf .next",
+    "reset": "rm -rf .next && npm run build"
   },
   "overrides": {
     "pako": "^2.0.0"

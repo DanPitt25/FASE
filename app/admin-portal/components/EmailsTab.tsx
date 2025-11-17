@@ -7,7 +7,7 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'payment_confirmed_welcome' | 'reminder';
+type EmailTemplate = 'invoice' | 'payment_confirmed_welcome' | 'member_portal_welcome' | 'reminder';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -79,6 +79,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       description: 'Confirm payment and welcome to member portal',
       apiEndpoint: '/api/send-welcome-email',
       previewEndpoint: '/api/send-welcome-email',
+      requiresPricing: false,
+      generatesPDF: false,
+      available: true
+    },
+    member_portal_welcome: {
+      title: 'Member Portal Welcome',
+      description: 'Welcome email with portal access for new members',
+      apiEndpoint: '/api/send-member-portal-welcome',
+      previewEndpoint: '/api/send-member-portal-welcome',
       requiresPricing: false,
       generatesPDF: false,
       available: true
@@ -317,17 +326,19 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 </select>
               </div>
             </div>
-            <div className="mt-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.hasOtherAssociations}
-                  onChange={(e) => setFormData(prev => ({ ...prev, hasOtherAssociations: e.target.checked }))}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
-              </label>
-            </div>
+            {emailTemplates[selectedTemplate].requiresPricing && (
+              <div className="mt-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasOtherAssociations}
+                    onChange={(e) => setFormData(prev => ({ ...prev, hasOtherAssociations: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
+                </label>
+              </div>
+            )}
           </div>
 
           {/* MGA Pricing Tier - Only for MGA organization type and pricing templates */}
