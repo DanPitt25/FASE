@@ -99,7 +99,6 @@ export default function MemberMap({ translations }: MemberMapProps) {
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>('');
-  const [selectedLocationFilter, setSelectedLocationFilter] = useState<string>('business'); // 'all', 'business', 'markets'
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [countriesGeoJson, setCountriesGeoJson] = useState<any>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -188,13 +187,36 @@ export default function MemberMap({ translations }: MemberMapProps) {
     loadMembers();
   }, []);
 
-  // Group members by country
-  const membersByCountry = useMemo(() => {
+  // Group members by country for business and markets separately
+  const businessLocationsByCountry = useMemo(() => {
     const countryMap = new Map<string, UnifiedMember[]>();
     
     members.forEach(member => {
       const memberData = member as any;
       const businessAddress = memberData.businessAddress;
+      
+      // Filter by organization type if selected
+      if (selectedType && member.organizationType !== selectedType) {
+        return;
+      }
+      
+      if (businessAddress?.country) {
+        const countryCode = businessAddress.country;
+        if (!countryMap.has(countryCode)) {
+          countryMap.set(countryCode, []);
+        }
+        countryMap.get(countryCode)!.push(member);
+      }
+    });
+    
+    return countryMap;
+  }, [members, selectedType]);
+
+  const marketLocationsByCountry = useMemo(() => {
+    const countryMap = new Map<string, UnifiedMember[]>();
+    
+    members.forEach(member => {
+      const memberData = member as any;
       const markets = memberData.markets || [];
       
       // Filter by organization type if selected
@@ -202,33 +224,37 @@ export default function MemberMap({ translations }: MemberMapProps) {
         return;
       }
       
-      // Collect countries based on filter
-      const countries: string[] = [];
-      
-      if (selectedLocationFilter === 'business' && businessAddress?.country) {
-        countries.push(businessAddress.country);
-      } else if (selectedLocationFilter === 'markets' && markets && Array.isArray(markets)) {
-        countries.push(...markets);
+      if (markets && Array.isArray(markets)) {
+        markets.forEach(countryCode => {
+          if (!countryMap.has(countryCode)) {
+            countryMap.set(countryCode, []);
+          }
+          countryMap.get(countryCode)!.push(member);
+        });
       }
-      
-      // Add member to each country
-      countries.forEach(countryCode => {
-        if (!countryMap.has(countryCode)) {
-          countryMap.set(countryCode, []);
-        }
-        countryMap.get(countryCode)!.push(member);
-      });
     });
     
-    console.log(`🗺️ Grouped into ${countryMap.size} countries:`, Array.from(countryMap.keys()));
-    
     return countryMap;
-  }, [members, selectedType, selectedLocationFilter]);
+  }, [members, selectedType]);
 
-  // Get countries with members for styling
-  const countriesWithMembers = useMemo(() => {
-    return Array.from(membersByCountry.keys());
-  }, [membersByCountry]);
+  // Combined map for country highlighting
+  const allCountriesWithMembers = useMemo(() => {
+    const allCountries = new Set<string>();
+    businessLocationsByCountry.forEach((_, country) => allCountries.add(country));
+    marketLocationsByCountry.forEach((_, country) => allCountries.add(country));
+    return Array.from(allCountries);
+  }, [businessLocationsByCountry, marketLocationsByCountry]);
+
+  // Count unique members (not duplicated across countries)
+  const filteredMembers = useMemo(() => {
+    return members.filter(member => {
+      if (selectedType && member.organizationType !== selectedType) {
+        return false;
+      }
+      return true;
+    });
+  }, [members, selectedType]);
+
 
   const availableTypes = Array.from(new Set(
     members.map(member => member.organizationType).filter(Boolean)
@@ -299,23 +325,14 @@ export default function MemberMap({ translations }: MemberMapProps) {
               ))}
             </select>
             
-            {/* Location Type Filter */}
-            <select
-              value={selectedLocationFilter}
-              onChange={(e) => setSelectedLocationFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
-            >
-              <option value="business">{translations.filters.business_locations}</option>
-              <option value="markets">{translations.filters.market_locations}</option>
-            </select>
           </div>
           <div className="text-sm text-fase-black">
-            <p>{translations.member_count.replace('{{count}}', Array.from(membersByCountry.values()).reduce((total, memberList) => total + memberList.length, 0).toString())}</p>
-            <p className="text-xs text-gray-500">{countriesWithMembers.length} countries</p>
+            <p>{translations.member_count.replace('{{count}}', filteredMembers.length.toString())}</p>
+            <p className="text-xs text-gray-500">{allCountriesWithMembers.length} countries</p>
           </div>
         </div>
 
-        {membersByCountry.size === 0 ? (
+        {filteredMembers.length === 0 ? (
           <div className="text-center py-12">
             <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m-6 3v10" />
@@ -351,11 +368,10 @@ export default function MemberMap({ translations }: MemberMapProps) {
                   <GeoJSON
                     data={countriesGeoJson}
                     style={(feature: any) => {
-                      // World-atlas uses numeric country codes, we need to convert from our ISO2 codes
                       const numericId = feature?.id;
                       
-                      // Convert our ISO2 codes (FR, DE, IT) to numeric to match
-                      const hasMembers = countriesWithMembers.some(iso2Code => {
+                      // Check if this country has business locations
+                      const hasBusinessLocation = Array.from(businessLocationsByCountry.keys()).some(iso2Code => {
                         try {
                           const numericCode = countries.alpha2ToNumeric(iso2Code);
                           return numericCode && numericCode.toString() === numericId?.toString();
@@ -364,11 +380,47 @@ export default function MemberMap({ translations }: MemberMapProps) {
                         }
                       });
                       
+                      // Check if this country has markets
+                      const hasMarketLocation = Array.from(marketLocationsByCountry.keys()).some(iso2Code => {
+                        try {
+                          const numericCode = countries.alpha2ToNumeric(iso2Code);
+                          return numericCode && numericCode.toString() === numericId?.toString();
+                        } catch (error) {
+                          return false;
+                        }
+                      });
+                      
+                      // Color priority: Business (blue) > Market (green) > Both (purple) > None (gray)
+                      let fillColor = '#f8f9fa'; // Default gray
+                      let borderColor = '#d1d5db';
+                      let fillOpacity = 0.1;
+                      let weight = 1;
+                      
+                      if (hasBusinessLocation && hasMarketLocation) {
+                        // Both business and market - purple
+                        fillColor = '#8b5cf6';
+                        borderColor = '#7c3aed';
+                        fillOpacity = 0.4;
+                        weight = 2;
+                      } else if (hasBusinessLocation) {
+                        // Business location only - blue
+                        fillColor = '#3b82f6';
+                        borderColor = '#1e40af';
+                        fillOpacity = 0.3;
+                        weight = 2;
+                      } else if (hasMarketLocation) {
+                        // Market location only - green
+                        fillColor = '#10b981';
+                        borderColor = '#059669';
+                        fillOpacity = 0.3;
+                        weight = 2;
+                      }
+                      
                       return {
-                        fillColor: hasMembers ? '#3b82f6' : '#f8f9fa',
-                        fillOpacity: hasMembers ? 0.3 : 0.1,
-                        color: hasMembers ? '#1e40af' : '#d1d5db',
-                        weight: hasMembers ? 2 : 1,
+                        fillColor,
+                        fillOpacity,
+                        color: borderColor,
+                        weight,
                         opacity: 0.8
                       };
                     }}
@@ -379,7 +431,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       
                       // Find ISO2 code that matches this numeric ID
                       let iso2Code = null;
-                      for (const memberCountryCode of Array.from(membersByCountry.keys())) {
+                      for (const memberCountryCode of allCountriesWithMembers) {
                         try {
                           const numericCode = countries.alpha2ToNumeric(memberCountryCode);
                           if (numericCode && numericCode.toString() === numericId?.toString()) {
@@ -391,7 +443,15 @@ export default function MemberMap({ translations }: MemberMapProps) {
                         }
                       }
                       
-                      const membersInCountry = iso2Code ? membersByCountry.get(iso2Code) || [] : [];
+                      // Get members from both business and market locations
+                      const businessMembers = iso2Code ? businessLocationsByCountry.get(iso2Code) || [] : [];
+                      const marketMembers = iso2Code ? marketLocationsByCountry.get(iso2Code) || [] : [];
+                      
+                      // Combine and deduplicate members
+                      const allMembersSet = new Set<UnifiedMember>();
+                      businessMembers.forEach(member => allMembersSet.add(member));
+                      marketMembers.forEach(member => allMembersSet.add(member));
+                      const membersInCountry = Array.from(allMembersSet);
                       
                       if (membersInCountry.length > 0) {
                         layer.on('click', () => {
@@ -413,35 +473,46 @@ export default function MemberMap({ translations }: MemberMapProps) {
                           });
                         });
                         
-                        // Bind popup with member list
+                        // Bind popup with member list showing business vs market distinction
                         const popupContent = `
                           <div style="padding: 8px; min-width: 250px;">
                             <h3 style="font-weight: bold; color: #1e3a8a; margin-bottom: 8px; font-size: 16px;">
                               ${countryName} (${membersInCountry.length} member${membersInCountry.length > 1 ? 's' : ''})
                             </h3>
                             <div style="max-height: 200px; overflow-y: auto;">
-                              ${membersInCountry.map(member => `
-                                <div style="margin-bottom: 12px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                                  <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 4px;">
-                                    ${member.organizationName || member.personalName}
-                                  </div>
-                                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 2px;">
-                                    Type: <span style="background: #e5e7eb; padding: 2px 6px; border-radius: 2px;">
-                                      ${member.organizationType === 'MGA' ? translations.legend.mga :
-                                        member.organizationType === 'carrier' ? translations.legend.carrier :
-                                        member.organizationType === 'provider' ? translations.legend.provider :
-                                        member.organizationType}
-                                    </span>
-                                  </div>
-                                  ${member.email ? `
-                                    <div style="font-size: 12px; color: #6b7280;">
-                                      Contact: <a href="mailto:${member.email}" style="color: #3b82f6; text-decoration: underline;">
-                                        ${member.email}
-                                      </a>
+                              ${membersInCountry.map(member => {
+                                const isBusinessLocation = businessMembers.includes(member);
+                                const isMarketLocation = marketMembers.includes(member);
+                                let locationTypes = [];
+                                if (isBusinessLocation) locationTypes.push('<span style="background: #3b82f6; color: white; padding: 1px 4px; border-radius: 2px; font-size: 10px;">BUSINESS</span>');
+                                if (isMarketLocation) locationTypes.push('<span style="background: #10b981; color: white; padding: 1px 4px; border-radius: 2px; font-size: 10px;">MARKET</span>');
+                                
+                                return `
+                                  <div style="margin-bottom: 12px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                                    <div style="font-weight: 600; color: #1e3a8a; margin-bottom: 4px;">
+                                      ${member.organizationName || member.personalName}
                                     </div>
-                                  ` : ''}
-                                </div>
-                              `).join('')}
+                                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 2px;">
+                                      Type: <span style="background: #e5e7eb; padding: 2px 6px; border-radius: 2px;">
+                                        ${member.organizationType === 'MGA' ? translations.legend.mga :
+                                          member.organizationType === 'carrier' ? translations.legend.carrier :
+                                          member.organizationType === 'provider' ? translations.legend.provider :
+                                          member.organizationType}
+                                      </span>
+                                    </div>
+                                    <div style="font-size: 11px; margin-bottom: 4px;">
+                                      ${locationTypes.join(' ')}
+                                    </div>
+                                    ${member.email ? `
+                                      <div style="font-size: 12px; color: #6b7280;">
+                                        Contact: <a href="mailto:${member.email}" style="color: #3b82f6; text-decoration: underline;">
+                                          ${member.email}
+                                        </a>
+                                      </div>
+                                    ` : ''}
+                                  </div>
+                                `;
+                              }).join('')}
                             </div>
                           </div>
                         `;
@@ -458,13 +529,21 @@ export default function MemberMap({ translations }: MemberMapProps) {
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-fase-navy mb-3">{translations.legend.title}</h3>
               
-              {/* Country coloring */}
+              {/* Location Types */}
               <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm">Countries</h4>
+                <h4 className="font-medium text-gray-700 mb-2 text-sm">Location Types</h4>
                 <div className="flex flex-wrap gap-4">
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-blue-500 opacity-30 border border-blue-700 mr-2"></div>
-                    <span className="text-sm">Countries with FASE members</span>
+                    <span className="text-sm">Business locations</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-green-500 opacity-30 border border-green-700 mr-2"></div>
+                    <span className="text-sm">Market locations</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-purple-500 opacity-40 border border-purple-700 mr-2"></div>
+                    <span className="text-sm">Business + Market</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-gray-200 opacity-50 border border-gray-400 mr-2"></div>
@@ -495,7 +574,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
 
             {/* Helper text */}
             <p className="text-sm text-gray-600 text-center">
-              Click on a highlighted country to see FASE members in that location
+              Click on any colored country to see FASE members. Blue = business locations, Green = markets, Purple = both.
             </p>
           </div>
         )}
