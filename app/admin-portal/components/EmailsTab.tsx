@@ -564,20 +564,48 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     type="file"
                     multiple
                     onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      setFormData(prev => ({ ...prev, freeformAttachments: files }));
+                      const newFiles = Array.from(e.target.files || []);
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        freeformAttachments: [...prev.freeformAttachments, ...newFiles]
+                      }));
+                      // Clear the input so the same file can be selected again if needed
+                      e.target.value = '';
                     }}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+                    accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.csv,.zip"
                   />
                   {formData.freeformAttachments.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      <span className="font-medium">Selected files:</span>
-                      <ul className="list-disc list-inside mt-1">
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-sm text-gray-600">Selected files ({formData.freeformAttachments.length}):</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, freeformAttachments: [] }))}
+                          className="text-xs text-red-600 hover:text-red-800"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      <div className="space-y-1">
                         {formData.freeformAttachments.map((file, index) => (
-                          <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
+                          <div key={index} className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded px-2 py-1">
+                            <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  freeformAttachments: prev.freeformAttachments.filter((_, i) => i !== index)
+                                }));
+                              }}
+                              className="text-red-500 hover:text-red-700 ml-2"
+                            >
+                              ×
+                            </button>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
                 </div>
