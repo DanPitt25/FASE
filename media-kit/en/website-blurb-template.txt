@@ -1,0 +1,11 @@
+Website Announcement Templates
+
+SHORT VERSION (for homepage/news section):
+[COMPANY NAME] is proud to be a member of FASE, the Federation of European Managing General Agents. FASE represents MGAs across Europe and connects them with capacity providers, distributors, and service partners throughout the European insurance market.
+
+MEDIUM VERSION (for about/partnerships page):
+[COMPANY NAME] is a member of the Federation of European Managing General Agents (FASE), the pan-European trade federation launched in 2025. FASE serves MGAs operating throughout Europe, facilitating relationships between MGAs and capacity providers while advocating for the sector's role in the European insurance market. Learn more at fasemga.com.
+
+FOOTER/SIDEBAR VERSION:
+Member of FASE - Federation of European Managing General Agents
+[FASE logo]

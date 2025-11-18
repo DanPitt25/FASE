@@ -228,7 +228,7 @@
   },
   "map": {
     "title": "Member Map",
-    "description": "Explore the geographic distribution of FASE members across Europe",
+    "description": "",
     "loading": "Loading member locations...",
     "member_count": "{{count}} members",
     "click_marker": "Click a marker to view member details",
@@ -253,6 +253,11 @@
       "all_locations": "All Locations",
       "business_locations": "Business Locations Only",
       "market_locations": "Market Locations Only"
+    },
+    "sidebar": {
+      "total_members": "Total Members",
+      "all_types": "All Types",
+      "members": "Members"
     }
   }
 }

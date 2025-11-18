@@ -10,6 +10,7 @@
     "overview": "Overzicht",
     "messages": "Berichten", 
     "alerts": "Meldingen",
+    "map": "Ledenkaart",
     "profile": "Profiel Beheren"
   },
   "overview": {
@@ -220,6 +221,40 @@
     "directory_requirements": {
       "logo": "Een kopie van uw bedrijfslogo",
       "summary": "Een korte bedrijfssamenvatting (maximaal 500 tekens)"
+    }
+  },
+  "map": {
+    "title": "Ledenkaart",
+    "description": "",
+    "loading": "Ledenlocaties laden...",
+    "member_count": "{{count}} leden",
+    "click_marker": "Klik op een markering om ledendetails te bekijken",
+    "no_members": "Geen leden gevonden",
+    "no_members_desc": "Er zijn momenteel geen goedgekeurde leden met locatiegegevens beschikbaar.",
+    "member_details": {
+      "organization": "Organisatie",
+      "type": "Type",
+      "location": "Locatie",
+      "contact": "Contact",
+      "visit_profile": "Profiel Bekijken"
+    },
+    "legend": {
+      "title": "Ledentypen",
+      "mga": "GA",
+      "carrier": "Verzekeringsmaatschappij",
+      "provider": "Dienstverlener"
+    },
+    "filters": {
+      "all_types": "Alle Types",
+      "show_type": "Toon {{type}}",
+      "all_locations": "Alle Locaties",
+      "business_locations": "Alleen Zakelijke Locaties",
+      "market_locations": "Alleen Marktlocaties"
+    },
+    "sidebar": {
+      "total_members": "Totaal Leden",
+      "all_types": "Alle Types",
+      "members": "Leden"
     }
   }
 }

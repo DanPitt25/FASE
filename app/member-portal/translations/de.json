@@ -10,6 +10,7 @@
     "overview": "Übersicht",
     "messages": "Nachrichten",
     "alerts": "Benachrichtigungen",
+    "map": "Mitgliederkarte",
     "profile": "Profil Verwalten"
   },
   "overview": {
@@ -220,6 +221,40 @@
     "directory_requirements": {
       "logo": "Eine Kopie Ihres Firmenlogos",
       "summary": "Eine kurze Unternehmensbeschreibung (maximal 500 Zeichen)"
+    }
+  },
+  "map": {
+    "title": "Mitgliederkarte",
+    "description": "",
+    "loading": "Mitgliederstandorte werden geladen...",
+    "member_count": "{{count}} Mitglieder",
+    "click_marker": "Klicken Sie auf einen Marker, um Mitgliederdaten zu sehen",
+    "no_members": "Keine Mitglieder gefunden",
+    "no_members_desc": "Derzeit sind keine zugelassenen Mitglieder mit Standortdaten verfügbar.",
+    "member_details": {
+      "organization": "Organisation",
+      "type": "Typ",
+      "location": "Standort",
+      "contact": "Kontakt",
+      "visit_profile": "Profil Anzeigen"
+    },
+    "legend": {
+      "title": "Mitgliedertypen",
+      "mga": "Managing General Agent",
+      "carrier": "Versicherungsunternehmen",
+      "provider": "Dienstleister"
+    },
+    "filters": {
+      "all_types": "Alle Typen",
+      "show_type": "{{type}} Anzeigen",
+      "all_locations": "Alle Standorte",
+      "business_locations": "Nur Geschäftsstandorte",
+      "market_locations": "Nur Marktstandorte"
+    },
+    "sidebar": {
+      "total_members": "Gesamte Mitglieder",
+      "all_types": "Alle Typen",
+      "members": "Mitglieder"
     }
   }
 }

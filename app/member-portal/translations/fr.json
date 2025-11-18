@@ -10,6 +10,7 @@
     "overview": "Aperçu",
     "messages": "Messages",
     "alerts": "Alertes",
+    "map": "Carte des Membres",
     "profile": "Gérer le Profil"
   },
   "overview": {
@@ -220,6 +221,40 @@
     "directory_requirements": {
       "logo": "Une copie de votre logo d'entreprise",
       "summary": "Un bref résumé de votre activité (maximum 500 caractères)"
+    }
+  },
+  "map": {
+    "title": "Carte des Membres",
+    "description": "",
+    "loading": "Chargement des emplacements des membres...",
+    "member_count": "{{count}} membres",
+    "click_marker": "Cliquez sur un marqueur pour voir les détails du membre",
+    "no_members": "Aucun membre trouvé",
+    "no_members_desc": "Aucun membre approuvé avec des données de localisation n'est actuellement disponible.",
+    "member_details": {
+      "organization": "Organisation",
+      "type": "Type",
+      "location": "Emplacement",
+      "contact": "Contact",
+      "visit_profile": "Voir le Profil"
+    },
+    "legend": {
+      "title": "Types de Membres",
+      "mga": "Agent de Souscription",
+      "carrier": "Compagnie d'Assurance",
+      "provider": "Fournisseur de Services"
+    },
+    "filters": {
+      "all_types": "Tous les Types",
+      "show_type": "Afficher {{type}}",
+      "all_locations": "Tous les Emplacements",
+      "business_locations": "Emplacements Commerciaux Uniquement",
+      "market_locations": "Emplacements de Marché Uniquement"
+    },
+    "sidebar": {
+      "total_members": "Total des Membres",
+      "all_types": "Tous les Types",
+      "members": "Membres"
     }
   }
 }

@@ -12,7 +12,7 @@ import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
-  const { t, loading: translationsLoading, translations } = usePortalTranslations();
+  const { t, loading: translationsLoading, translations, locale } = usePortalTranslations();
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -600,7 +600,7 @@ export default function MemberContent() {
         </svg>
       ),
       content: (
-        <MemberMap translations={translations?.map || {}} />
+        <MemberMap translations={{...(translations?.map || {}), locale}} />
       )
     },
     {

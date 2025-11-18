@@ -1,0 +1,11 @@
+Plantillas de anuncio para sitio web
+
+VERSIÓN CORTA (para página de inicio/sección de noticias):
+[NOMBRE DE LA EMPRESA] se enorgullece de ser miembro de FASE, la Federación de agencias de suscripción europeas. FASE representa a las agencias de suscripción en Europa y las conecta con proveedores de capacidad, distribuidores y socios de servicio en el mercado europeo de seguros.
+
+VERSIÓN MEDIA (para página acerca de/asociaciones):
+[NOMBRE DE LA EMPRESA] es miembro de la Federación de agencias de suscripción europeas (FASE), la federación comercial paneuropea lanzada en 2025. FASE sirve a las agencias de suscripción que operan en Europa, facilitando relaciones entre agencias de suscripción y proveedores de capacidad mientras aboga por el papel del sector en el mercado europeo de seguros. Conozca más en fasemga.com.
+
+VERSIÓN PIE DE PÁGINA/BARRA LATERAL:
+Miembro de FASE - Federación de agencias de suscripción europeas
+[Logo de FASE]

@@ -10,6 +10,7 @@
     "overview": "Panoramica",
     "messages": "Messaggi",
     "alerts": "Avvisi",
+    "map": "Mappa dei Membri",
     "profile": "Gestisci Profilo"
   },
   "overview": {
@@ -220,6 +221,40 @@
     "directory_requirements": {
       "logo": "Una copia del logo della Sua azienda",
       "summary": "Un breve riassunto aziendale (massimo 500 caratteri)"
+    }
+  },
+  "map": {
+    "title": "Mappa dei Membri",
+    "description": "",
+    "loading": "Caricamento posizioni dei membri...",
+    "member_count": "{{count}} membri",
+    "click_marker": "Clicca su un marcatore per vedere i dettagli del membro",
+    "no_members": "Nessun membro trovato",
+    "no_members_desc": "Attualmente non sono disponibili membri approvati con dati di localizzazione.",
+    "member_details": {
+      "organization": "Organizzazione",
+      "type": "Tipo",
+      "location": "Posizione",
+      "contact": "Contatto",
+      "visit_profile": "Visualizza Profilo"
+    },
+    "legend": {
+      "title": "Tipi di Membri",
+      "mga": "Agente di Sottoscrizione",
+      "carrier": "Compagnia di Assicurazione",
+      "provider": "Fornitore di Servizi"
+    },
+    "filters": {
+      "all_types": "Tutti i Tipi",
+      "show_type": "Mostra {{type}}",
+      "all_locations": "Tutte le Posizioni",
+      "business_locations": "Solo Posizioni di Business",
+      "market_locations": "Solo Posizioni di Mercato"
+    },
+    "sidebar": {
+      "total_members": "Totale Membri",
+      "all_types": "Tutti i Tipi",
+      "members": "Membri"
     }
   }
 }

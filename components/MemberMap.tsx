@@ -10,6 +10,122 @@ import * as countryData from 'country-iso-to-coordinates';
 import { feature } from 'topojson-client';
 import countries from 'i18n-iso-countries';
 
+// Register multiple locales for country names
+countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/es.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/fr.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/de.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/it.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/pt.json"));
+
+// CountryDetails Component
+function CountryDetails({ 
+  country, 
+  businessMembers, 
+  marketMembers, 
+  translations, 
+  onClose 
+}: {
+  country: string;
+  businessMembers: UnifiedMember[];
+  marketMembers: UnifiedMember[];
+  translations: any;
+  onClose: () => void;
+}) {
+  const [selectedOrgType, setSelectedOrgType] = useState<string>('');
+
+  // Combine and deduplicate members
+  const allMembersSet = new Set<UnifiedMember>();
+  businessMembers.forEach(member => allMembersSet.add(member));
+  marketMembers.forEach(member => allMembersSet.add(member));
+  const allMembers = Array.from(allMembersSet);
+
+  // Get country name from ISO2 code in current locale
+  const locale = translations.locale || 'en';
+  const countryName = countries.getName(country, locale) || countries.getName(country, 'en') || country;
+
+  // Filter members by organization type
+  const filteredMembers = selectedOrgType 
+    ? allMembers.filter(member => member.organizationType === selectedOrgType)
+    : allMembers;
+
+  // Get available organization types
+  const availableOrgTypes = Array.from(new Set(allMembers.map(m => m.organizationType).filter(Boolean)));
+
+  return (
+    <div className="h-full flex flex-col p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-fase-navy text-lg">{countryName}</h3>
+        <button 
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 text-xl"
+        >
+          ×
+        </button>
+      </div>
+      
+      {/* Stats */}
+      <div className="text-center mb-4">
+        <div className="text-2xl font-bold text-fase-navy">{filteredMembers.length}</div>
+        <div className="text-sm text-gray-600">
+          {selectedOrgType 
+            ? (selectedOrgType === 'MGA' ? translations.legend.mga :
+               selectedOrgType === 'carrier' ? translations.legend.carrier :
+               selectedOrgType === 'provider' ? translations.legend.provider :
+               selectedOrgType)
+            : translations.sidebar?.total_members || 'Total Members'}
+        </div>
+      </div>
+
+      {/* Organization Type Filter */}
+      {availableOrgTypes.length > 1 && (
+        <div className="mb-4">
+          <select
+            value={selectedOrgType}
+            onChange={(e) => setSelectedOrgType(e.target.value)}
+            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-fase-blue focus:border-transparent"
+          >
+            <option value="">{translations.sidebar?.all_types || 'All Types'}</option>
+            {availableOrgTypes.map(type => (
+              <option key={type} value={type}>
+                {type === 'MGA' ? translations.legend.mga :
+                 type === 'carrier' ? translations.legend.carrier :
+                 type === 'provider' ? translations.legend.provider : type}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Member List */}
+      <div className="flex-1 overflow-hidden">
+        <h4 className="font-medium text-gray-700 mb-2 text-sm">{translations.sidebar?.members || 'Members'}:</h4>
+        <div className="h-full overflow-y-auto space-y-1">
+          {filteredMembers.map((member, index) => (
+            <div key={index} className="p-2 bg-gray-50 rounded">
+              <div className="flex justify-between items-center">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 text-sm truncate">
+                    {member.organizationName || member.personalName}
+                  </div>
+                </div>
+                {member.email && (
+                  <a 
+                    href={`mailto:${member.email}`}
+                    className="text-blue-600 hover:text-blue-800 text-sm ml-2 flex-shrink-0"
+                  >
+                    ✉
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Dynamically import map components to avoid SSR issues
 const MapContainer = dynamic(
   () => import('react-leaflet').then((mod) => mod.MapContainer),
@@ -369,279 +485,168 @@ export default function MemberMap({ translations }: MemberMapProps) {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Map */}
-            <div className="h-[500px] w-full rounded-lg overflow-hidden border border-gray-200">
-              <style jsx global>{`
-                .leaflet-control-attribution {
-                  display: none !important;
-                }
-              `}</style>
-              <MapContainer
-                center={[54.5260, 15.2551]} // Center on Europe
-                zoom={4}
-                style={{ height: '100%', width: '100%' }}
-                maxZoom={10}
-                minZoom={3}
-              >
-                <TileLayer
-                  attribution=''
-                  url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
-                />
-                
-                {/* Country boundaries */}
-                {countriesGeoJson && (
-                  <GeoJSON
-                    data={countriesGeoJson}
-                    style={(feature: any) => {
-                      const numericId = feature?.id;
-                      
-                      // Check if this country has business locations
-                      const hasBusinessLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') && 
-                        Array.from(businessLocationsByCountry.keys()).some(iso2Code => {
-                          try {
-                            const numericCode = countries.alpha2ToNumeric(iso2Code);
-                            return numericCode && numericCode.toString() === numericId?.toString();
-                          } catch (error) {
-                            return false;
-                          }
-                        });
-                      
-                      // Check if this country has markets
-                      const hasMarketLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') &&
-                        Array.from(marketLocationsByCountry.keys()).some(iso2Code => {
-                          try {
-                            const numericCode = countries.alpha2ToNumeric(iso2Code);
-                            return numericCode && numericCode.toString() === numericId?.toString();
-                          } catch (error) {
-                            return false;
-                          }
-                        });
-                      
-                      // Color priority: Business (blue) > Market (green) > Both (purple) > None (gray)
-                      let fillColor = '#f8f9fa'; // Default gray
-                      let borderColor = '#d1d5db';
-                      let fillOpacity = 0.1;
-                      let weight = 1;
-                      
-                      if (hasBusinessLocation && hasMarketLocation && selectedLocationFilter === 'all') {
-                        // Both business and market - purple (only when showing all)
-                        fillColor = '#8b5cf6';
-                        borderColor = '#7c3aed';
-                        fillOpacity = 0.4;
-                        weight = 2;
-                      } else if (hasBusinessLocation) {
-                        // Business location only - blue
-                        fillColor = '#3b82f6';
-                        borderColor = '#1e40af';
-                        fillOpacity = 0.3;
-                        weight = 2;
-                      } else if (hasMarketLocation) {
-                        // Market location only - green
-                        fillColor = '#10b981';
-                        borderColor = '#059669';
-                        fillOpacity = 0.3;
-                        weight = 2;
-                      }
-                      
-                      return {
-                        fillColor,
-                        fillOpacity,
-                        color: borderColor,
-                        weight,
-                        opacity: 0.8
-                      };
-                    }}
-                    onEachFeature={(feature: any, layer: any) => {
-                      // Convert numeric ID back to ISO2 code to match our member data
-                      const numericId = feature?.id;
-                      const countryName = feature?.properties?.name;
-                      
-                      // Find ISO2 code that matches this numeric ID
-                      let iso2Code = null;
-                      for (const memberCountryCode of visibleCountriesWithMembers) {
-                        try {
-                          const numericCode = countries.alpha2ToNumeric(memberCountryCode);
-                          if (numericCode && numericCode.toString() === numericId?.toString()) {
-                            iso2Code = memberCountryCode;
-                            break;
-                          }
-                        } catch (error) {
-                          // Skip invalid conversions
-                        }
-                      }
-                      
-                      // Get members from both business and market locations based on filter
-                      let businessMembers: UnifiedMember[] = [];
-                      let marketMembers: UnifiedMember[] = [];
-                      
-                      if (iso2Code) {
-                        if (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') {
-                          businessMembers = businessLocationsByCountry.get(iso2Code) || [];
-                        }
-                        if (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') {
-                          marketMembers = marketLocationsByCountry.get(iso2Code) || [];
-                        }
-                      }
-                      
-                      // Combine and deduplicate members
-                      const allMembersSet = new Set<UnifiedMember>();
-                      businessMembers.forEach(member => allMembersSet.add(member));
-                      marketMembers.forEach(member => allMembersSet.add(member));
-                      const membersInCountry = Array.from(allMembersSet);
-                      
-                      if (membersInCountry.length > 0) {
-                        layer.on('click', () => {
-                          setSelectedCountry(iso2Code);
-                        });
-                        
-                        // Add hover effect
-                        layer.on('mouseover', () => {
-                          layer.setStyle({
-                            fillOpacity: 0.5,
-                            weight: 3
-                          });
-                        });
-                        
-                        layer.on('mouseout', () => {
-                          layer.setStyle({
-                            fillOpacity: 0.3,
-                            weight: 2
-                          });
-                        });
-                        
-                        // Create scalable popup with grouping and summary
-                        const mgaMembers = membersInCountry.filter(m => m.organizationType === 'MGA');
-                        const carrierMembers = membersInCountry.filter(m => m.organizationType === 'carrier');
-                        const providerMembers = membersInCountry.filter(m => m.organizationType === 'provider');
-                        
-                        const createMemberGroup = (title: string, members: UnifiedMember[], color: string) => {
-                          if (members.length === 0) return '';
-                          
-                          const memberItems = members.slice(0, 5).map(member => {
-                            const isBusinessLocation = businessMembers.includes(member);
-                            const isMarketLocation = marketMembers.includes(member);
-                            let locationBadge = '';
-                            if (selectedLocationFilter === 'all') {
-                              if (isBusinessLocation && isMarketLocation) {
-                                locationBadge = '<span style="background: #8b5cf6; color: white; padding: 1px 3px; border-radius: 2px; font-size: 9px; margin-left: 4px;">BOTH</span>';
-                              } else if (isBusinessLocation) {
-                                locationBadge = '<span style="background: #3b82f6; color: white; padding: 1px 3px; border-radius: 2px; font-size: 9px; margin-left: 4px;">BUS</span>';
-                              } else if (isMarketLocation) {
-                                locationBadge = '<span style="background: #10b981; color: white; padding: 1px 3px; border-radius: 2px; font-size: 9px; margin-left: 4px;">MKT</span>';
-                              }
-                            }
-                            
-                            return `
-                              <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #e5e7eb;">
-                                <div>
-                                  <span style="font-weight: 500; color: #374151;">${member.organizationName || member.personalName}</span>
-                                  ${locationBadge}
-                                </div>
-                                ${member.email ? `<a href="mailto:${member.email}" style="color: #3b82f6; font-size: 12px; text-decoration: none;">✉</a>` : ''}
-                              </div>
-                            `;
-                          }).join('');
-                          
-                          const moreCount = members.length - 5;
-                          const moreText = moreCount > 0 ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px; font-style: italic;">+${moreCount} more...</div>` : '';
-                          
-                          return `
-                            <div style="margin-bottom: 12px;">
-                              <div style="background: ${color}; color: white; padding: 4px 8px; border-radius: 4px 4px 0 0; font-weight: 600; font-size: 13px;">
-                                ${title} (${members.length})
-                              </div>
-                              <div style="background: #f9fafb; padding: 6px; border-radius: 0 0 4px 4px; border: 1px solid #e5e7eb; border-top: none;">
-                                ${memberItems}
-                                ${moreText}
-                              </div>
-                            </div>
-                          `;
-                        };
-
-                        const popupContent = `
-                          <div style="padding: 12px; min-width: 300px; max-width: 400px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                              <h3 style="font-weight: bold; color: #1e3a8a; font-size: 16px; margin: 0;">
-                                ${countryName}
-                              </h3>
-                              <span style="background: #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                                ${membersInCountry.length} member${membersInCountry.length > 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            
-                            <div style="max-height: 300px; overflow-y: auto;">
-                              ${createMemberGroup(translations.legend.mga, mgaMembers, '#374151')}
-                              ${createMemberGroup(translations.legend.carrier, carrierMembers, '#dc2626')}
-                              ${createMemberGroup(translations.legend.provider, providerMembers, '#059669')}
-                            </div>
-                            
-                            ${selectedLocationFilter === 'all' ? `
-                              <div style="margin-top: 8px; padding: 6px; background: #f3f4f6; border-radius: 4px; font-size: 11px; color: #6b7280;">
-                                <strong>Legend:</strong> BUS = Business Location, MKT = Market, BOTH = Business + Market
-                              </div>
-                            ` : ''}
-                          </div>
-                        `;
-                        
-                        layer.bindPopup(popupContent);
-                      }
-                    }}
+            {/* Map and Sidebar Container */}
+            <div className="flex h-[500px] w-full rounded-lg overflow-hidden border border-gray-200 relative">
+              {/* Map */}
+              <div className={`h-full transition-all duration-300 ${selectedCountry ? 'w-2/3' : 'w-full'}`}>
+                <style jsx global>{`
+                  .leaflet-control-attribution {
+                    display: none !important;
+                  }
+                `}</style>
+                <MapContainer
+                  center={[50.1109, 8.6821]} // Center on Frankfurt
+                  zoom={4}
+                  style={{ height: '100%', width: '100%' }}
+                  maxZoom={10}
+                  minZoom={3}
+                >
+                  <TileLayer
+                    attribution=''
+                    url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
                   />
-                )}
-              </MapContainer>
+                  
+                  {/* Country boundaries */}
+                  {countriesGeoJson && (
+                    <GeoJSON
+                      data={countriesGeoJson}
+                      style={(feature: any) => {
+                        const numericId = feature?.id;
+                        
+                        // Check if this country has business locations
+                        const hasBusinessLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') && 
+                          Array.from(businessLocationsByCountry.keys()).some(iso2Code => {
+                            try {
+                              const numericCode = countries.alpha2ToNumeric(iso2Code);
+                              return numericCode && numericCode.toString() === numericId?.toString();
+                            } catch (error) {
+                              return false;
+                            }
+                          });
+                        
+                        // Check if this country has markets
+                        const hasMarketLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') &&
+                          Array.from(marketLocationsByCountry.keys()).some(iso2Code => {
+                            try {
+                              const numericCode = countries.alpha2ToNumeric(iso2Code);
+                              return numericCode && numericCode.toString() === numericId?.toString();
+                            } catch (error) {
+                              return false;
+                            }
+                          });
+                        
+                        // Color priority: Business (blue) > Market (green) > Both (purple) > None (gray)
+                        let fillColor = '#f8f9fa'; // Default gray
+                        let borderColor = '#d1d5db';
+                        let fillOpacity = 0.1;
+                        let weight = 1;
+                        
+                        if (hasBusinessLocation && hasMarketLocation && selectedLocationFilter === 'all') {
+                          // Both business and market - darker navy
+                          fillColor = '#1e3a8a';
+                          borderColor = '#1e3a8a';
+                          fillOpacity = 0.4;
+                          weight = 2;
+                        } else if (hasBusinessLocation) {
+                          // Business location only - FASE navy
+                          fillColor = '#1f2937';
+                          borderColor = '#1f2937';
+                          fillOpacity = 0.3;
+                          weight = 2;
+                        } else if (hasMarketLocation) {
+                          // Market location only - FASE gold
+                          fillColor = '#d4af37';
+                          borderColor = '#b8941f';
+                          fillOpacity = 0.3;
+                          weight = 2;
+                        }
+                        
+                        return {
+                          fillColor,
+                          fillOpacity,
+                          color: borderColor,
+                          weight,
+                          opacity: 0.8
+                        };
+                      }}
+                      onEachFeature={(feature: any, layer: any) => {
+                        // Convert numeric ID back to ISO2 code to match our member data
+                        const numericId = feature?.id;
+                        
+                        // Find ISO2 code that matches this numeric ID
+                        let iso2Code = null;
+                        for (const memberCountryCode of visibleCountriesWithMembers) {
+                          try {
+                            const numericCode = countries.alpha2ToNumeric(memberCountryCode);
+                            if (numericCode && numericCode.toString() === numericId?.toString()) {
+                              iso2Code = memberCountryCode;
+                              break;
+                            }
+                          } catch (error) {
+                            // Skip invalid conversions
+                          }
+                        }
+                        
+                        // Get members from both business and market locations based on filter
+                        let businessMembers: UnifiedMember[] = [];
+                        let marketMembers: UnifiedMember[] = [];
+                        
+                        if (iso2Code) {
+                          if (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') {
+                            businessMembers = businessLocationsByCountry.get(iso2Code) || [];
+                          }
+                          if (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') {
+                            marketMembers = marketLocationsByCountry.get(iso2Code) || [];
+                          }
+                        }
+                        
+                        // Combine and deduplicate members
+                        const allMembersSet = new Set<UnifiedMember>();
+                        businessMembers.forEach(member => allMembersSet.add(member));
+                        marketMembers.forEach(member => allMembersSet.add(member));
+                        const membersInCountry = Array.from(allMembersSet);
+                        
+                        if (membersInCountry.length > 0) {
+                          layer.on('click', () => {
+                            setSelectedCountry(iso2Code);
+                          });
+                          
+                          // Add hover effect
+                          layer.on('mouseover', () => {
+                            layer.setStyle({
+                              fillOpacity: 0.5,
+                              weight: 3
+                            });
+                          });
+                          
+                          layer.on('mouseout', () => {
+                            layer.setStyle({
+                              fillOpacity: 0.3,
+                              weight: 2
+                            });
+                          });
+                        }
+                      }}
+                    />
+                  )}
+                </MapContainer>
+              </div>
+
+              {/* Sidebar */}
+              {selectedCountry && (
+                <div className="w-1/3 bg-white border-l border-gray-200 flex flex-col">
+                  <CountryDetails 
+                    country={selectedCountry}
+                    businessMembers={businessLocationsByCountry.get(selectedCountry) || []}
+                    marketMembers={marketLocationsByCountry.get(selectedCountry) || []}
+                    translations={translations}
+                    onClose={() => setSelectedCountry(null)}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Legend */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold text-fase-navy mb-3">{translations.legend.title}</h3>
-              
-              {/* Location Types */}
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2 text-sm">Location Types</h4>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-blue-500 opacity-30 border border-blue-700 mr-2"></div>
-                    <span className="text-sm">Business locations</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-green-500 opacity-30 border border-green-700 mr-2"></div>
-                    <span className="text-sm">Market locations</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-purple-500 opacity-40 border border-purple-700 mr-2"></div>
-                    <span className="text-sm">Business + Market</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-gray-200 opacity-50 border border-gray-400 mr-2"></div>
-                    <span className="text-sm">Other countries</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Organization Types */}
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2 text-sm">Organization Types</h4>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-gray-600 rounded mr-2"></div>
-                    <span className="text-sm">{translations.legend.mga}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-red-600 rounded mr-2"></div>
-                    <span className="text-sm">{translations.legend.carrier}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-600 rounded mr-2"></div>
-                    <span className="text-sm">{translations.legend.provider}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Helper text */}
-            <p className="text-sm text-gray-600 text-center">
-              Click on any colored country to see FASE members. Blue = business locations, Green = markets, Purple = both.
-            </p>
           </div>
         )}
       </div>

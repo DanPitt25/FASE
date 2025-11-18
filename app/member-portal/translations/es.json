@@ -10,6 +10,7 @@
     "overview": "Resumen",
     "messages": "Mensajes",
     "alerts": "Alertas",
+    "map": "Mapa de Miembros",
     "profile": "Gestionar Perfil"
   },
   "overview": {
@@ -220,6 +221,40 @@
     "directory_requirements": {
       "logo": "Una copia del logotipo de su empresa",
       "summary": "Un breve resumen empresarial (máximo 500 caracteres)"
+    }
+  },
+  "map": {
+    "title": "Mapa de Miembros",
+    "description": "",
+    "loading": "Cargando ubicaciones de miembros...",
+    "member_count": "{{count}} miembros",
+    "click_marker": "Haga clic en un marcador para ver detalles del miembro",
+    "no_members": "No se encontraron miembros",
+    "no_members_desc": "No hay miembros aprobados con datos de ubicación disponibles actualmente.",
+    "member_details": {
+      "organization": "Organización",
+      "type": "Tipo",
+      "location": "Ubicación",
+      "contact": "Contacto",
+      "visit_profile": "Ver Perfil"
+    },
+    "legend": {
+      "title": "Tipos de Miembros",
+      "mga": "Agente de Suscripción",
+      "carrier": "Compañía de Seguros",
+      "provider": "Proveedor de Servicios"
+    },
+    "filters": {
+      "all_types": "Todos los Tipos",
+      "show_type": "Mostrar {{type}}",
+      "all_locations": "Todas las Ubicaciones",
+      "business_locations": "Solo Ubicaciones de Negocio",
+      "market_locations": "Solo Ubicaciones de Mercado"
+    },
+    "sidebar": {
+      "total_members": "Total de Miembros",
+      "all_types": "Todos los Tipos",
+      "members": "Miembros"
     }
   }
 }

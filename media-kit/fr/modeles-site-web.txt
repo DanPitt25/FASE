@@ -1,0 +1,11 @@
+Modèles d'annonce pour site web
+
+VERSION COURTE (pour page d'accueil/section actualités) :
+[NOM DE L'ENTREPRISE] est fière d'être membre de FASE, la Fédération des agences de souscription européennes. FASE représente les agences de souscription en Europe et les connecte avec les fournisseurs de capacité, les distributeurs et les partenaires de service sur le marché européen de l'assurance.
+
+VERSION MOYENNE (pour page à propos/partenariats) :
+[NOM DE L'ENTREPRISE] est membre de la Fédération des agences de souscription européennes (FASE), la fédération commerciale pan-européenne lancée en 2025. FASE sert les agences de souscription opérant en Europe, facilitant les relations entre les agences de souscription et les fournisseurs de capacité tout en défendant le rôle du secteur sur le marché européen de l'assurance. En savoir plus sur fasemga.com.
+
+VERSION PIED DE PAGE/BARRE LATÉRALE :
+Membre de FASE - Fédération des agences de souscription européennes
+[Logo FASE]
