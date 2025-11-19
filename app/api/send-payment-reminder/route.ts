@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     const isPreview = requestData.preview === true;
     
     if (isPreview) {
-      console.log(`Generating payment reminder preview for ${testData.email}...`, testData);
+      console.log(`Generating payment reminder preview for ${testData.email}...`);
     } else {
       console.log(`Sending payment reminder email to ${testData.email}...`, testData);
     }
