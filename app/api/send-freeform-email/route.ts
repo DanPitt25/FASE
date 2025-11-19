@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
       requestData = {};
       
       // Extract form fields
-      for (const [key, value] of formData.entries()) {
+      const entries = Array.from(formData.entries());
+      for (const [key, value] of entries) {
         if (key === 'attachments') {
           attachments.push(value as File);
         } else {
