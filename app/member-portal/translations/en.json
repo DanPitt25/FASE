@@ -231,19 +231,12 @@
     "description": "",
     "loading": "Loading member locations...",
     "member_count": "{{count}} members",
-    "click_marker": "Click a marker to view member details",
     "no_members": "No members found",
     "no_members_desc": "No approved members with location data are currently available.",
-    "member_details": {
-      "organization": "Organization",
-      "type": "Type",
-      "location": "Location",
-      "contact": "Contact",
-      "visit_profile": "View Profile"
-    },
     "legend": {
       "title": "Member Types",
-      "mga": "Managing General Agent", 
+      "mga": "MGA", 
+      "mga_plural": "MGAs",
       "carrier": "Insurance Carrier",
       "provider": "Service Provider"
     },
@@ -258,6 +251,27 @@
       "total_members": "Total Members",
       "all_types": "All Types",
       "members": "Members"
+    },
+    "search": {
+      "placeholder": "Search for a company...",
+      "showing": "Showing:",
+      "clear_filter": "Clear filter",
+      "no_results": "No companies found"
+    },
+    "my_company": {
+      "show_button": "Show My Company",
+      "title": "My Company Profile",
+      "edit_markets": "Edit Markets",
+      "add_market": "Add Market",
+      "remove_market": "Remove Market",
+      "lines_of_business": "Lines of Business",
+      "select_lines": "Select lines of business for this market",
+      "save_changes": "Save Changes",
+      "saving": "Saving...",
+      "market_added": "Market added successfully",
+      "market_removed": "Market removed successfully",
+      "changes_saved": "Changes saved successfully",
+      "error_saving": "Error saving changes"
     }
   }
 }

@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic';
 import { getApprovedMembersForDirectory, getAllMembers } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
 // @ts-ignore - No types available for this package
-import * as countryData from 'country-iso-to-coordinates';
-// @ts-ignore - No types available for this package
 import { feature } from 'topojson-client';
 import countries from 'i18n-iso-countries';
+import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
+import { updateUserProfile, getUserProfile } from '../lib/firestore';
 
 // Register multiple locales for country names
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
@@ -18,39 +18,350 @@ countries.registerLocale(require("i18n-iso-countries/langs/de.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/it.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/pt.json"));
 
+// Helper function to deduplicate members from business and market arrays
+const deduplicateMembers = (businessMembers: UnifiedMember[], marketMembers: UnifiedMember[]): UnifiedMember[] => {
+  const allMembersSet = new Set<UnifiedMember>();
+  businessMembers.forEach(member => allMembersSet.add(member));
+  marketMembers.forEach(member => allMembersSet.add(member));
+  return Array.from(allMembersSet);
+};
+
+// CompanyDetails Component
+function CompanyDetails({
+  company,
+  translations,
+  onClose
+}: {
+  company: UnifiedMember;
+  translations: any;
+  onClose: () => void;
+}) {
+  const memberData = company as any;
+  
+  return (
+    <div className="h-full flex flex-col p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-fase-navy text-lg">
+          {company.organizationName || company.personalName}
+        </h3>
+        <button 
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 text-xl"
+        >
+          ×
+        </button>
+      </div>
+      
+      {/* Company Type */}
+      <div className="mb-4">
+        <div className="text-sm font-medium text-gray-700 mb-1">Organization Type</div>
+        <div className="text-fase-navy">
+          {company.organizationType === 'MGA' ? translations.legend.mga :
+           company.organizationType === 'carrier' ? translations.legend.carrier :
+           company.organizationType === 'provider' ? translations.legend.provider :
+           company.organizationType}
+        </div>
+      </div>
+
+      {/* Business Location */}
+      {memberData.businessAddress?.country && (
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-700 mb-1">Business Location</div>
+          <div className="text-gray-900">
+            {memberData.businessAddress.city && `${memberData.businessAddress.city}, `}
+            {(() => {
+              const locale = translations.locale || 'en';
+              return countries.getName(memberData.businessAddress.country, locale) || countries.getName(memberData.businessAddress.country, 'en') || memberData.businessAddress.country;
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Market Locations */}
+      {memberData.markets && memberData.markets.length > 0 && (
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-700 mb-1">Market Locations</div>
+          <div className="text-gray-900">
+            {memberData.markets.map((market: string, index: number) => {
+              const locale = translations.locale || 'en';
+              const countryName = countries.getName(market, locale) || countries.getName(market, 'en') || market;
+              return (
+                <span key={market}>
+                  {countryName}
+                  {index < memberData.markets.length - 1 && ', '}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Contact Info */}
+      {company.email && (
+        <div className="mt-auto pt-4 border-t border-gray-200">
+          <a 
+            href={`mailto:${company.email}`}
+            className="inline-flex items-center px-4 py-2 bg-fase-navy text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-colors"
+          >
+            <span className="mr-2">✉</span>
+            Contact
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// CompanyCountryDetails Component
+function CompanyCountryDetails({
+  company,
+  countryCode,
+  translations,
+  onClose
+}: {
+  company: UnifiedMember;
+  countryCode: string;
+  translations: any;
+  onClose: () => void;
+}) {
+  const memberData = company as any;
+  const locale = translations.locale || 'en';
+  const countryName = countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
+  
+  // Mock lines of business based on country and company type
+  const getMockLinesOfBusiness = (companyType: string, country: string) => {
+    const linesByType = {
+      'MGA': ['Property Insurance', 'Casualty Insurance', 'Professional Indemnity', 'Cyber Liability'],
+      'carrier': ['Motor Insurance', 'Property & Casualty', 'Marine Insurance', 'Aviation Insurance'],
+      'provider': ['Claims Management', 'Risk Assessment', 'Underwriting Support', 'Loss Control']
+    };
+    
+    const baseLines = linesByType[companyType as keyof typeof linesByType] || ['General Insurance Services'];
+    
+    // Add some country-specific variations
+    const countrySpecific = {
+      'DE': ['Workers Compensation', 'Directors & Officers'],
+      'IT': ['Agricultural Insurance', 'Construction Insurance'],
+      'ES': ['Tourism Insurance', 'Energy Insurance'],
+      'FR': ['Environmental Liability', 'Product Liability'],
+      'AT': ['Industrial Insurance', 'Transport Insurance']
+    };
+    
+    const additional = countrySpecific[country as keyof typeof countrySpecific] || [];
+    return [...baseLines.slice(0, 2), ...additional.slice(0, 2)];
+  };
+
+  const linesOfBusiness = getMockLinesOfBusiness(company.organizationType || 'MGA', countryCode);
+  const isBusinessLocation = memberData.businessAddress?.country === countryCode;
+  const isMarketLocation = memberData.markets?.includes(countryCode);
+  
+  return (
+    <div className="h-full flex flex-col p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-fase-navy text-lg">
+          {company.organizationName || company.personalName}
+        </h3>
+        <button 
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 text-xl"
+        >
+          ×
+        </button>
+      </div>
+      
+      {/* Country Context */}
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+        <div className="font-medium text-fase-navy mb-1">{countryName} Operations</div>
+        <div className="text-sm text-gray-600">
+          {isBusinessLocation && isMarketLocation && 'Business headquarters and market operations'}
+          {isBusinessLocation && !isMarketLocation && 'Business headquarters'}
+          {!isBusinessLocation && isMarketLocation && 'Market operations only'}
+        </div>
+      </div>
+
+      {/* Lines of Business */}
+      <div className="mb-6">
+        <div className="text-sm font-medium text-gray-700 mb-3">Lines of Business in {countryName}</div>
+        <div className="space-y-2">
+          {linesOfBusiness.map((line, index) => (
+            <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
+              <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
+              <span className="text-sm text-gray-900">{line}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Market Status */}
+      <div className="mb-4">
+        <div className="text-sm font-medium text-gray-700 mb-2">Market Status</div>
+        <div className="flex items-center space-x-4 text-sm">
+          <div className={`flex items-center ${isBusinessLocation ? 'text-fase-navy' : 'text-gray-400'}`}>
+            <div className={`w-3 h-3 rounded-full mr-2 ${isBusinessLocation ? 'bg-fase-navy' : 'bg-gray-300'}`}></div>
+            Business Location
+          </div>
+          <div className={`flex items-center ${isMarketLocation ? 'text-yellow-600' : 'text-gray-400'}`}>
+            <div className={`w-3 h-3 rounded-full mr-2 ${isMarketLocation ? 'bg-yellow-500' : 'bg-gray-300'}`}></div>
+            Market Territory
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Info */}
+      {company.email && (
+        <div className="mt-auto pt-4 border-t border-gray-200">
+          <a 
+            href={`mailto:${company.email}?subject=Inquiry about ${countryName} operations`}
+            className="inline-flex items-center px-4 py-2 bg-fase-navy text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-colors"
+          >
+            <span className="mr-2">✉</span>
+            Contact about {countryName}
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// MemberCard Component
+function MemberCard({ 
+  member, 
+  country, 
+  translations, 
+  onViewDetails 
+}: { 
+  member: UnifiedMember; 
+  country: string; 
+  translations: any; 
+  onViewDetails: (member: UnifiedMember) => void; 
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const memberData = member as any;
+  const locale = translations.locale || 'en';
+  const countryName = countries.getName(country, locale) || countries.getName(country, 'en') || country;
+  
+  const isBusinessLocation = memberData.businessAddress?.country === country;
+  const isMarketLocation = memberData.markets?.includes(country);
+  
+  return (
+    <div className="bg-gray-50 rounded-lg overflow-hidden">
+      {/* Header - Always Visible */}
+      <div 
+        className="p-3 cursor-pointer hover:bg-gray-100 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex justify-between items-center">
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-gray-900 text-sm truncate">
+              {member.organizationName || member.personalName}
+            </div>
+            <div className="text-xs text-gray-500">
+              {member.organizationType === 'MGA' ? translations.legend.mga :
+               member.organizationType === 'carrier' ? translations.legend.carrier :
+               member.organizationType === 'provider' ? translations.legend.provider :
+               member.organizationType}
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {/* Status indicators */}
+            <div className="flex space-x-1">
+              {isBusinessLocation && (
+                <div className="w-2 h-2 bg-fase-navy rounded-full" title="Business Location"></div>
+              )}
+              {isMarketLocation && (
+                <div className="w-2 h-2 bg-yellow-500 rounded-full" title="Market Territory"></div>
+              )}
+            </div>
+            <svg 
+              className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      {/* Expanded Content */}
+      {isExpanded && (
+        <div className="px-3 pb-3 border-t border-gray-200">
+          <div className="space-y-2 mt-2">
+            {/* Operation Type */}
+            <div className="text-xs">
+              <span className="text-gray-600">Operations in {countryName}: </span>
+              <span className="text-gray-900">
+                {isBusinessLocation && isMarketLocation && 'Headquarters & Market'}
+                {isBusinessLocation && !isMarketLocation && 'Headquarters'}
+                {!isBusinessLocation && isMarketLocation && 'Market Territory'}
+              </span>
+            </div>
+            
+            {/* Business Address City */}
+            {isBusinessLocation && memberData.businessAddress?.city && (
+              <div className="text-xs">
+                <span className="text-gray-600">City: </span>
+                <span className="text-gray-900">{memberData.businessAddress.city}</span>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(member);
+                }}
+                className="text-xs text-fase-navy hover:text-fase-navy font-medium underline"
+              >
+                View Details
+              </button>
+              {member.email && (
+                <a 
+                  href={`mailto:${member.email}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-blue-600 hover:text-blue-800 text-xs flex items-center"
+                >
+                  <span className="mr-1">✉</span>
+                  Contact
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // CountryDetails Component
 function CountryDetails({ 
   country, 
   businessMembers, 
   marketMembers, 
   translations, 
-  onClose 
+  onClose,
+  setSelectedCompany,
+  setSelectedCountry
 }: {
   country: string;
   businessMembers: UnifiedMember[];
   marketMembers: UnifiedMember[];
   translations: any;
   onClose: () => void;
+  setSelectedCompany: (member: UnifiedMember) => void;
+  setSelectedCountry: (country: string) => void;
 }) {
-  const [selectedOrgType, setSelectedOrgType] = useState<string>('');
-
   // Combine and deduplicate members
-  const allMembersSet = new Set<UnifiedMember>();
-  businessMembers.forEach(member => allMembersSet.add(member));
-  marketMembers.forEach(member => allMembersSet.add(member));
-  const allMembers = Array.from(allMembersSet);
+  const allMembers = deduplicateMembers(businessMembers, marketMembers);
 
   // Get country name from ISO2 code in current locale
   const locale = translations.locale || 'en';
   const countryName = countries.getName(country, locale) || countries.getName(country, 'en') || country;
 
-  // Filter members by organization type
-  const filteredMembers = selectedOrgType 
-    ? allMembers.filter(member => member.organizationType === selectedOrgType)
-    : allMembers;
-
-  // Get available organization types
-  const availableOrgTypes = Array.from(new Set(allMembers.map(m => m.organizationType).filter(Boolean)));
+  // All members are MGAs, so no filtering needed
+  const filteredMembers = allMembers;
 
   return (
     <div className="h-full flex flex-col p-4">
@@ -68,57 +379,28 @@ function CountryDetails({
       <div className="text-center mb-4">
         <div className="text-2xl font-bold text-fase-navy">{filteredMembers.length}</div>
         <div className="text-sm text-gray-600">
-          {selectedOrgType 
-            ? (selectedOrgType === 'MGA' ? translations.legend.mga :
-               selectedOrgType === 'carrier' ? translations.legend.carrier :
-               selectedOrgType === 'provider' ? translations.legend.provider :
-               selectedOrgType)
-            : translations.sidebar?.total_members || 'Total Members'}
+          {filteredMembers.length === 1 ? translations.legend.mga : translations.legend.mga_plural || translations.legend.mga}
         </div>
       </div>
-
-      {/* Organization Type Filter */}
-      {availableOrgTypes.length > 1 && (
-        <div className="mb-4">
-          <select
-            value={selectedOrgType}
-            onChange={(e) => setSelectedOrgType(e.target.value)}
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-fase-blue focus:border-transparent"
-          >
-            <option value="">{translations.sidebar?.all_types || 'All Types'}</option>
-            {availableOrgTypes.map(type => (
-              <option key={type} value={type}>
-                {type === 'MGA' ? translations.legend.mga :
-                 type === 'carrier' ? translations.legend.carrier :
-                 type === 'provider' ? translations.legend.provider : type}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* Member List */}
       <div className="flex-1 overflow-hidden">
         <h4 className="font-medium text-gray-700 mb-2 text-sm">{translations.sidebar?.members || 'Members'}:</h4>
-        <div className="h-full overflow-y-auto space-y-1">
+        <div className="h-full overflow-y-auto space-y-2">
           {filteredMembers.map((member, index) => (
-            <div key={index} className="p-2 bg-gray-50 rounded">
-              <div className="flex justify-between items-center">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm truncate">
-                    {member.organizationName || member.personalName}
-                  </div>
-                </div>
-                {member.email && (
-                  <a 
-                    href={`mailto:${member.email}`}
-                    className="text-blue-600 hover:text-blue-800 text-sm ml-2 flex-shrink-0"
-                  >
-                    ✉
-                  </a>
-                )}
-              </div>
-            </div>
+            <MemberCard 
+              key={index} 
+              member={member} 
+              country={country}
+              translations={translations}
+              onViewDetails={(selectedMember) => {
+                // Close current sidebar and open company details
+                onClose();
+                // Set the selected company and open company details
+                setSelectedCompany(selectedMember);
+                setSelectedCountry('company-details');
+              }}
+            />
           ))}
         </div>
       </div>
@@ -135,49 +417,12 @@ const TileLayer = dynamic(
   () => import('react-leaflet').then((mod) => mod.TileLayer),
   { ssr: false }
 );
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-);
 const GeoJSON = dynamic(
   () => import('react-leaflet').then((mod) => mod.GeoJSON),
   { ssr: false }
 );
 
-// Helper function to get coordinates for a country code
-const getCoordinatesForCountry = (countryCode: string): [number, number] | null => {
-  try {
-    const country = (countryData as any)[countryCode.toUpperCase()];
-    if (country && country.coordinate && country.coordinate.length === 2) {
-      const lat = parseFloat(country.coordinate[0]);
-      const lon = parseFloat(country.coordinate[1]);
-      if (!isNaN(lat) && !isNaN(lon)) {
-        return [lat, lon];
-      }
-    }
-  } catch (error) {
-    console.warn(`Could not find coordinates for country code: ${countryCode}`, error);
-  }
-  return null;
-};
 
-// Custom marker colors for different organization types
-const getMarkerColor = (type?: string) => {
-  switch (type) {
-    case 'MGA':
-      return '#1f2937'; // navy
-    case 'carrier':
-      return '#dc2626'; // red
-    case 'provider':
-      return '#059669'; // green
-    default:
-      return '#6b7280'; // gray
-  }
-};
 
 interface MemberMapProps {
   translations: {
@@ -185,19 +430,12 @@ interface MemberMapProps {
     description: string;
     loading: string;
     member_count: string;
-    click_marker: string;
     no_members: string;
     no_members_desc: string;
-    member_details: {
-      organization: string;
-      type: string;
-      location: string;
-      contact: string;
-      visit_profile: string;
-    };
     legend: {
       title: string;
       mga: string;
+      mga_plural?: string;
       carrier: string;
       provider: string;
     };
@@ -208,17 +446,370 @@ interface MemberMapProps {
       business_locations: string;
       market_locations: string;
     };
+    sidebar?: {
+      total_members: string;
+      all_types: string;
+      members: string;
+    };
+    search?: {
+      placeholder: string;
+      showing: string;
+      clear_filter: string;
+      no_results: string;
+    };
+    my_company?: {
+      show_button: string;
+      title: string;
+      edit_markets: string;
+      add_market: string;
+      remove_market: string;
+      lines_of_business: string;
+      select_lines: string;
+      save_changes: string;
+      saving: string;
+      market_added: string;
+      market_removed: string;
+      changes_saved: string;
+      error_saving: string;
+    };
   };
 }
 
+// Lines of Business from registration component
+const LINES_OF_BUSINESS = [
+  'accident_health', 'aviation', 'bloodstock', 'casualty', 'construction',
+  'cyber', 'energy', 'event_cancellation', 'fine_art_specie', 'legal_expenses',
+  'life', 'livestock', 'marine', 'management_liability', 'motor_commercial',
+  'motor_personal', 'pet', 'political_risk', 'professional_indemnity',
+  'property_commercial', 'property_personal', 'surety', 'trade_credit',
+  'travel', 'warranty_indemnity', 'other', 'other_2', 'other_3'
+];
+
+// MyCompanyView Component
+function MyCompanyView({
+  member,
+  user,
+  translations,
+  editingMarkets,
+  setEditingMarkets,
+  markets,
+  setMarkets,
+  addMarket,
+  removeMarket,
+  onClose
+}: {
+  member: any;
+  user: any;
+  translations: any;
+  editingMarkets: boolean;
+  setEditingMarkets: (editing: boolean) => void;
+  markets: string[];
+  setMarkets: (markets: string[]) => void;
+  addMarket: (countryCode: string) => void;
+  removeMarket: (countryCode: string) => void;
+  onClose: () => void;
+}) {
+  const [marketLinesOfBusiness, setMarketLinesOfBusiness] = useState<{[key: string]: string[]}>({});
+  const [selectedMarket, setSelectedMarket] = useState<string>('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const locale = translations.locale || 'en';
+
+  // Load existing data from user profile
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (user?.uid) {
+        try {
+          const userProfile = await getUserProfile(user.uid);
+          if (userProfile) {
+            if (userProfile.markets) {
+              setMarkets(userProfile.markets);
+            }
+            if (userProfile.marketLinesOfBusiness) {
+              setMarketLinesOfBusiness(userProfile.marketLinesOfBusiness);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading existing data:', error);
+        }
+      }
+    };
+
+    loadExistingData();
+  }, [user?.uid]);
+
+  // Save changes to database
+  const handleSave = async () => {
+    if (!user?.uid) {
+      setMessage({ type: 'error', text: 'No user authentication found' });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Clean up empty lines of business before saving
+      const cleanedMarketLinesOfBusiness = Object.fromEntries(
+        Object.entries(marketLinesOfBusiness).map(([countryCode, lines]) => [
+          countryCode,
+          lines.filter(line => line !== '')
+        ])
+      );
+
+      // Save to user's Account document
+      await updateUserProfile(user.uid, {
+        marketLinesOfBusiness: cleanedMarketLinesOfBusiness,
+        markets // Also update the markets array
+      });
+      
+      setMessage({ type: 'success', text: 'Changes saved successfully' });
+      setEditingMarkets(false); // Exit edit mode after successful save
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error saving:', error);
+      setMessage({ type: 'error', text: 'Error saving changes' });
+      setTimeout(() => setMessage(null), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveMarket = (countryCode: string) => {
+    removeMarket(countryCode);
+    // Remove lines of business for this market
+    const newMarketLinesOfBusiness = { ...marketLinesOfBusiness };
+    delete newMarketLinesOfBusiness[countryCode];
+    setMarketLinesOfBusiness(newMarketLinesOfBusiness);
+  };
+
+  const updateMarketLinesOfBusiness = (countryCode: string, lines: string[]) => {
+    setMarketLinesOfBusiness({
+      ...marketLinesOfBusiness,
+      [countryCode]: lines
+    });
+  };
+
+  return (
+    <div className="h-full flex flex-col p-6 overflow-y-auto">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-fase-navy">
+          {member?.organizationName || member?.personalName}
+        </h3>
+        <button 
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 text-2xl"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Message Display */}
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg ${
+          message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Markets Section */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Markets</h4>
+          <button
+            onClick={() => setEditingMarkets(!editingMarkets)}
+            className="px-4 py-2 text-sm bg-fase-navy text-white rounded-lg hover:bg-opacity-90"
+          >
+            {editingMarkets ? 'Done' : 'Edit Markets'}
+          </button>
+        </div>
+
+        {editingMarkets && (
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-sm text-blue-700">
+              Click countries on the map to add or remove markets
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {markets.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-base mb-2">No markets configured</div>
+              <div className="text-sm">Click "Edit Markets" to add markets</div>
+            </div>
+          )}
+          
+          {markets.map(countryCode => (
+            <div key={countryCode} className="border border-gray-300 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h5 className="font-semibold text-gray-900">
+                  {countries.getName(countryCode, locale) || countryCode}
+                </h5>
+                {editingMarkets && (
+                  <button
+                    onClick={() => handleRemoveMarket(countryCode)}
+                    className="px-3 py-1 text-xs text-red-600 hover:text-red-800 border border-red-200 rounded"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              
+              {editingMarkets ? (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium text-gray-700">
+                      Lines of Business
+                    </label>
+                    <button
+                      onClick={() => {
+                        const currentLines = marketLinesOfBusiness[countryCode] || [];
+                        updateMarketLinesOfBusiness(countryCode, [...currentLines, '']);
+                      }}
+                      className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                    >
+                      + Add Line
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {(marketLinesOfBusiness[countryCode] || ['']).map((selectedLine, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <select
+                          value={selectedLine}
+                          onChange={(e) => {
+                            const currentLines = marketLinesOfBusiness[countryCode] || [];
+                            const newLines = [...currentLines];
+                            newLines[index] = e.target.value;
+                            // Remove empty strings except for the last one
+                            const filteredLines = newLines.filter((line, i) => line !== '' || i === newLines.length - 1);
+                            updateMarketLinesOfBusiness(countryCode, filteredLines);
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        >
+                          <option value="">Select a line of business...</option>
+                          {LINES_OF_BUSINESS.map(line => (
+                            <option key={line} value={line}>
+                              {line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </option>
+                          ))}
+                        </select>
+                        {(marketLinesOfBusiness[countryCode] || []).length > 1 && (
+                          <button
+                            onClick={() => {
+                              const currentLines = marketLinesOfBusiness[countryCode] || [];
+                              const newLines = currentLines.filter((_, i) => i !== index);
+                              updateMarketLinesOfBusiness(countryCode, newLines.length > 0 ? newLines : ['']);
+                            }}
+                            className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {marketLinesOfBusiness[countryCode] && marketLinesOfBusiness[countryCode].filter(line => line !== '').length > 0 ? (
+                    <div className="text-sm text-gray-600">
+                      {marketLinesOfBusiness[countryCode].filter(line => line !== '').map(line => 
+                        line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                      ).join(', ')}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-400">No lines of business configured</div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Save Button - only show in edit mode */}
+      {editingMarkets && (
+        <div className="mt-auto pt-6 border-t border-gray-200">
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setEditingMarkets(false)}
+              className="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
+            >
+              {saving ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                'Save Changes'
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MemberMap({ translations }: MemberMapProps) {
+  const { user, member } = useUnifiedAuth();
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<string>('');
   const [selectedLocationFilter, setSelectedLocationFilter] = useState<string>('all'); // 'all', 'business', 'markets'
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filteredCompanies, setFilteredCompanies] = useState<UnifiedMember[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<UnifiedMember | null>(null);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [countriesGeoJson, setCountriesGeoJson] = useState<any>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [showMyCompany, setShowMyCompany] = useState(false);
+  
+  // Market editing state - shared between main component and MyCompanyView
+  const [editingMarkets, setEditingMarkets] = useState(false);
+  const [markets, setMarkets] = useState<string[]>([]);
+  
+  
+  // Market management functions
+  const addMarket = (countryCode: string) => {
+    if (!markets.includes(countryCode)) {
+      setMarkets([...markets, countryCode]);
+    }
+  };
+
+  const removeMarket = (countryCode: string) => {
+    setMarkets(markets.filter(m => m !== countryCode));
+  };
+
+  // Load user's markets when component mounts
+  useEffect(() => {
+    const loadUserMarkets = async () => {
+      if (user?.uid) {
+        try {
+          const userProfile = await getUserProfile(user.uid);
+          if (userProfile?.markets) {
+            setMarkets(userProfile.markets);
+          }
+        } catch (error) {
+          console.error('Error loading user markets:', error);
+        }
+      }
+    };
+
+    loadUserMarkets();
+  }, [user?.uid]);
 
   // Load Leaflet CSS and library
   useEffect(() => {
@@ -286,14 +877,17 @@ export default function MemberMap({ translations }: MemberMapProps) {
       try {
         const approvedMembers = await getApprovedMembersForDirectory();
         
+        // Filter to only include MGAs
+        const mgaMembers = approvedMembers.filter(member => member.organizationType === 'MGA');
+        
         // Count markets for debugging
-        const totalMarkets = approvedMembers.reduce((count, member) => {
+        const totalMarkets = mgaMembers.reduce((count, member) => {
           return count + ((member as any).markets?.length || 0);
         }, 0);
         
-        console.log(`🔍 Found ${approvedMembers.length} approved members with ${totalMarkets} total markets`);
+        console.log(`🔍 Found ${mgaMembers.length} MGA members with ${totalMarkets} total markets`);
         
-        setMembers(approvedMembers);
+        setMembers(mgaMembers);
       } catch (error) {
         console.error('Error loading members:', error);
       } finally {
@@ -304,18 +898,41 @@ export default function MemberMap({ translations }: MemberMapProps) {
     loadMembers();
   }, []);
 
+  // Efficient search filtering with debouncing
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredCompanies([]);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const filtered = members.filter(member => {
+      const orgName = member.organizationName?.toLowerCase() || '';
+      const personalName = member.personalName?.toLowerCase() || '';
+      return orgName.includes(query) || personalName.includes(query);
+    });
+
+    setFilteredCompanies(filtered);
+  }, [searchQuery, members]);
+
+  // Handle company selection
+  const handleCompanySelect = (member: UnifiedMember) => {
+    setSelectedCompany(member);
+    setSearchQuery('');
+    setFilteredCompanies([]);
+    setSelectedCountry('company-details'); // Use special indicator for company details
+  };
+
   // Group members by country for business and markets separately
   const businessLocationsByCountry = useMemo(() => {
     const countryMap = new Map<string, UnifiedMember[]>();
     
-    members.forEach(member => {
+    // Filter members based on company selection
+    const membersToProcess = selectedCompany ? [selectedCompany] : members;
+    
+    membersToProcess.forEach(member => {
       const memberData = member as any;
       const businessAddress = memberData.businessAddress;
-      
-      // Filter by organization type if selected
-      if (selectedType && member.organizationType !== selectedType) {
-        return;
-      }
       
       if (businessAddress?.country) {
         const countryCode = businessAddress.country;
@@ -327,19 +944,17 @@ export default function MemberMap({ translations }: MemberMapProps) {
     });
     
     return countryMap;
-  }, [members, selectedType]);
+  }, [members, selectedCompany]);
 
   const marketLocationsByCountry = useMemo(() => {
     const countryMap = new Map<string, UnifiedMember[]>();
     
-    members.forEach(member => {
+    // Filter members based on company selection
+    const membersToProcess = selectedCompany ? [selectedCompany] : members;
+    
+    membersToProcess.forEach(member => {
       const memberData = member as any;
       const markets = memberData.markets || [];
-      
-      // Filter by organization type if selected
-      if (selectedType && member.organizationType !== selectedType) {
-        return;
-      }
       
       if (markets && Array.isArray(markets)) {
         markets.forEach(countryCode => {
@@ -352,7 +967,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
     });
     
     return countryMap;
-  }, [members, selectedType]);
+  }, [members, selectedCompany]);
 
   // Filtered countries based on location filter
   const visibleCountriesWithMembers = useMemo(() => {
@@ -376,20 +991,36 @@ export default function MemberMap({ translations }: MemberMapProps) {
     return Array.from(allCountries);
   }, [businessLocationsByCountry, marketLocationsByCountry]);
 
+  // All countries that should be interactive (either have members OR we're in edit mode)
+  const allInteractiveCountries = useMemo(() => {
+    const allCountries = new Set<string>();
+    
+    // Add countries with members
+    businessLocationsByCountry.forEach((_, country) => allCountries.add(country));
+    marketLocationsByCountry.forEach((_, country) => allCountries.add(country));
+    
+    // In edit mode, add ALL world countries
+    if (showMyCompany && editingMarkets) {
+      const worldCountries = countries.getNames('en', {select: 'official'});
+      if (worldCountries) {
+        Object.keys(worldCountries).forEach(countryCode => {
+          allCountries.add(countryCode);
+        });
+      }
+    }
+    
+    return Array.from(allCountries);
+  }, [businessLocationsByCountry, marketLocationsByCountry, showMyCompany, editingMarkets]);
+
   // Count unique members (not duplicated across countries)
   const filteredMembers = useMemo(() => {
-    return members.filter(member => {
-      if (selectedType && member.organizationType !== selectedType) {
-        return false;
-      }
-      return true;
-    });
-  }, [members, selectedType]);
+    if (selectedCompany) {
+      return [selectedCompany];
+    }
+    return members; // All members are already filtered to MGAs only
+  }, [members, selectedCompany]);
 
 
-  const availableTypes = Array.from(new Set(
-    members.map(member => member.organizationType).filter(Boolean)
-  )).sort();
 
   if (loading) {
     return (
@@ -437,25 +1068,59 @@ export default function MemberMap({ translations }: MemberMapProps) {
         </h2>
         <p className="text-fase-black mb-6">{translations.description}</p>
         
+        {/* Company Search */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={translations.search?.placeholder || "Search for a company..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent text-base"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCompany(null);
+                  setFilteredCompanies([]);
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            {filteredCompanies.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {filteredCompanies.map((member, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleCompanySelect(member)}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 focus:bg-gray-50 focus:outline-none"
+                  >
+                    <div className="font-medium text-gray-900">
+                      {member.organizationName || member.personalName}
+                    </div>
+                    {member.organizationType && (
+                      <div className="text-sm text-gray-500">
+                        {member.organizationType === 'MGA' ? translations.legend.mga :
+                         member.organizationType === 'carrier' ? translations.legend.carrier :
+                         member.organizationType === 'provider' ? translations.legend.provider :
+                         member.organizationType}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
         {/* Filters and Stats */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-            {/* Organization Type Filter */}
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
-            >
-              <option value="">{translations.filters.all_types}</option>
-              {availableTypes.map(type => (
-                <option key={type} value={type}>
-                  {type === 'MGA' ? translations.legend.mga :
-                   type === 'carrier' ? translations.legend.carrier :
-                   type === 'provider' ? translations.legend.provider : type}
-                </option>
-              ))}
-            </select>
-            
             {/* Location Type Filter */}
             <select
               value={selectedLocationFilter}
@@ -488,12 +1153,25 @@ export default function MemberMap({ translations }: MemberMapProps) {
             {/* Map and Sidebar Container */}
             <div className="flex h-[500px] w-full rounded-lg overflow-hidden border border-gray-200 relative">
               {/* Map */}
-              <div className={`h-full transition-all duration-300 ${selectedCountry ? 'w-2/3' : 'w-full'}`}>
+              <div className={`h-full transition-all duration-300 ${(selectedCountry || showMyCompany) ? 'w-2/3' : 'w-full'} relative`}>
                 <style jsx global>{`
                   .leaflet-control-attribution {
                     display: none !important;
                   }
                 `}</style>
+                
+                {/* Show My Company Button - Positioned within map */}
+                {user && member?.organizationType === 'MGA' && (
+                  <div className="absolute bottom-4 right-4" style={{ zIndex: 1000 }}>
+                    <button
+                      onClick={() => setShowMyCompany(true)}
+                      className="bg-fase-navy text-white px-4 py-2 rounded-lg shadow-lg hover:bg-opacity-90 transition-colors font-medium text-sm"
+                    >
+                      {translations.my_company?.show_button || "Show My Company"}
+                    </button>
+                  </div>
+                )}
+                
                 <MapContainer
                   center={[50.1109, 8.6821]} // Center on Frankfurt
                   zoom={4}
@@ -509,6 +1187,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                   {/* Country boundaries */}
                   {countriesGeoJson && (
                     <GeoJSON
+                      key={`countries-${showMyCompany}-${editingMarkets}`} // Force re-render when edit state changes
                       data={countriesGeoJson}
                       style={(feature: any) => {
                         const numericId = feature?.id;
@@ -535,13 +1214,32 @@ export default function MemberMap({ translations }: MemberMapProps) {
                             }
                           });
                         
-                        // Color priority: Business (blue) > Market (green) > Both (purple) > None (gray)
-                        let fillColor = '#f8f9fa'; // Default gray
-                        let borderColor = '#d1d5db';
-                        let fillOpacity = 0.1;
+                        // Check if this is one of the current user's markets
+                        const isUserMarket = showMyCompany && Array.from(businessLocationsByCountry.keys()).concat(Array.from(marketLocationsByCountry.keys())).some(iso2Code => {
+                          try {
+                            const numericCode = countries.alpha2ToNumeric(iso2Code);
+                            if (numericCode && numericCode.toString() === numericId?.toString()) {
+                              return markets.includes(iso2Code);
+                            }
+                            return false;
+                          } catch (error) {
+                            return false;
+                          }
+                        });
+
+                        // Color priority: User's markets (special) > Business (navy) > Market (gold) > Both (darker navy) > None (light gray)
+                        let fillColor = '#f8f9fa'; // Default very light gray for no members
+                        let borderColor = '#e5e7eb';
+                        let fillOpacity = 0.05;
                         let weight = 1;
                         
-                        if (hasBusinessLocation && hasMarketLocation && selectedLocationFilter === 'all') {
+                        if (isUserMarket) {
+                          // User's own market - special purple color
+                          fillColor = '#7c3aed';
+                          borderColor = '#7c3aed';
+                          fillOpacity = 0.5;
+                          weight = 3;
+                        } else if (hasBusinessLocation && hasMarketLocation && selectedLocationFilter === 'all') {
                           // Both business and market - darker navy
                           fillColor = '#1e3a8a';
                           borderColor = '#1e3a8a';
@@ -574,18 +1272,28 @@ export default function MemberMap({ translations }: MemberMapProps) {
                         const numericId = feature?.id;
                         
                         // Find ISO2 code that matches this numeric ID
+                        // Try ALL world countries, not just those with members
                         let iso2Code = null;
-                        for (const memberCountryCode of visibleCountriesWithMembers) {
-                          try {
-                            const numericCode = countries.alpha2ToNumeric(memberCountryCode);
-                            if (numericCode && numericCode.toString() === numericId?.toString()) {
-                              iso2Code = memberCountryCode;
-                              break;
+                        
+                        if (numericId) {
+                          // Get ALL countries from i18n-iso-countries and try to match
+                          const allWorldCountries = countries.getNames('en', {select: 'official'});
+                          if (allWorldCountries) {
+                            for (const [countryCode] of Object.entries(allWorldCountries)) {
+                              try {
+                                const numericCode = countries.alpha2ToNumeric(countryCode);
+                                if (numericCode && numericCode.toString() === numericId.toString()) {
+                                  iso2Code = countryCode;
+                                  break;
+                                }
+                              } catch (error) {
+                                // Skip invalid conversions
+                                continue;
+                              }
                             }
-                          } catch (error) {
-                            // Skip invalid conversions
                           }
                         }
+                        
                         
                         // Get members from both business and market locations based on filter
                         let businessMembers: UnifiedMember[] = [];
@@ -601,17 +1309,71 @@ export default function MemberMap({ translations }: MemberMapProps) {
                         }
                         
                         // Combine and deduplicate members
-                        const allMembersSet = new Set<UnifiedMember>();
-                        businessMembers.forEach(member => allMembersSet.add(member));
-                        marketMembers.forEach(member => allMembersSet.add(member));
-                        const membersInCountry = Array.from(allMembersSet);
+                        const membersInCountry = deduplicateMembers(businessMembers, marketMembers);
                         
-                        if (membersInCountry.length > 0) {
-                          layer.on('click', () => {
+                        // Make countries clickable for different purposes
+                        layer.on('click', () => {
+                          if (iso2Code && showMyCompany && editingMarkets) {
+                            // Add/remove market when in editing mode
+                            if (markets.includes(iso2Code)) {
+                              removeMarket(iso2Code);
+                            } else {
+                              addMarket(iso2Code);
+                            }
+                          } else if (iso2Code && selectedCompany) {
+                            // If a company is selected, show company details for this country
+                            setSelectedCountry(`company-country-${iso2Code}`);
+                          } else if (iso2Code && membersInCountry.length > 0) {
+                            // Normal country view - only if there are members
                             setSelectedCountry(iso2Code);
+                          }
+                        });
+                        
+                        // In edit mode, make ALL countries with valid iso2Code interactive
+                        // Otherwise, only countries with members are interactive
+                        const isInteractive = (showMyCompany && editingMarkets && iso2Code) || membersInCountry.length > 0;
+                        
+                        // Always attach handlers to ALL countries, but only show hover effects for interactive ones
+                        // This ensures all countries can be clicked in edit mode
+                        if (showMyCompany && editingMarkets && iso2Code) {
+                          // In edit mode, ALL countries get click handlers
+                          layer.on('click', () => {
+                            if (markets.includes(iso2Code)) {
+                              removeMarket(iso2Code);
+                            } else {
+                              addMarket(iso2Code);
+                            }
                           });
                           
-                          // Add hover effect
+                          // Hover effects for ALL countries in edit mode
+                          layer.on('mouseover', () => {
+                            layer.setStyle({
+                              fillOpacity: 0.6,
+                              weight: 3,
+                              color: markets.includes(iso2Code) ? '#dc2626' : '#16a34a',
+                              fillColor: markets.includes(iso2Code) ? '#dc2626' : '#16a34a'
+                            });
+                          });
+                          
+                          layer.on('mouseout', () => {
+                            // Reset to original style - simplified for edit mode
+                            layer.setStyle({
+                              fillColor: markets.includes(iso2Code) ? '#7c3aed' : '#f8f9fa',
+                              fillOpacity: markets.includes(iso2Code) ? 0.5 : 0.05,
+                              color: markets.includes(iso2Code) ? '#7c3aed' : '#e5e7eb',
+                              weight: markets.includes(iso2Code) ? 3 : 1
+                            });
+                          });
+                        } else if (isInteractive) {
+                          // Normal mode handlers for countries with members
+                          layer.on('click', () => {
+                            if (iso2Code && selectedCompany) {
+                              setSelectedCountry(`company-country-${iso2Code}`);
+                            } else if (iso2Code && membersInCountry.length > 0) {
+                              setSelectedCountry(iso2Code);
+                            }
+                          });
+                          
                           layer.on('mouseover', () => {
                             layer.setStyle({
                               fillOpacity: 0.5,
@@ -620,9 +1382,37 @@ export default function MemberMap({ translations }: MemberMapProps) {
                           });
                           
                           layer.on('mouseout', () => {
+                            // Reset to normal styling based on member presence
+                            const hasBusinessLocation = businessMembers.length > 0;
+                            const hasMarketLocation = marketMembers.length > 0;
+                            
+                            let fillColor = '#f8f9fa';
+                            let borderColor = '#e5e7eb';
+                            let fillOpacity = 0.05;
+                            let weight = 1;
+                            
+                            if (hasBusinessLocation && hasMarketLocation) {
+                              fillColor = '#1e3a8a';
+                              borderColor = '#1e3a8a';
+                              fillOpacity = 0.4;
+                              weight = 2;
+                            } else if (hasBusinessLocation) {
+                              fillColor = '#1f2937';
+                              borderColor = '#1f2937';
+                              fillOpacity = 0.3;
+                              weight = 2;
+                            } else if (hasMarketLocation) {
+                              fillColor = '#d4af37';
+                              borderColor = '#b8941f';
+                              fillOpacity = 0.3;
+                              weight = 2;
+                            }
+                            
                             layer.setStyle({
-                              fillOpacity: 0.3,
-                              weight: 2
+                              fillColor,
+                              fillOpacity,
+                              color: borderColor,
+                              weight
                             });
                           });
                         }
@@ -633,15 +1423,58 @@ export default function MemberMap({ translations }: MemberMapProps) {
               </div>
 
               {/* Sidebar */}
-              {selectedCountry && (
+              {(selectedCountry || showMyCompany) && (
                 <div className="w-1/3 bg-white border-l border-gray-200 flex flex-col">
-                  <CountryDetails 
-                    country={selectedCountry}
-                    businessMembers={businessLocationsByCountry.get(selectedCountry) || []}
-                    marketMembers={marketLocationsByCountry.get(selectedCountry) || []}
-                    translations={translations}
-                    onClose={() => setSelectedCountry(null)}
-                  />
+                  {showMyCompany ? (
+                    <MyCompanyView
+                      member={member}
+                      user={user}
+                      translations={translations}
+                      editingMarkets={editingMarkets}
+                      setEditingMarkets={setEditingMarkets}
+                      markets={markets}
+                      setMarkets={setMarkets}
+                      addMarket={addMarket}
+                      removeMarket={removeMarket}
+                      onClose={() => {
+                        setShowMyCompany(false);
+                        setEditingMarkets(false);
+                      }}
+                    />
+                  ) : selectedCountry === 'company-details' && selectedCompany ? (
+                    <CompanyDetails 
+                      company={selectedCompany}
+                      translations={translations}
+                      onClose={() => {
+                        setSelectedCountry(null);
+                        setSelectedCompany(null);
+                        setSearchQuery('');
+                        setFilteredCompanies([]);
+                      }}
+                    />
+                  ) : selectedCountry && selectedCountry.startsWith('company-country-') && selectedCompany ? (
+                    <CompanyCountryDetails 
+                      company={selectedCompany}
+                      countryCode={selectedCountry.replace('company-country-', '')}
+                      translations={translations}
+                      onClose={() => {
+                        setSelectedCountry(null);
+                        setSelectedCompany(null);
+                        setSearchQuery('');
+                        setFilteredCompanies([]);
+                      }}
+                    />
+                  ) : selectedCountry ? (
+                    <CountryDetails 
+                      country={selectedCountry}
+                      businessMembers={businessLocationsByCountry.get(selectedCountry) || []}
+                      marketMembers={marketLocationsByCountry.get(selectedCountry) || []}
+                      translations={translations}
+                      onClose={() => setSelectedCountry(null)}
+                      setSelectedCompany={setSelectedCompany}
+                      setSelectedCountry={setSelectedCountry}
+                    />
+                  ) : null}
                 </div>
               )}
             </div>

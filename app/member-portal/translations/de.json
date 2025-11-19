@@ -228,19 +228,12 @@
     "description": "",
     "loading": "Mitgliederstandorte werden geladen...",
     "member_count": "{{count}} Mitglieder",
-    "click_marker": "Klicken Sie auf einen Marker, um Mitgliederdaten zu sehen",
     "no_members": "Keine Mitglieder gefunden",
     "no_members_desc": "Derzeit sind keine zugelassenen Mitglieder mit Standortdaten verfügbar.",
-    "member_details": {
-      "organization": "Organisation",
-      "type": "Typ",
-      "location": "Standort",
-      "contact": "Kontakt",
-      "visit_profile": "Profil Anzeigen"
-    },
     "legend": {
       "title": "Mitgliedertypen",
-      "mga": "Managing General Agent",
+      "mga": "MGA",
+      "mga_plural": "MGAs",
       "carrier": "Versicherungsunternehmen",
       "provider": "Dienstleister"
     },
@@ -255,6 +248,27 @@
       "total_members": "Gesamte Mitglieder",
       "all_types": "Alle Typen",
       "members": "Mitglieder"
+    },
+    "search": {
+      "placeholder": "Nach einem Unternehmen suchen...",
+      "showing": "Anzeige:",
+      "clear_filter": "Filter löschen",
+      "no_results": "Keine Unternehmen gefunden"
+    },
+    "my_company": {
+      "show_button": "Mein Unternehmen anzeigen",
+      "title": "Mein Firmenprofil",
+      "edit_markets": "Märkte bearbeiten",
+      "add_market": "Markt hinzufügen",
+      "remove_market": "Markt entfernen",
+      "lines_of_business": "Geschäftsbereiche",
+      "select_lines": "Wählen Sie Geschäftsbereiche für diesen Markt",
+      "save_changes": "Änderungen speichern",
+      "saving": "Speichern...",
+      "market_added": "Markt erfolgreich hinzugefügt",
+      "market_removed": "Markt erfolgreich entfernt",
+      "changes_saved": "Änderungen erfolgreich gespeichert",
+      "error_saving": "Fehler beim Speichern"
     }
   }
 }

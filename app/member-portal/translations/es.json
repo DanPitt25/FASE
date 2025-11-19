@@ -228,19 +228,12 @@
     "description": "",
     "loading": "Cargando ubicaciones de miembros...",
     "member_count": "{{count}} miembros",
-    "click_marker": "Haga clic en un marcador para ver detalles del miembro",
     "no_members": "No se encontraron miembros",
     "no_members_desc": "No hay miembros aprobados con datos de ubicación disponibles actualmente.",
-    "member_details": {
-      "organization": "Organización",
-      "type": "Tipo",
-      "location": "Ubicación",
-      "contact": "Contacto",
-      "visit_profile": "Ver Perfil"
-    },
     "legend": {
       "title": "Tipos de Miembros",
       "mga": "Agente de Suscripción",
+      "mga_plural": "Agentes de Suscripción",
       "carrier": "Compañía de Seguros",
       "provider": "Proveedor de Servicios"
     },
@@ -255,6 +248,27 @@
       "total_members": "Total de Miembros",
       "all_types": "Todos los Tipos",
       "members": "Miembros"
+    },
+    "search": {
+      "placeholder": "Buscar una empresa...",
+      "showing": "Mostrando:",
+      "clear_filter": "Limpiar filtro",
+      "no_results": "No se encontraron empresas"
+    },
+    "my_company": {
+      "show_button": "Mostrar Mi Empresa",
+      "title": "Perfil de Mi Empresa",
+      "edit_markets": "Editar Mercados",
+      "add_market": "Agregar Mercado",
+      "remove_market": "Eliminar Mercado",
+      "lines_of_business": "Líneas de Negocio",
+      "select_lines": "Seleccionar líneas de negocio para este mercado",
+      "save_changes": "Guardar Cambios",
+      "saving": "Guardando...",
+      "market_added": "Mercado agregado exitosamente",
+      "market_removed": "Mercado eliminado exitosamente",
+      "changes_saved": "Cambios guardados exitosamente",
+      "error_saving": "Error al guardar cambios"
     }
   }
 }
