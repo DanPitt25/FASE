@@ -91,11 +91,11 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     reminder: {
       title: 'Payment Reminder',
       description: 'Remind about pending payment',
-      apiEndpoint: '/api/test-membership-email',
-      previewEndpoint: '/api/test-membership-email',
+      apiEndpoint: '/api/send-payment-reminder',
+      previewEndpoint: '/api/send-payment-reminder',
       requiresPricing: true,
       generatesPDF: true,
-      available: false // API endpoint needs to be created
+      available: true
     },
     freeform: {
       title: 'Freeform Email',
@@ -299,24 +299,22 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 />
               </div>
             </div>
-            {/* Sender Selection - Only for freeform template */}
-            {selectedTemplate === 'freeform' && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Send From *</label>
-                <select
-                  value={formData.freeformSender}
-                  onChange={(e) => setFormData(prev => ({ ...prev, freeformSender: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                >
-                  <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
-                  <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
-                  <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
-                  <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
-                  <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
-                </select>
-              </div>
-            )}
+            {/* Sender Selection - For all templates */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Send From *</label>
+              <select
+                value={formData.freeformSender}
+                onChange={(e) => setFormData(prev => ({ ...prev, freeformSender: e.target.value }))}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                required
+              >
+                <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
+                <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
+                <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
+                <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
+                <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+              </select>
+            </div>
           </div>
 
           {/* Contact Details - Only for non-freeform templates */}
