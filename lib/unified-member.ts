@@ -173,6 +173,14 @@ export interface UnifiedMember {
     postcode: string;
     country: string;
   };
+  businessAddress?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    county?: string;
+    postcode: string;
+    country: string;
+  };
   
   // Additional organization data
   logoURL?: string;
@@ -454,6 +462,7 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
         hasOtherAssociations: data.hasOtherAssociations,
         primaryContact: data.primaryContact,
         registeredAddress: data.registeredAddress,
+        businessAddress: data.businessAddress,
         logoURL: data.logoURL,
         linesOfBusiness: data.linesOfBusiness
       } as UnifiedMember);
@@ -487,6 +496,7 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
           hasOtherAssociations: orgData.hasOtherAssociations,
           primaryContact: orgData.primaryContact,
           registeredAddress: orgData.registeredAddress,
+          businessAddress: orgData.businessAddress,
           logoURL: orgData.logoURL,
           linesOfBusiness: orgData.linesOfBusiness,
           createdAt: memberData.createdAt,
@@ -528,7 +538,8 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
         portfolio: data.portfolio,
         hasOtherAssociations: data.hasOtherAssociations,
         primaryContact: data.primaryContact,
-        registeredAddress: data.registeredAddress
+        registeredAddress: data.registeredAddress,
+        businessAddress: data.businessAddress
       } as UnifiedMember);
     });
     

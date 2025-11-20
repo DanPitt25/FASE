@@ -91,9 +91,6 @@ export async function POST(request: NextRequest) {
       console.log(`Sending payment reminder email to ${testData.email}...`, testData);
     }
     
-    // Generate 5-digit invoice number (or use existing one from request)
-    const invoiceNumber = requestData.invoiceNumber || "FASE-" + Math.floor(10000 + Math.random() * 90000);
-    
     // Create payment link with amount and PayPal email
     const paypalEmail = requestData.paypalEmail || testData.email;
     const paypalParams = new URLSearchParams({
@@ -105,332 +102,17 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Payment link generated:', paypalLink);
     
-    // Detect language for PDF generation
+    // Handle uploaded PDF attachment if provided
+    let pdfAttachment: string | null = null;
+    if (requestData.pdfAttachment) {
+      pdfAttachment = requestData.pdfAttachment;
+      console.log('Using uploaded PDF attachment');
+    }
+    
+    // Detect language for email translations
     const userLocale = requestData.userLocale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
-
-    // Generate branded PDF invoice using the same logic as invoice
-    let pdfAttachment: string | null = null;
-    try {
-      console.log('Generating branded payment reminder PDF...');
-      
-      // Load the cleaned letterhead template
-      const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
-      const letterheadBytes = fs.readFileSync(letterheadPath);
-      const pdfDoc = await PDFDocument.load(letterheadBytes);
-      
-      // Get the first page
-      const pages = pdfDoc.getPages();
-      const firstPage = pages[0];
-      const { width, height } = firstPage.getSize();
-      
-      // Embed fonts - using brand fonts
-      const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      
-      // FASE Brand Colors
-      const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
-      const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
-      const faseOrange = rgb(0.706, 0.416, 0.200);    // #B46A33
-      const faseCream = rgb(0.922, 0.910, 0.894);     // #EBE8E4
-      
-      // STANDARD 8.5x11 INVOICE LAYOUT with proper spacing
-      const margins = { left: 50, right: 50, top: 150, bottom: 80 };
-      const contentWidth = width - margins.left - margins.right;
-      const standardLineHeight = 18;
-      const sectionGap = 25;
-      
-      // Helper function
-      const formatEuro = (amount: number) => `€ ${amount}`;
-      
-      // Load PDF text translations from JSON files
-      const translations = loadEmailTranslations(locale);
-      const pdfTexts = {
-        paymentReminder: translations.pdf_reminder?.payment_reminder || 'PAYMENT REMINDER',
-        billTo: translations.pdf_reminder?.bill_to || translations.pdf_invoice?.bill_to || 'Bill To:',
-        invoiceNumber: translations.pdf_reminder?.invoice_number || translations.pdf_invoice?.invoice_number || 'Invoice #:',
-        originalDate: translations.pdf_reminder?.original_date || 'Original Date:',
-        dueDate: translations.pdf_reminder?.due_date || translations.pdf_invoice?.due_date || 'Due Date:',
-        terms: translations.pdf_reminder?.terms || translations.pdf_invoice?.terms || 'Terms: Net 30',
-        description: translations.pdf_reminder?.description || translations.pdf_invoice?.description || 'Description',
-        quantity: translations.pdf_reminder?.quantity || translations.pdf_invoice?.quantity || 'Qty',
-        unitPrice: translations.pdf_reminder?.unit_price || translations.pdf_invoice?.unit_price || 'Unit Price',
-        total: translations.pdf_reminder?.total || translations.pdf_invoice?.total || 'Total',
-        totalAmountDue: translations.pdf_reminder?.total_amount_due || translations.pdf_invoice?.total_amount_due || 'Total Amount Due:',
-        paymentInstructions: translations.pdf_reminder?.payment_instructions || translations.pdf_invoice?.payment_instructions || 'Payment Instructions:'
-      };
-
-      // Current date and due date
-      const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
-      const dateLocale = dateLocales[locale as keyof typeof dateLocales];
-      const currentDate = new Date().toLocaleDateString(dateLocale);
-      // Original date 30 days ago for reminder context
-      const originalDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString(dateLocale);
-      
-      // PAYMENT REMINDER HEADER SECTION (starts 150pt from top to avoid letterhead)
-      let currentY = height - margins.top;
-      
-      firstPage.drawText(pdfTexts.paymentReminder, {
-        x: margins.left,
-        y: currentY,
-        size: 18,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      currentY -= 50; // Space after main header
-      
-      // BILL TO and INVOICE DETAILS on same line
-      firstPage.drawText(pdfTexts.billTo, {
-        x: margins.left,
-        y: currentY,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Invoice details (right-aligned)
-      const invoiceDetailsX = width - margins.right - 150;
-      firstPage.drawText(`${pdfTexts.invoiceNumber} ${invoiceNumber}`, {
-        x: invoiceDetailsX,
-        y: currentY,
-        size: 11,
-        font: boldFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(`${pdfTexts.originalDate} ${originalDate}`, {
-        x: invoiceDetailsX,
-        y: currentY - 16,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(`${pdfTexts.dueDate} ${currentDate}`, {
-        x: invoiceDetailsX,
-        y: currentY - 32,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(pdfTexts.terms, {
-        x: invoiceDetailsX,
-        y: currentY - 48,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      currentY -= 20;
-      const billToLines = [
-        testData.organizationName,
-        testData.fullName,
-        testData.address.line1,
-        ...(testData.address.line2 ? [testData.address.line2] : []),
-        `${testData.address.city}, ${testData.address.county} ${testData.address.postcode}`,
-        testData.address.country
-      ].filter(line => line && line.trim() !== '');
-      
-      billToLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - (index * standardLineHeight),
-          size: 10,
-          font: index === 0 ? boldFont : bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      currentY -= (billToLines.length * standardLineHeight) + sectionGap;
-      
-      // INVOICE TABLE
-      const rowHeight = 35;
-      const tableY = currentY;
-      const colWidths = [280, 60, 80, 80];
-      const colX = [
-        margins.left,
-        margins.left + colWidths[0],
-        margins.left + colWidths[0] + colWidths[1],
-        margins.left + colWidths[0] + colWidths[1] + colWidths[2]
-      ];
-      
-      // Table header background
-      firstPage.drawRectangle({
-        x: margins.left,
-        y: tableY - rowHeight,
-        width: contentWidth,
-        height: rowHeight,
-        color: faseCream,
-      });
-      
-      // Table headers
-      const headers = [pdfTexts.description, pdfTexts.quantity, pdfTexts.unitPrice, pdfTexts.total];
-      headers.forEach((header, i) => {
-        firstPage.drawText(header, {
-          x: colX[i] + 10,
-          y: tableY - 20,
-          size: 11,
-          font: boldFont,
-          color: faseNavy,
-        });
-      });
-      
-      currentY -= rowHeight;
-      
-      // Invoice item row - Membership
-      firstPage.drawText('FASE Annual Membership', {
-        x: colX[0] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-        maxWidth: colWidths[0] - 20,
-      });
-      
-      firstPage.drawText('1', {
-        x: colX[1] + 25,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(testData.originalAmount), {
-        x: colX[2] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(testData.originalAmount), {
-        x: colX[3] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      // Add discount row if applicable
-      if (testData.discountAmount > 0) {
-        currentY -= rowHeight;
-        
-        // Define green color for discount
-        const discountGreen = rgb(0.0, 0.6, 0.0); // Dark green
-        
-        firstPage.drawText(testData.discountReason || 'Association Member Discount', {
-          x: colX[0] + 10,
-          y: currentY - 15,
-          size: 10,
-          font: bodyFont,
-          color: discountGreen,
-          maxWidth: colWidths[0] - 20,
-        });
-        
-        firstPage.drawText(`-${formatEuro(testData.discountAmount)}`, {
-          x: colX[3] + 10,
-          y: currentY - 15,
-          size: 10,
-          font: bodyFont,
-          color: discountGreen,
-        });
-      }
-      
-      currentY -= sectionGap + 20;
-      
-      // TOTAL SECTION
-      const totalSectionWidth = 240;
-      const totalX = width - margins.right - totalSectionWidth;
-      const fixedGapBetweenTextAndAmount = 20;
-      
-      firstPage.drawRectangle({
-        x: totalX,
-        y: currentY - 35,
-        width: totalSectionWidth,
-        height: 35,
-        borderColor: faseNavy,
-        borderWidth: 2,
-      });
-      
-      // Draw the label text
-      const labelX = totalX + 15;
-      firstPage.drawText(pdfTexts.totalAmountDue, {
-        x: labelX,
-        y: currentY - 22,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Calculate text width to position amount with fixed gap
-      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
-      const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
-      
-      firstPage.drawText(formatEuro(testData.totalAmount), {
-        x: amountX,
-        y: currentY - 22,
-        size: 13,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      currentY -= 60;
-      
-      // PAYMENT INSTRUCTIONS - Bottom section with tasteful separation line
-      firstPage.drawLine({
-        start: { x: margins.left, y: currentY - 10 },
-        end: { x: width - margins.right, y: currentY - 10 },
-        thickness: 1,
-        color: faseNavy,
-      });
-      
-      firstPage.drawText(pdfTexts.paymentInstructions, {
-        x: margins.left,
-        y: currentY - 30,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Load payment lines from translations
-      const paymentReference = translations.pdf_reminder?.payment_reference?.replace('{invoiceNumber}', invoiceNumber) || translations.pdf_invoice?.payment_reference?.replace('{invoiceNumber}', invoiceNumber) || `Payment Reference: ${invoiceNumber}`;
-      const paymentLines = [
-        translations.pdf_reminder?.payment_company || translations.pdf_invoice?.payment_company || 'Lexicon Associates, LLC is accepting payments on behalf of Fédération des Agences de Souscription (FASE B.V.)',
-        'Citibank, N.A.',
-        'USCC CITISWEEP',
-        '100 Citibank Drive',
-        'San Antonio, TX 78245',
-        '',
-        translations.pdf_reminder?.account_number || translations.pdf_invoice?.account_number || 'Account number: 1255828998',
-        'ABA: 221172610',
-        'Swift: CITIUS33',
-        '',
-        paymentReference
-      ];
-      
-      paymentLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - 50 - (index * standardLineHeight),
-          size: 10,
-          font: bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      // Save the PDF
-      const pdfBytes = await pdfDoc.save();
-      pdfAttachment = Buffer.from(pdfBytes).toString('base64');
-      console.log('Payment reminder PDF generated successfully, size:', pdfBytes.length);
-      
-    } catch (pdfError: any) {
-      console.error('Failed to generate branded payment reminder PDF:', pdfError);
-      console.error('PDF Error stack:', pdfError.stack);
-      // Continue without PDF - will send HTML email instead
-    }
     
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
@@ -533,19 +215,18 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
       `,
-      invoiceNumber: invoiceNumber,
       organizationName: testData.organizationName,
       totalAmount: testData.totalAmount.toString(),
-      // Add PDF attachment if generated successfully
+      // Add PDF attachment if provided
       ...(pdfAttachment && {
         pdfAttachment: pdfAttachment,
-        pdfFilename: `FASE-Payment-Reminder-${invoiceNumber}.pdf`
+        pdfFilename: requestData.pdfFilename || 'FASE-Payment-Reminder.pdf'
       })
     };
 
     // For preview mode, return preview data instead of sending email
     if (isPreview) {
-      // Create a temporary PDF file URL for preview
+      // Create a temporary PDF file URL for preview if attachment provided
       const pdfPreviewUrl = pdfAttachment ? `data:application/pdf;base64,${pdfAttachment}` : null;
       
       return NextResponse.json({
@@ -557,8 +238,7 @@ export async function POST(request: NextRequest) {
         htmlContent: emailData.invoiceHTML,
         textContent: null,
         pdfUrl: pdfPreviewUrl,
-        attachments: pdfAttachment ? ['Payment Reminder PDF'] : [],
-        invoiceNumber: invoiceNumber,
+        attachments: pdfAttachment ? ['Attached PDF'] : [],
         totalAmount: testData.totalAmount
       });
     }
@@ -577,7 +257,7 @@ export async function POST(request: NextRequest) {
       const resendAttachments = [];
       if (pdfAttachment) {
         resendAttachments.push({
-          filename: emailData.pdfFilename || `FASE-Payment-Reminder-${invoiceNumber}.pdf`,
+          filename: requestData.pdfFilename || 'FASE-Payment-Reminder.pdf',
           content: Array.from(Buffer.from(pdfAttachment, 'base64'))
         });
       }
@@ -625,7 +305,6 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Payment reminder email sent successfully',
         emailId: result.id,
-        invoiceNumber: invoiceNumber,
         totalAmount: testData.totalAmount
       });
     } catch (emailError: any) {

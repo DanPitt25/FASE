@@ -163,6 +163,14 @@ export default function AdminPortalPage() {
     setActiveSection('emails'); // Switch to emails tab
   };
 
+  // Clear selected account when switching away from emails
+  const handleActiveSectionChange = (section: string) => {
+    if (section !== 'emails') {
+      setSelectedAccount(null);
+    }
+    setActiveSection(section);
+  };
+
   const handleMemberStatusUpdate = async (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => {
     try {
       // Optimistic update - update UI immediately
@@ -560,7 +568,7 @@ export default function AdminPortalPage() {
         currentPage="admin-portal"
         statusBadge={statusBadge()}
         activeSection={activeSection}
-        onActiveSectionChange={setActiveSection}
+        onActiveSectionChange={handleActiveSectionChange}
         defaultActiveSection="overview"
       />
 

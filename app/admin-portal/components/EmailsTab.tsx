@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 
 interface EmailsTabProps {
@@ -34,13 +34,38 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     freeformSubject: '',
     freeformBody: '',
     freeformAttachments: [] as File[],
-    freeformSender: 'admin@fasemga.com'
+    freeformSender: 'admin@fasemga.com',
+    // Payment reminder fields
+    reminderAttachment: null as File | null
   });
 
   const [sending, setSending] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
+
+  // Update form data when prefilledData changes
+  useEffect(() => {
+    if (prefilledData) {
+      setFormData(prev => ({
+        ...prev,
+        email: prefilledData.email || '',
+        fullName: prefilledData.personalName || '',
+        organizationName: prefilledData.organizationName || '',
+        membershipType: prefilledData.membershipType || 'corporate',
+        organizationType: prefilledData.organizationType || 'MGA',
+        hasOtherAssociations: prefilledData.hasOtherAssociations || false,
+        address: {
+          line1: prefilledData.businessAddress?.line1 || prefilledData.registeredAddress?.line1 || '',
+          line2: prefilledData.businessAddress?.line2 || prefilledData.registeredAddress?.line2 || '',
+          city: prefilledData.businessAddress?.city || prefilledData.registeredAddress?.city || '',
+          county: prefilledData.businessAddress?.county || prefilledData.registeredAddress?.county || '',
+          postcode: prefilledData.businessAddress?.postcode || prefilledData.registeredAddress?.postcode || '',
+          country: prefilledData.businessAddress?.country || prefilledData.registeredAddress?.country || ''
+        }
+      }));
+    }
+  }, [prefilledData]);
 
   // Calculate pricing automatically
   const calculateOriginalAmount = () => {
@@ -90,11 +115,11 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     },
     reminder: {
       title: 'Payment Reminder',
-      description: 'Remind about pending payment',
+      description: 'Remind about pending payment with PDF attachment',
       apiEndpoint: '/api/send-payment-reminder',
       previewEndpoint: '/api/send-payment-reminder',
       requiresPricing: true,
-      generatesPDF: true,
+      generatesPDF: false,
       available: true
     },
     freeform: {
@@ -142,6 +167,30 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         response = await fetch(template.previewEndpoint, {
           method: 'POST',
           body: formDataObj,
+        });
+      } else if (selectedTemplate === 'reminder' && formData.reminderAttachment) {
+        // Handle payment reminder preview with PDF attachment
+        const fileReader = new FileReader();
+        const pdfBase64 = await new Promise<string>((resolve, reject) => {
+          fileReader.onload = () => {
+            const result = fileReader.result as string;
+            const base64 = result.split(',')[1]; // Remove data:application/pdf;base64, prefix
+            resolve(base64);
+          };
+          fileReader.onerror = reject;
+          fileReader.readAsDataURL(formData.reminderAttachment!);
+        });
+        
+        const payloadWithPdf = {
+          ...payload,
+          pdfAttachment: pdfBase64,
+          pdfFilename: formData.reminderAttachment.name
+        };
+        
+        response = await fetch(template.previewEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadWithPdf),
         });
       } else {
         response = await fetch(template.previewEndpoint, {
@@ -197,6 +246,30 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         response = await fetch(template.apiEndpoint, {
           method: 'POST',
           body: formDataObj,
+        });
+      } else if (selectedTemplate === 'reminder' && formData.reminderAttachment) {
+        // Handle payment reminder with PDF attachment
+        const fileReader = new FileReader();
+        const pdfBase64 = await new Promise<string>((resolve, reject) => {
+          fileReader.onload = () => {
+            const result = fileReader.result as string;
+            const base64 = result.split(',')[1]; // Remove data:application/pdf;base64, prefix
+            resolve(base64);
+          };
+          fileReader.onerror = reject;
+          fileReader.readAsDataURL(formData.reminderAttachment!);
+        });
+        
+        const payloadWithPdf = {
+          ...payload,
+          pdfAttachment: pdfBase64,
+          pdfFilename: formData.reminderAttachment.name
+        };
+        
+        response = await fetch(template.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadWithPdf),
         });
       } else {
         response = await fetch(template.apiEndpoint, {
@@ -611,6 +684,39 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
+          {/* Payment Reminder PDF Upload - Only for reminder template */}
+          {selectedTemplate === 'reminder' && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">PDF Attachment</h4>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Upload PDF Invoice</label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormData(prev => ({ ...prev, reminderAttachment: file }));
+                  }}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+                {formData.reminderAttachment && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded px-2 py-1">
+                      <span>{formData.reminderAttachment.name} ({(formData.reminderAttachment.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, reminderAttachment: null }))}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
@@ -677,20 +783,19 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                         {preview.cc && <div><span className="font-medium">CC:</span> {preview.cc}</div>}
                         <div><span className="font-medium">Subject:</span> {preview.subject}</div>
                         <div><span className="font-medium">Language:</span> {formData.userLocale.toUpperCase()}</div>
-                        {emailTemplates[selectedTemplate].generatesPDF && (
-                          <div><span className="font-medium">Attachments:</span> Invoice PDF</div>
+                        {(emailTemplates[selectedTemplate].generatesPDF || (selectedTemplate === 'reminder' && preview.pdfUrl)) && (
+                          <div><span className="font-medium">Attachments:</span> {selectedTemplate === 'reminder' ? 'Payment Reminder PDF' : 'Invoice PDF'}</div>
                         )}
                       </div>
                     </div>
 
                     {/* PDF Preview Link */}
-                    {preview.pdfUrl && emailTemplates[selectedTemplate].generatesPDF && (
+                    {preview.pdfUrl && (emailTemplates[selectedTemplate].generatesPDF || selectedTemplate === 'reminder') && (
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-2">PDF Invoice</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">{selectedTemplate === 'reminder' ? 'PDF Attachment' : 'PDF Invoice'}</h4>
                         <a
                           href={preview.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          download={`${selectedTemplate === 'reminder' ? 'payment-reminder' : 'invoice'}-preview.pdf`}
                           className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
                         >
                           <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -727,6 +832,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   This is a preview - no email has been sent yet.
                   {emailTemplates[selectedTemplate].generatesPDF && (
                     <span className="block mt-1">PDF invoice will be generated and attached when sent.</span>
+                  )}
+                  {selectedTemplate === 'reminder' && formData.reminderAttachment && (
+                    <span className="block mt-1">Uploaded PDF will be attached when sent.</span>
                   )}
                 </div>
                 <div className="flex gap-2">
