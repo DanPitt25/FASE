@@ -326,7 +326,6 @@ export const MGAPortfolioSection = ({
               attemptedNext={attemptedNext}
               markFieldTouched={markFieldTouched}
               className="text-sm"
-              europeanOnly={true}
             />
             <p className="text-xs text-fase-black mt-1">
               {t('market_search_help')}

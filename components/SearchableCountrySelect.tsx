@@ -23,18 +23,7 @@ interface SearchableCountrySelectProps {
   touchedFields: Record<string, boolean>;
   attemptedNext: boolean;
   markFieldTouched: (fieldKey: string) => void;
-  europeanOnly?: boolean;
 }
-
-// European countries list for filtering
-const europeanCountryCodes = [
-  'AL', 'AD', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BA', 'BG', 'HR', 'CY', 'CZ', 
-  'DK', 'EE', 'FO', 'FI', 'FR', 'GE', 'DE', 'GI', 'GR', 'GL', 'HU', 'IS', 
-  'IE', 'IT', 'JE', 'XK', 'LV', 'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 
-  'NL', 'MK', 'NO', 'PL', 'PT', 'RO', 'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 
-  'SE', 'CH', 'TR', 'UA', 'GB'
-];
-
 
 export default function SearchableCountrySelect({
   label,
@@ -45,8 +34,7 @@ export default function SearchableCountrySelect({
   fieldKey,
   touchedFields,
   attemptedNext,
-  markFieldTouched,
-  europeanOnly = false
+  markFieldTouched
 }: SearchableCountrySelectProps) {
   const t = useTranslations('register_form.address');
   const locale = useLocale();
@@ -54,19 +42,12 @@ export default function SearchableCountrySelect({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get country list based on filter
+  // Get country list (all countries, no filtering)
   const getCountryList = () => {
     const allCountries = countries.getNames(locale);
     
-    // Filter countries based on filter type
-    const filteredCountries = europeanOnly 
-      ? Object.fromEntries(
-          Object.entries(allCountries).filter(([code]) => europeanCountryCodes.includes(code))
-        )
-      : allCountries;
-    
     // All countries sorted alphabetically by name
-    return Object.entries(filteredCountries)
+    return Object.entries(allCountries)
       .map(([code, name]) => ({
         value: code,
         label: name
