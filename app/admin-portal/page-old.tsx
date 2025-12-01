@@ -88,7 +88,7 @@ function EmailsTab({ prefilledData = null }: { prefilledData?: any }) {
     setResult(null);
 
     try {
-      const response = await fetch('/api/test-membership-email', {
+      const response = await fetch('/api/send-membership-invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

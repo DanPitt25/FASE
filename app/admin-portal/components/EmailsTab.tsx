@@ -98,8 +98,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     invoice: {
       title: 'Send Invoice Email',
       description: 'Send membership invoice with payment details',
-      apiEndpoint: '/api/test-membership-email',
-      previewEndpoint: '/api/test-membership-email',
+      apiEndpoint: '/api/send-membership-invoice',
+      previewEndpoint: '/api/send-membership-invoice',
       requiresPricing: true,
       generatesPDF: true,
       available: true

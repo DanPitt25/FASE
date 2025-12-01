@@ -99,8 +99,13 @@
     "total": "Total",
     "total_amount_due": "Monto total adeudado:",
     "payment_instructions": "Instrucciones de pago:",
-    "payment_company": "Lexicon Associates, LLC acepta pagos en nombre de Fédération des Agences de Souscription (FASE B.V.)",
-    "account_number": "Número de cuenta: 1255828998",
-    "payment_reference": "Referencia de pago: {invoiceNumber}"
+    "eurozone_title": "Instrucciones de pago (Eurozona):",
+    "international_title": "Instrucciones de pago (Internacional):",
+    "reference": "Referencia",
+    "account_holder": "Titular de la cuenta",
+    "bic": "BIC",
+    "swift_bic": "Swift/BIC",
+    "iban": "IBAN",
+    "bank_name_address": "Nombre y dirección del banco"
   }
 }

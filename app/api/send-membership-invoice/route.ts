@@ -6,7 +6,7 @@ import * as path from 'path';
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
   try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
+    const filePath = path.join(process.cwd(), 'functions', 'messages', language, 'email.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
   } catch (error) {
@@ -23,19 +23,19 @@ export async function POST(request: NextRequest) {
   try {
     // Read data from request body instead of hardcoded values
     const requestData = await request.json();
-    const testData = {
+    const invoiceData = {
       email: requestData.email || "danielhpitt@gmail.com",
       fullName: requestData.fullName || "Daniel Pitt", 
-      organizationName: requestData.organizationName || "Test Organization Ltd",
+      organizationName: requestData.organizationName || "Sample Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
-      userId: requestData.userId || "test-user-123",
+      userId: requestData.userId || "user-123",
       membershipType: requestData.membershipType || "corporate",
       organizationType: requestData.organizationType || "MGA",
       grossWrittenPremiums: requestData.grossWrittenPremiums || "10-20m",
       hasOtherAssociations: requestData.hasOtherAssociations || false,
       greeting: requestData.greeting || requestData.fullName || "Daniel Pitt",
       gender: requestData.gender || "m", // "m" for masculine, "f" for feminine
-      originalAmount: requestData.originalAmount || requestData.totalAmount,
+      originalAmount: requestData.originalAmount || 1500,
       discountAmount: requestData.discountAmount || 0,
       discountReason: requestData.discountReason || "",
       address: requestData.address
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const missingBasicFields = [];
     
     for (const field of requiredBasicFields) {
-      if (!testData[field as keyof typeof testData] || testData[field as keyof typeof testData].trim() === '') {
+      if (!invoiceData[field as keyof typeof invoiceData] || invoiceData[field as keyof typeof invoiceData].trim() === '') {
         missingBasicFields.push(field);
       }
     }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required address fields
-    if (!testData.address || typeof testData.address !== 'object') {
+    if (!invoiceData.address || typeof invoiceData.address !== 'object') {
       return NextResponse.json(
         { error: 'Address object is required' },
         { status: 400 }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const missingAddressFields = [];
     
     for (const field of requiredAddressFields) {
-      if (!testData.address[field] || testData.address[field].trim() === '') {
+      if (!invoiceData.address[field] || invoiceData.address[field].trim() === '') {
         missingAddressFields.push(`address.${field}`);
       }
     }
@@ -86,20 +86,20 @@ export async function POST(request: NextRequest) {
     const isPreview = requestData.preview === true;
     
     if (isPreview) {
-      console.log(`Generating email preview for ${testData.email}...`, testData);
+      console.log(`Generating email preview for ${invoiceData.email}...`, invoiceData);
     } else {
-      console.log(`Sending test membership acceptance email to ${testData.email}...`, testData);
+      console.log(`Sending membership acceptance email to ${invoiceData.email}...`, invoiceData);
     }
     
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
     // Create payment link with amount and PayPal email (can be different from recipient email)
-    const paypalEmail = requestData.paypalEmail || testData.email; // Use separate PayPal email if provided
+    const paypalEmail = requestData.paypalEmail || invoiceData.email; // Use separate PayPal email if provided
     const paypalParams = new URLSearchParams({
-      amount: testData.totalAmount.toString(),
+      amount: invoiceData.totalAmount.toString(),
       email: paypalEmail,
-      organization: testData.organizationName
+      organization: invoiceData.organizationName
     });
     const paypalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment?${paypalParams.toString()}`;
     
@@ -225,12 +225,12 @@ export async function POST(request: NextRequest) {
       
       currentY -= 20;
       const billToLines = [
-        testData.organizationName,
-        testData.fullName,
-        testData.address.line1,
-        ...(testData.address.line2 ? [testData.address.line2] : []),
-        `${testData.address.city}, ${testData.address.county} ${testData.address.postcode}`,
-        testData.address.country
+        invoiceData.organizationName,
+        invoiceData.fullName,
+        invoiceData.address.line1,
+        ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),
+        `${invoiceData.address.city}, ${invoiceData.address.postcode}`,
+        invoiceData.address.country
       ].filter(line => line && line.trim() !== '');
       
       billToLines.forEach((line, index) => {
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(formatEuro(testData.originalAmount), {
+      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
         x: colX[2] + 10,
         y: currentY - 15,
         size: 10,
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(formatEuro(testData.originalAmount), {
+      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
         x: colX[3] + 10,
         y: currentY - 15,
         size: 10,
@@ -314,13 +314,13 @@ export async function POST(request: NextRequest) {
       });
       
       // Add discount row if applicable
-      if (testData.discountAmount > 0) {
+      if (invoiceData.discountAmount > 0) {
         currentY -= rowHeight;
         
         // Define green color for discount
         const discountGreen = rgb(0.0, 0.6, 0.0); // Dark green
         
-        firstPage.drawText(testData.discountReason || 'Association Member Discount', {
+        firstPage.drawText(invoiceData.discountReason || 'Association Member Discount', {
           x: colX[0] + 10,
           y: currentY - 15,
           size: 10,
@@ -331,7 +331,7 @@ export async function POST(request: NextRequest) {
         
         // Skip quantity and unit price columns for discount
         
-        firstPage.drawText(`-${formatEuro(testData.discountAmount)}`, {
+        firstPage.drawText(`-${formatEuro(invoiceData.discountAmount)}`, {
           x: colX[3] + 10,
           y: currentY - 15,
           size: 10,
@@ -370,7 +370,7 @@ export async function POST(request: NextRequest) {
       const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
       const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
       
-      firstPage.drawText(formatEuro(testData.totalAmount), {
+      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
         x: amountX,
         y: currentY - 22,
         size: 13,
@@ -396,20 +396,29 @@ export async function POST(request: NextRequest) {
         color: faseNavy,
       });
       
-      // Load payment lines from translations
-      const paymentReference = translations.pdf_invoice?.payment_reference?.replace('{invoiceNumber}', invoiceNumber) || `Payment Reference: ${invoiceNumber}`;
+      // Eurozone country detection (ISO 3166-1 alpha-2 codes)
+      const eurozoneCountries = [
+        'AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 
+        'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'
+      ];
+      
+      // Determine if customer is in Eurozone based on country code
+      const isEurozone = invoiceData.address.country && eurozoneCountries.includes(invoiceData.address.country.toUpperCase());
+      
+      // Load payment instructions from translations
+      const invoiceT = translations.pdf_invoice || {};
+      
+      // Bank details (same for both Eurozone and International)
       const paymentLines = [
-        translations.pdf_invoice?.payment_company || 'Lexicon Associates, LLC is accepting payments on behalf of Fédération des Agences de Souscription (FASE B.V.)',
-        'Citibank, N.A.',
-        'USCC CITISWEEP',
-        '100 Citibank Drive',
-        'San Antonio, TX 78245',
+        `${invoiceT.reference || 'Reference'}: 280983`,
+        `${invoiceT.account_holder || 'Account holder'}: FASE B.V.`,
+        `${isEurozone ? (invoiceT.bic || 'BIC') : (invoiceT.swift_bic || 'Swift/BIC')}: TRWIBEB1XXX`,
+        `${invoiceT.iban || 'IBAN'}: BE90 9057 9070 7732`,
         '',
-        translations.pdf_invoice?.account_number || 'Account number: 1255828998',
-        'ABA: 221172610',
-        'Swift: CITIUS33',
-        '',
-        paymentReference
+        `${invoiceT.bank_name_address || 'Bank name and address'}:`,
+        'Wise',
+        'Rue du Trône 100, 3rd floor',
+        'Brussels, 1050, Belgium'
       ];
       
       paymentLines.forEach((line, index) => {
@@ -438,7 +447,7 @@ export async function POST(request: NextRequest) {
     const adminEmail = emailTranslations.membership_acceptance_admin || {};
     
     // Apply template variable replacements with gender-aware content
-    const genderSuffix = testData.gender === 'f' ? '_f' : '_m';
+    const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
     const genderAwareDear = adminEmail[`dear${genderSuffix}`] || adminEmail.dear || "Dear";
     const genderAwareSubject = adminEmail[`subject${genderSuffix}`] || adminEmail.subject || "Welcome to FASE - Membership Approved";
     const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
@@ -448,8 +457,8 @@ export async function POST(request: NextRequest) {
       subject: genderAwareSubject,
       welcome: genderAwareWelcome,
       dear: genderAwareDear,
-      welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
-      paymentText: (adminEmail.payment_text || "To complete your membership, please remit payment of €{totalAmount} using one of the following methods:").replace('{totalAmount}', testData.totalAmount.toString()),
+      welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
+      paymentText: (adminEmail.payment_text || "To complete your membership, please remit payment of €{totalAmount} using one of the following methods:").replace('{totalAmount}', invoiceData.totalAmount.toString()),
       paymentOptions: adminEmail.payment_options || "Payment Options:",
       paypalOption: adminEmail.paypal_option || "PayPal:",
       payOnline: adminEmail.pay_online || "Pay Online",
@@ -462,7 +471,7 @@ export async function POST(request: NextRequest) {
     };
 
     const emailData = {
-      email: testData.email,
+      email: invoiceData.email,
       cc: requestData.cc, // Add CC support
       subject: emailContent.subject,
       invoiceHTML: `
@@ -474,7 +483,7 @@ export async function POST(request: NextRequest) {
             <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${emailContent.welcome}</h2>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-              ${emailContent.dear} ${testData.greeting},
+              ${emailContent.dear} ${invoiceData.greeting},
             </p>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
@@ -512,8 +521,8 @@ export async function POST(request: NextRequest) {
         </div>
       `,
       invoiceNumber: invoiceNumber,
-      organizationName: testData.organizationName,
-      totalAmount: testData.totalAmount.toString(),
+      organizationName: invoiceData.organizationName,
+      totalAmount: invoiceData.totalAmount.toString(),
       // Add PDF attachment if generated successfully
       ...(pdfAttachment && {
         pdfAttachment: pdfAttachment,
@@ -529,7 +538,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         preview: true,
-        to: testData.email,
+        to: invoiceData.email,
         cc: requestData.cc || null,
         subject: emailContent.subject,
         htmlContent: emailData.invoiceHTML,
@@ -537,7 +546,7 @@ export async function POST(request: NextRequest) {
         pdfUrl: pdfPreviewUrl,
         attachments: pdfAttachment ? ['Invoice PDF'] : [],
         invoiceNumber: invoiceNumber,
-        totalAmount: testData.totalAmount
+        totalAmount: invoiceData.totalAmount
       });
     }
 
@@ -557,11 +566,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    console.log('✅ Test membership acceptance email sent successfully:', result);
+    console.log('✅ Membership acceptance email sent successfully:', result);
     
     return NextResponse.json({
       success: true,
-      message: 'Test email sent successfully',
+      message: 'Membership invoice email sent successfully',
       result: result
     });
 
