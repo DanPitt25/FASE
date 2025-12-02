@@ -86,7 +86,7 @@
     "invoice_number": "Invoice #:",
     "date": "Date:",
     "due_date": "Due Date:",
-    "terms": "Terms: Net 30",
+    "terms": "Terms: Payment upon receipt",
     "description": "Description",
     "quantity": "Qty",
     "unit_price": "Unit Price",

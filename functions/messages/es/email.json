@@ -92,7 +92,7 @@
     "invoice_number": "Factura #:",
     "date": "Fecha:",
     "due_date": "Fecha de vencimiento:",
-    "terms": "Términos: Neto 30",
+    "terms": "Términos: Pago al recibir",
     "description": "Descripción",
     "quantity": "Cant.",
     "unit_price": "Precio unitario",

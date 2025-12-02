@@ -86,7 +86,7 @@
     "invoice_number": "Facture #:",
     "date": "Date :",
     "due_date": "Date d'échéance :",
-    "terms": "Conditions : Net 30",
+    "terms": "Conditions : Paiement à réception",
     "description": "Description",
     "quantity": "Qté",
     "unit_price": "Prix unitaire",

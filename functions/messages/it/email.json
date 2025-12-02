@@ -92,7 +92,7 @@
     "invoice_number": "Fattura #:",
     "date": "Data:",
     "due_date": "Data di scadenza:",
-    "terms": "Termini: Netto 30",
+    "terms": "Termini: Pagamento alla ricezione",
     "description": "Descrizione",
     "quantity": "Qtà",
     "unit_price": "Prezzo unitario",

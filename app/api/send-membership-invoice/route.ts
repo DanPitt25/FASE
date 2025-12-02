@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
+import { convertCurrency, getWiseBankDetails, getCurrencySymbol } from '../../../lib/currency-conversion';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -94,6 +95,12 @@ export async function POST(request: NextRequest) {
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
+    // Convert currency based on customer country (with optional override)
+    const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
+    const wiseBankDetails = getWiseBankDetails(currencyConversion.convertedCurrency);
+    
+    console.log('💰 Currency conversion:', currencyConversion);
+    
     // Create payment link with amount and PayPal email (can be different from recipient email)
     const paypalEmail = requestData.paypalEmail || invoiceData.email; // Use separate PayPal email if provided
     const paypalParams = new URLSearchParams({
@@ -141,8 +148,12 @@ export async function POST(request: NextRequest) {
       const standardLineHeight = 18;
       const sectionGap = 25;
       
-      // Helper function
+      // Currency formatting functions
       const formatEuro = (amount: number) => `€ ${amount}`;
+      const formatCurrency = (amount: number, currency: string) => {
+        const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
+        return `${symbols[currency] || currency} ${amount}`;
+      };
       
       // Load PDF text translations from JSON files
       const translations = loadEmailTranslations(locale);
@@ -342,41 +353,88 @@ export async function POST(request: NextRequest) {
       
       currentY -= sectionGap + 20;
       
-      // TOTAL SECTION
-      const totalSectionWidth = 240; // Increased width to accommodate longer text
+      // TOTAL SECTION - Expanded for dual currency display
+      const totalSectionWidth = 320; // Expanded width for dual currency
       const totalX = width - margins.right - totalSectionWidth;
-      const fixedGapBetweenTextAndAmount = 20; // Fixed 20px gap between text and amount
+      const fixedGapBetweenTextAndAmount = 15; // Smaller gap for more space
+      
+      // Determine section height based on whether currency conversion is needed
+      const sectionHeight = currencyConversion.convertedCurrency === 'EUR' ? 35 : 55;
       
       firstPage.drawRectangle({
         x: totalX,
-        y: currentY - 35,
+        y: currentY - sectionHeight,
         width: totalSectionWidth,
-        height: 35,
+        height: sectionHeight,
         borderColor: faseNavy,
         borderWidth: 2,
       });
       
-      // Draw the label text
       const labelX = totalX + 15;
-      firstPage.drawText(pdfTexts.totalAmountDue, {
-        x: labelX,
-        y: currentY - 22,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
       
-      // Calculate text width to position amount with fixed gap
-      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
-      const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
-      
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-        x: amountX,
-        y: currentY - 22,
-        size: 13,
-        font: boldFont,
-        color: faseNavy,
-      });
+      if (currencyConversion.convertedCurrency === 'EUR') {
+        // EUR only - single line display
+        firstPage.drawText(pdfTexts.totalAmountDue, {
+          x: labelX,
+          y: currentY - 22,
+          size: 12,
+          font: boldFont,
+          color: faseNavy,
+        });
+        
+        const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
+        const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
+        
+        firstPage.drawText(formatEuro(invoiceData.totalAmount), {
+          x: amountX,
+          y: currentY - 22,
+          size: 13,
+          font: boldFont,
+          color: faseNavy,
+        });
+      } else {
+        // Dual currency display
+        firstPage.drawText('Base Amount (EUR):', {
+          x: labelX,
+          y: currentY - 18,
+          size: 11,
+          font: bodyFont,
+          color: faseNavy,
+        });
+        
+        firstPage.drawText(formatEuro(invoiceData.totalAmount), {
+          x: labelX + 130,
+          y: currentY - 18,
+          size: 11,
+          font: bodyFont,
+          color: faseNavy,
+        });
+        
+        firstPage.drawText(pdfTexts.totalAmountDue, {
+          x: labelX,
+          y: currentY - 38,
+          size: 12,
+          font: boldFont,
+          color: faseNavy,
+        });
+        
+        firstPage.drawText(formatCurrency(currencyConversion.roundedAmount, currencyConversion.convertedCurrency), {
+          x: labelX + 130,
+          y: currentY - 38,
+          size: 13,
+          font: boldFont,
+          color: faseNavy,
+        });
+        
+        // Add note about inter-bank rate
+        firstPage.drawText('(at inter-bank rate)', {
+          x: labelX + 200,
+          y: currentY - 38,
+          size: 8,
+          font: bodyFont,
+          color: faseBlack,
+        });
+      }
       
       currentY -= 60;
       
@@ -396,30 +454,46 @@ export async function POST(request: NextRequest) {
         color: faseNavy,
       });
       
-      // Eurozone country detection (ISO 3166-1 alpha-2 codes)
-      const eurozoneCountries = [
-        'AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 
-        'MT', 'NL', 'PT', 'SK', 'SI', 'ES', 'HR'
-      ];
-      
-      // Determine if customer is in Eurozone based on country code
-      const isEurozone = invoiceData.address.country && eurozoneCountries.includes(invoiceData.address.country.toUpperCase());
-      
       // Load payment instructions from translations
       const invoiceT = translations.pdf_invoice || {};
       
-      // Bank details (same for both Eurozone and International)
-      const paymentLines = [
-        `${invoiceT.reference || 'Reference'}: 280983`,
-        `${invoiceT.account_holder || 'Account holder'}: FASE B.V.`,
-        `${isEurozone ? (invoiceT.bic || 'BIC') : (invoiceT.swift_bic || 'Swift/BIC')}: TRWIBEB1XXX`,
-        `${invoiceT.iban || 'IBAN'}: BE90 9057 9070 7732`,
+      // Currency-specific bank details from Wise
+      const paymentLines: string[] = [
+        `${invoiceT.reference || 'Reference'}: ${wiseBankDetails.reference}`,
+        `${invoiceT.account_holder || 'Account holder'}: ${wiseBankDetails.accountHolder}`,
+      ];
+      
+      // Add currency-specific payment details
+      switch (currencyConversion.convertedCurrency) {
+        case 'USD':
+          paymentLines.push(
+            `ACH and Wire routing number: ${wiseBankDetails.routingNumber}`,
+            `Account number: ${wiseBankDetails.accountNumber}`,
+            `Account type: ${wiseBankDetails.accountType}`
+          );
+          break;
+        case 'GBP':
+          paymentLines.push(
+            `Sort code: ${wiseBankDetails.sortCode}`,
+            `Account number: ${wiseBankDetails.accountNumber}`,
+            `IBAN: ${wiseBankDetails.iban}`
+          );
+          break;
+        case 'EUR':
+        default:
+          paymentLines.push(
+            `BIC: ${wiseBankDetails.bic}`,
+            `IBAN: ${wiseBankDetails.iban}`
+          );
+          break;
+      }
+      
+      paymentLines.push(
         '',
         `${invoiceT.bank_name_address || 'Bank name and address'}:`,
-        'Wise',
-        'Rue du Trône 100, 3rd floor',
-        'Brussels, 1050, Belgium'
-      ];
+        wiseBankDetails.bankName,
+        ...wiseBankDetails.address
+      );
       
       paymentLines.forEach((line, index) => {
         firstPage.drawText(line, {
@@ -453,12 +527,26 @@ export async function POST(request: NextRequest) {
     const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
     const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text || "Welcome to FASE. Your application for {organizationName} has been approved.";
     
+    // Create payment text with currency conversion
+    let paymentText = adminEmail.payment_text || "To complete your membership, please remit payment of {totalAmount} using one of the following methods:";
+    
+    // Replace the currency amount - handle both €{totalAmount} pattern and {totalAmount} pattern
+    if (currencyConversion.convertedCurrency === 'EUR') {
+      const eurAmount = `€${invoiceData.totalAmount}`;
+      paymentText = paymentText.replace('€{totalAmount}', eurAmount).replace('{totalAmount}', eurAmount);
+    } else {
+      // Just show the converted amount
+      const convertedSymbol = getCurrencySymbol(currencyConversion.convertedCurrency);
+      const convertedAmount = `${convertedSymbol}${currencyConversion.roundedAmount}`;
+      paymentText = paymentText.replace('€{totalAmount}', convertedAmount).replace('{totalAmount}', convertedAmount);
+    }
+    
     const emailContent = {
       subject: genderAwareSubject,
       welcome: genderAwareWelcome,
       dear: genderAwareDear,
       welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText: (adminEmail.payment_text || "To complete your membership, please remit payment of €{totalAmount} using one of the following methods:").replace('{totalAmount}', invoiceData.totalAmount.toString()),
+      paymentText,
       paymentOptions: adminEmail.payment_options || "Payment Options:",
       paypalOption: adminEmail.paypal_option || "PayPal:",
       payOnline: adminEmail.pay_online || "Pay Online",

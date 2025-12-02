@@ -86,7 +86,7 @@
     "invoice_number": "Factuur #:",
     "date": "Datum:",
     "due_date": "Vervaldatum:",
-    "terms": "Voorwaarden: Netto 30",
+    "terms": "Voorwaarden: Betaling bij ontvangst",
     "description": "Beschrijving",
     "quantity": "Aantal",
     "unit_price": "Eenheidsprijs",

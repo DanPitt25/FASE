@@ -92,7 +92,7 @@
     "invoice_number": "Rechnungsnummer:",
     "date": "Datum:",
     "due_date": "Fälligkeitsdatum:",
-    "terms": "Bedingungen: Netto 30",
+    "terms": "Bedingungen: Zahlung bei Erhalt",
     "description": "Beschreibung",
     "quantity": "Menge",
     "unit_price": "Einzelpreis",
