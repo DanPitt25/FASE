@@ -527,74 +527,30 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
       const data = doc.data();
       
       if (data.membershipType === 'corporate') {
-        // For corporate accounts, get primary contact from members subcollection
-        try {
-          const membersRef = collection(db, 'accounts', doc.id, 'members');
-          const primaryContactQuery = query(membersRef, where('isPrimaryContact', '==', true));
-          const primaryContactSnapshot = await getDocs(primaryContactQuery);
-          
-          if (!primaryContactSnapshot.empty) {
-            const primaryContactDoc = primaryContactSnapshot.docs[0];
-            const primaryContactData = primaryContactDoc.data();
-            
-            allAccounts.push({
-              id: doc.id, // This is the account ID
-              email: primaryContactData.email || data.email,
-              personalName: primaryContactData.personalName || primaryContactData.name || 'Unknown',
-              jobTitle: primaryContactData.jobTitle,
-              isPrimaryContact: true,
-              membershipType: 'corporate',
-              status: data.status,
-              organizationName: data.organizationName,
-              organizationType: data.organizationType,
-              createdAt: data.createdAt,
-              updatedAt: data.updatedAt,
-              // Include organization data
-              portfolio: data.portfolio,
-              hasOtherAssociations: data.hasOtherAssociations,
-              primaryContact: data.primaryContact,
-              registeredAddress: data.registeredAddress,
-              businessAddress: data.businessAddress
-            } as UnifiedMember);
-          } else {
-            // Fallback if no primary contact found
-            allAccounts.push({
-              id: doc.id,
-              email: data.email,
-              personalName: data.personalName || data.displayName || 'Unknown',
-              membershipType: 'corporate',
-              status: data.status,
-              organizationName: data.organizationName,
-              organizationType: data.organizationType,
-              createdAt: data.createdAt,
-              updatedAt: data.updatedAt,
-              portfolio: data.portfolio,
-              hasOtherAssociations: data.hasOtherAssociations,
-              primaryContact: data.primaryContact,
-              registeredAddress: data.registeredAddress,
-              businessAddress: data.businessAddress
-            } as UnifiedMember);
-          }
-        } catch (memberError) {
-          console.error('Error fetching corporate member data:', memberError);
-          // Fallback to main account data
-          allAccounts.push({
-            id: doc.id,
-            email: data.email,
-            personalName: data.personalName || data.displayName || 'Unknown',
-            membershipType: 'corporate',
-            status: data.status,
-            organizationName: data.organizationName,
-            organizationType: data.organizationType,
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt,
-            portfolio: data.portfolio,
-            hasOtherAssociations: data.hasOtherAssociations,
-            primaryContact: data.primaryContact,
-            registeredAddress: data.registeredAddress,
-            businessAddress: data.businessAddress
-          } as UnifiedMember);
-        }
+        // For corporate accounts, get personal name from accountAdministrator
+        const personalName = data.accountAdministrator?.name || data.personalName || data.displayName || 'Unknown';
+        const email = data.accountAdministrator?.email || data.email;
+        
+        allAccounts.push({
+          id: doc.id, // This is the account ID
+          email: email,
+          personalName: personalName,
+          jobTitle: data.accountAdministrator?.role,
+          isPrimaryContact: true,
+          membershipType: 'corporate',
+          status: data.status,
+          organizationName: data.organizationName,
+          organizationType: data.organizationType,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+          // Include organization data
+          portfolio: data.portfolio,
+          hasOtherAssociations: data.hasOtherAssociations,
+          primaryContact: data.primaryContact,
+          registeredAddress: data.registeredAddress,
+          businessAddress: data.businessAddress,
+          accountAdministrator: data.accountAdministrator
+        } as UnifiedMember);
       } else {
         // For individual accounts, use main account data
         allAccounts.push({
