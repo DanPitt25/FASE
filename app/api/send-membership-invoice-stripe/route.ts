@@ -198,8 +198,7 @@ export async function POST(request: NextRequest) {
         billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
         invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
         date: translations.pdf_invoice?.date || 'Date:',
-        dueDate: translations.pdf_invoice?.due_date || 'Due Date:',
-        terms: translations.pdf_invoice?.terms || 'Terms: Net 30',
+        terms: translations.pdf_invoice?.terms || 'Terms: Payment upon receipt',
         description: translations.pdf_invoice?.description || 'Description',
         quantity: translations.pdf_invoice?.quantity || 'Qty',
         unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
@@ -212,7 +211,6 @@ export async function POST(request: NextRequest) {
       const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
       const dateLocale = dateLocales[locale as keyof typeof dateLocales];
       const currentDate = new Date().toLocaleDateString(dateLocale);
-      const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(dateLocale);
       
       // INVOICE HEADER SECTION (starts 150pt from top to avoid letterhead)
       let currentY = height - margins.top;
@@ -254,13 +252,6 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(`${pdfTexts.dueDate} ${dueDate}`, {
-        x: invoiceDetailsX,
-        y: currentY - 32,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
       
       firstPage.drawText(pdfTexts.terms, {
         x: invoiceDetailsX,
