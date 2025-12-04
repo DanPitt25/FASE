@@ -14,7 +14,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [formData, setFormData] = useState({
     email: prefilledData?.email || '',
     cc: '',
-    fullName: prefilledData?.personalName || '',
+    fullName: prefilledData?.personalName || prefilledData?.accountAdministrator?.name || prefilledData?.fullName || '',
     greeting: '',
     gender: 'm',
     organizationName: prefilledData?.organizationName || '',
@@ -51,7 +51,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       setFormData(prev => ({
         ...prev,
         email: prefilledData.email || '',
-        fullName: prefilledData.personalName || '',
+        fullName: prefilledData.personalName || prefilledData?.accountAdministrator?.name || prefilledData?.fullName || '',
         organizationName: prefilledData.organizationName || '',
         membershipType: prefilledData.membershipType || 'corporate',
         organizationType: prefilledData.organizationType || 'MGA',
