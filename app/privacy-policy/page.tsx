@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="prose prose-lg max-w-none">
             <h2 className="text-2xl font-noto-serif font-medium text-fase-navy mb-4">
-              Data Protection Notice
+              {t('data_protection_notice')}
             </h2>
             
             <p className="mb-6 text-fase-black">
@@ -35,14 +35,14 @@ export default function PrivacyPolicyPage() {
             </ul>
             
             <h3 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">
-              Data Sharing and Confidentiality
+              {t('data_sharing_title')}
             </h3>
             <p className="mb-6 text-fase-black">
               {t('sharing')}
             </p>
             
             <h3 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">
-              Retention Period
+              {t('retention_title')}
             </h3>
             <p className="mb-6 text-fase-black">
               {t('retention')}
@@ -62,7 +62,7 @@ export default function PrivacyPolicyPage() {
             </ul>
             
             <h3 className="text-xl font-noto-serif font-medium text-fase-navy mb-4">
-              Contact Information
+              {t('contact_title')}
             </h3>
             <p className="text-fase-black">
               {t('contact')}
@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
   
   return (
     <ContentPageLayout 
-      title="Privacy Policy"
+      title={t('page_title')}
       bannerImage="/corporate-building-bg.png"
       bannerImageAlt="Privacy policy background"
       sections={sections}
