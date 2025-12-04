@@ -227,7 +227,6 @@ export async function POST(request: NextRequest) {
       
       currentY -= 20;
       const billToLines = [
-        invoiceData.organizationName,
         invoiceData.fullName,
         invoiceData.address.line1,
         ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),
