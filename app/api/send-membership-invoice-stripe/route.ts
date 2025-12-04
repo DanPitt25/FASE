@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
       
       firstPage.drawText(pdfTexts.terms, {
         x: invoiceDetailsX,
-        y: currentY - 48,
+        y: currentY - 32,
         size: 10,
         font: bodyFont,
         color: faseBlack,
