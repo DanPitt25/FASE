@@ -203,5 +203,19 @@
       "name": "Team Media FASE",
       "title": ""
     }
+  },
+  "membership_followup": {
+    "subject": "Promemoria: Quote di iscrizione in sospeso per {organizationName}",
+    "dear": "Gentile {fullName},",
+    "dear_m": "Egregio {fullName},",
+    "dear_f": "Egregia {fullName},",
+    "intro": "Non abbiamo ancora ricevuto il pagamento delle quote di membro di {organizationName} come membro fondatore di FASE. La preghiamo di trovare allegata la nostra fattura aggiornata.",
+    "portal_access": "Non appena riceveremo il pagamento, saremo lieti di condividere i dettagli su come accedere alle risorse contenute nel nostro portale membri.",
+    "questions": "Se ha domande riguardo alla Sua iscrizione, non esiti a contattarci.",
+    "regards": "Cordiali saluti,",
+    "signature": "Aline Sullivan",
+    "title": "Direttore Operativo",
+    "company": "FASE B.V.",
+    "address": "Herengracht 124-128\n1015 BT Amsterdam"
   }
 }

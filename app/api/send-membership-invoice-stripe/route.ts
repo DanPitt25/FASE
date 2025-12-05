@@ -261,8 +261,17 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
+      firstPage.drawText('VAT Number Pending', {
+        x: invoiceDetailsX,
+        y: currentY - 48,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
       currentY -= 20;
       const billToLines = [
+        invoiceData.organizationName,
         invoiceData.fullName,
         invoiceData.address.line1,
         ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),

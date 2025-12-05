@@ -101,5 +101,19 @@
     "swift_bic": "Swift/BIC",
     "iban": "IBAN",
     "bank_name_address": "Banknaam en adres"
+  },
+  "membership_followup": {
+    "subject": "Herinnering: Uitstaande lidmaatschapscontributies voor {organizationName}",
+    "dear": "Geachte {fullName},",
+    "dear_m": "Geachte heer {fullName},",
+    "dear_f": "Geachte mevrouw {fullName},",
+    "intro": "Wij hebben de betaling van de lidmaatschapscontributies van {organizationName} als oprichtend lid van FASE nog niet ontvangen. Bijgevoegd vindt u onze bijgewerkte factuur.",
+    "portal_access": "Zodra wij de betaling ontvangen, delen wij graag details over toegang tot de middelen in ons ledenportaal.",
+    "questions": "Als u vragen heeft betreffende uw lidmaatschap, aarzel dan niet om contact met ons op te nemen.",
+    "regards": "Met vriendelijke groet,",
+    "signature": "Aline Sullivan",
+    "title": "Operationeel Directeur",
+    "company": "FASE B.V.",
+    "address": "Herengracht 124-128\n1015 BT Amsterdam"
   }
 }

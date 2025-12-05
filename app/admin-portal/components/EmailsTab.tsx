@@ -7,7 +7,7 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'member_portal_welcome' | 'reminder' | 'freeform';
+type EmailTemplate = 'invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -121,6 +121,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       previewEndpoint: '/api/send-payment-reminder',
       requiresPricing: true,
       generatesPDF: false,
+      available: true
+    },
+    followup: {
+      title: 'Follow Up',
+      description: 'Follow up on unpaid membership dues with invoice attachment',
+      apiEndpoint: '/api/send-membership-invoice',
+      previewEndpoint: '/api/send-membership-invoice',
+      requiresPricing: true,
+      generatesPDF: true,
       available: true
     },
     freeform: {

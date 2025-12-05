@@ -80,6 +80,18 @@
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
   },
+  "membership_followup": {
+    "subject": "Reminder: Outstanding membership dues for {organizationName}",
+    "dear": "Dear {fullName},",
+    "intro": "We have yet to receive settlement of {organizationName}'s member dues as a founder member of FASE. Please find attached our updated invoice.",
+    "portal_access": "As soon as we receive payment, we will be happy to share details on how to access the resources contained in our members' portal.",
+    "questions": "If you have any questions relating to your membership, please do not hesitate to contact us.",
+    "regards": "Best regards,",
+    "signature": "Aline Sullivan",
+    "title": "Chief Operating Officer",
+    "company": "FASE B.V.",
+    "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
   "pdf_invoice": {
     "invoice": "INVOICE",
     "bill_to": "Bill To:",

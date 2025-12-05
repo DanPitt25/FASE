@@ -203,5 +203,19 @@
       "name": "Equipo de Medios FASE",
       "title": ""
     }
+  },
+  "membership_followup": {
+    "subject": "Recordatorio: Cuotas de membresía pendientes para {organizationName}",
+    "dear": "Estimado/a {fullName},",
+    "dear_m": "Estimado {fullName},",
+    "dear_f": "Estimada {fullName},",
+    "intro": "Aún no hemos recibido el pago de las cuotas de miembro de {organizationName} como miembro fundador de FASE. Adjuntamos nuestra factura actualizada.",
+    "portal_access": "Tan pronto como recibamos el pago, estaremos encantados de compartir detalles sobre cómo acceder a los recursos contenidos en nuestro portal de miembros.",
+    "questions": "Si tiene alguna pregunta relacionada con su membresía, no dude en contactarnos.",
+    "regards": "Atentamente,",
+    "signature": "Aline Sullivan",
+    "title": "Director de Operaciones",
+    "company": "FASE B.V.",
+    "address": "Herengracht 124-128\n1015 BT Amsterdam"
   }
 }

@@ -197,5 +197,19 @@
       "name": "L'équipe Média FASE",
       "title": ""
     }
+  },
+  "membership_followup": {
+    "subject": "Rappel : Cotisations d'adhésion en attente pour {organizationName}",
+    "dear": "Cher/Chère {fullName},",
+    "dear_m": "Monsieur {fullName},",
+    "dear_f": "Madame {fullName},",
+    "intro": "Nous n'avons pas encore reçu le règlement des cotisations de membre de {organizationName} en tant que membre fondateur de FASE. Veuillez trouver ci-jointe notre facture mise à jour.",
+    "portal_access": "Dès que nous recevrons le paiement, nous serons heureux de partager les détails sur l'accès aux ressources contenues dans notre portail des membres.",
+    "questions": "Si vous avez des questions concernant votre adhésion, n'hésitez pas à nous contacter.",
+    "regards": "Meilleures salutations,",
+    "signature": "Aline Sullivan",
+    "title": "Directrice des Opérations",
+    "company": "FASE B.V.",
+    "address": "Herengracht 124-128\n1015 BT Amsterdam"
   }
 }

@@ -225,8 +225,17 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
+      firstPage.drawText('VAT Number Pending', {
+        x: invoiceDetailsX,
+        y: currentY - 48,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
       currentY -= 20;
       const billToLines = [
+        invoiceData.organizationName,
         invoiceData.fullName,
         invoiceData.address.line1,
         ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),
@@ -416,14 +425,6 @@ export async function POST(request: NextRequest) {
           color: faseNavy,
         });
         
-        // Add note about inter-bank rate
-        firstPage.drawText('(at inter-bank rate)', {
-          x: labelX + 200,
-          y: currentY - 38,
-          size: 8,
-          font: bodyFont,
-          color: faseBlack,
-        });
       }
       
       currentY -= 60;
@@ -506,53 +507,118 @@ export async function POST(request: NextRequest) {
       // Continue without PDF - will send HTML email instead
     }
     
+    // Determine email template type
+    const template = requestData.template || 'invoice';
+    
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
-    const adminEmail = emailTranslations.membership_acceptance_admin || {};
     
-    // Apply template variable replacements with gender-aware content
-    const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
-    const genderAwareDear = adminEmail[`dear${genderSuffix}`] || adminEmail.dear || "Dear";
-    const genderAwareSubject = adminEmail[`subject${genderSuffix}`] || adminEmail.subject || "Welcome to FASE - Membership Approved";
-    const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
-    const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text || "Welcome to FASE. Your application for {organizationName} has been approved.";
+    let emailContent: any;
     
-    // Create payment text with currency conversion
-    let paymentText = adminEmail.payment_text || "To complete your membership, please remit payment of {totalAmount} using one of the following methods:";
-    
-    // Replace the currency amount - handle both €{totalAmount} pattern and {totalAmount} pattern
-    if (currencyConversion.convertedCurrency === 'EUR') {
-      const eurAmount = `€${invoiceData.totalAmount}`;
-      paymentText = paymentText.replace('€{totalAmount}', eurAmount).replace('{totalAmount}', eurAmount);
+    if (template === 'followup') {
+      // Follow-up email template
+      const followupEmail = emailTranslations.membership_followup || {};
+      
+      // Apply gender-aware content for follow-up
+      const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
+      const genderAwareDear = followupEmail[`dear${genderSuffix}`] || followupEmail.dear || "Dear {fullName},";
+      
+      emailContent = {
+        subject: (followupEmail.subject || "Reminder: Outstanding membership dues for {organizationName}").replace('{organizationName}', invoiceData.organizationName),
+        dear: genderAwareDear.replace('{fullName}', invoiceData.greeting || invoiceData.fullName),
+        intro: (followupEmail.intro || "We have yet to receive settlement of {organizationName}'s member dues as a founder member of FASE. Please find attached our updated invoice.").replace('{organizationName}', invoiceData.organizationName),
+        portalAccess: followupEmail.portal_access || "As soon as we receive payment, we will be happy to share details on how to access the resources contained in our members' portal.",
+        questions: followupEmail.questions || "If you have any questions relating to your membership, please do not hesitate to contact us.",
+        regards: followupEmail.regards || "Best regards,",
+        signature: followupEmail.signature || "Aline Sullivan",
+        title: followupEmail.title || "Chief Operating Officer",
+        company: followupEmail.company || "FASE B.V.",
+        address: followupEmail.address || "Herengracht 124-128\n1015 BT Amsterdam"
+      };
     } else {
-      // Just show the converted amount
-      const convertedSymbol = getCurrencySymbol(currencyConversion.convertedCurrency);
-      const convertedAmount = `${convertedSymbol}${currencyConversion.roundedAmount}`;
-      paymentText = paymentText.replace('€{totalAmount}', convertedAmount).replace('{totalAmount}', convertedAmount);
-    }
+      // Original invoice template
+      const adminEmail = emailTranslations.membership_acceptance_admin || {};
+      
+      // Apply template variable replacements with gender-aware content
+      const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
+      const genderAwareDear = adminEmail[`dear${genderSuffix}`] || adminEmail.dear || "Dear";
+      const genderAwareSubject = adminEmail[`subject${genderSuffix}`] || adminEmail.subject || "Welcome to FASE - Membership Approved";
+      const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
+      const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text || "Welcome to FASE. Your application for {organizationName} has been approved.";
     
-    const emailContent = {
-      subject: genderAwareSubject,
-      welcome: genderAwareWelcome,
-      dear: genderAwareDear,
-      welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText,
-      paymentOptions: adminEmail.payment_options || "Payment Options:",
-      paypalOption: adminEmail.paypal_option || "PayPal:",
-      payOnline: adminEmail.pay_online || "Pay Online",
-      bankTransfer: adminEmail.bank_transfer || "Bank Transfer:",
-      invoiceAttached: adminEmail.invoice_attached || "Invoice attached with payment details",
-      engagement: adminEmail.engagement || "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact admin@fasemga.com with any questions.",
-      regards: adminEmail.regards || "Best regards,",
-      signature: adminEmail.signature || "Aline Sullivan",
-      title: adminEmail.title || "Chief Operating Officer, FASE"
-    };
+      // Create payment text with currency conversion
+      let paymentText = adminEmail.payment_text || "To complete your membership, please remit payment of {totalAmount} using one of the following methods:";
+      
+      // Replace the currency amount - handle both €{totalAmount} pattern and {totalAmount} pattern
+      if (currencyConversion.convertedCurrency === 'EUR') {
+        const eurAmount = `€${invoiceData.totalAmount}`;
+        paymentText = paymentText.replace('€{totalAmount}', eurAmount).replace('{totalAmount}', eurAmount);
+      } else {
+        // Just show the converted amount
+        const convertedSymbol = getCurrencySymbol(currencyConversion.convertedCurrency);
+        const convertedAmount = `${convertedSymbol}${currencyConversion.roundedAmount}`;
+        paymentText = paymentText.replace('€{totalAmount}', convertedAmount).replace('{totalAmount}', convertedAmount);
+      }
+      
+      emailContent = {
+        subject: genderAwareSubject,
+        welcome: genderAwareWelcome,
+        dear: genderAwareDear,
+        welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
+        paymentText,
+        paymentOptions: adminEmail.payment_options || "Payment Options:",
+        paypalOption: adminEmail.paypal_option || "PayPal:",
+        payOnline: adminEmail.pay_online || "Pay Online",
+        bankTransfer: adminEmail.bank_transfer || "Bank Transfer:",
+        invoiceAttached: adminEmail.invoice_attached || "Invoice attached with payment details",
+        engagement: adminEmail.engagement || "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact admin@fasemga.com with any questions.",
+        regards: adminEmail.regards || "Best regards,",
+        signature: adminEmail.signature || "Aline Sullivan",
+        title: adminEmail.title || "Chief Operating Officer, FASE"
+      };
+    }
 
-    const emailData = {
-      email: invoiceData.email,
-      cc: requestData.cc, // Add CC support
-      subject: emailContent.subject,
-      invoiceHTML: `
+    // Generate HTML based on template
+    let invoiceHTML: string;
+    
+    if (template === 'followup') {
+      // Follow-up email HTML
+      invoiceHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+          <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.dear}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.intro}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.portalAccess}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 25px 0;">
+              ${emailContent.questions}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 0 0;">
+              ${emailContent.regards}<br><br>
+              <strong>${emailContent.signature}</strong><br>
+              ${emailContent.title}<br>
+              ${emailContent.company}<br><br>
+              ${emailContent.address.replace('\n', '<br>')}
+            </p>
+          </div>
+        </div>
+      `;
+    } else {
+      // Original invoice email HTML
+      invoiceHTML = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -597,7 +663,14 @@ export async function POST(request: NextRequest) {
             </p>
           </div>
         </div>
-      `,
+      `;
+    }
+
+    const emailData = {
+      email: invoiceData.email,
+      cc: requestData.cc, // Add CC support
+      subject: emailContent.subject,
+      invoiceHTML,
       invoiceNumber: invoiceNumber,
       organizationName: invoiceData.organizationName,
       totalAmount: invoiceData.totalAmount.toString(),
