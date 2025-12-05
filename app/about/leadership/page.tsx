@@ -76,6 +76,20 @@ export default function LeadershipPage() {
           company: t('members.martin_mankabady.company'),
           bio: t('members.martin_mankabady.bio'),
           image: '/cropped_Martin_Mankabady_b&w.jpg'
+        },
+        {
+          name: 'Valentina Visser',
+          role: t('members.valentina_visser.role'),
+          company: t('members.valentina_visser.company'),
+          bio: t('members.valentina_visser.bio'),
+          image: '/cropped_Valentina_Visser_b&w.jpg'
+        },
+        {
+          name: 'Nicola Larizza',
+          role: t('members.nicola_larizza.role'),
+          company: t('members.nicola_larizza.company'),
+          bio: t('members.nicola_larizza.bio'),
+          image: '/cropped_Nicola_Larizza_b&w.jpg'
         }
       ]
     }
