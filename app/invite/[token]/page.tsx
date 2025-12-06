@@ -19,7 +19,12 @@ interface InviteData {
   timestamp: number;
 }
 
-export default function InvitePage({ params }: { params: { token: string } }) {
+interface PageProps {
+  params: Promise<{ token: string }>;
+}
+
+export default function InvitePage({ params }: PageProps) {
+  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
   const { t, loading: translationsLoading } = useInviteTranslations();
   const [inviteData, setInviteData] = useState<InviteData | null>(null);
@@ -32,9 +37,11 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   const [step, setStep] = useState<'validate' | 'check-existing' | 'create-password' | 'sign-in' | 'complete'>('validate');
 
   const validateInviteToken = useCallback(async () => {
+    if (!token) return;
+    
     try {
       // Decode the URL-safe base64 token
-      const base64 = params.token.replace(/-/g, '+').replace(/_/g, '/');
+      const base64 = token.replace(/-/g, '+').replace(/_/g, '/');
       // Add padding if needed
       const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
       const decodedData = JSON.parse(atob(padded));
@@ -62,11 +69,21 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     } finally {
       setLoading(false);
     }
-  }, [params.token]);
+  }, [token]);
 
   useEffect(() => {
-    validateInviteToken();
-  }, [validateInviteToken]);
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setToken(resolvedParams.token);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (token) {
+      validateInviteToken();
+    }
+  }, [token, validateInviteToken]);
 
   const validatePassword = (password: string) => {
     const requirements = {

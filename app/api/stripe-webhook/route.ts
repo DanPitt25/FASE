@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
   await initializeServices();
   
   const body = await request.text();
-  const headersList = headers();
+  const headersList = await headers();
   const sig = headersList.get('stripe-signature');
 
   let event: Stripe.Event;

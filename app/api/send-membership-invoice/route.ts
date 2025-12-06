@@ -3,6 +3,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 import { convertCurrency, getWiseBankDetails, getCurrencySymbol } from '../../../lib/currency-conversion';
+import { createInvoiceRecord } from '../../../lib/firestore';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -95,9 +96,23 @@ export async function POST(request: NextRequest) {
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
-    // Convert currency based on customer country (with optional override)
-    const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
-    const wiseBankDetails = getWiseBankDetails(currencyConversion.convertedCurrency);
+    // Determine lost invoice flag early for currency conversion logic
+    const isLostInvoice = requestData.isLostInvoice || false;
+    
+    // Convert currency based on customer country (with optional override) - skip for lost invoices (old style)
+    let currencyConversion, wiseBankDetails;
+    if (isLostInvoice) {
+      // Lost invoices use old style - no currency conversion, EUR only
+      currencyConversion = {
+        convertedCurrency: 'EUR',
+        roundedAmount: invoiceData.totalAmount,
+        conversionRate: 1
+      };
+      wiseBankDetails = null; // Will use Lexicon Associates details instead
+    } else {
+      currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
+      wiseBankDetails = getWiseBankDetails(currencyConversion.convertedCurrency);
+    }
     
     console.log('💰 Currency conversion:', currencyConversion);
     
@@ -116,6 +131,7 @@ export async function POST(request: NextRequest) {
     const userLocale = requestData.userLocale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
+    
 
     // Generate branded PDF invoice using the existing logic
     let pdfAttachment: string | null = null;
@@ -158,7 +174,7 @@ export async function POST(request: NextRequest) {
       // Load PDF text translations from JSON files
       const translations = loadEmailTranslations(locale);
       const pdfTexts = {
-        invoice: translations.pdf_invoice?.invoice || 'INVOICE',
+        invoice: 'INVOICE', // Always use INVOICE for all types including lost invoices
         billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
         invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
         date: translations.pdf_invoice?.date || 'Date:',
@@ -448,43 +464,63 @@ export async function POST(request: NextRequest) {
       // Load payment instructions from translations
       const invoiceT = translations.pdf_invoice || {};
       
-      // Currency-specific bank details from Wise
-      const paymentLines: string[] = [
-        `${invoiceT.reference || 'Reference'}: ${wiseBankDetails.reference}`,
-        `${invoiceT.account_holder || 'Account holder'}: ${wiseBankDetails.accountHolder}`,
-      ];
+      // Use different bank details for lost invoices
+      let paymentLines: string[];
       
-      // Add currency-specific payment details
-      switch (currencyConversion.convertedCurrency) {
-        case 'USD':
-          paymentLines.push(
-            `ACH and Wire routing number: ${wiseBankDetails.routingNumber}`,
-            `Account number: ${wiseBankDetails.accountNumber}`,
-            `Account type: ${wiseBankDetails.accountType}`
-          );
-          break;
-        case 'GBP':
-          paymentLines.push(
-            `Sort code: ${wiseBankDetails.sortCode}`,
-            `Account number: ${wiseBankDetails.accountNumber}`,
-            `IBAN: ${wiseBankDetails.iban}`
-          );
-          break;
-        case 'EUR':
-        default:
-          paymentLines.push(
-            `BIC: ${wiseBankDetails.bic}`,
-            `IBAN: ${wiseBankDetails.iban}`
-          );
-          break;
+      if (isLostInvoice) {
+        // Lexicon Associates bank details for lost invoices
+        paymentLines = [
+          'Lexicon Associates',
+          'Citibank, N.A.',
+          'USCC CITISWEEP',
+          '100 Citibank Drive',
+          'San Antonio, TX 78245',
+          'Account Number: 1255828998',
+          'ABA: 221172610'
+        ];
+      } else {
+        // Currency-specific bank details from Wise for regular invoices
+        if (!wiseBankDetails) {
+          throw new Error('Wise bank details not available for regular invoices');
+        }
+        
+        paymentLines = [
+          `${invoiceT.reference || 'Reference'}: ${wiseBankDetails.reference}`,
+          `${invoiceT.account_holder || 'Account holder'}: ${wiseBankDetails.accountHolder}`,
+        ];
+        
+        // Add currency-specific payment details
+        switch (currencyConversion.convertedCurrency) {
+          case 'USD':
+            paymentLines.push(
+              `ACH and Wire routing number: ${wiseBankDetails.routingNumber}`,
+              `Account number: ${wiseBankDetails.accountNumber}`,
+              `Account type: ${wiseBankDetails.accountType}`
+            );
+            break;
+          case 'GBP':
+            paymentLines.push(
+              `Sort code: ${wiseBankDetails.sortCode}`,
+              `Account number: ${wiseBankDetails.accountNumber}`,
+              `IBAN: ${wiseBankDetails.iban}`
+            );
+            break;
+          case 'EUR':
+          default:
+            paymentLines.push(
+              `BIC: ${wiseBankDetails.bic}`,
+              `IBAN: ${wiseBankDetails.iban}`
+            );
+            break;
+        }
+        
+        paymentLines.push(
+          '',
+          `${invoiceT.bank_name_address || 'Bank name and address'}:`,
+          wiseBankDetails.bankName,
+          ...wiseBankDetails.address
+        );
       }
-      
-      paymentLines.push(
-        '',
-        `${invoiceT.bank_name_address || 'Bank name and address'}:`,
-        wiseBankDetails.bankName,
-        ...wiseBankDetails.address
-      );
       
       paymentLines.forEach((line, index) => {
         firstPage.drawText(line, {
@@ -534,6 +570,38 @@ export async function POST(request: NextRequest) {
         title: followupEmail.title || "Chief Operating Officer",
         company: followupEmail.company || "FASE B.V.",
         address: followupEmail.address || "Herengracht 124-128\n1015 BT Amsterdam"
+      };
+    } else if (isLostInvoice) {
+      // Lost invoice template using translations
+      const lostInvoiceEmail = emailTranslations.lost_invoice || {};
+      
+      // Apply gender-aware content for lost invoice
+      const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
+      const genderAwareDear = lostInvoiceEmail[`dear${genderSuffix}`] || lostInvoiceEmail.dear || "Dear";
+      
+      // Format the custom invoice date
+      const customInvoiceDate = requestData.invoiceDate || '2025-11-05';
+      const formattedDate = new Date(customInvoiceDate).toLocaleDateString(locale, { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+      
+      // Replace placeholder date in intro text with custom date
+      const introText = (lostInvoiceEmail.intro_text || "I am writing to follow up on your membership dues for FASE (Fédération des Agences de Souscription Européennes), issued on {invoiceDate}, which remains outstanding. Please let me know the status of this payment.")
+        .replace('{invoiceDate}', formattedDate);
+      
+      emailContent = {
+        subject: lostInvoiceEmail.subject || "Outstanding Invoice for FASE",
+        welcome: lostInvoiceEmail.welcome || "INVOICE",
+        dear: genderAwareDear,
+        welcomeText: introText,
+        paymentText: lostInvoiceEmail.follow_up_text || "We look forward to activating your FASE membership, providing you with access to the member portal, and inviting you to our upcoming events. If you require any additional documentation or have questions that would assist in processing the payment, please feel free to reach out to me or simply contact admin@fasemga.com. We are now able to provide European banking details, so just let me know if you need those.",
+        engagement: lostInvoiceEmail.closing_text || "Thank you for your time in addressing this. We appreciate your prompt response.",
+        regards: lostInvoiceEmail.regards || "Best regards,",
+        signature: lostInvoiceEmail.signature || "Aline Sullivan",
+        title: lostInvoiceEmail.title || "Chief Operating Officer, FASE",
+        email: lostInvoiceEmail.email || "aline.sullivan@fasemga.com"
       };
     } else {
       // Original invoice template
@@ -616,6 +684,42 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
       `;
+    } else if (isLostInvoice) {
+      // Lost invoice email HTML - specific format
+      invoiceHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+          <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
+            </div>
+            <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${emailContent.welcome}</h2>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.dear} ${invoiceData.greeting},
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.welcomeText}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 25px 0;">
+              ${emailContent.paymentText}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
+              ${emailContent.engagement}
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
+              ${emailContent.regards}<br><br>
+              <strong>Aline</strong><br><br>
+              ${emailContent.signature}<br>
+              ${emailContent.title}<br>
+              <a href="mailto:aline.sullivan@fasemga.com" style="color: #2D5574;">aline.sullivan@fasemga.com</a>
+            </p>
+          </div>
+        </div>
+      `;
     } else {
       // Original invoice email HTML
       invoiceHTML = `
@@ -674,17 +778,36 @@ export async function POST(request: NextRequest) {
       invoiceNumber: invoiceNumber,
       organizationName: invoiceData.organizationName,
       totalAmount: invoiceData.totalAmount.toString(),
-      // Add PDF attachment if generated successfully
-      ...(pdfAttachment && {
+      // Add PDF attachment if generated successfully AND not a lost invoice (lost invoices reference previous invoices)
+      ...(pdfAttachment && !isLostInvoice && {
         pdfAttachment: pdfAttachment,
         pdfFilename: `FASE-Invoice-${invoiceNumber}.pdf`
+      }),
+      // Add uploaded attachment for lost invoices (recovered invoice files)
+      ...(isLostInvoice && requestData.uploadedAttachment && {
+        pdfAttachment: requestData.uploadedAttachment,
+        pdfFilename: requestData.uploadedFilename || 'recovered-invoice.pdf'
       })
     };
 
     // For preview mode, return preview data instead of sending email
     if (isPreview) {
-      // Create a temporary PDF file URL for preview (in production, you'd generate and store it temporarily)
-      const pdfPreviewUrl = pdfAttachment ? `data:application/pdf;base64,${pdfAttachment}` : null;
+      // Create a temporary file URL for preview
+      let filePreviewUrl = null;
+      let attachmentsList: string[] = [];
+      
+      if (pdfAttachment && !isLostInvoice) {
+        // Generated PDF for regular invoices
+        filePreviewUrl = `data:application/pdf;base64,${pdfAttachment}`;
+        attachmentsList = ['Generated Invoice PDF'];
+      } else if (isLostInvoice && requestData.uploadedAttachment) {
+        // Uploaded file for lost invoices
+        const mimeType = requestData.uploadedFilename?.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 
+                        requestData.uploadedFilename?.toLowerCase().match(/\.(jpg|jpeg)$/) ? 'image/jpeg' :
+                        requestData.uploadedFilename?.toLowerCase().endsWith('.png') ? 'image/png' : 'application/octet-stream';
+        filePreviewUrl = `data:${mimeType};base64,${requestData.uploadedAttachment}`;
+        attachmentsList = [requestData.uploadedFilename || 'Recovered Invoice'];
+      }
       
       return NextResponse.json({
         success: true,
@@ -694,8 +817,8 @@ export async function POST(request: NextRequest) {
         subject: emailContent.subject,
         htmlContent: emailData.invoiceHTML,
         textContent: null, // Could add plain text version
-        pdfUrl: pdfPreviewUrl,
-        attachments: pdfAttachment ? ['Invoice PDF'] : [],
+        pdfUrl: filePreviewUrl,
+        attachments: attachmentsList,
         invoiceNumber: invoiceNumber,
         totalAmount: invoiceData.totalAmount
       });
@@ -718,6 +841,29 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Membership acceptance email sent successfully:', result);
+    
+    // Log invoice to database after successful sending
+    try {
+      const invoiceType = template === 'followup' ? 'followup' : (isLostInvoice ? 'lost_invoice' : 'regular');
+      await createInvoiceRecord({
+        invoiceNumber,
+        recipientEmail: invoiceData.email,
+        recipientName: invoiceData.fullName,
+        organizationName: invoiceData.organizationName,
+        amount: invoiceData.totalAmount,
+        currency: currencyConversion.convertedCurrency,
+        type: invoiceType,
+        status: 'sent',
+        isLostInvoice,
+        sentAt: new Date(),
+        emailId: result.id || undefined,
+        pdfGenerated: !!pdfAttachment
+      });
+      console.log('✅ Invoice logged to database:', invoiceNumber);
+    } catch (dbError) {
+      console.error('❌ Failed to log invoice to database:', dbError);
+      // Don't fail the request if database logging fails
+    }
     
     return NextResponse.json({
       success: true,
