@@ -101,9 +101,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const emailTemplates = {
     invoice: {
       title: 'Send Invoice Email',
-      description: 'Send membership invoice with payment details',
-      apiEndpoint: '/api/send-membership-invoice',
-      previewEndpoint: '/api/send-membership-invoice',
+      description: 'Send clean invoice email with PDF attachment, currency conversion, and Wise bank details',
+      apiEndpoint: '/api/send-invoice-only',
+      previewEndpoint: '/api/send-invoice-only',
       requiresPricing: true,
       generatesPDF: true,
       available: true
@@ -169,20 +169,31 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         greeting: formData.greeting || formData.fullName
       };
 
-      // Add pricing data for templates that need it
-      if (template.requiresPricing) {
+      // Special handling for invoice template (send-invoice-only API)
+      if (selectedTemplate === 'invoice') {
+        payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
-        payload.exactTotalAmount = finalAmount;
-        payload.originalAmount = originalAmount.toString();
-        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
-        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-        payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
-      }
+        payload.country = formData.address.country;
+        payload.userLocale = formData.userLocale;
+        payload.forceCurrency = formData.forceCurrency;
+        // Remove template field for send-invoice-only API
+        delete payload.template;
+      } else {
+        // Add pricing data for other templates that need it
+        if (template.requiresPricing) {
+          payload.totalAmount = finalAmount;
+          payload.exactTotalAmount = finalAmount;
+          payload.originalAmount = originalAmount.toString();
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
+          payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+          payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+        }
 
-      // Add lost invoice flag and date for lost invoice template
-      if (selectedTemplate === 'lost_invoice') {
-        payload.isLostInvoice = true;
-        payload.invoiceDate = formData.invoiceDate;
+        // Add lost invoice flag and date for lost invoice template
+        if (selectedTemplate === 'lost_invoice') {
+          payload.isLostInvoice = true;
+          payload.invoiceDate = formData.invoiceDate;
+        }
       }
 
       let response;
@@ -276,20 +287,31 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         greeting: formData.greeting || formData.fullName
       };
 
-      // Add pricing data for templates that need it
-      if (template.requiresPricing) {
+      // Special handling for invoice template (send-invoice-only API)
+      if (selectedTemplate === 'invoice') {
+        payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
-        payload.exactTotalAmount = finalAmount;
-        payload.originalAmount = originalAmount.toString();
-        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
-        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-        payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
-      }
+        payload.country = formData.address.country;
+        payload.userLocale = formData.userLocale;
+        payload.forceCurrency = formData.forceCurrency;
+        // Remove template field for send-invoice-only API
+        delete payload.template;
+      } else {
+        // Add pricing data for other templates that need it
+        if (template.requiresPricing) {
+          payload.totalAmount = finalAmount;
+          payload.exactTotalAmount = finalAmount;
+          payload.originalAmount = originalAmount.toString();
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
+          payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+          payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+        }
 
-      // Add lost invoice flag and date for lost invoice template
-      if (selectedTemplate === 'lost_invoice') {
-        payload.isLostInvoice = true;
-        payload.invoiceDate = formData.invoiceDate;
+        // Add lost invoice flag and date for lost invoice template
+        if (selectedTemplate === 'lost_invoice') {
+          payload.isLostInvoice = true;
+          payload.invoiceDate = formData.invoiceDate;
+        }
       }
 
       let response;
