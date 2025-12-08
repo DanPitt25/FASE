@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -118,6 +119,247 @@ export async function POST(request: NextRequest) {
       pdfFilename: requestData.pdfFilename || `FASE-Invoice-${invoiceData.invoiceNumber}.pdf`
     };
 
+    // Generate PDF invoice
+    let pdfBase64 = requestData.pdfAttachment;
+    
+    if (!pdfBase64) {
+      // Load the cleaned letterhead template
+      const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
+      const letterheadBytes = fs.readFileSync(letterheadPath);
+      const pdfDoc = await PDFDocument.load(letterheadBytes);
+      
+      // Get the first page
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+      const { width, height } = firstPage.getSize();
+      
+      // Embed fonts
+      const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      
+      // FASE Brand Colors
+      const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
+      const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
+      
+      // Layout constants
+      const margins = { left: 50, right: 50, top: 150, bottom: 80 };
+      const contentWidth = width - margins.left - margins.right;
+      
+      // Load PDF text translations
+      const translations = loadEmailTranslations(locale);
+      const pdfTexts = {
+        invoice: 'INVOICE',
+        billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
+        invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
+        date: translations.pdf_invoice?.date || 'Date:',
+        terms: translations.pdf_invoice?.terms || 'Terms: Payment upon receipt',
+        description: translations.pdf_invoice?.description || 'Description',
+        quantity: translations.pdf_invoice?.quantity || 'Qty',
+        unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
+        total: translations.pdf_invoice?.total || 'Total',
+        totalAmountDue: translations.pdf_invoice?.total_amount_due || 'Total Amount Due:',
+        paymentInstructions: translations.pdf_invoice?.payment_instructions || 'Payment Instructions:'
+      };
+
+      // Current date
+      const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
+      const dateLocale = dateLocales[locale as keyof typeof dateLocales] || 'en-GB';
+      const currentDate = new Date().toLocaleDateString(dateLocale);
+      
+      // Start drawing invoice content
+      let currentY = height - margins.top;
+      
+      // INVOICE HEADER
+      firstPage.drawText(pdfTexts.invoice, {
+        x: margins.left,
+        y: currentY,
+        size: 18,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      currentY -= 50;
+      
+      // BILL TO section
+      firstPage.drawText(pdfTexts.billTo, {
+        x: margins.left,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      // Invoice details (right-aligned)
+      const invoiceDetailsX = width - margins.right - 150;
+      firstPage.drawText(`${pdfTexts.invoiceNumber} ${invoiceData.invoiceNumber}`, {
+        x: invoiceDetailsX,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(`${pdfTexts.date} ${currentDate}`, {
+        x: invoiceDetailsX,
+        y: currentY - 16,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(pdfTexts.terms, {
+        x: invoiceDetailsX,
+        y: currentY - 32,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 20;
+      
+      // Organization details
+      firstPage.drawText(invoiceData.organizationName, {
+        x: margins.left,
+        y: currentY,
+        size: 11,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 60;
+      
+      // Line items table header
+      firstPage.drawText(pdfTexts.description, {
+        x: margins.left,
+        y: currentY,
+        size: 10,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      firstPage.drawText(pdfTexts.quantity, {
+        x: margins.left + 300,
+        y: currentY,
+        size: 10,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      firstPage.drawText(pdfTexts.unitPrice, {
+        x: margins.left + 380,
+        y: currentY,
+        size: 10,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      firstPage.drawText(pdfTexts.total, {
+        x: margins.left + 460,
+        y: currentY,
+        size: 10,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      currentY -= 25;
+      
+      // Line item
+      firstPage.drawText('FASE Annual Membership', {
+        x: margins.left,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText('1', {
+        x: margins.left + 300,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(`€${invoiceData.totalAmount}`, {
+        x: margins.left + 380,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(`€${invoiceData.totalAmount}`, {
+        x: margins.left + 460,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 40;
+      
+      // Total amount due
+      firstPage.drawText(`${pdfTexts.totalAmountDue} €${invoiceData.totalAmount}`, {
+        x: margins.left + 350,
+        y: currentY,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      currentY -= 40;
+      
+      // Payment instructions
+      firstPage.drawText(pdfTexts.paymentInstructions, {
+        x: margins.left,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: faseNavy,
+      });
+      
+      currentY -= 20;
+      
+      // Bank details
+      const bankText = translations.pdf_invoice?.payment_company || 'Lexicon Associates, LLC accepts payments on behalf of Fédération des Agences de Souscription (FASE B.V.)';
+      firstPage.drawText(bankText, {
+        x: margins.left,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 16;
+      
+      const accountText = translations.pdf_invoice?.account_number || 'Account Number: 1255828998';
+      firstPage.drawText(accountText, {
+        x: margins.left,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 16;
+      
+      const referenceText = (translations.pdf_invoice?.payment_reference || 'Payment Reference: {invoiceNumber}').replace('{invoiceNumber}', invoiceData.invoiceNumber);
+      firstPage.drawText(referenceText, {
+        x: margins.left,
+        y: currentY,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      // Generate PDF bytes and convert to base64
+      const pdfBytes = await pdfDoc.save();
+      pdfBase64 = Buffer.from(pdfBytes).toString('base64');
+    }
+
+    // Update email data with PDF attachment
+    emailData.pdfAttachment = pdfBase64;
+
     // For preview mode, return preview data instead of sending email
     if (isPreview) {
       return NextResponse.json({
@@ -128,7 +370,7 @@ export async function POST(request: NextRequest) {
         subject: emailContent.subject,
         htmlContent: emailData.invoiceHTML,
         textContent: null,
-        attachments: requestData.pdfAttachment ? [{ filename: emailData.pdfFilename, type: 'application/pdf' }] : [],
+        attachments: [{ filename: emailData.pdfFilename, type: 'application/pdf' }],
         invoiceNumber: invoiceData.invoiceNumber
       });
     }
