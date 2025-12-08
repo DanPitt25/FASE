@@ -25,7 +25,7 @@ const initializeStripe = () => {
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
   try {
-    const filePath = path.join(process.cwd(), 'functions', 'messages', language, 'email.json');
+    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
   } catch (error) {
