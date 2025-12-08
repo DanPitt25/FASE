@@ -67,13 +67,11 @@
     "dear_m": "Cher",
     "dear_f": "Chère",
     "welcome_text": "Bienvenue à FASE. Votre candidature pour {organizationName} a été approuvée.",
-    "payment_text": "Pour compléter votre adhésion, veuillez effectuer le paiement de €{totalAmount} en utilisant l'une des méthodes suivantes :",
-    "payment_options": "Options de paiement :",
-    "paypal_option": "PayPal :",
-    "pay_online": "Payer en ligne",
-    "bank_transfer": "Virement bancaire :",
-    "invoice_attached": "Facture jointe avec les détails de paiement",
-    "engagement": "Nous nous réjouissons de votre engagement dans FASE et nous vous contacterons très prochainement avec un lien vers notre portail des membres. En attendant, veuillez me contacter pour toute question.",
+    "payment_text": "Pour compléter votre adhésion et accéder à notre portail membre, veuillez verser vos frais d'adhésion de €{totalAmount}. Votre adhésion annuelle prendra effet immédiatement.",
+    "payment_button": "Payer les frais d'adhésion",
+    "bank_transfer_text": "Si vous préférez payer par virement bancaire, veuillez suivre le lien ci-dessous :",
+    "bank_transfer_link": "Générer une facture de virement bancaire",
+    "engagement": "Nous nous réjouissons de votre engagement dans FASE. N'hésitez pas à nous contacter à admin@fasemga.com pour toute question.",
     "regards": "Meilleures salutations,",
     "signature": "Aline",
     "name": "Aline Sullivan",
@@ -129,5 +127,18 @@
     "signature": "Aline Sullivan",
     "title": "Directrice des Opérations, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "bank_transfer_invoice": {
+    "title": "Générer une facture de virement bancaire",
+    "subtitle": "Générer et recevoir une facture PDF pour le paiement par virement bancaire",
+    "details_title": "Détails de la facture",
+    "organization": "Organisation",
+    "amount": "Montant",
+    "description": "Cliquez sur le bouton ci-dessous pour générer et recevoir votre facture PDF par e-mail. La facture inclura les instructions complètes de virement bancaire.",
+    "generate_button": "Générer la facture",
+    "generating": "Génération en cours...",
+    "success_title": "Facture générée avec succès",
+    "success_message": "Votre facture PDF a été générée et envoyée à votre adresse e-mail.",
+    "next_steps": "Veuillez vérifier votre e-mail pour la facture avec les instructions de virement bancaire. Le paiement doit être effectué dans les 30 jours."
   }
 }

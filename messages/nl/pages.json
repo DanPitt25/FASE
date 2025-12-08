@@ -271,5 +271,18 @@
         "text": "Sluit u aan"
       }
     }
+  },
+  "bank_transfer_invoice": {
+    "title": "Genereer bankoverschrijving factuur",
+    "subtitle": "Genereer en ontvang een PDF-factuur voor betaling per bankoverschrijving",
+    "details_title": "Factuurgegevens",
+    "organization": "Organisatie",
+    "amount": "Bedrag",
+    "description": "Klik op onderstaande knop om uw PDF-factuur te genereren en per e-mail te ontvangen. De factuur bevat volledige instructies voor bankoverschrijving.",
+    "generate_button": "Genereer factuur",
+    "generating": "Genereren...",
+    "success_title": "Factuur succesvol gegenereerd",
+    "success_message": "Uw PDF-factuur is gegenereerd en naar uw e-mailadres verzonden.",
+    "next_steps": "Controleer uw e-mail voor de factuur met bankoverschrijving instructies. Betaling dient binnen 30 dagen te geschieden."
   }
 }

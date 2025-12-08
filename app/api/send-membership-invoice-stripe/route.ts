@@ -504,15 +504,13 @@ export async function POST(request: NextRequest) {
       welcome: genderAwareWelcome,
       dear: genderAwareDear,
       welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText: (adminEmail.payment_text || "To complete your membership, please remit payment of €{totalAmount} using one of the following methods:").replace('{totalAmount}', invoiceData.totalAmount.toString()),
-      paymentOptions: adminEmail.payment_options || "Payment Options:",
-      stripeOption: adminEmail.stripe_option || "Credit/Debit Card:",
-      payOnline: adminEmail.pay_online || "Pay Online",
-      bankTransfer: adminEmail.bank_transfer || "Bank Transfer:",
-      invoiceAttached: adminEmail.invoice_attached || "Invoice attached with payment details",
-      engagement: adminEmail.engagement || "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact admin@fasemga.com with any questions.",
+      paymentText: (adminEmail.payment_text || "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.").replace('{totalAmount}', invoiceData.totalAmount.toString()),
+      paymentButton: adminEmail.payment_button || "Pay membership dues",
+      bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow the link below:",
+      bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice", 
+      engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
       regards: adminEmail.regards || "Best regards,",
-      signature: adminEmail.signature || "Aline Sullivan",
+      signature: adminEmail.signature || "Aline",
       title: adminEmail.title || "Chief Operating Officer, FASE"
     };
 
@@ -540,16 +538,16 @@ export async function POST(request: NextRequest) {
               ${emailContent.paymentText}
             </p>
             
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
-              <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${emailContent.paymentOptions}</h3>
-              
-              <p style="margin: 0 0 10px 0; font-size: 15px;">
-                <strong>1. ${emailContent.stripeOption}</strong> <a href="${stripeLink}" style="color: #2D5574; text-decoration: none;">${emailContent.payOnline}</a>
-              </p>
-              
-              <p style="margin: 0; font-size: 15px;">
-                <strong>2. ${emailContent.bankTransfer}</strong> ${emailContent.invoiceAttached}
-              </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${stripeLink}" style="display: inline-block; background-color: #2D5574; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">${emailContent.paymentButton}</a>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
+              ${emailContent.bankTransferText}
+            </p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="display: inline-block; background-color: #B46A33; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">${emailContent.bankTransferLink}</a>
             </div>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">

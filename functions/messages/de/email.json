@@ -73,13 +73,11 @@
     "welcome_text": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
     "welcome_text_m": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
     "welcome_text_f": "Willkommen bei FASE. Ihr Antrag für {organizationName} wurde genehmigt.",
-    "payment_text": "Um Ihre Mitgliedschaft abzuschließen, leisten Sie bitte eine Zahlung von €{totalAmount} mit einer der folgenden Methoden:",
-    "payment_options": "Zahlungsoptionen:",
-    "paypal_option": "PayPal:",
-    "pay_online": "Online bezahlen",
-    "bank_transfer": "Banküberweisung:",
-    "invoice_attached": "Rechnung mit Zahlungsdetails beigefügt",
-    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie mich bitte bei Fragen.",
+    "payment_text": "Um Ihre Mitgliedschaft abzuschließen und Zugang zu unserem Mitgliederportal zu erhalten, überweisen Sie bitte Ihren Mitgliedsbeitrag von €{totalAmount}. Ihre jährliche Mitgliedschaft tritt dann mit sofortiger Wirkung in Kraft.",
+    "payment_button": "Mitgliedsbeitrag zahlen",
+    "bank_transfer_text": "Falls Sie per Banküberweisung zahlen möchten, folgen Sie bitte dem unten stehenden Link:",
+    "bank_transfer_link": "Banküberweisung-Rechnung erstellen",
+    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE. Zögern Sie bitte nicht, uns unter admin@fasemga.com bei Fragen zu kontaktieren.",
     "regards": "Mit freundlichen Grüßen,",
     "signature": "Aline",
     "name": "Aline Sullivan",
@@ -135,5 +133,18 @@
     "signature": "Aline Sullivan",
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "bank_transfer_invoice": {
+    "title": "Banküberweisung-Rechnung erstellen",
+    "subtitle": "PDF-Rechnung für Banküberweisung erstellen und erhalten",
+    "details_title": "Rechnungsdetails",
+    "organization": "Organisation",
+    "amount": "Betrag",
+    "description": "Klicken Sie auf die Schaltfläche unten, um Ihre PDF-Rechnung zu erstellen und per E-Mail zu erhalten. Die Rechnung enthält vollständige Anweisungen für die Banküberweisung.",
+    "generate_button": "Rechnung erstellen",
+    "generating": "Wird erstellt...",
+    "success_title": "Rechnung erfolgreich erstellt",
+    "success_message": "Ihre PDF-Rechnung wurde erstellt und an Ihre E-Mail-Adresse gesendet.",
+    "next_steps": "Bitte überprüfen Sie Ihre E-Mail für die Rechnung mit Banküberweisung-Anweisungen. Die Zahlung sollte innerhalb von 30 Tagen erfolgen."
   }
 }

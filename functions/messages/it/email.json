@@ -73,13 +73,11 @@
     "welcome_text": "Benvenuto in FASE. La Sua candidatura per {organizationName} è stata approvata.",
     "welcome_text_m": "Benvenuto in FASE. La Sua candidatura per {organizationName} è stata approvata.",
     "welcome_text_f": "Benvenuta in FASE. La Sua candidatura per {organizationName} è stata approvata.",
-    "payment_text": "Per completare la Sua iscrizione, effettui il pagamento di €{totalAmount} utilizzando uno dei seguenti metodi:",
-    "payment_options": "Opzioni di pagamento:",
-    "paypal_option": "PayPal:",
-    "pay_online": "Paga online",
-    "bank_transfer": "Bonifico bancario:",
-    "invoice_attached": "Fattura allegata con dettagli di pagamento",
-    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE e ci metteremo in contatto molto presto con un link al nostro portale membri. Nel frattempo, mi contatti per qualsiasi domanda.",
+    "payment_text": "Per completare la Sua iscrizione e accedere al nostro portale membri, La preghiamo di versare la quota associativa di €{totalAmount}. La Sua iscrizione annuale avrà efficacia immediata.",
+    "payment_button": "Paga quota associativa",
+    "bank_transfer_text": "Se preferisce pagare tramite bonifico bancario, La preghiamo di seguire il link sottostante:",
+    "bank_transfer_link": "Genera fattura bonifico bancario",
+    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE. Non esiti a contattarci all'indirizzo admin@fasemga.com per qualsiasi domanda.",
     "regards": "Cordiali saluti,",
     "signature": "Aline",
     "name": "Aline Sullivan",
@@ -135,5 +133,18 @@
     "signature": "Aline Sullivan",
     "title": "Direttore Operativo, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "bank_transfer_invoice": {
+    "title": "Genera fattura bonifico bancario",
+    "subtitle": "Genera e ricevi una fattura PDF per pagamento tramite bonifico bancario",
+    "details_title": "Dettagli fattura",
+    "organization": "Organizzazione",
+    "amount": "Importo",
+    "description": "Faccia clic sul pulsante sottostante per generare e ricevere la Sua fattura PDF via email. La fattura includerà le istruzioni complete per il bonifico bancario.",
+    "generate_button": "Genera fattura",
+    "generating": "Generazione in corso...",
+    "success_title": "Fattura generata con successo",
+    "success_message": "La Sua fattura PDF è stata generata e inviata al Suo indirizzo email.",
+    "next_steps": "La preghiamo di controllare la Sua email per la fattura con le istruzioni per il bonifico bancario. Il pagamento deve essere effettuato entro 30 giorni."
   }
 }
