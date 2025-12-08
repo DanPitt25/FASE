@@ -20,6 +20,7 @@ function BankTransferInvoiceContent() {
   const orgName = searchParams?.get('orgName');
   const fullName = searchParams?.get('fullName');
   const address = searchParams?.get('address');
+  const gender = searchParams?.get('gender');
 
   const generateInvoice = async () => {
     if (!userId || !amount || !orgName) {
@@ -49,7 +50,7 @@ function BankTransferInvoiceContent() {
     setError('');
 
     try {
-      const response = await fetch('/api/send-membership-invoice', {
+      const response = await fetch('/api/send-invoice-only', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,23 +58,12 @@ function BankTransferInvoiceContent() {
         body: JSON.stringify({
           email: email.trim(),
           cc: cc.trim() || undefined,
-          userId: userId,
           organizationName: orgName,
+          invoiceNumber: `FASE-${Math.floor(10000 + Math.random() * 90000)}`,
+          greeting: fullName || 'Client',
           totalAmount: parseFloat(amount),
-          fullName: fullName || '',
-          address: address ? { 
-            line1: address, 
-            city: 'Not provided', 
-            postcode: 'Not provided', 
-            country: 'Not provided' 
-          } : { 
-            line1: 'Not provided', 
-            city: 'Not provided', 
-            postcode: 'Not provided', 
-            country: 'Not provided' 
-          },
-          language: searchParams?.get('locale') || 'en',
-          bankTransferOnly: true, // Flag to indicate PDF-only generation
+          userLocale: searchParams?.get('locale') || 'en',
+          gender: gender || 'm' // Use gender from URL parameter or default to 'm'
         }),
       });
 

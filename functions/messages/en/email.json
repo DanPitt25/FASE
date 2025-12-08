@@ -115,7 +115,7 @@
     "generating": "Generating...",
     "success_title": "Invoice Generated Successfully",
     "success_message": "Your PDF invoice has been generated and sent to your email address.",
-    "next_steps": "Please check your email for the invoice with bank transfer instructions. Payment should be made within 30 days."
+    "next_steps": "Please check your email for the invoice with bank transfer instructions."
   },
   "pdf_invoice": {
     "invoice": "INVOICE",

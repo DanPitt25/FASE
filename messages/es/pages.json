@@ -283,7 +283,7 @@
     "generating": "Generando...",
     "success_title": "Factura generada exitosamente",
     "success_message": "Su factura PDF ha sido generada y enviada a su dirección de correo electrónico.",
-    "next_steps": "Por favor revise su correo electrónico para la factura con instrucciones de transferencia bancaria. El pago debe realizarse dentro de 30 días.",
+    "next_steps": "Por favor revise su correo electrónico para la factura con instrucciones de transferencia bancaria.",
     "email_recipients": "Destinatarios de correo electrónico",
     "email_placeholder": "Ingrese direcciones de correo separadas por comas",
     "email_help": "Ingrese una o más direcciones de correo separadas por comas. El primer correo será el destinatario principal.",

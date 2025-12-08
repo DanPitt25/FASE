@@ -283,7 +283,7 @@
     "generating": "Wird generiert...",
     "success_title": "Rechnung erfolgreich generiert",
     "success_message": "Ihre PDF-Rechnung wurde generiert und an Ihre E-Mail-Adresse gesendet.",
-    "next_steps": "Bitte überprüfen Sie Ihre E-Mail für die Rechnung mit Banküberweisungsanweisungen. Die Zahlung sollte innerhalb von 30 Tagen erfolgen.",
+    "next_steps": "Bitte überprüfen Sie Ihre E-Mail für die Rechnung mit Banküberweisungsanweisungen.",
     "email_recipients": "E-Mail-Empfänger",
     "email_placeholder": "E-Mail-Adressen durch Kommas getrennt eingeben",
     "email_help": "Geben Sie eine oder mehrere E-Mail-Adressen durch Kommas getrennt ein. Die erste E-Mail wird der Hauptempfänger.",

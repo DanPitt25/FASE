@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}&gender=${invoiceData.gender}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             

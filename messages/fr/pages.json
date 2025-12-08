@@ -283,7 +283,7 @@
     "generating": "Génération...",
     "success_title": "Facture générée avec succès",
     "success_message": "Votre facture PDF a été générée et envoyée à votre adresse e-mail.",
-    "next_steps": "Veuillez vérifier votre e-mail pour la facture avec les instructions de virement bancaire. Le paiement doit être effectué dans les 30 jours.",
+    "next_steps": "Veuillez vérifier votre e-mail pour la facture avec les instructions de virement bancaire.",
     "email_recipients": "Destinataires de l'e-mail",
     "email_placeholder": "Entrez les adresses e-mail séparées par des virgules",
     "email_help": "Entrez une ou plusieurs adresses e-mail séparées par des virgules. La première adresse sera le destinataire principal.",
