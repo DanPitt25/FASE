@@ -2,11 +2,11 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import PageLayout from '../../components/PageLayout';
 import Button from '../../components/Button';
 
-export default function BankTransferInvoicePage() {
+function BankTransferInvoiceContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('bank_transfer_invoice');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -117,5 +117,26 @@ export default function BankTransferInvoicePage() {
         </div>
       </div>
     </PageLayout>
+  );
+}
+
+export default function BankTransferInvoicePage() {
+  return (
+    <Suspense fallback={
+      <PageLayout>
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    }>
+      <BankTransferInvoiceContent />
+    </Suspense>
   );
 }
