@@ -75,12 +75,12 @@ function BankTransferInvoiceContent() {
     setIsGenerating(true);
     setError('');
 
-    const addressData = accountData?.businessAddress || {
-      line1: address || 'Not provided',
-      line2: '',
-      city: 'Not provided',
-      postcode: 'Not provided',
-      country: 'Netherlands'
+    const addressData = {
+      line1: accountData?.businessAddress?.line1 || address || 'Not provided',
+      line2: accountData?.businessAddress?.line2 || '',
+      city: accountData?.businessAddress?.city || 'Not provided',
+      postcode: accountData?.businessAddress?.postcode || 'Not provided',
+      country: accountData?.businessAddress?.country || 'Netherlands'
     };
 
     try {
