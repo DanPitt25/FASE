@@ -7,7 +7,7 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'lost_invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
+type EmailTemplate = 'invoice' | 'standalone_invoice' | 'lost_invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
