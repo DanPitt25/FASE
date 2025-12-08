@@ -199,8 +199,8 @@ export async function POST(request: NextRequest) {
       title: adminEmail.title || "Chief Operating Officer, FASE"
     };
 
-    // Convert currency based on customer country
-    const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country);
+    // Convert currency based on customer country or force currency override
+    const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
 
     const emailData = {
       email: invoiceData.email,

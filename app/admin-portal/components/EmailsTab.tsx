@@ -197,6 +197,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+          payload.forceCurrency = formData.forceCurrency;
         }
 
         // Add lost invoice flag and date for lost invoice template
@@ -316,6 +317,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+          payload.forceCurrency = formData.forceCurrency;
         }
 
         // Add lost invoice flag and date for lost invoice template
