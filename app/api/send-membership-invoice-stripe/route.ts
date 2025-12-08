@@ -546,9 +546,9 @@ export async function POST(request: NextRequest) {
               ${emailContent.bankTransferText}
             </p>
             
-            <div style="text-align: center; margin: 20px 0;">
-              <a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="display: inline-block; background-color: #B46A33; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">${emailContent.bankTransferLink}</a>
-            </div>
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 10px 0;">
+              Please follow <a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="color: #2D5574; text-decoration: underline;">${emailContent.bankTransferLink.toLowerCase()}</a>.
+            </p>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
               ${emailContent.engagement}
@@ -566,12 +566,8 @@ export async function POST(request: NextRequest) {
       `,
       invoiceNumber: invoiceNumber,
       organizationName: invoiceData.organizationName,
-      totalAmount: invoiceData.totalAmount.toString(),
-      // Add PDF attachment if generated successfully
-      ...(pdfAttachment && {
-        pdfAttachment: pdfAttachment,
-        pdfFilename: `FASE-Invoice-${invoiceNumber}.pdf`
-      })
+      totalAmount: invoiceData.totalAmount.toString()
+      // PDF attachment removed - invoice available via bank transfer page only
     };
 
     // For preview mode, return preview data instead of sending email
@@ -588,7 +584,7 @@ export async function POST(request: NextRequest) {
         htmlContent: emailData.invoiceHTML,
         textContent: null, // Could add plain text version
         pdfUrl: pdfPreviewUrl,
-        attachments: pdfAttachment ? ['Invoice PDF'] : [],
+        attachments: [], // No PDF attachments in email
         invoiceNumber: invoiceNumber,
         totalAmount: invoiceData.totalAmount,
         stripeLink: stripeLink
