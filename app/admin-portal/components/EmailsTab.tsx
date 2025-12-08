@@ -101,6 +101,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const emailTemplates = {
     invoice: {
       title: 'Send Invoice Email',
+      description: 'Send membership acceptance email with Stripe payment link and bank transfer option',
+      apiEndpoint: '/api/send-membership-invoice-stripe',
+      previewEndpoint: '/api/send-membership-invoice-stripe',
+      requiresPricing: true,
+      generatesPDF: false,
+      available: true
+    },
+    standalone_invoice: {
+      title: 'Send Standalone Invoice',
       description: 'Send clean invoice email with PDF attachment, currency conversion, and Wise bank details',
       apiEndpoint: '/api/send-invoice-only',
       previewEndpoint: '/api/send-invoice-only',
@@ -169,8 +178,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         greeting: formData.greeting || formData.fullName
       };
 
-      // Special handling for invoice template (send-invoice-only API)
-      if (selectedTemplate === 'invoice') {
+      // Special handling for standalone invoice template (send-invoice-only API)
+      if (selectedTemplate === 'standalone_invoice') {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
         payload.country = formData.address.country;
@@ -287,8 +296,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         greeting: formData.greeting || formData.fullName
       };
 
-      // Special handling for invoice template (send-invoice-only API)
-      if (selectedTemplate === 'invoice') {
+      // Special handling for standalone invoice template (send-invoice-only API)
+      if (selectedTemplate === 'standalone_invoice') {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
         payload.country = formData.address.country;
