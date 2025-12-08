@@ -25,7 +25,7 @@ const initializeStripe = () => {
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
   try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
+    const filePath = path.join(process.cwd(), 'functions', 'messages', language, 'email.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
   } catch (error) {
@@ -504,14 +504,14 @@ export async function POST(request: NextRequest) {
       welcome: genderAwareWelcome,
       dear: genderAwareDear,
       welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()),
-      paymentButton: adminEmail.payment_button,
-      bankTransferText: adminEmail.bank_transfer_text,
-      bankTransferLink: adminEmail.bank_transfer_link, 
-      engagement: adminEmail.engagement,
-      regards: adminEmail.regards,
-      signature: adminEmail.signature,
-      title: adminEmail.title
+      paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()) || `Missing payment_text`,
+      paymentButton: adminEmail.payment_button || `Missing payment_button`,
+      bankTransferText: adminEmail.bank_transfer_text || `Missing bank_transfer_text`,
+      bankTransferLink: adminEmail.bank_transfer_link || `Missing bank_transfer_link`, 
+      engagement: adminEmail.engagement || `Missing engagement`,
+      regards: adminEmail.regards || `Missing regards`,
+      signature: adminEmail.signature || `Missing signature`,
+      title: adminEmail.title || `Missing title`
     };
 
     const emailData = {
