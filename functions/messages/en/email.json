@@ -69,7 +69,7 @@
     "welcome_text": "Welcome to FASE. Your application for {organizationName} has been approved.",
     "payment_text": "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.",
     "payment_button": "Pay membership dues",
-    "bank_transfer_text": "If you would prefer to pay with bank transfer, please follow the link below:",
+    "bank_transfer_text": "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
     "bank_transfer_link": "Generate bank transfer invoice",
     "engagement": "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
     "regards": "Best regards,",
