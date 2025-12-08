@@ -500,18 +500,18 @@ export async function POST(request: NextRequest) {
     const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text;
     
     const emailContent = {
-      subject: genderAwareSubject,
-      welcome: genderAwareWelcome,
-      dear: genderAwareDear,
-      welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()) || `Missing payment_text`,
-      paymentButton: adminEmail.payment_button || `Missing payment_button`,
-      bankTransferText: adminEmail.bank_transfer_text || `Missing bank_transfer_text`,
-      bankTransferLink: adminEmail.bank_transfer_link || `Missing bank_transfer_link`, 
-      engagement: adminEmail.engagement || `Missing engagement`,
-      regards: adminEmail.regards || `Missing regards`,
-      signature: adminEmail.signature || `Missing signature`,
-      title: adminEmail.title || `Missing title`
+      subject: genderAwareSubject || "Welcome to FASE - Membership Approved",
+      welcome: genderAwareWelcome || "Welcome to FASE",
+      dear: genderAwareDear || "Dear",
+      welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`) || `Welcome to FASE. Your application for <strong>${invoiceData.organizationName}</strong> has been approved.`,
+      paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()) || `To complete your membership and access our members' portal, please remit your membership dues of €${invoiceData.totalAmount}. Your annual membership will then incept with immediate effect.`,
+      paymentButton: adminEmail.payment_button || "Pay membership dues",
+      bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
+      bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice", 
+      engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
+      regards: adminEmail.regards || "Best regards,",
+      signature: adminEmail.signature || "Aline",
+      title: adminEmail.title || "Chief Operating Officer, FASE"
     };
 
     const emailData = {
