@@ -160,8 +160,11 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Stripe payment link generated:', stripeLink);
     
+    // Set base URL for bank transfer links
+    const emailBaseUrl = 'https://fasemga.com';
+    
     // Detect language for email content
-    const userLocale = requestData.userLocale || requestData.locale || 'en';
+    const userLocale = requestData.userLocale || requestData.locale || requestData.language || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
     console.log('🔍 DEBUG: Detected locale:', locale, 'from userLocale:', userLocale);
@@ -225,7 +228,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             
