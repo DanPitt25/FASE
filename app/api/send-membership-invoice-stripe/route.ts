@@ -153,9 +153,12 @@ export async function POST(request: NextRequest) {
     console.log('✅ Stripe payment link generated:', stripeLink);
     
     // Detect language for PDF generation
-    const userLocale = requestData.userLocale || 'en';
+    const userLocale = requestData.userLocale || requestData.locale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
+    console.log('🔍 Request userLocale:', requestData.userLocale);
+    console.log('🔍 Request locale:', requestData.locale);
+    console.log('🔍 Final locale:', locale);
 
     // Generate branded PDF invoice using the existing logic
     let pdfAttachment: string | null = null;
@@ -490,7 +493,10 @@ export async function POST(request: NextRequest) {
     
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
+    console.log('🔍 Locale:', locale);
+    console.log('🔍 Email translations loaded:', emailTranslations);
     const adminEmail = emailTranslations.membership_acceptance_admin || {};
+    console.log('🔍 Admin email section:', adminEmail);
     
     // Apply template variable replacements with gender-aware content
     const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
