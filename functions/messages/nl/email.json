@@ -75,7 +75,7 @@
     "welcome_text_f": "Welkom bij FASE. Uw aanvraag voor {organizationName} is goedgekeurd.",
     "payment_text": "Om uw lidmaatschap te voltooien en toegang te krijgen tot ons ledenportaal, gelieve uw lidmaatschapscontributie van €{totalAmount} over te maken. Uw jaarlijkse lidmaatschap zal dan met onmiddellijke ingang van kracht worden.",
     "payment_button": "Betaal lidmaatschapscontributie",
-    "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, volgt u alstublieft onderstaande link:",
+    "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, volgt u alstublieft deze link:",
     "bank_transfer_link": "Genereer bankoverschrijving factuur",
     "engagement": "Wij kijken uit naar uw betrokkenheid bij FASE. Aarzel niet om contact met ons op te nemen via admin@fasemga.com voor eventuele vragen.",
     "regards": "Vriendelijke groeten,",
