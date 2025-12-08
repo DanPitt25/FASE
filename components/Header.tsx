@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
@@ -65,7 +66,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             {/* Left Side - Logo */}
             <div className="flex items-center py-2">
               <div className="flex-shrink-0 flex items-center">
-                <a href="/" className="relative">
+                <Link href="/" className="relative">
                   <Image 
                     src="/FASE-Logo-Lockup-RGB.png" 
                     alt="FASE Logo" 
@@ -75,7 +76,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     priority
                     onLoad={handleImageLoad}
                   />
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -187,9 +188,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
                       }`}>{tNav('management')}</a>
-                      <a href="/about/news" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
+                      <Link href="/about/news" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>{tNav('news')}</a>
+                      }`}>{tNav('news')}</Link>
                     </div>
                   </div>
 
@@ -325,9 +326,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <a href="/about/people" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'people' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Management</a>
-              <a href="/about/news" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+              <Link href="/about/news" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'news' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>News</a>
+              }`}>News</Link>
             </div>
             
             <div className="space-y-1">

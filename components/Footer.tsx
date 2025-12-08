@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 export default function Footer() {
@@ -26,7 +27,7 @@ export default function Footer() {
             <h4 className="text-lg font-noto-serif font-semibold mb-4 text-white">{tFooter('resources')}</h4>
             <ul className="space-y-2 text-fase-cream">
               <li><a href="/events" className="hover:text-fase-navy transition duration-200">{tFooter('events')}</a></li>
-              <li><a href="/about/news" className="hover:text-fase-navy transition duration-200">{tFooter('news')}</a></li>
+              <li><Link href="/about/news" className="hover:text-fase-navy transition duration-200">{tFooter('news')}</Link></li>
             </ul>
           </div>
           <div>
