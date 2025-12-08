@@ -92,15 +92,15 @@ export async function POST(request: NextRequest) {
 
     // Convert currency based on customer country, or use amount as-is if forceCurrency matches
     let currencyConversion;
-    if (requestData.forceCurrency && requestData.forceCurrency !== 'EUR') {
-      // Amount is already converted, don't convert again
+    if (requestData.forceCurrency && requestData.forceCurrency !== 'EUR' && requestData.originalAmount) {
+      // Amount is already converted, use originalAmount for base and totalAmount for converted
       currencyConversion = {
-        originalAmount: invoiceData.totalAmount,
+        originalAmount: requestData.originalAmount,
         originalCurrency: 'EUR',
         convertedAmount: invoiceData.totalAmount,
         convertedCurrency: requestData.forceCurrency,
         roundedAmount: invoiceData.totalAmount,
-        exchangeRate: 1,
+        exchangeRate: invoiceData.totalAmount / requestData.originalAmount,
         displayText: `Converted from EUR using pre-calculated amount`
       };
     } else {

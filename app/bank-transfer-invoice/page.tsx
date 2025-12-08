@@ -20,6 +20,7 @@ function BankTransferInvoiceContent() {
   const [loading, setLoading] = useState(true);
   
   const amount = searchParams?.get('amount');
+  const originalAmount = searchParams?.get('originalAmount');
   const currency = searchParams?.get('currency') || 'EUR';
   const orgName = searchParams?.get('orgName');
   const fullName = searchParams?.get('fullName');
@@ -98,6 +99,7 @@ function BankTransferInvoiceContent() {
           invoiceNumber: `FASE-${Math.floor(10000 + Math.random() * 90000)}`,
           greeting: fullName || accountData?.accountAdministrator?.name || 'Client',
           totalAmount: parseFloat(amount),
+          originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
           userLocale: searchParams?.get('locale') || 'en',
           gender: gender || 'm',
           address: addressData,
