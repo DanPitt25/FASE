@@ -19,3 +19,6 @@
 - **API routes**: Only needed for server-side operations requiring Firebase Admin SDK with service account credentials
 - **NEVER**: Create API routes just to wrap client-side Firebase operations - this breaks the auth context and requires unnecessary Admin SDK setup
 - **Rule**: If the client component can access Firestore directly (like every other part of the app), don't create an API route
+
+## UI/UX Guidelines
+- **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, or any UI components.

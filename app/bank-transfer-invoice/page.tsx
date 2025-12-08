@@ -2,9 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import PageLayout from '../../components/PageLayout';
-import Button from '../../components/Button';
 
 function BankTransferInvoiceContent() {
   const searchParams = useSearchParams();
@@ -12,14 +11,36 @@ function BankTransferInvoiceContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [cc, setCc] = useState('');
   
   const userId = searchParams?.get('userId');
   const amount = searchParams?.get('amount');
   const orgName = searchParams?.get('orgName');
+  const fullName = searchParams?.get('fullName');
+  const address = searchParams?.get('address');
 
   const generateInvoice = async () => {
     if (!userId || !amount || !orgName) {
       setError('Missing required information. Please contact admin@fasemga.com for assistance.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Please enter an email address.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Invalid email format.');
+      return;
+    }
+
+    // Validate CC if provided
+    if (cc.trim() && !emailRegex.test(cc.trim())) {
+      setError('Invalid CC email format.');
       return;
     }
 
@@ -33,10 +54,13 @@ function BankTransferInvoiceContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: '', // This will be filled by the API based on userId
+          email: email.trim(),
+          cc: cc.trim() || undefined,
           userId: userId,
           organizationName: orgName,
           totalAmount: parseFloat(amount),
+          fullName: fullName || '',
+          address: address ? { line1: address, city: '', postcode: '', country: '' } : { line1: 'Not provided', city: '', postcode: '', country: '' },
           bankTransferOnly: true, // Flag to indicate PDF-only generation
         }),
       });
@@ -53,69 +77,125 @@ function BankTransferInvoiceContent() {
     }
   };
 
+  if (success) {
+    return (
+      <PageLayout>
+        <section className="py-24 bg-white min-h-[60vh] flex items-center">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-noto-serif font-medium text-gray-900 mb-4">
+                {t('success_title')}
+              </h1>
+              <p className="text-lg text-gray-600 mb-8">
+                {t('success_message')}
+              </p>
+              <p className="text-gray-600 mb-8">
+                {t('next_steps')}
+              </p>
+              <a 
+                href="/" 
+                className="inline-flex items-center px-6 py-3 bg-fase-navy text-white font-semibold rounded hover:bg-fase-orange transition-colors"
+              >
+                Return to Homepage
+              </a>
+            </div>
+          </div>
+        </section>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout>
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-noto-serif font-medium text-fase-navy mb-4">
+      {/* Main Content Section */}
+      <section className="bg-white py-24 lg:py-32 2xl:py-40">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          <div className="max-w-4xl mx-auto">
+            {/* Page Title */}
+            <div className="text-center mb-16">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-8">
                 {t('title')}
               </h1>
-              <p className="text-lg text-gray-600">
-                {t('subtitle')}
-              </p>
             </div>
 
-            {!success ? (
-              <div className="space-y-6">
-                <div className="bg-fase-cream p-6 rounded-lg">
-                  <h2 className="text-xl font-semibold text-fase-navy mb-4">
-                    {t('details_title')}
-                  </h2>
-                  <div className="space-y-2 text-gray-700">
-                    <p><strong>{t('organization')}:</strong> {orgName}</p>
-                    <p><strong>{t('amount')}:</strong> €{amount}</p>
+            {/* Invoice Details Card */}
+            <div className="bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden mb-12">
+              <div className="bg-fase-navy text-white px-6 py-4">
+                <h2 className="text-xl font-noto-serif font-semibold">
+                  {t('details_title')}
+                </h2>
+              </div>
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <p className="mb-4 text-fase-black"><strong>{t('organization')}:</strong> {orgName}</p>
+                    {fullName && <p className="mb-4 text-fase-black"><strong>{t('contact')}:</strong> {fullName}</p>}
+                    {address && <p className="mb-4 text-fase-black"><strong>Address:</strong> {address}</p>}
+                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">€{amount}</span></p>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    {t('description')}
-                  </p>
-                  
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="text-center">
-                    <Button
-                      onClick={generateInvoice}
-                      disabled={isGenerating}
-                      className="bg-fase-navy hover:bg-fase-orange transition-colors"
-                    >
-                      {isGenerating ? t('generating') : t('generate_button')}
-                    </Button>
+                  <div>
+                    <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
+                    <p className="mb-4 text-fase-black"><strong>{t('payment_method')}:</strong> Bank Transfer</p>
+                    <p className="mb-4 text-fase-black"><strong>{t('currency')}:</strong> EUR</p>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center space-y-6">
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-6 rounded-lg">
-                  <h2 className="text-xl font-semibold mb-2">{t('success_title')}</h2>
-                  <p>{t('success_message')}</p>
+            </div>
+
+            {/* Email Form */}
+            <div className="bg-white border border-gray-200 shadow-lg rounded-lg p-8 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-fase-black mb-2">
+                    To <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  />
                 </div>
-                
-                <div className="text-gray-600">
-                  <p>{t('next_steps')}</p>
+                <div>
+                  <label htmlFor="cc" className="block text-sm font-medium text-fase-black mb-2">
+                    CC
+                  </label>
+                  <input
+                    type="email"
+                    id="cc"
+                    value={cc}
+                    onChange={(e) => setCc(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  />
                 </div>
               </div>
-            )}
+              
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={generateInvoice}
+                  disabled={isGenerating || !email.trim()}
+                  className="inline-flex items-center px-8 py-4 bg-fase-navy text-white font-semibold hover:bg-fase-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? t('generating') : t('generate_button')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </PageLayout>
   );
 }

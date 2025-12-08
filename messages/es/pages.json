@@ -271,5 +271,25 @@
         "text": "Únase a Nosotros"
       }
     }
+  },
+  "bank_transfer_invoice": {
+    "title": "Generar factura de transferencia bancaria",
+    "subtitle": "Generar y recibir una factura PDF para pago por transferencia bancaria",
+    "details_title": "Detalles de la factura",
+    "organization": "Organización",
+    "amount": "Importe",
+    "description": "Haga clic en el botón de abajo para generar y recibir su factura PDF por correo electrónico. La factura incluirá instrucciones completas de transferencia bancaria.",
+    "generate_button": "Generar factura",
+    "generating": "Generando...",
+    "success_title": "Factura generada exitosamente",
+    "success_message": "Su factura PDF ha sido generada y enviada a su dirección de correo electrónico.",
+    "next_steps": "Por favor revise su correo electrónico para la factura con instrucciones de transferencia bancaria. El pago debe realizarse dentro de 30 días.",
+    "email_recipients": "Destinatarios de correo electrónico",
+    "email_placeholder": "Ingrese direcciones de correo separadas por comas",
+    "email_help": "Ingrese una o más direcciones de correo separadas por comas. El primer correo será el destinatario principal.",
+    "contact": "Contacto",
+    "invoice_type": "Tipo de factura",
+    "payment_method": "Método de pago",
+    "currency": "Moneda"
   }
 }

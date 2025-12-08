@@ -26,14 +26,22 @@ const initializeStripe = () => {
 function loadEmailTranslations(language: string): any {
   try {
     const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
+    console.log('🔍 DEBUG: Attempting to load file from:', filePath);
+    console.log('🔍 DEBUG: process.cwd():', process.cwd());
+    console.log('🔍 DEBUG: File exists?', fs.existsSync(filePath));
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
+    const parsed = JSON.parse(fileContent);
+    console.log('🔍 DEBUG: Successfully parsed file, keys:', Object.keys(parsed));
+    return parsed;
   } catch (error) {
+    console.log('🔍 DEBUG: Error loading file:', error);
     // Fallback to English if file not found
     if (language !== 'en') {
+      console.log('🔍 DEBUG: Falling back to English');
       return loadEmailTranslations('en');
     }
     // Return empty object if even English fails
+    console.log('🔍 DEBUG: Returning empty object as final fallback');
     return {};
   }
 }

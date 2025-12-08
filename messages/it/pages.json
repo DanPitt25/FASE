@@ -271,5 +271,25 @@
         "text": "Si Unisca a Noi"
       }
     }
+  },
+  "bank_transfer_invoice": {
+    "title": "Genera fattura bonifico bancario",
+    "subtitle": "Genera e ricevi una fattura PDF per pagamento tramite bonifico bancario",
+    "details_title": "Dettagli della fattura",
+    "organization": "Organizzazione",
+    "amount": "Importo",
+    "description": "Fare clic sul pulsante qui sotto per generare e ricevere la fattura PDF via email. La fattura includerà le istruzioni complete per il bonifico bancario.",
+    "generate_button": "Genera fattura",
+    "generating": "Generazione...",
+    "success_title": "Fattura generata con successo",
+    "success_message": "La Sua fattura PDF è stata generata e inviata al Suo indirizzo email.",
+    "next_steps": "La preghiamo di controllare la Sua email per la fattura con le istruzioni del bonifico bancario. Il pagamento deve essere effettuato entro 30 giorni.",
+    "email_recipients": "Destinatari email",
+    "email_placeholder": "Inserire indirizzi email separati da virgole",
+    "email_help": "Inserire uno o più indirizzi email separati da virgole. Il primo indirizzo sarà il destinatario principale.",
+    "contact": "Contatto",
+    "invoice_type": "Tipo di fattura",
+    "payment_method": "Metodo di pagamento",
+    "currency": "Valuta"
   }
 }

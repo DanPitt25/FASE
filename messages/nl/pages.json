@@ -283,6 +283,13 @@
     "generating": "Genereren...",
     "success_title": "Factuur succesvol gegenereerd",
     "success_message": "Uw PDF-factuur is gegenereerd en naar uw e-mailadres verzonden.",
-    "next_steps": "Controleer uw e-mail voor de factuur met bankoverschrijving instructies. Betaling dient binnen 30 dagen te geschieden."
+    "next_steps": "Controleer uw e-mail voor de factuur met bankoverschrijving instructies. Betaling dient binnen 30 dagen te geschieden.",
+    "email_recipients": "E-mail ontvangers",
+    "email_placeholder": "Voer e-mailadressen in gescheiden door komma's",
+    "email_help": "Voer een of meer e-mailadressen in gescheiden door komma's. Het eerste e-mailadres wordt de primaire ontvanger.",
+    "contact": "Contact",
+    "invoice_type": "Factuurtype",
+    "payment_method": "Betaalmethode",
+    "currency": "Valuta"
   }
 }

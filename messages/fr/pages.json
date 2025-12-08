@@ -271,5 +271,25 @@
         "text": "Nous Rejoindre"
       }
     }
+  },
+  "bank_transfer_invoice": {
+    "title": "Générer une facture de virement bancaire",
+    "subtitle": "Générer et recevoir une facture PDF pour le paiement par virement bancaire",
+    "details_title": "Détails de la facture",
+    "organization": "Organisation",
+    "amount": "Montant",
+    "description": "Cliquez sur le bouton ci-dessous pour générer et recevoir votre facture PDF par e-mail. La facture inclura les instructions complètes de virement bancaire.",
+    "generate_button": "Générer la facture",
+    "generating": "Génération...",
+    "success_title": "Facture générée avec succès",
+    "success_message": "Votre facture PDF a été générée et envoyée à votre adresse e-mail.",
+    "next_steps": "Veuillez vérifier votre e-mail pour la facture avec les instructions de virement bancaire. Le paiement doit être effectué dans les 30 jours.",
+    "email_recipients": "Destinataires de l'e-mail",
+    "email_placeholder": "Entrez les adresses e-mail séparées par des virgules",
+    "email_help": "Entrez une ou plusieurs adresses e-mail séparées par des virgules. La première adresse sera le destinataire principal.",
+    "contact": "Contact",
+    "invoice_type": "Type de facture",
+    "payment_method": "Méthode de paiement",
+    "currency": "Devise"
   }
 }
