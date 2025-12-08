@@ -543,11 +543,7 @@ export async function POST(request: NextRequest) {
             </div>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
-              ${emailContent.bankTransferText}
-            </p>
-            
-            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 10px 0;">
-              Please follow <a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="color: #2D5574; text-decoration: underline;">${emailContent.bankTransferLink.toLowerCase()}</a>.
+              If you would prefer to pay with bank transfer, please follow <a href="${baseUrl}/bank-transfer-invoice?userId=${invoiceData.userId}&amount=${invoiceData.totalAmount}&orgName=${encodeURIComponent(invoiceData.organizationName)}" style="color: #2D5574; text-decoration: underline;">this link</a>.
             </p>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
