@@ -43,12 +43,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🔍 Request data:', { 
-      originalAmount: requestData.originalAmount, 
-      totalAmount: requestData.totalAmount,
-      forceCurrency: requestData.forceCurrency 
-    });
-
     const invoiceData = {
       email: requestData.email,
       organizationName: requestData.organizationName,
@@ -68,11 +62,6 @@ export async function POST(request: NextRequest) {
       discountAmount: 0,
       discountReason: ""
     };
-
-    console.log('📋 Invoice data:', { 
-      originalAmount: invoiceData.originalAmount, 
-      totalAmount: invoiceData.totalAmount 
-    });
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
