@@ -392,7 +392,7 @@ export async function POST(request: NextRequest) {
           color: faseNavy,
         });
         
-        firstPage.drawText(formatEuro(invoiceData.totalAmount), {
+        firstPage.drawText(formatEuro(currencyConversion.originalAmount), {
           x: labelX + 130,
           y: currentY - 18,
           size: 11,
