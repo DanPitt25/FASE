@@ -164,6 +164,9 @@
     "total": "Total",
     "total_amount_due": "Total Amount Due:",
     "payment_instructions": "Payment Instructions:",
+    "reference": "Reference",
+    "account_holder": "Account holder",
+    "bank_name_address": "Bank name and address",
     "payment_company": "Lexicon Associates, LLC is accepting payments on behalf of Fédération des Agences de Souscription (FASE B.V.)",
     "account_number": "Account number: 1255828998",
     "payment_reference": "Payment Reference: {invoiceNumber}"
@@ -181,6 +184,9 @@
     "total": "Total",
     "total_amount_due": "Total Amount Due:",
     "payment_instructions": "Payment Instructions:",
+    "reference": "Reference",
+    "account_holder": "Account holder",
+    "bank_name_address": "Bank name and address",
     "payment_company": "Lexicon Associates, LLC is accepting payments on behalf of Fédération des Agences de Souscription (FASE B.V.)",
     "account_number": "Account number: 1255828998",
     "payment_reference": "Payment Reference: {invoiceNumber}"
