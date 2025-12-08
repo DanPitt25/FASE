@@ -156,9 +156,6 @@ export async function POST(request: NextRequest) {
     const userLocale = requestData.userLocale || requestData.locale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
-    console.log('🔍 Request userLocale:', requestData.userLocale);
-    console.log('🔍 Request locale:', requestData.locale);
-    console.log('🔍 Final locale:', locale);
 
     // Generate branded PDF invoice using the existing logic
     let pdfAttachment: string | null = null;
@@ -493,31 +490,28 @@ export async function POST(request: NextRequest) {
     
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
-    console.log('🔍 Locale:', locale);
-    console.log('🔍 Email translations loaded:', emailTranslations);
     const adminEmail = emailTranslations.membership_acceptance_admin || {};
-    console.log('🔍 Admin email section:', adminEmail);
     
     // Apply template variable replacements with gender-aware content
     const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
-    const genderAwareDear = adminEmail[`dear${genderSuffix}`] || adminEmail.dear || "Dear";
-    const genderAwareSubject = adminEmail[`subject${genderSuffix}`] || adminEmail.subject || "Welcome to FASE - Membership Approved";
-    const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
-    const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text || "Welcome to FASE. Your application for {organizationName} has been approved.";
+    const genderAwareDear = adminEmail[`dear${genderSuffix}`] || adminEmail.dear;
+    const genderAwareSubject = adminEmail[`subject${genderSuffix}`] || adminEmail.subject;
+    const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome;
+    const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text;
     
     const emailContent = {
       subject: genderAwareSubject,
       welcome: genderAwareWelcome,
       dear: genderAwareDear,
       welcomeText: genderAwareWelcomeText.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`),
-      paymentText: (adminEmail.payment_text || "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.").replace('{totalAmount}', invoiceData.totalAmount.toString()),
-      paymentButton: adminEmail.payment_button || "Pay membership dues",
-      bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow the link below:",
-      bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice", 
-      engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
-      regards: adminEmail.regards || "Best regards,",
-      signature: adminEmail.signature || "Aline",
-      title: adminEmail.title || "Chief Operating Officer, FASE"
+      paymentText: adminEmail.payment_text.replace('{totalAmount}', invoiceData.totalAmount.toString()),
+      paymentButton: adminEmail.payment_button,
+      bankTransferText: adminEmail.bank_transfer_text,
+      bankTransferLink: adminEmail.bank_transfer_link, 
+      engagement: adminEmail.engagement,
+      regards: adminEmail.regards,
+      signature: adminEmail.signature,
+      title: adminEmail.title
     };
 
     const emailData = {
