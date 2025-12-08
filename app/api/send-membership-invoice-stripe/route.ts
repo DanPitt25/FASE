@@ -143,8 +143,8 @@ export async function POST(request: NextRequest) {
         user_id: invoiceData.userId || '',
         user_email: invoiceData.email,
       },
-      success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}&invoice=${invoiceNumber}`,
-      cancel_url: `${baseUrl}/payment/cancelled?invoice=${invoiceNumber}`,
+      success_url: `${baseUrl}/payment-succeeded?session_id={CHECKOUT_SESSION_ID}&invoice=${invoiceNumber}`,
+      cancel_url: `${baseUrl}/payment-failed?invoice=${invoiceNumber}`,
       customer_email: invoiceData.email,
     });
 
