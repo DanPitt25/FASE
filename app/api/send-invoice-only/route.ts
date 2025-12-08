@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       gender: requestData.gender || 'm',
       totalAmount: requestData.totalAmount || 0,
       fullName: requestData.greeting || requestData.fullName || 'Client',
-      address: {
+      address: requestData.address || {
         line1: 'Not provided',
         line2: '',
         city: 'Not provided',

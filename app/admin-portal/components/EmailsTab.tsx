@@ -183,6 +183,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
         payload.country = formData.address.country;
+        payload.address = formData.address;
         payload.userLocale = formData.userLocale;
         payload.forceCurrency = formData.forceCurrency;
         // Remove template field for send-invoice-only API
@@ -301,6 +302,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
         payload.country = formData.address.country;
+        payload.address = formData.address;
         payload.userLocale = formData.userLocale;
         payload.forceCurrency = formData.forceCurrency;
         // Remove template field for send-invoice-only API
