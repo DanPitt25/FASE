@@ -36,7 +36,10 @@ function BankTransferInvoiceContent() {
           const querySnapshot = await getDocs(q);
           
           if (!querySnapshot.empty) {
-            setAccountData(querySnapshot.docs[0].data());
+            const data = querySnapshot.docs[0].data();
+            console.log('Account data fetched:', data);
+            console.log('Business address:', data?.businessAddress);
+            setAccountData(data);
           }
         } catch (error) {
           console.error('Error fetching account data:', error);
@@ -75,6 +78,9 @@ function BankTransferInvoiceContent() {
     setIsGenerating(true);
     setError('');
 
+    console.log('accountData in generateInvoice:', accountData);
+    console.log('businessAddress in generateInvoice:', accountData?.businessAddress);
+    
     const addressData = {
       line1: accountData?.businessAddress?.line1 || address || 'Not provided',
       line2: accountData?.businessAddress?.line2 || '',
@@ -82,6 +88,8 @@ function BankTransferInvoiceContent() {
       postcode: accountData?.businessAddress?.postcode || 'Not provided',
       country: accountData?.businessAddress?.country || 'Netherlands'
     };
+    
+    console.log('Final addressData:', addressData);
 
     try {
       const response = await fetch('/api/send-invoice-only', {
