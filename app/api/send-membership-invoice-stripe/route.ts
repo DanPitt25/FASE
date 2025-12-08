@@ -22,20 +22,18 @@ const initializeStripe = () => {
   return stripe;
 };
 
-// Load email translations from JSON files
+// Import email translations directly
 function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'functions', 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    // Return empty object if even English fails
-    return {};
-  }
+  const translations = {
+    'en': require('../../../functions/messages/en/email.json'),
+    'nl': require('../../../functions/messages/nl/email.json'),
+    'fr': require('../../../functions/messages/fr/email.json'),
+    'de': require('../../../functions/messages/de/email.json'),
+    'es': require('../../../functions/messages/es/email.json'),
+    'it': require('../../../functions/messages/it/email.json')
+  };
+  
+  return translations[language as keyof typeof translations] || translations['en'];
 }
 
 export async function POST(request: NextRequest) {
