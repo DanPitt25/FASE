@@ -43,6 +43,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('🔍 Request data:', { 
+      originalAmount: requestData.originalAmount, 
+      totalAmount: requestData.totalAmount,
+      forceCurrency: requestData.forceCurrency 
+    });
+
     const invoiceData = {
       email: requestData.email,
       organizationName: requestData.organizationName,
@@ -58,10 +64,15 @@ export async function POST(request: NextRequest) {
         postcode: 'Not provided',
         country: requestData.country || 'Netherlands'
       },
-      originalAmount: requestData.totalAmount || 0,
+      originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
       discountAmount: 0,
       discountReason: ""
     };
+
+    console.log('📋 Invoice data:', { 
+      originalAmount: invoiceData.originalAmount, 
+      totalAmount: invoiceData.totalAmount 
+    });
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
