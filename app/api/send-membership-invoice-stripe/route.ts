@@ -489,8 +489,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Load email content translations from JSON files
+    console.log('🔍 DEBUG: Loading translations for locale:', locale);
     const emailTranslations = loadEmailTranslations(locale);
+    console.log('🔍 DEBUG: Loaded translations object:', JSON.stringify(emailTranslations, null, 2));
     const adminEmail = emailTranslations.membership_acceptance_admin || {};
+    console.log('🔍 DEBUG: Admin email section:', JSON.stringify(adminEmail, null, 2));
     
     // Apply template variable replacements with gender-aware content
     const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';
