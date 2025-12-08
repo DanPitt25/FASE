@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, Suspense } from 'react';
+import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
 
 function BankTransferInvoiceContent() {
@@ -97,12 +98,12 @@ function BankTransferInvoiceContent() {
               <p className="text-gray-600 mb-8">
                 {t('next_steps')}
               </p>
-              <a 
+              <Link 
                 href="/" 
                 className="inline-flex items-center px-6 py-3 bg-fase-navy text-white font-semibold rounded hover:bg-fase-orange transition-colors"
               >
                 Return to Homepage
-              </a>
+              </Link>
             </div>
           </div>
         </section>
