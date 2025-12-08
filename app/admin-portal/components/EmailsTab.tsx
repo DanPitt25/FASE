@@ -165,7 +165,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       const payload: any = {
         template: selectedTemplate,
         preview: true,
-        ...formData
+        ...formData,
+        greeting: formData.greeting || formData.fullName
       };
 
       // Add pricing data for templates that need it
@@ -271,7 +272,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       const template = emailTemplates[selectedTemplate];
       const payload: any = {
         template: selectedTemplate,
-        ...formData
+        ...formData,
+        greeting: formData.greeting || formData.fullName
       };
 
       // Add pricing data for templates that need it

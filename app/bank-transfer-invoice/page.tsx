@@ -61,7 +61,18 @@ function BankTransferInvoiceContent() {
           organizationName: orgName,
           totalAmount: parseFloat(amount),
           fullName: fullName || '',
-          address: address ? { line1: address, city: '', postcode: '', country: '' } : { line1: 'Not provided', city: '', postcode: '', country: '' },
+          address: address ? { 
+            line1: address, 
+            city: 'Not provided', 
+            postcode: 'Not provided', 
+            country: 'Not provided' 
+          } : { 
+            line1: 'Not provided', 
+            city: 'Not provided', 
+            postcode: 'Not provided', 
+            country: 'Not provided' 
+          },
+          language: searchParams?.get('locale') || 'en',
           bankTransferOnly: true, // Flag to indicate PDF-only generation
         }),
       });
