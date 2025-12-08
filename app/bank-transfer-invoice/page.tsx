@@ -19,8 +19,8 @@ function BankTransferInvoiceContent() {
   const [accountData, setAccountData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  const userId = searchParams?.get('userId');
   const amount = searchParams?.get('amount');
+  const currency = searchParams?.get('currency') || 'EUR';
   const orgName = searchParams?.get('orgName');
   const fullName = searchParams?.get('fullName');
   const address = searchParams?.get('address');
@@ -51,7 +51,7 @@ function BankTransferInvoiceContent() {
   }, [recipientEmail]);
 
   const generateInvoice = async () => {
-    if (!userId || !amount || !orgName) {
+    if (!amount || !orgName) {
       setError('Missing required information. Please contact admin@fasemga.com for assistance.');
       return;
     }
@@ -101,7 +101,8 @@ function BankTransferInvoiceContent() {
           userLocale: searchParams?.get('locale') || 'en',
           gender: gender || 'm',
           address: addressData,
-          country: addressData.country
+          country: addressData.country,
+          forceCurrency: currency
         }),
       });
 
@@ -205,12 +206,12 @@ function BankTransferInvoiceContent() {
                         }
                       </p>
                     }
-                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">€{amount}</span></p>
+                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{amount}</span></p>
                   </div>
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
                     <p className="mb-4 text-fase-black"><strong>{t('payment_method')}:</strong> Bank Transfer</p>
-                    <p className="mb-4 text-fase-black"><strong>{t('currency')}:</strong> EUR</p>
+                    <p className="mb-4 text-fase-black"><strong>{t('currency')}:</strong> {currency}</p>
                   </div>
                 </div>
               </div>
