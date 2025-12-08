@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${currencyConversion.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${currencyConversion.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             

@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
         country: requestData.country || 'Netherlands'
       },
       originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
-      discountAmount: 0,
-      discountReason: ""
+      discountAmount: requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0,
+      discountReason: requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""
     };
 
     // Check if this is a preview request

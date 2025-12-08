@@ -27,6 +27,7 @@ function BankTransferInvoiceContent() {
   const address = searchParams?.get('address');
   const gender = searchParams?.get('gender');
   const recipientEmail = searchParams?.get('email');
+  const hasOtherAssociations = searchParams?.get('hasOtherAssociations') === 'true';
 
 
   useEffect(() => {
@@ -104,7 +105,8 @@ function BankTransferInvoiceContent() {
           gender: gender || 'm',
           address: addressData,
           country: addressData.country,
-          forceCurrency: currency
+          forceCurrency: currency,
+          hasOtherAssociations: hasOtherAssociations
         }),
       });
 
