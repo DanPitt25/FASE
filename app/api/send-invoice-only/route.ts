@@ -90,8 +90,22 @@ export async function POST(request: NextRequest) {
       signature: invoiceEmail.signature || 'The FASE Team'
     };
 
-    // Convert currency based on customer country
-    const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
+    // Convert currency based on customer country, or use amount as-is if forceCurrency matches
+    let currencyConversion;
+    if (requestData.forceCurrency && requestData.forceCurrency !== 'EUR') {
+      // Amount is already converted, don't convert again
+      currencyConversion = {
+        originalAmount: invoiceData.totalAmount,
+        originalCurrency: 'EUR',
+        convertedAmount: invoiceData.totalAmount,
+        convertedCurrency: requestData.forceCurrency,
+        roundedAmount: invoiceData.totalAmount,
+        exchangeRate: 1,
+        displayText: `Converted from EUR using pre-calculated amount`
+      };
+    } else {
+      currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
+    }
     const wiseBankDetails = getWiseBankDetails(currencyConversion.convertedCurrency);
     
     console.log('💰 Currency conversion:', currencyConversion);
