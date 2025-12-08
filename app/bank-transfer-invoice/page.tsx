@@ -16,7 +16,7 @@ function BankTransferInvoiceContent() {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [cc, setCc] = useState('');
-  const [accountData, setAccountData] = useState(null);
+  const [accountData, setAccountData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
   const userId = searchParams?.get('userId');
