@@ -211,5 +211,18 @@
       "name": "FASE Media Team",
       "title": ""
     }
+  },
+  "invoice_delivery": {
+    "subject": "FASE Invoice {invoiceNumber}",
+    "subject_m": "FASE Invoice {invoiceNumber}",
+    "subject_f": "FASE Invoice {invoiceNumber}",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "delivered_text": "Your invoice for {organizationName} has been delivered.",
+    "instructions_text": "Please follow the payment instructions included in the attached PDF.",
+    "contact_text": "If you have any questions, please contact us at admin@fasemga.com",
+    "regards": "Best regards,",
+    "signature": "The FASE Team"
   }
 }

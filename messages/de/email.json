@@ -219,5 +219,18 @@
     "title": "Chief Operating Officer",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
+  "invoice_delivery": {
+    "subject": "FASE Rechnung {invoiceNumber}",
+    "subject_m": "FASE Rechnung {invoiceNumber}",
+    "subject_f": "FASE Rechnung {invoiceNumber}",
+    "dear": "Liebe/r",
+    "dear_m": "Lieber",
+    "dear_f": "Liebe",
+    "delivered_text": "Ihre Rechnung für {organizationName} wurde zugestellt.",
+    "instructions_text": "Bitte befolgen Sie die Zahlungsanweisungen in der beigefügten PDF-Datei.",
+    "contact_text": "Bei Fragen kontaktieren Sie uns bitte unter admin@fasemga.com",
+    "regards": "Mit freundlichen Grüßen,",
+    "signature": "Das FASE-Team"
   }
 }

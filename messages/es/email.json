@@ -219,5 +219,18 @@
     "title": "Director de Operaciones",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
+  "invoice_delivery": {
+    "subject": "Factura FASE {invoiceNumber}",
+    "subject_m": "Factura FASE {invoiceNumber}",
+    "subject_f": "Factura FASE {invoiceNumber}",
+    "dear": "Estimado/a",
+    "dear_m": "Estimado",
+    "dear_f": "Estimada",
+    "delivered_text": "Su factura para {organizationName} ha sido entregada.",
+    "instructions_text": "Por favor, siga las instrucciones de pago incluidas en el PDF adjunto.",
+    "contact_text": "Si tiene alguna pregunta, póngase en contacto con nosotros en admin@fasemga.com",
+    "regards": "Atentamente,",
+    "signature": "El equipo FASE"
   }
 }

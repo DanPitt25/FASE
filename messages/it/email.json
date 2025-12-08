@@ -219,5 +219,18 @@
     "title": "Direttore Operativo",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
+  "invoice_delivery": {
+    "subject": "Fattura FASE {invoiceNumber}",
+    "subject_m": "Fattura FASE {invoiceNumber}",
+    "subject_f": "Fattura FASE {invoiceNumber}",
+    "dear": "Gentile",
+    "dear_m": "Egregio",
+    "dear_f": "Egregia",
+    "delivered_text": "La Sua fattura per {organizationName} è stata consegnata.",
+    "instructions_text": "La preghiamo di seguire le istruzioni di pagamento incluse nel PDF allegato.",
+    "contact_text": "Se ha domande, La preghiamo di contattarci a admin@fasemga.com",
+    "regards": "Cordiali saluti,",
+    "signature": "Il team FASE"
   }
 }
