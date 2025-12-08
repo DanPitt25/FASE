@@ -219,9 +219,9 @@
     }
   },
   "invoice_delivery": {
-    "subject": "FASE Invoice {invoiceNumber}",
-    "subject_m": "FASE Invoice {invoiceNumber}",
-    "subject_f": "FASE Invoice {invoiceNumber}",
+    "subject": "Invoice {invoiceNumber}",
+    "subject_m": "Invoice {invoiceNumber}",
+    "subject_f": "Invoice {invoiceNumber}",
     "dear": "Dear",
     "dear_m": "Dear",
     "dear_f": "Dear",

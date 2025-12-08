@@ -218,9 +218,9 @@
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
   "invoice_delivery": {
-    "subject": "FASE Factuur {invoiceNumber}",
-    "subject_m": "FASE Factuur {invoiceNumber}",
-    "subject_f": "FASE Factuur {invoiceNumber}",
+    "subject": "Factuur {invoiceNumber}",
+    "subject_m": "Factuur {invoiceNumber}",
+    "subject_f": "Factuur {invoiceNumber}",
     "dear": "Beste",
     "dear_m": "Beste",
     "dear_f": "Beste",
