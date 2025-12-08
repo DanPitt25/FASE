@@ -2,9 +2,11 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 function BankTransferInvoiceContent() {
   const searchParams = useSearchParams();
@@ -14,6 +16,8 @@ function BankTransferInvoiceContent() {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [cc, setCc] = useState('');
+  const [accountData, setAccountData] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   const userId = searchParams?.get('userId');
   const amount = searchParams?.get('amount');
@@ -21,6 +25,28 @@ function BankTransferInvoiceContent() {
   const fullName = searchParams?.get('fullName');
   const address = searchParams?.get('address');
   const gender = searchParams?.get('gender');
+  const recipientEmail = searchParams?.get('email');
+
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      if (recipientEmail) {
+        try {
+          const accountsRef = collection(db, 'accounts');
+          const q = query(accountsRef, where('email', '==', recipientEmail));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            setAccountData(querySnapshot.docs[0].data());
+          }
+        } catch (error) {
+          console.error('Error fetching account data:', error);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchAccountData();
+  }, [recipientEmail]);
 
   const generateInvoice = async () => {
     if (!userId || !amount || !orgName) {
@@ -49,6 +75,14 @@ function BankTransferInvoiceContent() {
     setIsGenerating(true);
     setError('');
 
+    const addressData = accountData?.businessAddress || {
+      line1: address || 'Not provided',
+      line2: '',
+      city: 'Not provided',
+      postcode: 'Not provided',
+      country: 'Netherlands'
+    };
+
     try {
       const response = await fetch('/api/send-invoice-only', {
         method: 'POST',
@@ -60,10 +94,12 @@ function BankTransferInvoiceContent() {
           cc: cc.trim() || undefined,
           organizationName: orgName,
           invoiceNumber: `FASE-${Math.floor(10000 + Math.random() * 90000)}`,
-          greeting: fullName || 'Client',
+          greeting: fullName || accountData?.accountAdministrator?.name || 'Client',
           totalAmount: parseFloat(amount),
           userLocale: searchParams?.get('locale') || 'en',
-          gender: gender || 'm' // Use gender from URL parameter or default to 'm'
+          gender: gender || 'm',
+          address: addressData,
+          country: addressData.country
         }),
       });
 
@@ -112,6 +148,23 @@ function BankTransferInvoiceContent() {
     );
   }
 
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading account data...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout>
       {/* Main Content Section */}
@@ -136,8 +189,20 @@ function BankTransferInvoiceContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('organization')}:</strong> {orgName}</p>
-                    {fullName && <p className="mb-4 text-fase-black"><strong>{t('contact')}:</strong> {fullName}</p>}
-                    {address && <p className="mb-4 text-fase-black"><strong>Address:</strong> {address}</p>}
+                    {(fullName || accountData?.accountAdministrator?.name) && 
+                      <p className="mb-4 text-fase-black">
+                        <strong>{t('contact')}:</strong> {fullName || accountData?.accountAdministrator?.name}
+                      </p>
+                    }
+                    {(accountData?.businessAddress || address) && 
+                      <p className="mb-4 text-fase-black">
+                        <strong>Address:</strong> {
+                          accountData?.businessAddress ? 
+                            `${accountData.businessAddress.line1}, ${accountData.businessAddress.city}, ${accountData.businessAddress.postcode}, ${accountData.businessAddress.country}` :
+                          address
+                        }
+                      </p>
+                    }
                     <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">€{amount}</span></p>
                   </div>
                   <div>
