@@ -27,32 +27,22 @@ function BankTransferInvoiceContent() {
   const gender = searchParams?.get('gender');
   const recipientEmail = searchParams?.get('email');
 
+
   useEffect(() => {
     const fetchAccountData = async () => {
-      console.log('recipientEmail from URL:', recipientEmail);
       if (recipientEmail) {
         try {
           const accountsRef = collection(db, 'accounts');
           const q = query(accountsRef, where('email', '==', recipientEmail));
-          console.log('Querying accounts collection with email:', recipientEmail);
           const querySnapshot = await getDocs(q);
-          
-          console.log('Query result - empty?', querySnapshot.empty);
-          console.log('Query result - size:', querySnapshot.size);
           
           if (!querySnapshot.empty) {
             const data = querySnapshot.docs[0].data();
-            console.log('Account data fetched:', data);
-            console.log('Business address:', data?.businessAddress);
             setAccountData(data);
-          } else {
-            console.log('No documents found for email:', recipientEmail);
           }
         } catch (error) {
           console.error('Error fetching account data:', error);
         }
-      } else {
-        console.log('No recipientEmail provided');
       }
       setLoading(false);
     };
@@ -87,9 +77,6 @@ function BankTransferInvoiceContent() {
     setIsGenerating(true);
     setError('');
 
-    console.log('accountData in generateInvoice:', accountData);
-    console.log('businessAddress in generateInvoice:', accountData?.businessAddress);
-    
     const addressData = {
       line1: accountData?.businessAddress?.line1 || address || 'Not provided',
       line2: accountData?.businessAddress?.line2 || '',
@@ -97,8 +84,6 @@ function BankTransferInvoiceContent() {
       postcode: accountData?.businessAddress?.postcode || 'Not provided',
       country: accountData?.businessAddress?.country || 'Netherlands'
     };
-    
-    console.log('Final addressData:', addressData);
 
     try {
       const response = await fetch('/api/send-invoice-only', {
