@@ -92,6 +92,20 @@
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
+  "lost_invoice": {
+    "subject": "Outstanding Invoice for FASE",
+    "welcome": "INVOICE",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "intro_text": "I am writing to follow up on your membership dues for FASE (Fédération des Agences de Souscription Européennes), issued on {invoiceDate}, which remains outstanding. Please let me know the status of this payment.",
+    "follow_up_text": "We look forward to activating your FASE membership, providing you with access to the member portal, and inviting you to our upcoming events. If you require any additional documentation or have questions that would assist in processing the payment, please feel free to reach out to me or simply contact admin@fasemga.com. We are now able to provide European banking details, so just let me know if you need those.",
+    "closing_text": "Thank you for your time in addressing this. We appreciate your prompt response.",
+    "regards": "Best regards,",
+    "signature": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE",
+    "email": "aline.sullivan@fasemga.com"
+  },
   "pdf_invoice": {
     "invoice": "INVOICE",
     "bill_to": "Bill To:",

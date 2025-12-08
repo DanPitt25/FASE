@@ -121,5 +121,19 @@
     "title": "Direttore Operativo",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
+  "lost_invoice": {
+    "subject": "Fattura in sospeso per FASE",
+    "welcome": "FATTURA",
+    "dear": "Gentile",
+    "dear_m": "Egregio Sig.",
+    "dear_f": "Egregia Sig.ra",
+    "intro_text": "Le scrivo per fare seguito alle quote di iscrizione per FASE (Fédération des Agences de Souscription Européennes), emesse il {invoiceDate}, che rimangono in sospeso. La prego di farmi sapere lo stato di questo pagamento.",
+    "follow_up_text": "Non vediamo l'ora di attivare la Sua iscrizione FASE, fornirLe l'accesso al portale membri e invitarLa ai nostri prossimi eventi. Se ha bisogno di documentazione aggiuntiva o ha domande che potrebbero aiutare nell'elaborazione del pagamento, non esiti a contattarmi o semplicemente contatti admin@fasemga.com. Ora siamo in grado di fornire coordinate bancarie europee, quindi mi faccia sapere se ne ha bisogno.",
+    "closing_text": "La ringrazio per il tempo dedicato a questa questione. Apprezziamo la Sua pronta risposta.",
+    "regards": "Cordiali saluti,",
+    "signature": "Aline Sullivan",
+    "title": "Direttore Operativo, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }

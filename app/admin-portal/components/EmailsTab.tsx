@@ -7,7 +7,7 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
+type EmailTemplate = 'invoice' | 'lost_invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -37,7 +37,10 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     freeformAttachments: [] as File[],
     freeformSender: 'admin@fasemga.com',
     // Payment reminder fields
-    reminderAttachment: null as File | null
+    reminderAttachment: null as File | null,
+    // Lost invoice fields
+    invoiceDate: new Date().toISOString().split('T')[0], // Default to today
+    lostInvoiceAttachment: null as File | null
   });
 
   const [sending, setSending] = useState(false);
@@ -105,6 +108,16 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       generatesPDF: true,
       available: true
     },
+    lost_invoice: {
+      title: 'Lost Invoice (Recoverable)',
+      description: 'Invoice for lost invoices with Lexicon Associates payment details - requires file upload',
+      apiEndpoint: '/api/send-membership-invoice',
+      previewEndpoint: '/api/send-membership-invoice',
+      requiresPricing: true,
+      generatesPDF: false,
+      requiresFileUpload: true,
+      available: true
+    },
     member_portal_welcome: {
       title: 'Member Portal Welcome',
       description: 'Welcome email with portal access for new members',
@@ -124,12 +137,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       available: true
     },
     followup: {
-      title: 'Follow Up',
-      description: 'Follow up on unpaid membership dues with invoice attachment',
-      apiEndpoint: '/api/send-membership-invoice',
-      previewEndpoint: '/api/send-membership-invoice',
-      requiresPricing: true,
-      generatesPDF: true,
+      title: 'Follow Up Email (No PDF)',
+      description: 'Follow up on unpaid membership dues without attachment',
+      apiEndpoint: '/api/send-followup-email',
+      previewEndpoint: '/api/send-followup-email',
+      requiresPricing: false,
+      generatesPDF: false,
       available: true
     },
     freeform: {
@@ -163,6 +176,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
         payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
         payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+      }
+
+      // Add lost invoice flag and date for lost invoice template
+      if (selectedTemplate === 'lost_invoice') {
+        payload.isLostInvoice = true;
+        payload.invoiceDate = formData.invoiceDate;
       }
 
       let response;
@@ -202,6 +221,30 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadWithPdf),
         });
+      } else if (selectedTemplate === 'lost_invoice' && formData.lostInvoiceAttachment) {
+        // Handle lost invoice preview with uploaded file attachment
+        const fileReader = new FileReader();
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          fileReader.onload = () => {
+            const result = fileReader.result as string;
+            const base64 = result.split(',')[1]; // Remove data:... prefix
+            resolve(base64);
+          };
+          fileReader.onerror = reject;
+          fileReader.readAsDataURL(formData.lostInvoiceAttachment!);
+        });
+        
+        const payloadWithFile = {
+          ...payload,
+          uploadedAttachment: fileBase64,
+          uploadedFilename: formData.lostInvoiceAttachment.name
+        };
+        
+        response = await fetch(template.previewEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadWithFile),
+        });
       } else {
         response = await fetch(template.previewEndpoint, {
           method: 'POST',
@@ -239,6 +282,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
         payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
         payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+      }
+
+      // Add lost invoice flag and date for lost invoice template
+      if (selectedTemplate === 'lost_invoice') {
+        payload.isLostInvoice = true;
+        payload.invoiceDate = formData.invoiceDate;
       }
 
       let response;
@@ -280,6 +329,30 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadWithPdf),
+        });
+      } else if (selectedTemplate === 'lost_invoice' && formData.lostInvoiceAttachment) {
+        // Handle lost invoice with uploaded file attachment
+        const fileReader = new FileReader();
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          fileReader.onload = () => {
+            const result = fileReader.result as string;
+            const base64 = result.split(',')[1]; // Remove data:... prefix
+            resolve(base64);
+          };
+          fileReader.onerror = reject;
+          fileReader.readAsDataURL(formData.lostInvoiceAttachment!);
+        });
+        
+        const payloadWithFile = {
+          ...payload,
+          uploadedAttachment: fileBase64,
+          uploadedFilename: formData.lostInvoiceAttachment.name
+        };
+        
+        response = await fetch(template.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadWithFile),
         });
       } else {
         response = await fetch(template.apiEndpoint, {
@@ -623,6 +696,45 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <div>Discount (20%): -€{originalAmount - finalAmount}</div>
                 )}
                 <div className="font-semibold">Total: €{finalAmount}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoice Date - Only for lost invoice */}
+          {selectedTemplate === 'lost_invoice' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Date *</label>
+                <input
+                  type="date"
+                  value={formData.invoiceDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, invoiceDate: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Date when the original invoice was issued</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Upload Recovered Invoice *</label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormData(prev => ({ ...prev, lostInvoiceAttachment: file }));
+                  }}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload the recovered invoice file (PDF, JPG, PNG). This will be attached to the email.
+                </p>
+                {formData.lostInvoiceAttachment && (
+                  <p className="text-sm text-green-600 mt-2">
+                    ✓ File selected: {formData.lostInvoiceAttachment.name} ({Math.round(formData.lostInvoiceAttachment.size / 1024)}KB)
+                  </p>
+                )}
               </div>
             </div>
           )}

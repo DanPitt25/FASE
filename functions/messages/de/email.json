@@ -121,5 +121,19 @@
     "title": "Chief Operating Officer",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
+  },
+  "lost_invoice": {
+    "subject": "Ausstehende Rechnung für FASE",
+    "welcome": "RECHNUNG",
+    "dear": "Sehr geehrte/r",
+    "dear_m": "Sehr geehrter Herr",
+    "dear_f": "Sehr geehrte Frau",
+    "intro_text": "Ich schreibe Ihnen bezüglich Ihrer Mitgliedsbeiträge für FASE (Fédération des Agences de Souscription Européennes), die am {invoiceDate} ausgestellt wurden und noch ausstehen. Bitte teilen Sie mir den Status dieser Zahlung mit.",
+    "follow_up_text": "Wir freuen uns darauf, Ihre FASE-Mitgliedschaft zu aktivieren, Ihnen Zugang zum Mitgliederportal zu gewähren und Sie zu unseren kommenden Veranstaltungen einzuladen. Sollten Sie zusätzliche Dokumentation benötigen oder Fragen haben, die bei der Bearbeitung der Zahlung helfen könnten, zögern Sie bitte nicht, mich zu kontaktieren oder wenden Sie sich einfach an admin@fasemga.com. Wir können jetzt europäische Bankdaten bereitstellen, lassen Sie mich wissen, falls Sie diese benötigen.",
+    "closing_text": "Vielen Dank für Ihre Zeit, sich dieser Angelegenheit zu widmen. Wir schätzen Ihre prompte Antwort.",
+    "regards": "Mit freundlichen Grüßen,",
+    "signature": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }

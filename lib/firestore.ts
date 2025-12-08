@@ -568,6 +568,24 @@ export interface UserAlert {
   createdAt: any;
 }
 
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  recipientEmail: string;
+  recipientName: string;
+  organizationName: string;
+  amount: number;
+  currency: string;
+  type: 'regular' | 'lost_invoice' | 'reminder' | 'followup';
+  status: 'sent' | 'paid' | 'overdue';
+  isLostInvoice?: boolean;
+  createdAt: any;
+  updatedAt: any;
+  sentAt: any;
+  emailId?: string; // Resend email ID
+  pdfGenerated: boolean;
+}
+
 
 // ==========================================
 // MEMBER FILTERING FUNCTIONS
@@ -637,6 +655,59 @@ export const getUserIdsForMemberCriteria = async (criteria: {
     
     return members.map(member => member.uid);
   } catch (error) {
+    throw error;
+  }
+};
+
+// ==========================================
+// INVOICE TRACKING FUNCTIONS
+// ==========================================
+
+// Create a new invoice record
+export const createInvoiceRecord = async (invoiceData: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  try {
+    const invoiceRef = doc(collection(db, 'invoices'));
+    const invoice: Invoice = {
+      ...invoiceData,
+      id: invoiceRef.id,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    await setDoc(invoiceRef, invoice);
+    return invoiceRef.id;
+  } catch (error) {
+    console.error('Error creating invoice record:', error);
+    throw error;
+  }
+};
+
+// Get all invoices (for admin portal)
+export const getAllInvoices = async (): Promise<Invoice[]> => {
+  try {
+    const invoicesRef = collection(db, 'invoices');
+    const invoicesQuery = query(invoicesRef);
+    const invoices = await getDocs(invoicesQuery);
+    
+    return invoices.docs
+      .map(doc => doc.data() as Invoice)
+      .sort((a, b) => b.createdAt?.toDate() - a.createdAt?.toDate()); // Sort by newest first
+  } catch (error) {
+    console.error('Error getting invoices:', error);
+    throw error;
+  }
+};
+
+// Update invoice status
+export const updateInvoiceStatus = async (invoiceId: string, status: 'sent' | 'paid' | 'overdue'): Promise<void> => {
+  try {
+    const invoiceRef = doc(db, 'invoices', invoiceId);
+    await updateDoc(invoiceRef, {
+      status,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating invoice status:', error);
     throw error;
   }
 };

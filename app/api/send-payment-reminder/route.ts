@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createInvoiceRecord } from '../../../lib/firestore';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -300,6 +301,29 @@ export async function POST(request: NextRequest) {
 
       const result = await response.json();
       console.log(`✅ Payment reminder email sent to ${emailData.email} via Resend:`, result.id);
+      
+      // Log payment reminder to database after successful sending
+      try {
+        // Generate a reminder number for tracking
+        const reminderNumber = "REMINDER-" + Math.floor(10000 + Math.random() * 90000);
+        await createInvoiceRecord({
+          invoiceNumber: reminderNumber,
+          recipientEmail: testData.email,
+          recipientName: testData.fullName,
+          organizationName: testData.organizationName,
+          amount: testData.totalAmount,
+          currency: 'EUR', // Payment reminders use EUR
+          type: 'reminder',
+          status: 'sent',
+          sentAt: new Date(),
+          emailId: result.id,
+          pdfGenerated: !!pdfAttachment
+        });
+        console.log('✅ Payment reminder logged to database:', reminderNumber);
+      } catch (dbError) {
+        console.error('❌ Failed to log payment reminder to database:', dbError);
+        // Don't fail the request if database logging fails
+      }
       
       return NextResponse.json({
         success: true,

@@ -320,22 +320,19 @@ export default function DirectoryPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
+                        {member.organizationName && (
+                          <h3 className="text-lg font-noto-serif font-bold text-fase-navy">
+                            {member.organizationName}
+                          </h3>
+                        )}
+                        <p className="text-base text-fase-black mt-1">
                           {member.personalName}
-                        </h3>
+                        </p>
                         {member.primaryContact?.role && (
-                          <p className="text-sm text-fase-black mt-1">{member.primaryContact.role}</p>
+                          <p className="text-sm text-gray-600 mt-1">{member.primaryContact.role}</p>
                         )}
                       </div>
                     </div>
-
-                    {member.organizationName && (
-                      <div className="mb-3">
-                        <p className="text-sm font-medium text-fase-navy">
-                          {member.organizationName}
-                        </p>
-                      </div>
-                    )}
 
                     <div className="space-y-2 text-sm text-fase-black">
                       {member.registeredAddress?.country && (
