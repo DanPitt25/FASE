@@ -233,6 +233,7 @@ function BankTransferInvoiceContent() {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter email address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   />
                 </div>
