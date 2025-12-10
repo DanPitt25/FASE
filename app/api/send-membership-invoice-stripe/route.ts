@@ -185,10 +185,10 @@ export async function POST(request: NextRequest) {
     const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text;
     
     const emailContent = {
-      subject: genderAwareSubject || "Welcome to FASE - Membership Approved",
-      welcome: genderAwareWelcome || "Welcome to FASE",
+      subject: genderAwareSubject || "FASE - Membership Approved",
+      welcome: genderAwareWelcome || "Membership Approved",
       dear: genderAwareDear || "Dear",
-      welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`) || `Welcome to FASE. Your application for <strong>${invoiceData.organizationName}</strong> has been approved.`,
+      welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`) || `Your application for <strong>${invoiceData.organizationName}</strong> has been approved.`,
       paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()) || `To complete your membership and access our members' portal, please remit your membership dues of €${invoiceData.totalAmount}. Your annual membership will then incept with immediate effect.`,
       paymentButton: adminEmail.payment_button || "Pay membership dues",
       bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",

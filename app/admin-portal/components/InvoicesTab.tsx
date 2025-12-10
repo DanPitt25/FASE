@@ -132,7 +132,7 @@ export default function InvoicesTab() {
         <div className="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
           <div className="text-gray-600">No invoices found</div>
           <div className="text-gray-500 text-sm mt-1">
-            Invoices will appear here after being sent from the Emails tab
+            Invoices will appear here after being sent from the Emails tab or Bank Transfer Invoice page
           </div>
         </div>
       ) : (

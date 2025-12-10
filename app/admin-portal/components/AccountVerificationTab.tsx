@@ -143,9 +143,9 @@ export default function AccountVerificationTab() {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="text-sm font-medium text-blue-900 mb-2">What this verification checks:</h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Each document in the 'accounts' collection has a document ID</li>
-          <li>• Each document contains a 'uid' field</li>
-          <li>• The document ID matches the 'uid' field value</li>
+          <li>• Each document in the &apos;accounts&apos; collection has a document ID</li>
+          <li>• Each document contains a &apos;uid&apos; field</li>
+          <li>• The document ID matches the &apos;uid&apos; field value</li>
           <li>• Reports any mismatches or missing uid fields</li>
         </ul>
       </div>
@@ -220,7 +220,7 @@ export default function AccountVerificationTab() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h5 className="text-yellow-800 font-medium">Found {results.mismatches.length} mismatched documents</h5>
-                      <p className="text-yellow-700 text-sm">These documents have document IDs that don't match their uid fields.</p>
+                      <p className="text-yellow-700 text-sm">These documents have document IDs that don&apos;t match their uid fields.</p>
                     </div>
                     <Button
                       variant="secondary"
