@@ -7,6 +7,7 @@ import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { createInvoiceRecord } from '../../lib/firestore';
 
 function BankTransferInvoiceContent() {
   const searchParams = useSearchParams();
@@ -87,6 +88,9 @@ function BankTransferInvoiceContent() {
       country: accountData?.businessAddress?.country || 'Netherlands'
     };
 
+    // Generate invoice number to use consistently
+    const invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
+
     try {
       const response = await fetch('/api/send-invoice-only', {
         method: 'POST',
@@ -97,7 +101,7 @@ function BankTransferInvoiceContent() {
           email: email.trim(),
           cc: cc.trim() || undefined,
           organizationName: orgName,
-          invoiceNumber: `FASE-${Math.floor(10000 + Math.random() * 90000)}`,
+          invoiceNumber,
           greeting: fullName || accountData?.accountAdministrator?.name || 'Client',
           totalAmount: parseFloat(amount),
           originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
@@ -112,6 +116,29 @@ function BankTransferInvoiceContent() {
 
       if (!response.ok) {
         throw new Error('Failed to generate invoice');
+      }
+
+      const result = await response.json();
+      
+      // Track invoice in database (client-side)
+      try {
+        await createInvoiceRecord({
+          invoiceNumber,
+          recipientEmail: email.trim(),
+          recipientName: fullName || accountData?.accountAdministrator?.name || 'Client',
+          organizationName: orgName,
+          amount: parseFloat(amount),
+          currency: currency,
+          type: 'regular',
+          status: 'sent',
+          sentAt: new Date(),
+          emailId: result?.result?.id || undefined,
+          pdfGenerated: true
+        });
+        console.log('✅ Invoice tracked in database:', invoiceNumber);
+      } catch (trackingError) {
+        console.error('❌ Failed to track invoice:', trackingError);
+        // Don't fail the UI if tracking fails
       }
 
       setSuccess(true);
