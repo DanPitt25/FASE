@@ -570,6 +570,29 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ Invoice delivery email sent successfully:', result);
     
+    // Send admin copy
+    try {
+      const adminEmailData = {
+        ...emailData,
+        email: 'admin@fasemga.com',
+        subject: `Admin Copy: ${emailData.subject}`,
+        pdfFilename: `ADMIN-COPY-${invoiceData.invoiceNumber}.pdf`
+      };
+
+      await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: adminEmailData
+        }),
+      });
+      console.log('✅ Admin copy sent for invoice:', invoiceData.invoiceNumber);
+    } catch (adminError) {
+      console.error('❌ Failed to send admin copy:', adminError);
+    }
+    
     return NextResponse.json({
       success: true,
       message: 'Invoice delivery email sent successfully',
