@@ -646,6 +646,27 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    // Override with customized content if provided
+    if (requestData.customizedEmailContent) {
+      const customContent = requestData.customizedEmailContent;
+      emailContent = {
+        subject: customContent.subject || emailContent.subject,
+        welcome: customContent.welcome || emailContent.welcome,
+        dear: customContent.dear || emailContent.dear,
+        welcomeText: customContent.welcome_text?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`) || emailContent.welcomeText,
+        paymentText: customContent.payment_text?.replace('{totalAmount}', currencyConversion.convertedCurrency === 'EUR' ? `€${invoiceData.totalAmount}` : `${getCurrencySymbol(currencyConversion.convertedCurrency)}${currencyConversion.roundedAmount}`) || emailContent.paymentText,
+        paymentOptions: emailContent.paymentOptions,
+        paypalOption: emailContent.paypalOption,
+        payOnline: customContent.payment_button || emailContent.payOnline,
+        bankTransfer: emailContent.bankTransfer,
+        invoiceAttached: customContent.bank_transfer_text || emailContent.invoiceAttached,
+        engagement: customContent.engagement || emailContent.engagement,
+        regards: customContent.regards || emailContent.regards,
+        signature: customContent.signature || emailContent.signature,
+        title: customContent.title || emailContent.title
+      };
+    }
+
     // Generate HTML based on template
     let invoiceHTML: string;
     
