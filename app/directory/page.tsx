@@ -7,6 +7,16 @@ import PageLayout from '../../components/PageLayout';
 import { getApprovedMembersForDirectory } from '../../lib/unified-member';
 import type { UnifiedMember } from '../../lib/unified-member';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
+import countries from 'i18n-iso-countries';
+
+// Register locales
+countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/es.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/fr.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/de.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/it.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/pt.json"));
+countries.registerLocale(require("i18n-iso-countries/langs/nl.json"));
 
 export default function DirectoryPage() {
   const t = useTranslations('directory');
@@ -15,7 +25,6 @@ export default function DirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedOrganizationType, setSelectedOrganizationType] = useState('');
-  const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState('');
   
   // Show coming soon overlay
   const [showComingSoon] = useState(false);
@@ -53,10 +62,7 @@ export default function DirectoryPage() {
     
     const matchesOrganizationType = !selectedOrganizationType || member.organizationType === selectedOrganizationType;
     
-    const matchesLinesOfBusiness = !selectedLinesOfBusiness || 
-      (member.linesOfBusiness && member.linesOfBusiness.includes(selectedLinesOfBusiness));
-    
-    return matchesSearch && matchesCountry && matchesOrganizationType && matchesLinesOfBusiness;
+    return matchesSearch && matchesCountry && matchesOrganizationType;
   });
 
   // Get unique values for filters
@@ -71,9 +77,6 @@ export default function DirectoryPage() {
     members.map(member => member.organizationType).filter(Boolean)
   )).sort();
 
-  const availableLinesOfBusiness = Array.from(new Set(
-    members.flatMap(member => member.linesOfBusiness || [])
-  )).sort();
 
   if (loading) {
     return (
@@ -234,7 +237,7 @@ export default function DirectoryPage() {
                 </div>
 
                 {/* Filters Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Country Filter */}
                   <div>
                     <label htmlFor="country" className="block text-sm font-medium text-fase-black mb-2">
@@ -247,9 +250,12 @@ export default function DirectoryPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
                     >
                       <option value="">{t('search_and_filters.all_countries')}</option>
-                      {availableCountries.map(country => (
-                        <option key={country} value={country}>{country}</option>
-                      ))}
+                      {availableCountries.map(countryCode => {
+                        const countryName = countries.getName(countryCode, 'en') || countryCode;
+                        return (
+                          <option key={countryCode} value={countryCode}>{countryName}</option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -271,23 +277,6 @@ export default function DirectoryPage() {
                     </select>
                   </div>
 
-                  {/* Lines of Business Filter */}
-                  <div>
-                    <label htmlFor="linesOfBusiness" className="block text-sm font-medium text-fase-black mb-2">
-                      {t('search_and_filters.filter_by_business_line')}
-                    </label>
-                    <select
-                      id="linesOfBusiness"
-                      value={selectedLinesOfBusiness}
-                      onChange={(e) => setSelectedLinesOfBusiness(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
-                    >
-                      <option value="">{t('search_and_filters.all_business_lines')}</option>
-                      {availableLinesOfBusiness.map(line => (
-                        <option key={line} value={line}>{line}</option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
               </div>
             </div>
@@ -299,7 +288,7 @@ export default function DirectoryPage() {
               </h2>
               <p className="text-sm text-gray-600">
                 {filteredMembers.length} {filteredMembers.length === 1 ? t('results.count_singular') : t('results.count_plural')}
-                {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness ? ` ${t('results.found')}` : ''}
+                {searchTerm || selectedCountry || selectedOrganizationType ? ` ${t('results.found')}` : ''}
               </p>
             </div>
 
@@ -311,7 +300,7 @@ export default function DirectoryPage() {
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">{t('empty_state.no_members_title')}</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {searchTerm || selectedCountry || selectedOrganizationType || selectedLinesOfBusiness
+                  {searchTerm || selectedCountry || selectedOrganizationType
                     ? t('empty_state.try_adjusting')
                     : t('empty_state.will_be_populated')
                   }

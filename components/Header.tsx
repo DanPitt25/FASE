@@ -206,6 +206,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                     </span>
                     <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg border border-fase-light-gold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="py-2">
+                        <a href="/directory" className={`block px-4 py-2 text-sm ${
+                          currentPage === 'directory' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
+                        }`}>Member Directory</a>
                         <a href="/events" className={`block px-4 py-2 text-sm ${
                           currentPage === 'events' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>{tNav('events')}</a>
@@ -333,11 +336,14 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             
             <div className="space-y-1">
               <div className="px-3 py-2 text-sm font-semibold text-fase-navy">{tNav('networking')}</div>
+              <a href="/directory" className={`block pl-6 pr-3 py-2 text-base font-medium ${
+                currentPage === 'directory' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Member Directory</a>
               <a href="/events" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'events' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Events</a>
               <a href="/rendezvous" className={`block pl-6 pr-3 py-2 text-base font-medium ${
-                currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+                currentPage === 'rendezvous' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-cream'
               }`}>MGA Rendezvous</a>
             </div>
             
