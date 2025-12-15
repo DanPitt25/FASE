@@ -18,7 +18,7 @@ export default function DirectoryPage() {
   const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState('');
   
   // Show coming soon overlay
-  const [showComingSoon] = useState(true);
+  const [showComingSoon] = useState(false);
   
   // Animation hooks
   const bannerAnimation = useScrollAnimation();
