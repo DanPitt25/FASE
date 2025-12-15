@@ -575,9 +575,19 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
   }
 };
 
-// Get all approved members for directory
+// Get all approved members for directory (including invoice_sent status)
 export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]> => {
-  return await getAccountsByStatus('approved');
+  try {
+    const [approvedMembers, invoiceSentMembers] = await Promise.all([
+      getAccountsByStatus('approved'),
+      getAccountsByStatus('invoice_sent')
+    ]);
+    
+    return [...approvedMembers, ...invoiceSentMembers];
+  } catch (error) {
+    console.error('Error getting approved members for directory:', error);
+    return [];
+  }
 };
 
 // Get members with member portal access (approved + admin)

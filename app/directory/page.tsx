@@ -44,9 +44,12 @@ export default function DirectoryPage() {
     const matchesSearch = !searchTerm || 
       member.personalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.registeredAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase());
+      member.registeredAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member as any).businessAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCountry = !selectedCountry || member.registeredAddress?.country === selectedCountry;
+    const matchesCountry = !selectedCountry || 
+      member.registeredAddress?.country === selectedCountry ||
+      (member as any).businessAddress?.country === selectedCountry;
     
     const matchesOrganizationType = !selectedOrganizationType || member.organizationType === selectedOrganizationType;
     
@@ -58,7 +61,10 @@ export default function DirectoryPage() {
 
   // Get unique values for filters
   const availableCountries = Array.from(new Set(
-    members.map(member => member.registeredAddress?.country).filter(Boolean)
+    members.flatMap(member => [
+      member.registeredAddress?.country,
+      (member as any).businessAddress?.country
+    ]).filter(Boolean)
   )).sort();
 
   const availableOrganizationTypes = Array.from(new Set(
@@ -335,13 +341,13 @@ export default function DirectoryPage() {
                     </div>
 
                     <div className="space-y-2 text-sm text-fase-black">
-                      {member.registeredAddress?.country && (
+                      {(member.registeredAddress?.country || (member as any).businessAddress?.country) && (
                         <div className="flex items-center">
                           <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span>{member.registeredAddress.country}</span>
+                          <span>{member.registeredAddress?.country || (member as any).businessAddress?.country}</span>
                         </div>
                       )}
                       
