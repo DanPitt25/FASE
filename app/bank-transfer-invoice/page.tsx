@@ -255,27 +255,7 @@ function BankTransferInvoiceContent() {
                         }
                       </p>
                     }
-                    {customLineItem && customLineItem.enabled ? (
-                      <div className="mb-4 text-fase-black">
-                        <strong>Invoice Breakdown:</strong>
-                        <div className="mt-2 p-3 bg-gray-50 rounded border">
-                          <div className="flex justify-between text-sm">
-                            <span>Membership Fee:</span>
-                            <span>{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{(parseFloat(amount || '0') - customLineItem.amount).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm mt-1">
-                            <span>{customLineItem.description}:</span>
-                            <span>{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{customLineItem.amount.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between font-bold text-fase-navy mt-2 pt-2 border-t border-gray-300">
-                            <span>Total:</span>
-                            <span className="text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{amount}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{amount}</span></p>
-                    )}
+                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{amount}</span></p>
                   </div>
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
