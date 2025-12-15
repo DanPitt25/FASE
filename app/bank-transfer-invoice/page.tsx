@@ -25,7 +25,13 @@ function BankTransferInvoiceContent() {
   const currency = searchParams?.get('currency') || 'EUR';
   const orgName = searchParams?.get('orgName');
   const fullName = searchParams?.get('fullName');
-  const address = searchParams?.get('address');
+  const address = searchParams?.get('address'); // Legacy parameter
+  const addressLine1 = searchParams?.get('addressLine1');
+  const addressLine2 = searchParams?.get('addressLine2');
+  const city = searchParams?.get('city');
+  const county = searchParams?.get('county');
+  const postcode = searchParams?.get('postcode');
+  const country = searchParams?.get('country');
   const gender = searchParams?.get('gender');
   const recipientEmail = searchParams?.get('email');
   const hasOtherAssociations = searchParams?.get('hasOtherAssociations') === 'true';
@@ -92,11 +98,11 @@ function BankTransferInvoiceContent() {
     setError('');
 
     const addressData = {
-      line1: accountData?.businessAddress?.line1 || address || 'Not provided',
-      line2: accountData?.businessAddress?.line2 || '',
-      city: accountData?.businessAddress?.city || 'Not provided',
-      postcode: accountData?.businessAddress?.postcode || 'Not provided',
-      country: accountData?.businessAddress?.country || 'Netherlands'
+      line1: accountData?.businessAddress?.line1 || addressLine1 || address || 'Not provided',
+      line2: accountData?.businessAddress?.line2 || addressLine2 || '',
+      city: accountData?.businessAddress?.city || city || 'Not provided',
+      postcode: accountData?.businessAddress?.postcode || postcode || 'Not provided',
+      country: accountData?.businessAddress?.country || country || 'Netherlands'
     };
 
     // Generate invoice number to use consistently
