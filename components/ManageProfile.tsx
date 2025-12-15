@@ -481,21 +481,6 @@ export default function ManageProfile() {
               <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
                 {company.organizationName}
               </h3>
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <span className="font-medium">
-                  {company.organizationType === 'MGA' ? t('manage_profile.organization_types.mga_full') : 
-                   company.organizationType === 'carrier' ? t('manage_profile.organization_types.carrier_full') : 
-                   company.organizationType === 'provider' ? t('manage_profile.organization_types.provider_full') : 
-                   company.organizationType}
-                </span>
-                <span className="font-medium">
-                  {company.status === 'approved' ? t('manage_profile.member_statuses.active_member') : 
-                   company.status === 'pending' ? t('manage_profile.member_statuses.under_review') : 
-                   company.status === 'pending_payment' ? t('manage_profile.member_statuses.payment_required') : 
-                   company.status === 'pending_invoice' ? t('manage_profile.member_statuses.invoice_sent') : 
-                   company.status}
-                </span>
-              </div>
             </div>
           </div>
           

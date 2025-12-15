@@ -96,6 +96,21 @@ function CompanyDetails({
         </div>
       )}
 
+      {/* Lines of Business */}
+      {company.linesOfBusiness && company.linesOfBusiness.length > 0 && (
+        <div className="mb-4">
+          <div className="text-sm font-medium text-gray-700 mb-1">Lines of Business</div>
+          <div className="text-gray-900">
+            {company.linesOfBusiness.map((line: string, index: number) => (
+              <span key={index}>
+                {line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {index < company.linesOfBusiness!.length - 1 && ', '}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Contact Info */}
       {company.email && (
         <div className="mt-auto pt-4 border-t border-gray-200">
@@ -128,30 +143,8 @@ function CompanyCountryDetails({
   const locale = translations.locale || 'en';
   const countryName = countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
   
-  // Mock lines of business based on country and company type
-  const getMockLinesOfBusiness = (companyType: string, country: string) => {
-    const linesByType = {
-      'MGA': ['Property Insurance', 'Casualty Insurance', 'Professional Indemnity', 'Cyber Liability'],
-      'carrier': ['Motor Insurance', 'Property & Casualty', 'Marine Insurance', 'Aviation Insurance'],
-      'provider': ['Claims Management', 'Risk Assessment', 'Underwriting Support', 'Loss Control']
-    };
-    
-    const baseLines = linesByType[companyType as keyof typeof linesByType] || ['General Insurance Services'];
-    
-    // Add some country-specific variations
-    const countrySpecific = {
-      'DE': ['Workers Compensation', 'Directors & Officers'],
-      'IT': ['Agricultural Insurance', 'Construction Insurance'],
-      'ES': ['Tourism Insurance', 'Energy Insurance'],
-      'FR': ['Environmental Liability', 'Product Liability'],
-      'AT': ['Industrial Insurance', 'Transport Insurance']
-    };
-    
-    const additional = countrySpecific[country as keyof typeof countrySpecific] || [];
-    return [...baseLines.slice(0, 2), ...additional.slice(0, 2)];
-  };
-
-  const linesOfBusiness = getMockLinesOfBusiness(company.organizationType || 'MGA', countryCode);
+  // Use only real lines of business from Firestore
+  const linesOfBusiness = company.linesOfBusiness || [];
   const isBusinessLocation = memberData.businessAddress?.country === countryCode;
   const isMarketLocation = memberData.markets?.includes(countryCode);
   
@@ -179,18 +172,20 @@ function CompanyCountryDetails({
         </div>
       </div>
 
-      {/* Lines of Business */}
-      <div className="mb-6">
-        <div className="text-sm font-medium text-gray-700 mb-3">Lines of Business in {countryName}</div>
-        <div className="space-y-2">
-          {linesOfBusiness.map((line, index) => (
-            <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
-              <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-              <span className="text-sm text-gray-900">{line}</span>
-            </div>
-          ))}
+      {/* Lines of Business - only show if data exists */}
+      {linesOfBusiness.length > 0 && (
+        <div className="mb-6">
+          <div className="text-sm font-medium text-gray-700 mb-3">Lines of Business in {countryName}</div>
+          <div className="space-y-2">
+            {linesOfBusiness.map((line, index) => (
+              <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
+                <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
+                <span className="text-sm text-gray-900">{line}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Market Status */}
       <div className="mb-4">
