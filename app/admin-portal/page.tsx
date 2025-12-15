@@ -37,6 +37,7 @@ import AlertsTab from './components/AlertsTab';
 import JoinRequestsTab from './components/JoinRequestsTab';
 import EmailsTab from './components/EmailsTab';
 import InvoicesTab from './components/InvoicesTab';
+import WebsiteUpdateTab from './components/WebsiteUpdateTab';
 
 export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
@@ -565,6 +566,21 @@ export default function AdminPortalPage() {
         </svg>
       ),
       content: <InvoicesTab />
+    },
+    {
+      id: 'website-update',
+      title: 'Website Update',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 0l-3-3m3 3l3-3" />
+        </svg>
+      ),
+      content: (
+        <WebsiteUpdateTab
+          memberApplications={memberApplications}
+          loading={loading}
+        />
+      )
     }
   ];
 

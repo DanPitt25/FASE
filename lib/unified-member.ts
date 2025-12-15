@@ -467,7 +467,9 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
         registeredAddress: data.registeredAddress,
         businessAddress: data.businessAddress,
         logoURL: data.logoURL,
-        linesOfBusiness: data.linesOfBusiness
+        linesOfBusiness: data.linesOfBusiness,
+        website: data.website,
+        carrierInfo: data.carrierInfo
       } as UnifiedMember);
     });
     
@@ -506,6 +508,8 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
           businessAddress: orgData.businessAddress,
           logoURL: orgData.logoURL,
           linesOfBusiness: orgData.linesOfBusiness,
+          website: orgData.website,
+          carrierInfo: orgData.carrierInfo,
           createdAt: memberData.createdAt,
           updatedAt: memberData.updatedAt
         } as UnifiedMember);
@@ -563,8 +567,10 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
         markets: data.portfolio?.markets || [], // Markets are in portfolio.markets
         // Include other account fields that might be needed
         linesOfBusiness: data.linesOfBusiness,
-        accountAdministrator: data.accountAdministrator
-      } as UnifiedMember & { businessAddress?: any; markets?: string[] });
+        accountAdministrator: data.accountAdministrator,
+        website: data.website,
+        carrierInfo: data.carrierInfo
+      } as UnifiedMember & { businessAddress?: any; markets?: string[]; website?: string; carrierInfo?: any });
     });
     
     
