@@ -21,7 +21,7 @@ countries.registerLocale(require("i18n-iso-countries/langs/nl.json"));
 // Helper function to get display organization type
 const getDisplayOrganizationType = (member: UnifiedMember): string => {
   if (member.organizationType === 'MGA') return 'MGA';
-  if (member.organizationType === 'provider') return 'Provider';
+  if (member.organizationType === 'provider') return 'Service Provider';
   if (member.organizationType === 'carrier') {
     const carrierInfo = (member as any).carrierInfo;
     if (carrierInfo?.organizationType === 'insurance_broker' || carrierInfo?.organizationType === 'reinsurance_broker') {
@@ -330,14 +330,14 @@ export default function DirectoryPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        {member.organizationName && (
-                          <h3 className="text-lg font-noto-serif font-bold text-fase-navy">
-                            {member.organizationName}
-                          </h3>
+                        <h3 className="text-lg font-noto-serif font-bold text-fase-navy">
+                          {member.organizationName || member.personalName}
+                        </h3>
+                        {member.organizationName && member.personalName && member.organizationName !== member.personalName && (
+                          <p className="text-base text-fase-black mt-1">
+                            {member.personalName}
+                          </p>
                         )}
-                        <p className="text-base text-fase-black mt-1">
-                          {member.personalName}
-                        </p>
                         {member.primaryContact?.role && (
                           <p className="text-sm text-gray-600 mt-1">{member.primaryContact.role}</p>
                         )}
@@ -367,12 +367,30 @@ export default function DirectoryPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <a 
-                            href={(member as any).website.startsWith('http') ? (member as any).website : `https://${(member as any).website}`}
+                            href={(() => {
+                              let url = (member as any).website;
+                              // Remove protocol if present
+                              url = url.replace(/^https?:\/\//, '');
+                              // Add www. if not present
+                              if (!url.startsWith('www.')) {
+                                url = `www.${url}`;
+                              }
+                              return `https://${url}`;
+                            })()}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-fase-blue hover:underline"
                           >
-                            {(member as any).website.replace(/^https?:\/\//, '')}
+                            {(() => {
+                              let displayUrl = (member as any).website;
+                              // Remove protocol if present
+                              displayUrl = displayUrl.replace(/^https?:\/\//, '');
+                              // Add www. if not present
+                              if (!displayUrl.startsWith('www.')) {
+                                displayUrl = `www.${displayUrl}`;
+                              }
+                              return displayUrl;
+                            })()}
                           </a>
                         </div>
                       )}

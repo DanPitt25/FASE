@@ -38,6 +38,7 @@ import JoinRequestsTab from './components/JoinRequestsTab';
 import EmailsTab from './components/EmailsTab';
 import InvoicesTab from './components/InvoicesTab';
 import WebsiteUpdateTab from './components/WebsiteUpdateTab';
+import TempAccountTab from './components/TempAccountTab';
 
 export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
@@ -581,6 +582,16 @@ export default function AdminPortalPage() {
           loading={loading}
         />
       )
+    },
+    {
+      id: 'temp-accounts',
+      title: 'Directory Entries',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+      content: <TempAccountTab />
     }
   ];
 
