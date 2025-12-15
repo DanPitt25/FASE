@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import PageLayout from '../../components/PageLayout';
 import { getApprovedMembersForDirectory } from '../../lib/unified-member';
@@ -20,6 +20,7 @@ countries.registerLocale(require("i18n-iso-countries/langs/nl.json"));
 
 export default function DirectoryPage() {
   const t = useTranslations('directory');
+  const locale = useLocale();
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -251,7 +252,7 @@ export default function DirectoryPage() {
                     >
                       <option value="">{t('search_and_filters.all_countries')}</option>
                       {availableCountries.map(countryCode => {
-                        const countryName = countries.getName(countryCode, 'en') || countryCode;
+                        const countryName = countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
                         return (
                           <option key={countryCode} value={countryCode}>{countryName}</option>
                         );
@@ -336,7 +337,12 @@ export default function DirectoryPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span>{member.registeredAddress?.country || (member as any).businessAddress?.country}</span>
+                          <span>
+                            {(() => {
+                              const countryCode = member.registeredAddress?.country || (member as any).businessAddress?.country;
+                              return countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
+                            })()}
+                          </span>
                         </div>
                       )}
                       
