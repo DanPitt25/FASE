@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
+import EmailEditorModal from './EmailEditorModal';
 
 interface EmailsTabProps {
   prefilledData?: any;
@@ -40,13 +41,22 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     reminderAttachment: null as File | null,
     // Lost invoice fields
     invoiceDate: new Date().toISOString().split('T')[0], // Default to today
-    lostInvoiceAttachment: null as File | null
+    lostInvoiceAttachment: null as File | null,
+    // Custom line item fields
+    customLineItem: {
+      description: '',
+      amount: 0,
+      enabled: false
+    }
   });
 
   const [sending, setSending] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
+  const [showEmailEditor, setShowEmailEditor] = useState(false);
+  const [defaultTemplate, setDefaultTemplate] = useState<any>(null);
+  const [customizedContent, setCustomizedContent] = useState<any>(null);
 
   // Update form data when prefilledData changes
   useEffect(() => {
@@ -96,11 +106,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   };
 
   const originalAmount = calculateOriginalAmount();
-  const finalAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
+  const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
+  const finalAmount = formData.customLineItem.enabled ? baseAmount + formData.customLineItem.amount : baseAmount;
 
   const emailTemplates = {
     invoice: {
-      title: 'Send Invoice Email',
+      title: 'Invoice Email',
       description: 'Send membership acceptance email with Stripe payment link and bank transfer option',
       apiEndpoint: '/api/send-membership-invoice-stripe',
       previewEndpoint: '/api/send-membership-invoice-stripe',
@@ -175,7 +186,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         template: selectedTemplate,
         preview: true,
         ...formData,
-        greeting: formData.greeting || formData.fullName
+        greeting: formData.greeting || formData.fullName,
+        // Include customized content if available
+        ...(customizedContent && { customizedEmailContent: customizedContent })
       };
 
       // Special handling for standalone invoice template (send-invoice-only API)
@@ -194,10 +207,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.totalAmount = finalAmount;
           payload.exactTotalAmount = finalAmount;
           payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount).toString() : '0';
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
           payload.forceCurrency = formData.forceCurrency;
+          // Add custom line item data
+          payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
         }
 
         // Add lost invoice flag and date for lost invoice template
@@ -285,6 +300,35 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     }
   };
 
+  const handleCustomize = async () => {
+    // Load the default template for the membership acceptance email
+    try {
+      const response = await fetch('/api/get-email-template?templateKey=membership_acceptance_admin');
+      
+      if (!response.ok) {
+        throw new Error('Failed to load template');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.template) {
+        setDefaultTemplate(data.template);
+        setShowEmailEditor(true);
+      }
+    } catch (error) {
+      console.error('Error loading default template:', error);
+    }
+  };
+
+  const handleApplyCustomization = (customContent: any) => {
+    // Store the customized content and trigger a preview refresh
+    setCustomizedContent(customContent);
+    // Auto-refresh the preview to show customized content
+    setTimeout(() => {
+      handlePreview();
+    }, 100);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
@@ -295,7 +339,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       const payload: any = {
         template: selectedTemplate,
         ...formData,
-        greeting: formData.greeting || formData.fullName
+        greeting: formData.greeting || formData.fullName,
+        // Include customized content if available
+        ...(customizedContent && { customizedEmailContent: customizedContent })
       };
 
       // Special handling for standalone invoice template (send-invoice-only API)
@@ -314,10 +360,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.totalAmount = finalAmount;
           payload.exactTotalAmount = finalAmount;
           payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - finalAmount).toString() : '0';
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount).toString() : '0';
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
           payload.forceCurrency = formData.forceCurrency;
+          // Add custom line item data
+          payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
         }
 
         // Add lost invoice flag and date for lost invoice template
@@ -634,6 +682,85 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <option value="100-500m">€100-500M (€4,200)</option>
                   <option value="500m+">€500M+ (€7,000)</option>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Line Item - Only for pricing templates */}
+          {emailTemplates[selectedTemplate].requiresPricing && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Custom Line Item</h4>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="enableCustomLineItem"
+                    checked={formData.customLineItem.enabled}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      customLineItem: { 
+                        ...prev.customLineItem, 
+                        enabled: e.target.checked 
+                      }
+                    }))}
+                    className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
+                  />
+                  <label htmlFor="enableCustomLineItem" className="text-sm font-medium text-gray-700">
+                    Add custom line item to invoice
+                  </label>
+                </div>
+                
+                {formData.customLineItem.enabled && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <input
+                        type="text"
+                        value={formData.customLineItem.description}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          customLineItem: { 
+                            ...prev.customLineItem, 
+                            description: e.target.value 
+                          }
+                        }))}
+                        className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder="e.g., Additional Services, Late Payment Fee"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Amount (€)</label>
+                      <input
+                        type="number"
+                        value={formData.customLineItem.amount || ''}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          customLineItem: { 
+                            ...prev.customLineItem, 
+                            amount: parseFloat(e.target.value) || 0
+                          }
+                        }))}
+                        className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {formData.customLineItem.enabled && (
+                  <div className="ml-7 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-sm text-blue-800">
+                      <strong>New Total:</strong> €{finalAmount.toFixed(2)} 
+                      {formData.customLineItem.amount > 0 && (
+                        <span className="text-green-600 ml-2">
+                          (+€{formData.customLineItem.amount.toFixed(2)})
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1020,6 +1147,36 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   >
                     {previewing ? 'Refreshing...' : 'Refresh Preview'}
                   </Button>
+                  {selectedTemplate === 'invoice' && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={handleCustomize}
+                        disabled={sending || previewing}
+                      >
+                        Customize
+                      </Button>
+                      {customizedContent && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-green-600 font-medium">
+                            ✓ Customized
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomizedContent(null);
+                              setTimeout(() => handlePreview(), 100);
+                            }}
+                            className="text-xs text-gray-500 hover:text-gray-700 underline"
+                            disabled={sending || previewing}
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                   <Button
                     variant="primary"
                     size="small"
@@ -1039,6 +1196,22 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Email Editor Modal */}
+      {showEmailEditor && defaultTemplate && (
+        <EmailEditorModal
+          isOpen={showEmailEditor}
+          onClose={() => setShowEmailEditor(false)}
+          onApply={handleApplyCustomization}
+          recipientData={{
+            email: formData.email,
+            fullName: formData.fullName,
+            organizationName: formData.organizationName,
+            totalAmount: finalAmount.toString()
+          }}
+          originalTemplate={defaultTemplate}
+        />
       )}
     </div>
   );

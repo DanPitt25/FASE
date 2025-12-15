@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
       },
       originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
       discountAmount: requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0,
-      discountReason: requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""
+      discountReason: requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : "",
+      customLineItem: requestData.customLineItem || null
     };
+    
+    console.log('🔍 DEBUG: Custom line item data:', JSON.stringify(invoiceData.customLineItem, null, 2));
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
@@ -282,6 +285,11 @@ export async function POST(request: NextRequest) {
       
       currentY -= rowHeight;
       
+      // Calculate membership fee amount (total - custom line item if present)
+      const membershipAmount = invoiceData.customLineItem && invoiceData.customLineItem.enabled 
+        ? invoiceData.totalAmount - invoiceData.customLineItem.amount
+        : invoiceData.originalAmount;
+      
       // Invoice item row - Membership
       firstPage.drawText('FASE Annual Membership', {
         x: colX[0] + 10,
@@ -300,7 +308,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+      firstPage.drawText(formatCurrency(membershipAmount, currencyConversion.convertedCurrency), {
         x: colX[2] + 10,
         y: currentY - 15,
         size: 10,
@@ -308,7 +316,7 @@ export async function POST(request: NextRequest) {
         color: faseBlack,
       });
       
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+      firstPage.drawText(formatCurrency(membershipAmount, currencyConversion.convertedCurrency), {
         x: colX[3] + 10,
         y: currentY - 15,
         size: 10,
@@ -338,6 +346,47 @@ export async function POST(request: NextRequest) {
           size: 10,
           font: bodyFont,
           color: discountGreen,
+        });
+      }
+      
+      // Add custom line item if applicable
+      console.log('🔍 DEBUG: Checking custom line item:', invoiceData.customLineItem);
+      console.log('🔍 DEBUG: Line item enabled?', invoiceData.customLineItem?.enabled);
+      if (invoiceData.customLineItem && invoiceData.customLineItem.enabled) {
+        console.log('🔍 DEBUG: Drawing custom line item:', invoiceData.customLineItem.description);
+        currentY -= rowHeight;
+        
+        firstPage.drawText(invoiceData.customLineItem.description, {
+          x: colX[0] + 10,
+          y: currentY - 15,
+          size: 10,
+          font: bodyFont,
+          color: faseBlack,
+          maxWidth: colWidths[0] - 20,
+        });
+        
+        firstPage.drawText('1', {
+          x: colX[1] + 10,
+          y: currentY - 15,
+          size: 10,
+          font: bodyFont,
+          color: faseBlack,
+        });
+        
+        firstPage.drawText(formatCurrency(invoiceData.customLineItem.amount, currencyConversion.convertedCurrency), {
+          x: colX[2] + 10,
+          y: currentY - 15,
+          size: 10,
+          font: bodyFont,
+          color: faseBlack,
+        });
+        
+        firstPage.drawText(formatCurrency(invoiceData.customLineItem.amount, currencyConversion.convertedCurrency), {
+          x: colX[3] + 10,
+          y: currentY - 15,
+          size: 10,
+          font: bodyFont,
+          color: faseBlack,
         });
       }
       

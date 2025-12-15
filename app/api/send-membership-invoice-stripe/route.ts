@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
       originalAmount: requestData.originalAmount || 1500,
       discountAmount: requestData.discountAmount || 0,
       discountReason: requestData.discountReason || "",
-      address: requestData.address
+      address: requestData.address,
+      customLineItem: requestData.customLineItem || null
     };
 
     // Validate required basic fields
@@ -128,22 +129,25 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
+    // Prepare line items for Stripe
+    const lineItems = [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: `FASE Membership Invoice ${invoiceNumber}`,
+            description: `Payment for ${invoiceData.organizationName} membership`,
+          },
+          unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
+        },
+        quantity: 1,
+      },
+    ];
+
     const session = await stripeInstance.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `FASE Membership Invoice ${invoiceNumber}`,
-              description: `Payment for ${invoiceData.organizationName} membership`,
-            },
-            unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       metadata: {
         invoice_number: invoiceNumber,
         organization_name: invoiceData.organizationName,
@@ -184,7 +188,7 @@ export async function POST(request: NextRequest) {
     const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome;
     const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text;
     
-    const emailContent = {
+    let emailContent = {
       subject: genderAwareSubject || "FASE - Membership Approved",
       welcome: genderAwareWelcome || "Membership Approved",
       dear: genderAwareDear || "Dear",
@@ -196,8 +200,41 @@ export async function POST(request: NextRequest) {
       engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
       regards: adminEmail.regards || "Best regards,",
       signature: adminEmail.signature || "Aline",
-      title: adminEmail.title || "Chief Operating Officer, FASE"
+      title: adminEmail.title || "Chief Operating Officer, FASE",
+      name: adminEmail.name || "Aline Sullivan",
+      email: adminEmail.email || "aline.sullivan@fasemga.com"
     };
+
+    // Override with customized content if provided
+    if (requestData.customizedEmailContent) {
+      const customContent = requestData.customizedEmailContent;
+      
+      // Helper function to replace variables in customized content
+      const replaceVariables = (text: string) => {
+        if (!text) return text;
+        return text
+          .replace(/{organizationName}/g, invoiceData.organizationName)
+          .replace(/{fullName}/g, invoiceData.fullName)
+          .replace(/{totalAmount}/g, invoiceData.totalAmount.toString());
+      };
+      
+      emailContent = {
+        subject: replaceVariables(customContent.subject) || emailContent.subject,
+        welcome: replaceVariables(customContent.welcome) || emailContent.welcome,
+        dear: replaceVariables(customContent.dear) || emailContent.dear,
+        welcomeText: replaceVariables(customContent.welcome_text)?.replace(invoiceData.organizationName, `<strong>${invoiceData.organizationName}</strong>`) || emailContent.welcomeText,
+        paymentText: replaceVariables(customContent.payment_text) || emailContent.paymentText,
+        paymentButton: replaceVariables(customContent.payment_button) || emailContent.paymentButton,
+        bankTransferText: replaceVariables(customContent.bank_transfer_text) || emailContent.bankTransferText,
+        bankTransferLink: replaceVariables(customContent.bank_transfer_link) || emailContent.bankTransferLink,
+        engagement: replaceVariables(customContent.engagement) || emailContent.engagement,
+        regards: replaceVariables(customContent.regards) || emailContent.regards,
+        signature: replaceVariables(customContent.signature) || emailContent.signature,
+        title: replaceVariables(customContent.title) || emailContent.title,
+        name: replaceVariables(customContent.name) || emailContent.name,
+        email: replaceVariables(customContent.email) || emailContent.email
+      };
+    }
 
     // Convert currency based on customer country or force currency override
     const currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
@@ -232,7 +269,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${currencyConversion.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${currencyConversion.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&address=${encodeURIComponent(invoiceData.address?.line1 || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}${invoiceData.customLineItem && invoiceData.customLineItem.enabled ? `&customLineItem=${encodeURIComponent(JSON.stringify(invoiceData.customLineItem))}` : ''}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             
