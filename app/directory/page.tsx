@@ -90,7 +90,22 @@ export default function DirectoryPage() {
 
   const availableOrganizationTypes = Array.from(new Set(
     members.map(member => getDisplayOrganizationType(member)).filter(Boolean)
-  )).sort();
+  )).sort((a, b) => {
+    // Custom sort order: MGA, Carrier, Broker, Service Provider, then alphabetical
+    const order = ['MGA', 'Carrier', 'Broker', 'Service Provider'];
+    const indexA = order.indexOf(a);
+    const indexB = order.indexOf(b);
+    
+    // If both are in the custom order, sort by their position
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    // If only one is in the custom order, prioritize it
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    // If neither is in the custom order, sort alphabetically
+    return a.localeCompare(b);
+  });
 
 
   if (loading) {
