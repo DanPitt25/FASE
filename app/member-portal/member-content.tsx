@@ -6,16 +6,15 @@ import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
-import { getUserAlerts, getUserMessages, markAlertAsRead, dismissAlert, markMessageAsRead, deleteMessageForUser, Alert, UserAlert, Message, UserMessage } from "../../lib/unified-messaging";
+import MemberMap from "../../components/MemberMap";
+import { getUserAlerts, markAlertAsRead, dismissAlert, Alert, UserAlert } from "../../lib/unified-messaging";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
-  const { t, loading: translationsLoading } = usePortalTranslations();
+  const { t, loading: translationsLoading, translations, locale } = usePortalTranslations();
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
-  const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(true);
   
   const router = useRouter();
 
@@ -45,20 +44,13 @@ export default function MemberContent() {
       
       try {
         setLoadingAlerts(true);
-        setLoadingMessages(true);
         
-        const [userAlerts, userMessages] = await Promise.all([
-          getUserAlerts(member.id), // Use Firestore account ID
-          getUserMessages(member.id) // Use Firestore account ID
-        ]);
-        
+        const userAlerts = await getUserAlerts(member.id); // Use Firestore account ID
         
         setAlerts(userAlerts);
-        setMessages(userMessages);
       } catch (error) {
       } finally {
         setLoadingAlerts(false);
-        setLoadingMessages(false);
       }
     };
 
@@ -85,24 +77,6 @@ export default function MemberContent() {
     }
   };
 
-  // Message handlers
-  const handleMarkMessageAsRead = async (userMessageId: string) => {
-    try {
-      await markMessageAsRead(userMessageId);
-      setMessages(prev => prev.map(message => 
-        message.id === userMessageId ? { ...message, isRead: true } : message
-      ));
-    } catch (error) {
-    }
-  };
-
-  const handleDeleteMessage = async (userMessageId: string) => {
-    try {
-      await deleteMessageForUser(userMessageId);
-      setMessages(prev => prev.filter(message => message.id !== userMessageId));
-    } catch (error) {
-    }
-  };
 
 
 
@@ -126,7 +100,6 @@ export default function MemberContent() {
 
   // Get active alert count
   const unreadAlerts = alerts.filter(alert => !alert.isRead);
-  const unreadMessages = messages.filter(message => !message.isRead);
 
   // Dashboard sections
   const dashboardSections = [
@@ -357,105 +330,6 @@ export default function MemberContent() {
       )
     },
     {
-      id: 'messages',
-      title: t('sections.messages'),
-      icon: (
-        <div className="relative">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          {unreadMessages.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-              {unreadMessages.length > 9 ? '9+' : unreadMessages.length}
-            </span>
-          )}
-        </div>
-      ),
-      content: (
-        <div className="space-y-6">
-          {loadingMessages ? (
-            <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16"></div>
-                  </div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                </div>
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('messages.no_messages')}</h3>
-              <p className="text-fase-black">{t('messages.no_messages_desc')}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div key={message.id} className={`border rounded-lg p-4 transition-colors ${
-                  message.isRead ? 'bg-white border-gray-200' : 'bg-blue-50 border-blue-200'
-                }`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className={`font-medium ${
-                      message.isRead ? 'text-fase-navy' : 'text-blue-900'
-                    }`}>
-                      {message.subject}
-                    </h4>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        message.priority === 'high' ? 'bg-red-100 text-red-700' :
-                        message.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {t(`messages.priority.${message.priority}`)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {message.createdAt?.toDate?.()?.toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-fase-black mb-3 line-clamp-2">
-                    {message.content}
-                  </p>
-                  
-                  <div className="text-xs text-gray-500 mb-3">
-                    {t('messages.from')}: {message.senderName} ({message.senderEmail})
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      {!message.isRead && (
-                        <button
-                          onClick={() => handleMarkMessageAsRead(message.id)}
-                          className="text-xs text-blue-600 hover:text-blue-800"
-                        >
-                          {t('messages.mark_read')}
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleDeleteMessage(message.id)}
-                      className="text-xs text-red-600 hover:text-red-800"
-                    >
-                      {t('messages.delete')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
       id: 'alerts',
       title: t('sections.alerts'),
       icon: (
@@ -589,6 +463,18 @@ export default function MemberContent() {
             </div>
           )}
         </div>
+      )
+    },
+    {
+      id: 'map',
+      title: t('sections.map'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m-6 3v10" />
+        </svg>
+      ),
+      content: (
+        <MemberMap translations={{...(translations?.map || {}), locale}} />
       )
     },
     {

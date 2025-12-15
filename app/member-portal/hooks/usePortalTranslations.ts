@@ -10,6 +10,7 @@ interface PortalTranslations {
   overview: any;
   messages: any;
   alerts: any;
+  map: any;
   profile: any;
   manage_profile: any;
 }
@@ -82,5 +83,5 @@ export function usePortalTranslations() {
     return value;
   };
 
-  return { t, loading, locale };
+  return { t, loading, locale, translations };
 }

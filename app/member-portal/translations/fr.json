@@ -10,6 +10,7 @@
     "overview": "Aperçu",
     "messages": "Messages",
     "alerts": "Alertes",
+    "map": "Carte des Membres",
     "profile": "Gérer le Profil"
   },
   "overview": {
@@ -220,6 +221,54 @@
     "directory_requirements": {
       "logo": "Une copie de votre logo d'entreprise",
       "summary": "Un bref résumé de votre activité (maximum 500 caractères)"
+    }
+  },
+  "map": {
+    "title": "Carte des Membres",
+    "description": "",
+    "loading": "Chargement des emplacements des membres...",
+    "member_count": "{{count}} membres",
+    "no_members": "Aucun membre trouvé",
+    "no_members_desc": "Aucun membre approuvé avec des données de localisation n'est actuellement disponible.",
+    "legend": {
+      "title": "Types de Membres",
+      "mga": "Agent de Souscription",
+      "mga_plural": "Agents de Souscription",
+      "carrier": "Compagnie d'Assurance",
+      "provider": "Fournisseur de Services"
+    },
+    "filters": {
+      "all_types": "Tous les Types",
+      "show_type": "Afficher {{type}}",
+      "all_locations": "Tous les Emplacements",
+      "business_locations": "Emplacements Commerciaux Uniquement",
+      "market_locations": "Emplacements de Marché Uniquement"
+    },
+    "sidebar": {
+      "total_members": "Total des Membres",
+      "all_types": "Tous les Types",
+      "members": "Membres"
+    },
+    "search": {
+      "placeholder": "Rechercher une entreprise...",
+      "showing": "Affichage:",
+      "clear_filter": "Effacer le filtre",
+      "no_results": "Aucune entreprise trouvée"
+    },
+    "my_company": {
+      "show_button": "Afficher Mon Entreprise",
+      "title": "Profil de Mon Entreprise",
+      "edit_markets": "Modifier les Marchés",
+      "add_market": "Ajouter un Marché",
+      "remove_market": "Supprimer le Marché",
+      "lines_of_business": "Branches d'Activité",
+      "select_lines": "Sélectionner les branches d'activité pour ce marché",
+      "save_changes": "Enregistrer les Modifications",
+      "saving": "Enregistrement...",
+      "market_added": "Marché ajouté avec succès",
+      "market_removed": "Marché supprimé avec succès",
+      "changes_saved": "Modifications enregistrées avec succès",
+      "error_saving": "Erreur lors de l'enregistrement"
     }
   }
 }

@@ -10,6 +10,7 @@
     "overview": "Übersicht",
     "messages": "Nachrichten",
     "alerts": "Benachrichtigungen",
+    "map": "Mitgliederkarte",
     "profile": "Profil Verwalten"
   },
   "overview": {
@@ -220,6 +221,54 @@
     "directory_requirements": {
       "logo": "Eine Kopie Ihres Firmenlogos",
       "summary": "Eine kurze Unternehmensbeschreibung (maximal 500 Zeichen)"
+    }
+  },
+  "map": {
+    "title": "Mitgliederkarte",
+    "description": "",
+    "loading": "Mitgliederstandorte werden geladen...",
+    "member_count": "{{count}} Mitglieder",
+    "no_members": "Keine Mitglieder gefunden",
+    "no_members_desc": "Derzeit sind keine zugelassenen Mitglieder mit Standortdaten verfügbar.",
+    "legend": {
+      "title": "Mitgliedertypen",
+      "mga": "MGA",
+      "mga_plural": "MGAs",
+      "carrier": "Versicherungsunternehmen",
+      "provider": "Dienstleister"
+    },
+    "filters": {
+      "all_types": "Alle Typen",
+      "show_type": "{{type}} Anzeigen",
+      "all_locations": "Alle Standorte",
+      "business_locations": "Nur Geschäftsstandorte",
+      "market_locations": "Nur Marktstandorte"
+    },
+    "sidebar": {
+      "total_members": "Gesamte Mitglieder",
+      "all_types": "Alle Typen",
+      "members": "Mitglieder"
+    },
+    "search": {
+      "placeholder": "Nach einem Unternehmen suchen...",
+      "showing": "Anzeige:",
+      "clear_filter": "Filter löschen",
+      "no_results": "Keine Unternehmen gefunden"
+    },
+    "my_company": {
+      "show_button": "Mein Unternehmen anzeigen",
+      "title": "Mein Firmenprofil",
+      "edit_markets": "Märkte bearbeiten",
+      "add_market": "Markt hinzufügen",
+      "remove_market": "Markt entfernen",
+      "lines_of_business": "Geschäftsbereiche",
+      "select_lines": "Wählen Sie Geschäftsbereiche für diesen Markt",
+      "save_changes": "Änderungen speichern",
+      "saving": "Speichern...",
+      "market_added": "Markt erfolgreich hinzugefügt",
+      "market_removed": "Markt erfolgreich entfernt",
+      "changes_saved": "Änderungen erfolgreich gespeichert",
+      "error_saving": "Fehler beim Speichern"
     }
   }
 }

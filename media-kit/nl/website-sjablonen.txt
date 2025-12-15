@@ -1,0 +1,11 @@
+Website Aankondiging Sjablonen
+
+KORTE VERSIE (voor homepage/nieuws sectie):
+[BEDRIJFSNAAM] is er trots op lid te zijn van FASE, de Federation of European Managing General Agents. FASE vertegenwoordigt algemene agenten in Europa en verbindt hen met capaciteitsverschaffers, distributeurs en servicepartners op de Europese verzekeringsmarkt.
+
+MIDDELLANGE VERSIE (voor over ons/partnerschappen pagina):
+[BEDRIJFSNAAM] is lid van de Federation of European Managing General Agents (FASE), de pan-Europese handelsfederatie gelanceerd in 2025. FASE dient algemene agenten die in Europa opereren, faciliteert relaties tussen algemene agenten en capaciteitsverschaffers terwijl het pleit voor de rol van de sector in de Europese verzekeringsmarkt. Leer meer op fasemga.com.
+
+FOOTER/ZIJBALK VERSIE:
+Lid van FASE - Federation of European Managing General Agents
+[FASE logo]

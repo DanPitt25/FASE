@@ -22,6 +22,8 @@ export interface UserProfile {
   updatedAt: any;
   twoFactorEnabled: boolean;
   access?: 'none' | 'admin' | 'subscriber'; // Add admin access to users
+  markets?: string[]; // Array of country codes for MGA markets
+  marketLinesOfBusiness?: {[countryCode: string]: string[]}; // Lines of business per market
 }
 
 

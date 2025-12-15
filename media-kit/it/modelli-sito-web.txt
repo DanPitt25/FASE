@@ -1,0 +1,11 @@
+Modelli di annuncio per sito web
+
+VERSIONE BREVE (per homepage/sezione notizie):
+[NOME AZIENDA] è orgogliosa di essere membro di FASE, la Federazione delle agenzie di sottoscrizione europee. FASE rappresenta le agenzie di sottoscrizione in Europa e le collega con fornitori di capacità, distributori e partner di servizio nel mercato assicurativo europeo.
+
+VERSIONE MEDIA (per pagina chi siamo/partnership):
+[NOME AZIENDA] è membro della Federazione delle agenzie di sottoscrizione europee (FASE), la federazione commerciale paneuropea lanciata nel 2025. FASE serve le agenzie di sottoscrizione che operano in Europa, facilitando le relazioni tra agenzie di sottoscrizione e fornitori di capacità mentre sostiene il ruolo del settore nel mercato assicurativo europeo. Scoprite di più su fasemga.com.
+
+VERSIONE FOOTER/BARRA LATERALE:
+Membro di FASE - Federazione delle agenzie di sottoscrizione europee
+[Logo FASE]

@@ -10,6 +10,7 @@
     "overview": "Panoramica",
     "messages": "Messaggi",
     "alerts": "Avvisi",
+    "map": "Mappa dei Membri",
     "profile": "Gestisci Profilo"
   },
   "overview": {
@@ -220,6 +221,54 @@
     "directory_requirements": {
       "logo": "Una copia del logo della Sua azienda",
       "summary": "Un breve riassunto aziendale (massimo 500 caratteri)"
+    }
+  },
+  "map": {
+    "title": "Mappa dei Membri",
+    "description": "",
+    "loading": "Caricamento posizioni dei membri...",
+    "member_count": "{{count}} membri",
+    "no_members": "Nessun membro trovato",
+    "no_members_desc": "Attualmente non sono disponibili membri approvati con dati di localizzazione.",
+    "legend": {
+      "title": "Tipi di Membri",
+      "mga": "Agente di Sottoscrizione",
+      "mga_plural": "Agenti di Sottoscrizione",
+      "carrier": "Compagnia di Assicurazione",
+      "provider": "Fornitore di Servizi"
+    },
+    "filters": {
+      "all_types": "Tutti i Tipi",
+      "show_type": "Mostra {{type}}",
+      "all_locations": "Tutte le Posizioni",
+      "business_locations": "Solo Posizioni di Business",
+      "market_locations": "Solo Posizioni di Mercato"
+    },
+    "sidebar": {
+      "total_members": "Totale Membri",
+      "all_types": "Tutti i Tipi",
+      "members": "Membri"
+    },
+    "search": {
+      "placeholder": "Cerca un'azienda...",
+      "showing": "Visualizzazione:",
+      "clear_filter": "Cancella filtro",
+      "no_results": "Nessuna azienda trovata"
+    },
+    "my_company": {
+      "show_button": "Mostra La Mia Azienda",
+      "title": "Profilo della Mia Azienda",
+      "edit_markets": "Modifica Mercati",
+      "add_market": "Aggiungi Mercato",
+      "remove_market": "Rimuovi Mercato",
+      "lines_of_business": "Linee di Business",
+      "select_lines": "Seleziona linee di business per questo mercato",
+      "save_changes": "Salva Modifiche",
+      "saving": "Salvataggio...",
+      "market_added": "Mercato aggiunto con successo",
+      "market_removed": "Mercato rimosso con successo",
+      "changes_saved": "Modifiche salvate con successo",
+      "error_saving": "Errore nel salvare le modifiche"
     }
   }
 }

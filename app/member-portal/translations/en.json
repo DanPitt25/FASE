@@ -10,6 +10,7 @@
     "overview": "Overview",
     "messages": "Messages", 
     "alerts": "Alerts",
+    "map": "Member Map",
     "profile": "Manage Profile"
   },
   "overview": {
@@ -223,6 +224,54 @@
     "directory_requirements": {
       "logo": "A copy of your company logo",
       "summary": "A brief business summary (maximum 500 characters)"
+    }
+  },
+  "map": {
+    "title": "Member Map",
+    "description": "",
+    "loading": "Loading member locations...",
+    "member_count": "{{count}} members",
+    "no_members": "No members found",
+    "no_members_desc": "No approved members with location data are currently available.",
+    "legend": {
+      "title": "Member Types",
+      "mga": "MGA", 
+      "mga_plural": "MGAs",
+      "carrier": "Insurance Carrier",
+      "provider": "Service Provider"
+    },
+    "filters": {
+      "all_types": "All Types",
+      "show_type": "Show {{type}}",
+      "all_locations": "All Locations",
+      "business_locations": "Business Locations Only",
+      "market_locations": "Market Locations Only"
+    },
+    "sidebar": {
+      "total_members": "Total Members",
+      "all_types": "All Types",
+      "members": "Members"
+    },
+    "search": {
+      "placeholder": "Search for a company...",
+      "showing": "Showing:",
+      "clear_filter": "Clear filter",
+      "no_results": "No companies found"
+    },
+    "my_company": {
+      "show_button": "Show My Company",
+      "title": "My Company Profile",
+      "edit_markets": "Edit Markets",
+      "add_market": "Add Market",
+      "remove_market": "Remove Market",
+      "lines_of_business": "Lines of Business",
+      "select_lines": "Select lines of business for this market",
+      "save_changes": "Save Changes",
+      "saving": "Saving...",
+      "market_added": "Market added successfully",
+      "market_removed": "Market removed successfully",
+      "changes_saved": "Changes saved successfully",
+      "error_saving": "Error saving changes"
     }
   }
 }
