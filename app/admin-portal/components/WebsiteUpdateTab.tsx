@@ -183,7 +183,7 @@ export default function WebsiteUpdateTab({ memberApplications, loading }: Websit
           Website Field Update Tool
         </h3>
         <p className="text-sm text-gray-600 mb-2">
-          Add website URLs for member accounts that don't have one. Members will disappear from this list once updated.
+          Add website URLs for member accounts that don&apos;t have one. Members will disappear from this list once updated.
         </p>
         <div className="flex items-center space-x-4 text-sm">
           <span className="text-gray-700">
