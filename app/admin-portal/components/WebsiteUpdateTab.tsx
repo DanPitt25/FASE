@@ -129,7 +129,7 @@ export default function WebsiteUpdateTab({ memberApplications, loading }: Websit
 
       // Remove member from list after successful update
       setTimeout(() => {
-        setCompletedMembers(prev => new Set([...prev, memberId]));
+        setCompletedMembers(prev => new Set(prev).add(memberId));
         setUpdateStatuses(prev => {
           const newStatuses = { ...prev };
           delete newStatuses[memberId];
