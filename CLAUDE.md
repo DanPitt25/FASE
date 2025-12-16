@@ -13,6 +13,7 @@
 - If Claude Code appears as contributor, immediately rewrite commit history to remove all traces
 - Test commands: `npm run build`, `npm run lint`
 - YOU CANNOT RUN NPM RUN DEV YOURSELF.
+- **COMMIT MESSAGES**: Keep commit messages short and simple. One line only. No verbose descriptions or bullet points.
 
 ## Firebase Access Patterns
 - **Client-side components**: Use client Firebase SDK (`import { db } from '../lib/firebase'`) with direct Firestore calls

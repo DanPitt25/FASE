@@ -1,6 +1,7 @@
 {
   "portal": {
     "loading": "Cargando...",
+    "loading_map": "Cargando mapa...",
     "welcome_title": "Portal de Miembros",
     "welcome_personal": "Bienvenido, {{name}}",
     "welcome_company": "Bienvenido, {{name}} ({{company}})",
@@ -29,7 +30,7 @@
     },
     "matching": {
       "title": "Emparejamiento de capacidad y distribución",
-      "description_1": "A través de la plataforma FASE, MGAs y proveedores de capacidad pueden compartir información sobre áreas de especialización (MGAs) y apetito de riesgo (proveedores de capacidad). Los corredores también pueden acceder a la plataforma FASE para identificar productos escritos localmente por MGAs.",
+      "description_1": "A través de la plataforma FASE, MGAs y proveedores de capacidad pueden compartir información sobre áreas de especialización (MGAs) y apetito de riesgo (proveedores de capacidad). Los corredores también pueden acceder a la plataforma FASE para identificar productos escritos localmente por MGAs."
     },
     "data": {
       "title": "Datos y perspectivas",

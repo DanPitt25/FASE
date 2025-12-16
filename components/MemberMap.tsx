@@ -424,6 +424,7 @@ interface MemberMapProps {
     title: string;
     description: string;
     loading: string;
+    loading_map: string;
     member_count: string;
     no_members: string;
     no_members_desc: string;
