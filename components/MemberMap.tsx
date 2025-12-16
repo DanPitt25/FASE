@@ -54,7 +54,7 @@ function CompanyDetails({
       
       {/* Company Type */}
       <div className="mb-4">
-        <div className="text-sm font-medium text-gray-700 mb-1">Organization Type</div>
+        <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.organization_type || 'Organization Type'}</div>
         <div className="text-fase-navy">
           {company.organizationType === 'MGA' ? translations.legend.mga :
            company.organizationType === 'carrier' ? translations.legend.carrier :
@@ -66,7 +66,7 @@ function CompanyDetails({
       {/* Business Location */}
       {memberData.businessAddress?.country && (
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-1">Business Location</div>
+          <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.business_location || 'Business Location'}</div>
           <div className="text-gray-900">
             {memberData.businessAddress.city && `${memberData.businessAddress.city}, `}
             {(() => {
@@ -80,7 +80,7 @@ function CompanyDetails({
       {/* Market Locations */}
       {memberData.markets && memberData.markets.length > 0 && (
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-1">Market Locations</div>
+          <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.market_locations || 'Market Locations'}</div>
           <div className="text-gray-900">
             {memberData.markets.map((market: string, index: number) => {
               const locale = translations.locale || 'en';
@@ -99,7 +99,7 @@ function CompanyDetails({
       {/* Lines of Business */}
       {company.linesOfBusiness && company.linesOfBusiness.length > 0 && (
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-1">Lines of Business</div>
+          <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.lines_of_business || 'Lines of Business'}</div>
           <div className="text-gray-900">
             {company.linesOfBusiness.map((line: string, index: number) => (
               <span key={index}>
@@ -119,7 +119,7 @@ function CompanyDetails({
             className="inline-flex items-center px-4 py-2 bg-fase-navy text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-colors"
           >
             <span className="mr-2">✉</span>
-            Contact
+            {translations.details?.contact || 'Contact'}
           </a>
         </div>
       )}
@@ -164,18 +164,18 @@ function CompanyCountryDetails({
       
       {/* Country Context */}
       <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-        <div className="font-medium text-fase-navy mb-1">{countryName} Operations</div>
+        <div className="font-medium text-fase-navy mb-1">{translations.details?.country_operations ? translations.details.country_operations.replace('{{country}}', countryName) : `${countryName} Operations`}</div>
         <div className="text-sm text-gray-600">
-          {isBusinessLocation && isMarketLocation && 'Business headquarters and market operations'}
-          {isBusinessLocation && !isMarketLocation && 'Business headquarters'}
-          {!isBusinessLocation && isMarketLocation && 'Market operations only'}
+          {isBusinessLocation && isMarketLocation && (translations.details?.headquarters_and_market_ops || 'Business headquarters and market operations')}
+          {isBusinessLocation && !isMarketLocation && (translations.details?.headquarters_ops || 'Business headquarters')}
+          {!isBusinessLocation && isMarketLocation && (translations.details?.market_ops || 'Market operations only')}
         </div>
       </div>
 
       {/* Lines of Business - only show if data exists */}
       {linesOfBusiness.length > 0 && (
         <div className="mb-6">
-          <div className="text-sm font-medium text-gray-700 mb-3">Lines of Business in {countryName}</div>
+          <div className="text-sm font-medium text-gray-700 mb-3">{translations.details?.lines_of_business_in ? translations.details.lines_of_business_in.replace('{{country}}', countryName) : `Lines of Business in ${countryName}`}</div>
           <div className="space-y-2">
             {linesOfBusiness.map((line, index) => (
               <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
@@ -189,15 +189,15 @@ function CompanyCountryDetails({
 
       {/* Market Status */}
       <div className="mb-4">
-        <div className="text-sm font-medium text-gray-700 mb-2">Market Status</div>
+        <div className="text-sm font-medium text-gray-700 mb-2">{translations.details?.market_status || 'Market Status'}</div>
         <div className="flex items-center space-x-4 text-sm">
           <div className={`flex items-center ${isBusinessLocation ? 'text-fase-navy' : 'text-gray-400'}`}>
             <div className={`w-3 h-3 rounded-full mr-2 ${isBusinessLocation ? 'bg-fase-navy' : 'bg-gray-300'}`}></div>
-            Business Location
+            {translations.details?.business_location_indicator || 'Business Location'}
           </div>
           <div className={`flex items-center ${isMarketLocation ? 'text-yellow-600' : 'text-gray-400'}`}>
             <div className={`w-3 h-3 rounded-full mr-2 ${isMarketLocation ? 'bg-yellow-500' : 'bg-gray-300'}`}></div>
-            Market Territory
+            {translations.details?.market_territory_indicator || 'Market Territory'}
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@ function CompanyCountryDetails({
             className="inline-flex items-center px-4 py-2 bg-fase-navy text-white text-sm font-medium rounded-lg hover:bg-opacity-90 transition-colors"
           >
             <span className="mr-2">✉</span>
-            Contact about {countryName}
+            {translations.details?.contact_about ? translations.details.contact_about.replace('{{country}}', countryName) : `Contact about ${countryName}`}
           </a>
         </div>
       )}
@@ -261,10 +261,10 @@ function MemberCard({
             {/* Status indicators */}
             <div className="flex space-x-1">
               {isBusinessLocation && (
-                <div className="w-2 h-2 bg-fase-navy rounded-full" title="Business Location"></div>
+                <div className="w-2 h-2 bg-fase-navy rounded-full" title={translations.details?.business_location_indicator || 'Business Location'}></div>
               )}
               {isMarketLocation && (
-                <div className="w-2 h-2 bg-yellow-500 rounded-full" title="Market Territory"></div>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full" title={translations.details?.market_territory_indicator || 'Market Territory'}></div>
               )}
             </div>
             <svg 
@@ -285,18 +285,18 @@ function MemberCard({
           <div className="space-y-2 mt-2">
             {/* Operation Type */}
             <div className="text-xs">
-              <span className="text-gray-600">Operations in {countryName}: </span>
+              <span className="text-gray-600">{translations.details?.operations_in ? translations.details.operations_in.replace('{{country}}', countryName) : `Operations in ${countryName}`}: </span>
               <span className="text-gray-900">
-                {isBusinessLocation && isMarketLocation && 'Headquarters & Market'}
-                {isBusinessLocation && !isMarketLocation && 'Headquarters'}
-                {!isBusinessLocation && isMarketLocation && 'Market Territory'}
+                {isBusinessLocation && isMarketLocation && (translations.details?.headquarters_and_market || 'Headquarters & Market')}
+                {isBusinessLocation && !isMarketLocation && (translations.details?.headquarters || 'Headquarters')}
+                {!isBusinessLocation && isMarketLocation && (translations.details?.market_territory || 'Market Territory')}
               </span>
             </div>
             
             {/* Business Address City */}
             {isBusinessLocation && memberData.businessAddress?.city && (
               <div className="text-xs">
-                <span className="text-gray-600">City: </span>
+                <span className="text-gray-600">{translations.details?.city || 'City'}: </span>
                 <span className="text-gray-900">{memberData.businessAddress.city}</span>
               </div>
             )}
@@ -310,7 +310,7 @@ function MemberCard({
                 }}
                 className="text-xs text-fase-navy hover:text-fase-navy font-medium underline"
               >
-                View Details
+                {translations.details?.view_details || 'View Details'}
               </button>
               {member.email && (
                 <a 
@@ -875,12 +875,6 @@ export default function MemberMap({ translations }: MemberMapProps) {
         // Filter to only include MGAs
         const mgaMembers = approvedMembers.filter(member => member.organizationType === 'MGA');
         
-        // Count markets for debugging
-        const totalMarkets = mgaMembers.reduce((count, member) => {
-          return count + ((member as any).markets?.length || 0);
-        }, 0);
-        
-        console.log(`🔍 Found ${mgaMembers.length} MGA members with ${totalMarkets} total markets`);
         
         setMembers(mgaMembers);
       } catch (error) {
@@ -1046,7 +1040,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
           <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto mb-4"></div>
-              <p className="text-fase-black">Loading map...</p>
+              <p className="text-fase-black">{translations.loading_map || 'Loading map...'}</p>
             </div>
           </div>
         </div>

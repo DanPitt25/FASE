@@ -1,6 +1,7 @@
 {
   "portal": {
     "loading": "Caricamento...",
+    "loading_map": "Caricamento mappa...",
     "welcome_title": "Portale Membri",
     "welcome_personal": "Benvenuto, {{name}}",
     "welcome_company": "Benvenuto, {{name}} ({{company}})",
@@ -255,6 +256,28 @@
       "showing": "Visualizzazione:",
       "clear_filter": "Cancella filtro",
       "no_results": "Nessuna azienda trovata"
+    },
+    "details": {
+      "organization_type": "Tipo di Organizzazione",
+      "business_location": "Sede di Business",
+      "market_locations": "Sedi di Mercato",
+      "lines_of_business": "Settori di Attività",
+      "contact": "Contatto",
+      "contact_about": "Contatto riguardo {{country}}",
+      "market_status": "Stato del Mercato",
+      "business_location_indicator": "Sede di Business",
+      "market_territory_indicator": "Territorio di Mercato",
+      "operations_in": "Operazioni in {{country}}",
+      "headquarters_and_market": "Sede Centrale e Mercato",
+      "headquarters": "Sede Centrale",
+      "market_territory": "Territorio di Mercato",
+      "city": "Città",
+      "view_details": "Visualizza Dettagli",
+      "country_operations": "Operazioni {{country}}",
+      "headquarters_and_market_ops": "Sede aziendale e operazioni di mercato",
+      "headquarters_ops": "Sede aziendale",
+      "market_ops": "Solo operazioni di mercato",
+      "lines_of_business_in": "Settori di Attività in {{country}}"
     },
     "my_company": {
       "show_button": "Mostra La Mia Azienda",

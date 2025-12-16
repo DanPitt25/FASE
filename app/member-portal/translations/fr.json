@@ -1,6 +1,7 @@
 {
   "portal": {
     "loading": "Chargement...",
+    "loading_map": "Chargement de la carte...",
     "welcome_title": "Portail Membre",
     "welcome_personal": "Bienvenue, {{name}}",
     "welcome_company": "Bienvenue, {{name}} ({{company}})",
@@ -255,6 +256,28 @@
       "showing": "Affichage:",
       "clear_filter": "Effacer le filtre",
       "no_results": "Aucune entreprise trouvée"
+    },
+    "details": {
+      "organization_type": "Type d'Organisation",
+      "business_location": "Emplacement Commercial",
+      "market_locations": "Emplacements de Marché",
+      "lines_of_business": "Branches d'Activité",
+      "contact": "Contact",
+      "contact_about": "Contact au sujet de {{country}}",
+      "market_status": "Statut du Marché",
+      "business_location_indicator": "Emplacement Commercial",
+      "market_territory_indicator": "Territoire de Marché",
+      "operations_in": "Opérations en {{country}}",
+      "headquarters_and_market": "Siège Social et Marché",
+      "headquarters": "Siège Social",
+      "market_territory": "Territoire de Marché",
+      "city": "Ville",
+      "view_details": "Voir les Détails",
+      "country_operations": "Opérations {{country}}",
+      "headquarters_and_market_ops": "Siège social de l'entreprise et opérations de marché",
+      "headquarters_ops": "Siège social de l'entreprise",
+      "market_ops": "Opérations de marché uniquement",
+      "lines_of_business_in": "Branches d'Activité en {{country}}"
     },
     "my_company": {
       "show_button": "Afficher Mon Entreprise",

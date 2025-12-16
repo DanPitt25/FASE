@@ -1,6 +1,7 @@
 {
   "portal": {
     "loading": "Laden...",
+    "loading_map": "Kaart laden...",
     "welcome_title": "Ledenportaal",
     "welcome_personal": "Welkom, {{name}}",
     "welcome_company": "Welkom, {{name}} ({{company}})",
@@ -255,6 +256,28 @@
       "showing": "Tonen:",
       "clear_filter": "Filter wissen",
       "no_results": "Geen bedrijven gevonden"
+    },
+    "details": {
+      "organization_type": "Organisatietype",
+      "business_location": "Bedrijfslocatie",
+      "market_locations": "Marktlocaties",
+      "lines_of_business": "Bedrijfstakken",
+      "contact": "Contact",
+      "contact_about": "Contact over {{country}}",
+      "market_status": "Marktstatus",
+      "business_location_indicator": "Bedrijfslocatie",
+      "market_territory_indicator": "Marktgebied",
+      "operations_in": "Activiteiten in {{country}}",
+      "headquarters_and_market": "Hoofdkantoor en Markt",
+      "headquarters": "Hoofdkantoor",
+      "market_territory": "Marktgebied",
+      "city": "Stad",
+      "view_details": "Details Bekijken",
+      "country_operations": "{{country}} Activiteiten",
+      "headquarters_and_market_ops": "Bedrijfshoofdkantoor en marktactiviteiten",
+      "headquarters_ops": "Bedrijfshoofdkantoor",
+      "market_ops": "Alleen marktactiviteiten",
+      "lines_of_business_in": "Bedrijfstakken in {{country}}"
     },
     "my_company": {
       "show_button": "Toon Mijn Bedrijf",
