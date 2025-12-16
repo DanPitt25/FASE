@@ -12,7 +12,7 @@ export default function RendezvousPage() {
       content: [
         t('intro.content.paragraph1')
       ],
-      image: '/hotel_pool.jpeg',
+      image: '/view.jpg',
       imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const,
       buttons: [
