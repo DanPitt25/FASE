@@ -12,7 +12,7 @@ export default function RendezvousPage() {
       content: [
         t('intro.content.paragraph1')
       ],
-      image: '/conference.jpeg',
+      image: '/hotel_pool.jpeg',
       imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const,
       buttons: [
@@ -28,7 +28,7 @@ export default function RendezvousPage() {
   return (
     <ContentPageLayout
       title={t('page.title')}
-      bannerImage="/hotel_pool.jpeg"
+      bannerImage="/conference.jpeg"
       bannerImageAlt={t('page.banner_alt')}
       sections={sections}
       currentPage="rendezvous"
