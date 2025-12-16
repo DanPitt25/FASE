@@ -9,9 +9,7 @@ export default function RendezvousPage() {
     {
       type: 'split' as const,
       title: t('intro.title'),
-      content: [
-        t('intro.content.paragraph1')
-      ],
+      content: t('intro.content.paragraph1'),
       image: '/view.jpg',
       imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const,
@@ -20,6 +18,11 @@ export default function RendezvousPage() {
           text: t('intro.button.text'),
           href: 'https://mgarendezvous.com/register',
           variant: 'primary' as const
+        },
+        {
+          text: 'Hotel Arts',
+          href: 'https://www.ritzcarlton.com/en/hotels/bcnrz-hotel-arts-barcelona/overview/',
+          variant: 'secondary' as const
         }
       ]
     }

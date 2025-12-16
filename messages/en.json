@@ -1,0 +1,270 @@
+{
+  "home": {
+    "title": "The MGA Rendezvous", 
+    "subtitle": "Where Europe welcomes the world",
+    "tagline": "Where risk appetite meets risk focus",
+    "description": "The MGA Rendezvous, hosted by FASE at Hotel Arts, Barcelona, 11-12 May 2026, offers European MGAs and insurers and reinsurers from around the world a unique opportunity to develop business opportunities together.",
+    "hero_summary": "Over two days, the Rendezvous will bring MGAs, capacity providers and select service providers together in a structured format – a unique opportunity to build relationships and develop business.",
+    "hero": {
+      "register": "Register interest",
+      "learn": "Learn more"
+    },
+    "networking": {
+      "title": "Building relationships and growth opportunities",
+      "description1": "Over two days, the Rendezvous will bring MGAs, capacity providers and select service providers together in a structured format to build relationships and pursue profitable growth opportunities.",
+      "description2": "Our comprehensive program is designed to foster collaboration and growth across the European MGA ecosystem through exclusive networking events, expert panels, and business matchmaking sessions.",
+      "cta": "Learn more about the event"
+    },
+    "cta": {
+      "title": "Join the European MGA community", 
+      "description": "The FASE Rendezvous is currently in development. Join our community to be the first to know about this upcoming flagship networking opportunity.",
+      "register": "Register interest",
+      "become_member": "Become a FASE member"
+    }
+  },
+  "about": {
+    "title": "About the MGA Rendezvous",
+    "premier": {
+      "title": "Europe's premier MGA networking event",
+      "content1": "Over two days, FASE's annual conference will bring together MGAs, capacity providers and selected service providers to expand business opportunities across Europe. Our primary focus will be on fostering networking and relationship-building opportunities, but we are also planning an event programme that sets the standard for European MGA events.",
+      "cta": "Register your interest"
+    },
+    "attendees": {
+      "title": "Who should attend",
+      "intro": "The MGA Rendezvous brings together key participants in the European delegated underwriting market:",
+      "list": "      • Managing General Agents with deep expertise in European markets\n      • Insurance and reinsurance companies and Lloyd's syndicates seeking to deploy capacity through selected MGA partnerships\n      • Service providers supporting the MGA ecosystem"
+    },
+    "fase": {
+      "title": "About FASE",
+      "subtitle": "Federation of European MGAs", 
+      "description": "FASE is the pan-European federation established to serve the needs of Europe's managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers. We share best practices in a rapidly growing sector of the market, offering an array of informational and educational services for MGAs.",
+      "register": "Register interest",
+      "learn": "Learn more about FASE"
+    }
+  },
+  "speakers": {
+    "title": "Latest Thinking",
+    "banner_alt": "Industry leaders and experts from across the European MGA ecosystem",
+    "lineup": {
+      "title": "Your forum for ideas",
+      "content1": "The MGA Rendezvous is a forum for ideas as well as people. We are assembling a world-class speaker panel to share perspectives and insights on the direction of the market, including:",
+      "content2": "      • How capacity options for European MGAs are expanding and diversifying\n\n      • How MGAs are enhancing performance – and the strength of their carrier relationships – through novel AI-powered technologies\n\n      • How the US MGA market – currently five times the size of the European market in premium terms – may offer pointers to the future of the European MGA market\n\n      • How a patchwork quilt of regulation hinders international MGA growth in Europe – and how to tackle it",
+      "cta": "Register interest"
+    },
+    "expertise": {
+      "title": "Industry expertise across Europe",
+      "content1": "Our speakers bring decades of expertise from across the European MGA ecosystem, delivering market insights from industry leaders and market experts who understand the challenges and opportunities facing European MGAs.",
+      "content2": "Expect deep analysis of market trends, latest developments in technology and business models, plus proven strategies and practical insights from successful MGA operations across European markets."
+    },
+    "cta": {
+      "title": "Be the first to know",
+      "subtitle": "Speaker announcements coming soon",
+      "description": "Speaker announcements will be made to registered participants first. Register your interest to be notified when our impressive speaker lineup is revealed.",
+      "register": "Register interest"
+    }
+  },
+  "register": {
+    "title": "Register for MGA Rendezvous",
+    "thank_you": {
+      "title": "Thank You for Your Interest",
+      "message": "We have received your registration for MGA Rendezvous. We will be in touch with event details and ticket information as they become available.",
+      "back": "Return to Home"
+    },
+    "form": {
+      "first_name": "First Name",
+      "last_name": "Last Name", 
+      "email": "Email",
+      "job_title": "Job Title",
+      "company": {
+        "title": "Company Information",
+        "name": "Company Name",
+        "email": "Email",
+        "country": "Country",
+        "org_type": "Organization Type",
+        "address": "Address",
+        "fase_member": "This company is a FASE member (50% discount for all attendees)"
+      },
+      "attendees": {
+        "title": "Attendees",
+        "add_attendee": "Add Attendee",
+        "attendee_number": "Attendee",
+        "remove": "Remove"
+      },
+      "additional_info": {
+        "title": "Additional Information",
+        "special_requests": "Special Requests",
+        "special_requests_placeholder": "Any special accommodation requests or notes"
+      },
+      "order_summary": {
+        "title": "Order Summary",
+        "org_type": "Organization Type:",
+        "fase_discount": "FASE Member Discount:",
+        "price_per_ticket": "Price per ticket:",
+        "num_tickets": "Number of tickets:",
+        "total": "Total:",
+        "discount_applied": "50% Applied",
+        "no_discount": "None"
+      },
+      "privacy": "By submitting this registration, you agree to our",
+      "privacy_link": "privacy policy",
+      "terms_link": "terms of service",
+      "submit": "Register Interest",
+      "processing": "Processing...",
+      "required": "*",
+      "search_countries": "Search countries...",
+      "no_countries_found": "No countries found"
+    },
+    "countries": {
+      "select": "Select country",
+      "austria": "Austria",
+      "belgium": "Belgium", 
+      "denmark": "Denmark",
+      "france": "France",
+      "germany": "Germany", 
+      "ireland": "Ireland",
+      "italy": "Italy",
+      "netherlands": "Netherlands",
+      "spain": "Spain",
+      "switzerland": "Switzerland",
+      "uk": "United Kingdom",
+      "other": "Other"
+    },
+    "org_types": {
+      "select": "Select type",
+      "mga": "Managing general agent",
+      "insurer": "Insurance company", 
+      "reinsurer": "Reinsurance company",
+      "lloyds": "Lloyd's syndicate",
+      "broker": "Insurance broker",
+      "service_provider": "Service provider",
+      "other": "Other"
+    }
+  },
+  "people": {
+    "title": "People",
+    "content_hero": "The FASE advisory board, together with our sponsors (Howden, Accelerant, and Clyde & Co), bring deep experience in matters affecting MGAs in the European insurance market. With their engagement, we will be assembling a comprehensive agenda and world class speaker panel for the MGA Rendezvous."
+  },
+  "place": {
+    "title": "Place",
+    "content1": "Founded by the Phoenicians, Barcelona has always been a trading city. As such, it is a fitting location for the inaugural MGA Rendezvous, drawing MGA founders and executives from across Europe and insurance and reinsurance company executives from around the world.",
+    "content2": "The Hotel Arts, our conference hotel, overlooks the Mediterranean and is a short walk from the city center and within easy access of Barcelona's international airport."
+  },
+  "ideas": {
+    "title": "Ideas",
+    "intro": "MGA markets across Europe are developing rapidly but are at different stages of evolution. This offers considerable scope for cross-pollination of ideas and best practices from one market to another.",
+    "agenda_intro": "Among the issues on our agenda in Barcelona will be:",
+    "topics": {
+      "capacity": "How European MGAs can diversify their capacity options and design capital structures suited to their business needs",
+      "technology": "How MGAs can enhance performance – and the strength of their carrier relationships – through novel AI-powered technologies",
+      "us_market": "How the US MGA market – currently five times the size of the European market in premium terms – may offer pointers to the future of the European MGA market",
+      "regulation": "How a patchwork quilt of regulation impedes international MGA growth in Europe – and how to tackle it"
+    }
+  },
+  "market": {
+    "title": "Market",
+    "hero": {
+      "title": "Local Expertise, Global Capacity",
+      "description": "MGAs wrote close to €20 billion in premium in Europe in 2024, fueled by capacity sourced from around the world. The MGA Rendezvous offers global insurers and reinsurers a unique opportunity to engage with the foremost risk experts in Europe across a wide range of business classes."
+    },
+    "stats": {
+      "growth": {
+        "title": "Sustained Growth",
+        "description": "Europe's MGAs have been growing at 20%+ for the past five years"
+      },
+      "scale": {
+        "title": "Market Scale", 
+        "description": "Continental Europe is home to around 650 MGAs and the UK to a further 300"
+      },
+      "talent": {
+        "title": "Talent & Capital Magnet",
+        "description": "European MGAs are magnets for talent and capital – and their pull is strengthening"
+      },
+      "technology": {
+        "title": "Technology Leaders",
+        "description": "Europe's MGAs include many of the most technologically advanced companies in global insurance"
+      }
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "people": "People",
+    "place": "Place",
+    "ideas": "Ideas",
+    "market": "Market",
+    "about": "About", 
+    "speakers": "Speakers",
+    "register": "Register"
+  },
+  "footer": {
+    "title": "The MGA Rendezvous",
+    "description": "Pan-European MGA networking event by FASE - connecting MGAs, capacity providers and service providers across Europe.",
+    "event_info": "Event info",
+    "connect": "Connect",
+    "email": "Email",
+    "visit_fase": "Visit FASE",
+    "linkedin": "LinkedIn",
+    "about_event": "About the event",
+    "speakers": "Speakers",
+    "copyright": "© 2025 FASE - Federation of European MGAs. All rights reserved."
+  },
+  "code_of_conduct": {
+    "title": "FASE Code of Conduct",
+    "introduction": "FASE supports the highest professional and ethical standards, as described in this Code of Conduct, and requires that all members commit annually to upholding these standards as a condition of their membership.\n\nMembers hereby undertake to act in a legal, fair and ethical manner in all their dealings with all parties.\n\nMembers undertake to cooperate fully and at all times with FASE in its enforcement of this Code.",
+    "sections": {
+      "legal_responsibilities": {
+        "title": "1. Legal responsibilities",
+        "content": "Members will comply with all applicable laws and regulations in the locations in which they do business. Should this legal responsibility conflict with another duty described in this Code, this legal responsibility will take priority.\n\nMembers will bring to the attention of the FASE Business Conduct Committee any circumstances of which they become aware involving:\n\n• A member being in breach of any regulatory requirement and\n\n• Any circumstance that may reasonably lead to sanctions against the member or a member of their staff or directors by the relevant regulatory authorities\n\nMembers will provide all reasonable lawful assistance to regulatory, professional and law enforcement organization in the discharge of their duties, whether in respect of themselves, another Member or a non-member."
+      },
+      "financial_responsibilities": {
+        "title": "2. Financial Responsibilities",
+        "content": "Members should always meet their financial obligations on time. This includes, but it not limited to, payment of debts, premium due to insurers, returns due to brokers and insureds, sums due to employees.\n\nMembers must comply with applicable solvency or like requirements."
+      },
+      "inter_organizational_responsibilities": {
+        "title": "3. Inter-organisational Responsibilities",
+        "content": "Members will compete fairly and honourably in the markets in which they operate.\n\nThis includes, but is not limited to:\n\n• making no statement about fellow Members, competitors or other market participants, privately or publicly, which they do not honestly believe to be true and relevant based on the best information reasonably available to them;\n\n• entering into any agreement intended to diminish competition within the market."
+      },
+      "community_responsibilities": {
+        "title": "4. Community Responsibilities",
+        "content": "FASE members must conduct themselves in a manner befitting the privileges of membership.\n\nMembers will not only comply with their obligations under law pertaining to discrimination, but in all their dealings will take reasonable steps not to cause a detriment to any person or organisation arising from race, sex, sexual orientation, gender reassignment, pregnancy and maternity, married or civil partnership status, religion or belief, age and disability.\n\nMembers are encouraged to take part in civic, charitable and philanthropic activities which contribute to the promotion of the good standing of the insurance sector, its contribution to the public good and the welfare of those who work in it.\n\nMembers will encourage continuing education and training for staff."
+      },
+      "insurer_relationships": {
+        "title": "5. Relationships with Insurers",
+        "content": "Members will deal fairly and honestly when acting on behalf of insurers. In particular they should:\n\n• faithfully execute the underwriting guidelines of the insurers they represent;\n\n• act in the utmost good faith and gather all data necessary to make a proper underwriting decision before putting an insurer on risk;\n\n• keep themselves up to date on the laws and regulations in all areas in which they have authority, and advise insurers accordingly of the impact of such laws and regulations as they affect their relationship."
+      },
+      "broker_relationships": {
+        "title": "6. Relationships with Brokers and Agents (or Insureds if operating directly)",
+        "content": "Members should deal fairly and honestly with brokers, agents or insureds (if operating directly), and in so doing will:\n\n• consider at all times the financial stability of insurers with which the Member places business;\n\n• make no false or misleading representation of what coverage is being provided, or the limitations or exclusions to coverage or impose limitations or exclusions such that the policy provides no effective benefit to the insured.\n\nMembers should be able to demonstrate that they have carefully considered the insurers that they represent as underwriting agents and place their and their brokers' customers' business with.\n\nEffective and appropriate due diligence is a key part of the process that Members should perform on the insurance companies they represent as security for the policies they provide. There is a risk to customers in the event that an insurer fails and is unable to pay valid claims.\n\nFASE expects MGA Members to be able to demonstrate that suitable due diligence has been performed on the insurers that they represent and offer as insurance security.\n\nMembers should provide clear and unambiguous detail of the name and address of the insurer in all the relevant documentation provided for brokers and policyholders. We expect Members to positively avoid giving the policyholder the impression that the MGA is the insurer and obscure the name of the insurer behind the MGA. It is important that customers can make an informed decision on where their insurance is being placed."
+      },
+      "breach_reporting": {
+        "title": "Breach Reporting",
+        "content": "All notices of potential breach made under this Code should be made to: Chairman of the Business Conduct Committee, FASE, Herengracht, 124-128, 1015 BT Amsterdam, Netherlands."
+      }
+    }
+  },
+  "pricing": {
+    "title": "Book my place",
+    "subtitle": "Advantageous rates for FASE members",
+    "banner_alt": "FASE MGA Rendezvous pricing and registration",
+    "member_benefits": {
+      "title": "FASE members enjoy a 50% discount on passes to the MGA Rendezvous",
+      "description": "Join FASE to access exclusive member pricing and connect with Europe's leading MGA community."
+    },
+    "table": {
+      "title": "",
+      "category": "Category",
+      "non_member": "Non-member",
+      "fase_member": "FASE member",
+      "mga": "MGA",
+      "carrier_broker": "Carrier or broker",
+      "service_provider": "Service provider"
+    },
+    "cta": {
+      "title": "",
+      "book_place": "Book my place",
+      "join_fase": "Join FASE"
+    }
+  },
+  "common": {
+    "language_label": "Language"
+  }
+}
