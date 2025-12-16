@@ -13,6 +13,7 @@ interface PortalTranslations {
   map: any;
   profile: any;
   manage_profile: any;
+  directory?: any;
 }
 
 const translationsCache = new Map<Locale, PortalTranslations>();
