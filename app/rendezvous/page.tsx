@@ -4,23 +4,20 @@ import { useTranslations } from 'next-intl';
 import ContentPageLayout from '../../components/ContentPageLayout';
 
 export default function RendezvousPage() {
+  const t = useTranslations('rendezvous');
   const sections = [
     {
       type: 'split' as const,
-      title: 'The MGA Rendezvous',
+      title: t('intro.title'),
       content: [
-        `FASE's annual conference, the MGA Rendezvous, offers European MGAs and insurers and reinsurers from around the world a unique opportunity to develop business opportunities together.
-
-Over two days, the Rendezvous will bring MGAs, capacity providers and select service providers together in a structured format to build relationships and pursue profitable growth opportunities.
-
-In 2026, the Rendezvous will take place at the Hotel Arts in Barcelona on May 11 and 12. To receive our brochure and updates on our plans for the Rendezvous, please register your interest below:`
+        t('intro.content.paragraph1')
       ],
-      image: '/hotel_pool.jpeg',
-      imageAlt: 'Hotel Arts Barcelona pool with Barcelona cityscape',
+      image: '/conference.jpeg',
+      imageAlt: t('intro.image_alt'),
       imagePosition: 'right' as const,
       buttons: [
         {
-          text: 'Register Your Interest',
+          text: t('intro.button.text'),
           href: 'https://mga-rendezvous.fasemga.com/register',
           variant: 'primary' as const
         }
@@ -30,10 +27,11 @@ In 2026, the Rendezvous will take place at the Hotel Arts in Barcelona on May 11
 
   return (
     <ContentPageLayout
-      title="The MGA Rendezvous"
+      title={t('page.title')}
       bannerImage="/hotel_pool.jpeg"
-      bannerImageAlt="Hotel Arts Barcelona pool with Barcelona cityscape"
+      bannerImageAlt={t('page.banner_alt')}
       sections={sections}
+      currentPage="rendezvous"
     />
   );
 }

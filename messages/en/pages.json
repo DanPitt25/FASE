@@ -250,25 +250,17 @@
   },
   "rendezvous": {
     "page": {
-      "title": "MGA Rendezvous",
-      "banner_alt": "Pan-European MGA networking"
+      "title": "The MGA Rendezvous",
+      "banner_alt": "Hotel Arts Barcelona pool with Barcelona cityscape"
     },
     "intro": {
-      "title": "Pan-European MGA Rendezvous",
+      "title": "The MGA Rendezvous",
       "content": {
-        "paragraph1": "Over two days, our annual Spring conference will bring together MGAs, capacity providers and selected service providers to expand business opportunities across Europe. Our primary focus will be on fostering networking and relationship-building opportunities, but we are also planning an event programme that sets the standard for European MGA events."
+        "paragraph1": "FASE's annual conference, the MGA Rendezvous, offers European MGAs and insurers and reinsurers from around the world a unique opportunity to develop business opportunities together.\n\nOver two days, the Rendezvous will bring MGAs, capacity providers and select service providers together in a structured format to build relationships and pursue profitable growth opportunities.\n\nIn 2026, the Rendezvous will take place at the Hotel Arts in Barcelona on May 11 and 12. To receive our brochure and updates on our plans for the Rendezvous, please register your interest below:"
       },
-      "image_alt": "European business conference"
-    },
-    "coming_soon": {
-      "title": "Coming Soon",
-      "content": {
-        "paragraph1": "The FASE Rendezvous is currently in development. Join our community to be the first to know about this upcoming flagship networking opportunity.",
-        "paragraph2": "We are planning a comprehensive program designed to foster collaboration and growth across the European MGA ecosystem."
-      },
-      "image_alt": "Future networking event",
+      "image_alt": "Hotel Arts Barcelona pool with Barcelona cityscape",
       "button": {
-        "text": "Join Us"
+        "text": "Register Your Interest"
       }
     }
   },
