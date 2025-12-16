@@ -293,5 +293,18 @@
       "changes_saved": "Modifications enregistrées avec succès",
       "error_saving": "Erreur lors de l'enregistrement"
     }
+  },
+  "directory": {
+    "title": "Répertoire des Membres",
+    "description": "Connectez-vous avec les membres FASE à travers l'Europe. Les informations de contact ne sont visibles que pour les membres connectés.",
+    "loading": "Chargement du répertoire des membres...",
+    "no_members": "Aucune organisation trouvée",
+    "no_members_desc": "Le répertoire des membres est en cours de constitution.",
+    "search_placeholder": "Rechercher des organisations et des membres...",
+    "member_since": "Membre Depuis",
+    "team_members": "Membres de l'Équipe",
+    "contact_member": "Contacter",
+    "member": "membre",
+    "members": "membres"
   }
 }

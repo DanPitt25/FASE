@@ -293,5 +293,18 @@
       "changes_saved": "Modifiche salvate con successo",
       "error_saving": "Errore nel salvare le modifiche"
     }
+  },
+  "directory": {
+    "title": "Elenco dei Membri",
+    "description": "Connettiti con i membri FASE in tutta Europa. Le informazioni di contatto sono visibili solo ai membri registrati.",
+    "loading": "Caricamento elenco membri...",
+    "no_members": "Nessuna organizzazione trovata",
+    "no_members_desc": "L'elenco dei membri è attualmente in fase di popolamento.",
+    "search_placeholder": "Cerca organizzazioni e membri...",
+    "member_since": "Membro Dal",
+    "team_members": "Membri del Team",
+    "contact_member": "Contatta",
+    "member": "membro",
+    "members": "membri"
   }
 }

@@ -296,5 +296,18 @@
       "changes_saved": "Changes saved successfully",
       "error_saving": "Error saving changes"
     }
+  },
+  "directory": {
+    "title": "Member Directory",
+    "description": "Connect with FASE members across Europe. Contact information is only visible to logged-in members.",
+    "loading": "Loading member directory...",
+    "no_members": "No organizations found",
+    "no_members_desc": "The member directory is currently being populated.",
+    "search_placeholder": "Search organizations and members...",
+    "member_since": "Member Since",
+    "team_members": "Team Members",
+    "contact_member": "Contact",
+    "member": "member",
+    "members": "members"
   }
 }

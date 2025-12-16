@@ -294,5 +294,18 @@
       "changes_saved": "Cambios guardados exitosamente",
       "error_saving": "Error al guardar cambios"
     }
+  },
+  "directory": {
+    "title": "Directorio de Miembros",
+    "description": "Conecte con miembros de FASE en toda Europa. La información de contacto solo es visible para miembros registrados.",
+    "loading": "Cargando directorio de miembros...",
+    "no_members": "No se encontraron organizaciones",
+    "no_members_desc": "El directorio de miembros se está poblando actualmente.",
+    "search_placeholder": "Buscar organizaciones y miembros...",
+    "member_since": "Miembro Desde",
+    "team_members": "Miembros del Equipo",
+    "contact_member": "Contactar",
+    "member": "miembro",
+    "members": "miembros"
   }
 }

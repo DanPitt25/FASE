@@ -293,5 +293,18 @@
       "changes_saved": "Änderungen erfolgreich gespeichert",
       "error_saving": "Fehler beim Speichern"
     }
+  },
+  "directory": {
+    "title": "Mitgliederverzeichnis",
+    "description": "Vernetzen Sie sich mit FASE-Mitgliedern in ganz Europa. Kontaktinformationen sind nur für eingeloggte Mitglieder sichtbar.",
+    "loading": "Mitgliederverzeichnis wird geladen...",
+    "no_members": "Keine Organisationen gefunden",
+    "no_members_desc": "Das Mitgliederverzeichnis wird derzeit aufgebaut.",
+    "search_placeholder": "Organisationen und Mitglieder suchen...",
+    "member_since": "Mitglied Seit",
+    "team_members": "Teammitglieder",
+    "contact_member": "Kontakt",
+    "member": "Mitglied",
+    "members": "Mitglieder"
   }
 }

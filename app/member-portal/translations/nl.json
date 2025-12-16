@@ -293,5 +293,18 @@
       "changes_saved": "Wijzigingen succesvol opgeslagen",
       "error_saving": "Fout bij opslaan wijzigingen"
     }
+  },
+  "directory": {
+    "title": "Ledengids",
+    "description": "Verbind met FASE-leden door heel Europa. Contactgegevens zijn alleen zichtbaar voor ingelogde leden.",
+    "loading": "Ledengids laden...",
+    "no_members": "Geen organisaties gevonden",
+    "no_members_desc": "De ledengids wordt momenteel opgevuld.",
+    "search_placeholder": "Zoek organisaties en leden...",
+    "member_since": "Lid Sinds",
+    "team_members": "Teamleden",
+    "contact_member": "Contact",
+    "member": "lid",
+    "members": "leden"
   }
 }
