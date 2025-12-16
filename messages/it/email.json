@@ -238,5 +238,18 @@
     "contact_text": "Se ha domande, La preghiamo di contattarci a admin@fasemga.com",
     "regards": "Cordiali saluti,",
     "signature": "Il team FASE"
+  },
+  "lost_invoice": {
+    "subject": "Fattura In Sospeso per FASE",
+    "dear": "Egregio/a",
+    "dear_m": "Egregio",
+    "dear_f": "Egregia",
+    "intro_text": "Le scrivo per fare il follow-up sui Suoi contributi associativi per FASE (Fédération des Agences de Souscription Européennes), emessi il {invoiceDate}, che rimangono in sospeso. La prego di farmi sapere lo stato di questo pagamento.",
+    "follow_up_text": "Non vediamo l'ora di attivare la Sua membership FASE, fornendoLe accesso al portale membri e invitandoLa ai nostri prossimi eventi. Se necessita di documentazione aggiuntiva o ha domande che potrebbero aiutare nell'elaborazione del pagamento, non esiti a contattarmi o semplicemente scriva a admin@fasemga.com. Ora possiamo fornire coordinate bancarie europee, quindi mi faccia sapere se ne ha bisogno.",
+    "closing_text": "La ringrazio per il tempo dedicato a questa questione. Apprezziamo la Sua pronta risposta.",
+    "regards": "Cordiali saluti,",
+    "signature": "Aline Sullivan",
+    "title": "Direttrice Operativa, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }

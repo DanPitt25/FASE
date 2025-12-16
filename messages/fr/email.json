@@ -232,5 +232,18 @@
     "contact_text": "Si vous avez des questions, veuillez nous contacter à admin@fasemga.com",
     "regards": "Cordialement,",
     "signature": "L'équipe FASE"
+  },
+  "lost_invoice": {
+    "subject": "Facture Impayée pour FASE",
+    "dear": "Cher/Chère",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "intro_text": "Je vous écris pour faire le suivi de vos cotisations pour FASE (Fédération des Agences de Souscription Européennes), émises le {invoiceDate}, qui demeurent impayées. Veuillez m'informer du statut de ce paiement.",
+    "follow_up_text": "Nous avons hâte d'activer votre adhésion FASE, en vous donnant accès au portail des membres et en vous invitant à nos prochains événements. Si vous avez besoin de documentation supplémentaire ou avez des questions qui faciliteraient le traitement du paiement, n'hésitez pas à me contacter ou simplement à écrire à admin@fasemga.com. Nous pouvons maintenant fournir des coordonnées bancaires européennes, alors faites-moi savoir si vous en avez besoin.",
+    "closing_text": "Merci du temps que vous consacrez à cette question. Nous apprécions votre réponse rapide.",
+    "regards": "Cordialement,",
+    "signature": "Aline Sullivan",
+    "title": "Directrice des Opérations, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }

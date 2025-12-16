@@ -238,5 +238,18 @@
     "contact_text": "Si tiene alguna pregunta, póngase en contacto con nosotros en admin@fasemga.com",
     "regards": "Atentamente,",
     "signature": "El equipo FASE"
+  },
+  "lost_invoice": {
+    "subject": "Factura Pendiente para FASE",
+    "dear": "Estimado/a",
+    "dear_m": "Estimado",
+    "dear_f": "Estimada",
+    "intro_text": "Me dirijo a usted para hacer seguimiento a sus cuotas de membresía para FASE (Fédération des Agences de Souscription Européennes), emitidas el {invoiceDate}, que permanecen pendientes. Por favor, infórmeme sobre el estado de este pago.",
+    "follow_up_text": "Esperamos con interés activar su membresía FASE, proporcionándole acceso al portal de miembros y invitándole a nuestros próximos eventos. Si requiere documentación adicional o tiene preguntas que ayuden en el procesamiento del pago, no dude en contactarme o simplemente escriba a admin@fasemga.com. Ahora podemos proporcionar detalles bancarios europeos, así que avíseme si los necesita.",
+    "closing_text": "Gracias por su tiempo dedicado a atender este asunto. Apreciamos su pronta respuesta.",
+    "regards": "Atentamente,",
+    "signature": "Aline Sullivan",
+    "title": "Directora de Operaciones, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }

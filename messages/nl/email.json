@@ -229,5 +229,18 @@
     "contact_text": "Als u vragen heeft, neem dan contact met ons op via admin@fasemga.com",
     "regards": "Met vriendelijke groet,",
     "signature": "Het FASE team"
+  },
+  "lost_invoice": {
+    "subject": "Openstaande Factuur voor FASE",
+    "dear": "Beste",
+    "dear_m": "Beste",
+    "dear_f": "Beste",
+    "intro_text": "Ik schrijf u om de ledenbijdragen voor FASE (Fédération des Agences de Souscription Européennes), uitgegeven op {invoiceDate}, die nog openstaan, op te volgen. Gelieve mij te laten weten wat de status van deze betaling is.",
+    "follow_up_text": "We kijken ernaar uit om uw FASE-lidmaatschap te activeren, u toegang te verlenen tot het ledenportaal en u uit te nodigen voor onze aankomende evenementen. Als u aanvullende documentatie nodig heeft of vragen heeft die zouden helpen bij de verwerking van de betaling, aarzel dan niet om contact met mij op te nemen of gewoon te schrijven naar admin@fasemga.com. We kunnen nu Europese bankgegevens verstrekken, dus laat me weten als u deze nodig heeft.",
+    "closing_text": "Dank u voor uw tijd die u aan deze kwestie besteedt. We waarderen uw snelle reactie.",
+    "regards": "Met vriendelijke groet,",
+    "signature": "Aline Sullivan",
+    "title": "Chief Operating Officer, FASE",
+    "email": "aline.sullivan@fasemga.com"
   }
 }
