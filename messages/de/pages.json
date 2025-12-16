@@ -250,25 +250,17 @@
   },
   "rendezvous": {
     "page": {
-      "title": "MGA Rendezvous",
-      "banner_alt": "Paneuropäisches MGA-Networking"
+      "title": "Das MGA Rendezvous",
+      "banner_alt": "Professioneller Konferenzraum"
     },
     "intro": {
-      "title": "Paneuropäisches MGA Rendezvous",
+      "title": "Das MGA Rendezvous",
       "content": {
-        "paragraph1": "Über zwei Tage wird unsere jährliche Frühjahrskonferenz MGAs, Kapazitätsanbieter und ausgewählte Dienstleister zusammenbringen, um Geschäftsmöglichkeiten in Europa zu erweitern. Unser Hauptfokus liegt auf der Förderung von Networking- und Beziehungsaufbaumöglichkeiten, aber wir planen auch ein Veranstaltungsprogramm, das den Standard für europäische MGA-Veranstaltungen setzt."
+        "paragraph1": "FASEs jährliche Konferenz, das MGA Rendezvous, bietet europäischen MGAs sowie Versicherern und Rückversicherern aus aller Welt eine einzigartige Gelegenheit, gemeinsam Geschäftsmöglichkeiten zu entwickeln.\n\nÜber zwei Tage wird das Rendezvous MGAs, Kapazitätsanbieter und ausgewählte Dienstleister in einem strukturierten Format zusammenbringen, um Beziehungen aufzubauen und profitable Wachstumsmöglichkeiten zu verfolgen.\n\n2026 findet das Rendezvous im Hotel Arts in Barcelona am 11. und 12. Mai statt.\n\nUm unsere Broschüre und Updates zu unseren Plänen für das Rendezvous zu erhalten, registrieren Sie bitte Ihr Interesse unten:"
       },
-      "image_alt": "Europäische Geschäftskonferenz"
-    },
-    "coming_soon": {
-      "title": "Demnächst",
-      "content": {
-        "paragraph1": "Das FASE Rendezvous befindet sich derzeit in der Entwicklung. Treten Sie unserer Gemeinschaft bei, um als Erste über diese kommende Flaggschiff-Networking-Möglichkeit informiert zu werden.",
-        "paragraph2": "Wir planen ein umfassendes Programm, das darauf ausgelegt ist, Zusammenarbeit und Wachstum im europäischen MGA-Ökosystem zu fördern."
-      },
-      "image_alt": "Zukünftige Networking-Veranstaltung",
+      "image_alt": "Hotel Arts Barcelona Pool mit Barcelona Stadtbild",
       "button": {
-        "text": "Machen Sie mit"
+        "text": "Interesse Registrieren"
       }
     }
   },

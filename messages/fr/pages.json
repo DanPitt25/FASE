@@ -250,25 +250,17 @@
   },
   "rendezvous": {
     "page": {
-      "title": "MGA Rendezvous",
-      "banner_alt": "Réseautage pan-européen des agences de souscription"
+      "title": "Le MGA Rendezvous",
+      "banner_alt": "Salle de conférence professionnelle"
     },
     "intro": {
-      "title": "Rendez-vous Pan-Européen des Agences de Souscription",
+      "title": "Le MGA Rendezvous",
       "content": {
-        "paragraph1": "Sur deux jours, notre conférence annuelle de printemps rassemblera les agences de souscription, fournisseurs de capacité et prestataires de services sélectionnés pour élargir les opportunités d'affaires à travers l'Europe. Notre focus principal sera de favoriser le réseautage et les opportunités de construction de relations, mais nous planifions également un programme d'événement qui établit la norme pour les événements européens d'agences de souscription."
+        "paragraph1": "La conférence annuelle de FASE, le MGA Rendezvous, offre aux agences de souscription européennes et aux assureurs et réassureurs du monde entier une opportunité unique de développer des opportunités d'affaires ensemble.\n\nSur deux jours, le Rendezvous rassemblera les agences de souscription, les fournisseurs de capacité et certains prestataires de services dans un format structuré pour construire des relations et poursuivre des opportunités de croissance rentable.\n\nEn 2026, le Rendezvous aura lieu au Hotel Arts à Barcelone les 11 et 12 mai.\n\nPour recevoir notre brochure et des mises à jour sur nos plans pour le Rendezvous, veuillez enregistrer votre intérêt ci-dessous:"
       },
-      "image_alt": "Conférence d'affaires européenne"
-    },
-    "coming_soon": {
-      "title": "Bientôt Disponible",
-      "content": {
-        "paragraph1": "Le Rendez-vous FASE est actuellement en développement. Rejoignez notre communauté pour être le premier à connaître cette opportunité de réseautage phare à venir.",
-        "paragraph2": "Nous planifions un programme complet conçu pour favoriser la collaboration et la croissance à travers l'écosystème européen des agences de souscription."
-      },
-      "image_alt": "Futur événement de réseautage",
+      "image_alt": "Piscine de l'Hotel Arts Barcelona avec le paysage urbain de Barcelone",
       "button": {
-        "text": "Nous Rejoindre"
+        "text": "Enregistrer Votre Intérêt"
       }
     }
   },

@@ -250,25 +250,17 @@
   },
   "rendezvous": {
     "page": {
-      "title": "Rendezvous de Agencias de Suscripción",
-      "banner_alt": "Networking paneuropeo de agencias de suscripción"
+      "title": "El MGA Rendezvous",
+      "banner_alt": "Sala de conferencias profesional"
     },
     "intro": {
-      "title": "Rendezvous Paneuropeo de Agencias de Suscripción",
+      "title": "El MGA Rendezvous",
       "content": {
-        "paragraph1": "Durante dos días, nuestra conferencia anual de primavera reunirá a agencias de suscripción, proveedores de capacidad y proveedores de servicios seleccionados para expandir las oportunidades de negocio en Europa. Nuestro enfoque principal será fomentar las oportunidades de networking y construcción de relaciones, pero también estamos planeando un programa de eventos que establezca el estándar para los eventos europeos de agencias de suscripción."
+        "paragraph1": "La conferencia anual de FASE, el MGA Rendezvous, ofrece a las agencias de suscripción europeas y a aseguradoras y reaseguradoras de todo el mundo una oportunidad única para desarrollar oportunidades de negocio juntos.\n\nDurante dos días, el Rendezvous reunirá agencias de suscripción, proveedores de capacidad y proveedores de servicios seleccionados en un formato estructurado para construir relaciones y buscar oportunidades de crecimiento rentable.\n\nEn 2026, el Rendezvous tendrá lugar en el Hotel Arts en Barcelona los días 11 y 12 de mayo.\n\nPara recibir nuestro folleto y actualizaciones sobre nuestros planes para el Rendezvous, por favor registre su interés a continuación:"
       },
-      "image_alt": "Conferencia empresarial europea"
-    },
-    "coming_soon": {
-      "title": "Próximamente",
-      "content": {
-        "paragraph1": "El Rendezvous de FASE está actualmente en desarrollo. Únase a nuestra comunidad para ser el primero en conocer sobre esta próxima oportunidad insignia de networking.",
-        "paragraph2": "Estamos planeando un programa integral diseñado para fomentar la colaboración y el crecimiento en el ecosistema europeo de agencias de suscripción."
-      },
-      "image_alt": "Evento futuro de networking",
+      "image_alt": "Piscina del Hotel Arts Barcelona con el skyline de Barcelona",
       "button": {
-        "text": "Únase a Nosotros"
+        "text": "Registrar Su Interés"
       }
     }
   },

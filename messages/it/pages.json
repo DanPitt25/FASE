@@ -250,25 +250,17 @@
   },
   "rendezvous": {
     "page": {
-      "title": "Rendezvous delle Agenzie di Sottoscrizione",
-      "banner_alt": "Networking paneuropeo delle agenzie di sottoscrizione"
+      "title": "Il MGA Rendezvous",
+      "banner_alt": "Sala conferenze professionale"
     },
     "intro": {
-      "title": "Rendezvous Paneuropeo delle Agenzie di Sottoscrizione",
+      "title": "Il MGA Rendezvous",
       "content": {
-        "paragraph1": "Nel corso di due giorni, la nostra conferenza annuale di primavera riunirà agenzie di sottoscrizione, fornitori di capacità e fornitori di servizi selezionati per espandere le opportunità di business in Europa. Il nostro focus principale sarà favorire le opportunità di networking e costruzione di relazioni, ma stiamo anche pianificando un programma di eventi che stabilisca lo standard per gli eventi europei delle agenzie di sottoscrizione."
+        "paragraph1": "La conferenza annuale di FASE, il MGA Rendezvous, offre alle agenzie di sottoscrizione europee e agli assicuratori e riassicuratori di tutto il mondo un'opportunità unica per sviluppare opportunità di business insieme.\n\nNel corso di due giorni, il Rendezvous riunirà agenzie di sottoscrizione, fornitori di capacità e fornitori di servizi selezionati in un formato strutturato per costruire relazioni e perseguire opportunità di crescita redditizia.\n\nNel 2026, il Rendezvous si terrà presso l'Hotel Arts di Barcellona l'11 e il 12 maggio.\n\nPer ricevere la nostra brochure e aggiornamenti sui nostri piani per il Rendezvous, si prega di registrare il proprio interesse qui sotto:"
       },
-      "image_alt": "Conferenza aziendale europea"
-    },
-    "coming_soon": {
-      "title": "Prossimamente",
-      "content": {
-        "paragraph1": "Il Rendezvous FASE è attualmente in sviluppo. Si unisca alla nostra comunità per essere il primo a sapere di questa prossima opportunità di networking di punta.",
-        "paragraph2": "Stiamo pianificando un programma completo progettato per favorire la collaborazione e la crescita nell'ecosistema europeo delle agenzie di sottoscrizione."
-      },
-      "image_alt": "Evento futuro di networking",
+      "image_alt": "Piscina dell'Hotel Arts Barcelona con skyline di Barcellona",
       "button": {
-        "text": "Si Unisca a Noi"
+        "text": "Registra Il Tuo Interesse"
       }
     }
   },
