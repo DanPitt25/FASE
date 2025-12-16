@@ -960,7 +960,6 @@ export default function MemberMap({ translations }: MemberMapProps) {
         });
       }
     });
-    
     return countryMap;
   }, [members, selectedCompany]);
 
@@ -1078,7 +1077,10 @@ export default function MemberMap({ translations }: MemberMapProps) {
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedCompany(null);
+                  setSelectedCountry(null);
                   setFilteredCompanies([]);
+                  setShowMyCompany(false);
+                  setEditingMarkets(false);
                 }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
@@ -1182,7 +1184,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                   {/* Country boundaries */}
                   {countriesGeoJson && (
                     <GeoJSON
-                      key={`countries-${showMyCompany}-${editingMarkets}-${selectedLocationFilter}`} // Force re-render when filter changes
+                      key={`countries-${showMyCompany}-${editingMarkets}-${selectedLocationFilter}-${selectedCompany?.id || 'none'}`} // Force re-render when filter changes
                       data={countriesGeoJson}
                       style={(feature: any) => {
                         const numericId = feature?.id;
@@ -1283,7 +1285,6 @@ export default function MemberMap({ translations }: MemberMapProps) {
                           }
                         }
                         
-                        
                         // Get members from both business and market locations based on filter
                         let businessMembers: UnifiedMember[] = [];
                         let marketMembers: UnifiedMember[] = [];
@@ -1297,26 +1298,57 @@ export default function MemberMap({ translations }: MemberMapProps) {
                           }
                         }
                         
+                        // Pre-calculate and store the original style to avoid recalculation on mouseout
+                        // IMPORTANT: This must use the SAME logic as the main style function to avoid inconsistencies
+                        const originalStyle = (() => {
+                          // Check if this country has business locations (using FILTERED data like main style function)
+                          const hasBusinessLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') && 
+                            businessMembers.length > 0;
+                          
+                          // Check if this country has markets (using FILTERED data like main style function)
+                          const hasMarketLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') &&
+                            marketMembers.length > 0;
+                          
+                          // Check if this is one of the current user's markets
+                          const isUserMarket = showMyCompany && iso2Code && markets.includes(iso2Code);
+
+                          let fillColor = '#f8f9fa'; // Default light gray for no members
+                          let borderColor = '#e5e7eb';
+                          let fillOpacity = 0.05;
+                          let weight = 1;
+                          
+                          if (isUserMarket) {
+                            // User's own market - special purple color
+                            fillColor = '#7c3aed';
+                            borderColor = '#7c3aed';
+                            fillOpacity = 0.5;
+                            weight = 3;
+                          } else if (hasBusinessLocation) {
+                            // Any business location - darker navy
+                            fillColor = '#1e3a8a';
+                            borderColor = '#1e3a8a';
+                            fillOpacity = 0.4;
+                            weight = 2;
+                          } else if (hasMarketLocation) {
+                            // Market only (no business) - gold
+                            fillColor = '#d4af37';
+                            borderColor = '#b8941f';
+                            fillOpacity = 0.3;
+                            weight = 2;
+                          }
+                          
+                          
+                          return {
+                            fillColor,
+                            fillOpacity,
+                            color: borderColor,
+                            weight,
+                            opacity: 0.8
+                          };
+                        })();
+                        
                         // Combine and deduplicate members
                         const membersInCountry = deduplicateMembers(businessMembers, marketMembers);
-                        
-                        // Make countries clickable for different purposes
-                        layer.on('click', () => {
-                          if (iso2Code && showMyCompany && editingMarkets) {
-                            // Add/remove market when in editing mode
-                            if (markets.includes(iso2Code)) {
-                              removeMarket(iso2Code);
-                            } else {
-                              addMarket(iso2Code);
-                            }
-                          } else if (iso2Code && selectedCompany) {
-                            // If a company is selected, show company details for this country
-                            setSelectedCountry(`company-country-${iso2Code}`);
-                          } else if (iso2Code && membersInCountry.length > 0) {
-                            // Normal country view - only if there are members
-                            setSelectedCountry(iso2Code);
-                          }
-                        });
                         
                         // Countries are only interactive if they should be colored in current filter
                         let shouldBeColored = false;
@@ -1330,19 +1362,29 @@ export default function MemberMap({ translations }: MemberMapProps) {
                         
                         const isInteractive = (showMyCompany && editingMarkets && iso2Code) || shouldBeColored;
                         
-                        // Always attach handlers to ALL countries, but only show hover effects for interactive ones
-                        // This ensures all countries can be clicked in edit mode
-                        if (showMyCompany && editingMarkets && iso2Code) {
-                          // In edit mode, ALL countries get click handlers
+                        // Handle click events for all interactive countries
+                        if (isInteractive) {
                           layer.on('click', () => {
-                            if (markets.includes(iso2Code)) {
-                              removeMarket(iso2Code);
-                            } else {
-                              addMarket(iso2Code);
+                            if (iso2Code && showMyCompany && editingMarkets) {
+                              // Add/remove market when in editing mode
+                              if (markets.includes(iso2Code)) {
+                                removeMarket(iso2Code);
+                              } else {
+                                addMarket(iso2Code);
+                              }
+                            } else if (iso2Code && selectedCompany) {
+                              // If a company is selected, show company details for this country
+                              setSelectedCountry(`company-country-${iso2Code}`);
+                            } else if (iso2Code && membersInCountry.length > 0) {
+                              // Normal country view - only if there are members
+                              setSelectedCountry(iso2Code);
                             }
                           });
-                          
-                          // Hover effects for ALL countries in edit mode
+                        }
+                        
+                        // Handle hover effects differently for edit mode vs normal mode
+                        if (showMyCompany && editingMarkets && iso2Code) {
+                          // Edit mode: ALL countries get hover effects
                           layer.on('mouseover', () => {
                             layer.setStyle({
                               fillOpacity: 0.6,
@@ -1353,99 +1395,23 @@ export default function MemberMap({ translations }: MemberMapProps) {
                           });
                           
                           layer.on('mouseout', () => {
-                            // Reset to original style - simplified for edit mode
-                            layer.setStyle({
-                              fillColor: markets.includes(iso2Code) ? '#7c3aed' : '#f8f9fa',
-                              fillOpacity: markets.includes(iso2Code) ? 0.5 : 0.05,
-                              color: markets.includes(iso2Code) ? '#7c3aed' : '#e5e7eb',
-                              weight: markets.includes(iso2Code) ? 3 : 1
-                            });
+                            layer.setStyle(originalStyle);
                           });
                         } else if (isInteractive) {
-                          // Normal mode handlers ONLY for countries that should be colored in current filter
-                          layer.on('click', () => {
-                            if (iso2Code && selectedCompany) {
-                              setSelectedCountry(`company-country-${iso2Code}`);
-                            } else if (iso2Code && membersInCountry.length > 0) {
-                              setSelectedCountry(iso2Code);
-                            }
-                          });
-                          
+                          // Normal mode: only interactive countries get hover effects
                           layer.on('mouseover', () => {
-                            // Simple hover: just increase opacity and weight
+                            const currentStyle = originalStyle;
                             layer.setStyle({
-                              fillOpacity: 0.6,
-                              weight: 3
+                              ...currentStyle,
+                              fillOpacity: Math.min(currentStyle.fillOpacity + 0.2, 1),
+                              weight: Math.max(currentStyle.weight + 1, 3)
                             });
                           });
                           
                           layer.on('mouseout', () => {
-                            // Reset using EXACT same logic as main style function
-                            let fillColor = '#f8f9fa';
-                            let borderColor = '#e5e7eb';
-                            let fillOpacity = 0.05;
-                            let weight = 1;
-                            
-                            // Recalculate hasBusinessLocation and hasMarketLocation exactly like in style function
-                            const hasBusinessLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'business') && 
-                              Array.from(businessLocationsByCountry.keys()).some(businessIso2Code => {
-                                try {
-                                  const numericCode = countries.alpha2ToNumeric(businessIso2Code);
-                                  return numericCode && numericCode.toString() === numericId?.toString();
-                                } catch (error) {
-                                  return false;
-                                }
-                              });
-                            
-                            const hasMarketLocation = (selectedLocationFilter === 'all' || selectedLocationFilter === 'markets') &&
-                              Array.from(marketLocationsByCountry.keys()).some(marketIso2Code => {
-                                try {
-                                  const numericCode = countries.alpha2ToNumeric(marketIso2Code);
-                                  return numericCode && numericCode.toString() === numericId?.toString();
-                                } catch (error) {
-                                  return false;
-                                }
-                              });
-                            
-                            const isUserMarket = showMyCompany && Array.from(businessLocationsByCountry.keys()).concat(Array.from(marketLocationsByCountry.keys())).some(userIso2Code => {
-                              try {
-                                const numericCode = countries.alpha2ToNumeric(userIso2Code);
-                                if (numericCode && numericCode.toString() === numericId?.toString()) {
-                                  return markets.includes(userIso2Code);
-                                }
-                                return false;
-                              } catch (error) {
-                                return false;
-                              }
-                            });
-                            
-                            if (isUserMarket) {
-                              fillColor = '#7c3aed';
-                              borderColor = '#7c3aed';
-                              fillOpacity = 0.5;
-                              weight = 3;
-                            } else if (hasBusinessLocation) {
-                              fillColor = '#1e3a8a';
-                              borderColor = '#1e3a8a';
-                              fillOpacity = 0.4;
-                              weight = 2;
-                            } else if (hasMarketLocation) {
-                              fillColor = '#d4af37';
-                              borderColor = '#b8941f';
-                              fillOpacity = 0.3;
-                              weight = 2;
-                            }
-                            
-                            layer.setStyle({
-                              fillColor,
-                              fillOpacity,
-                              color: borderColor,
-                              weight,
-                              opacity: 0.8
-                            });
+                            layer.setStyle(originalStyle);
                           });
                         }
-                        // Countries that are NOT interactive get NO handlers at all
                       }}
                     />
                   )}
@@ -1469,6 +1435,10 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       onClose={() => {
                         setShowMyCompany(false);
                         setEditingMarkets(false);
+                        setSelectedCountry(null);
+                        setSelectedCompany(null);
+                        setSearchQuery('');
+                        setFilteredCompanies([]);
                       }}
                     />
                   ) : selectedCountry === 'company-details' && selectedCompany ? (
@@ -1500,7 +1470,12 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       businessMembers={businessLocationsByCountry.get(selectedCountry) || []}
                       marketMembers={marketLocationsByCountry.get(selectedCountry) || []}
                       translations={translations}
-                      onClose={() => setSelectedCountry(null)}
+                      onClose={() => {
+                        setSelectedCountry(null);
+                        setSelectedCompany(null);
+                        setSearchQuery('');
+                        setFilteredCompanies([]);
+                      }}
                       setSelectedCompany={setSelectedCompany}
                       setSelectedCountry={setSelectedCountry}
                     />

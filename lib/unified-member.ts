@@ -596,6 +596,84 @@ export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]>
   }
 };
 
+// Get all approved organizations with their subcollection members for directory (optimized)
+export const getApprovedMembersWithSubcollections = async (): Promise<{
+  organizations: UnifiedMember[];
+  allMembers: Array<UnifiedMember & { companyName: string; companyId: string }>;
+}> => {
+  try {
+    console.time('getApprovedMembersWithSubcollections');
+    
+    // Get approved and invoice_sent organizations in parallel
+    const [approvedOrgs, invoiceSentOrgs] = await Promise.all([
+      getAccountsByStatus('approved'),
+      getAccountsByStatus('invoice_sent')
+    ]);
+    
+    const allOrgs = [...approvedOrgs, ...invoiceSentOrgs];
+    console.log(`📊 Found ${allOrgs.length} approved organizations`);
+    
+    // Filter corporate organizations for parallel member fetching
+    const corporateOrgs = allOrgs.filter(org => org.membershipType === 'corporate');
+    
+    // Fetch all subcollection members in parallel
+    const memberPromises = corporateOrgs.map(async (org) => {
+      try {
+        const membersRef = collection(db, 'accounts', org.id, 'members');
+        const membersSnapshot = await getDocs(membersRef);
+        
+        return membersSnapshot.docs.map(memberDoc => {
+          const memberData = memberDoc.data() as CompanyMember;
+          
+          // Create a UnifiedMember object for the subcollection member
+          const unifiedMember: UnifiedMember & { companyName: string; companyId: string } = {
+            id: memberData.id,
+            email: memberData.email,
+            personalName: memberData.personalName,
+            organizationName: org.organizationName, // Use organization name
+            organizationType: org.organizationType,
+            membershipType: 'corporate',
+            status: org.status,
+            createdAt: memberData.createdAt,
+            updatedAt: memberData.updatedAt,
+            jobTitle: memberData.jobTitle,
+            isPrimaryContact: memberData.isPrimaryContact,
+            companyName: org.organizationName || '',
+            companyId: org.id,
+            // Include organization-level data for context
+            linesOfBusiness: org.linesOfBusiness,
+            businessAddress: org.businessAddress
+          };
+          
+          return unifiedMember;
+        });
+      } catch (error) {
+        console.error(`Error fetching subcollection members for organization ${org.id}:`, error);
+        return [];
+      }
+    });
+    
+    // Wait for all member fetches to complete
+    const memberArrays = await Promise.all(memberPromises);
+    const allMembers = memberArrays.flat(); // Flatten the arrays
+    
+    console.log(`📊 Found ${allMembers.length} total members across ${corporateOrgs.length} corporate organizations`);
+    console.timeEnd('getApprovedMembersWithSubcollections');
+    
+    return {
+      organizations: allOrgs,
+      allMembers
+    };
+  } catch (error) {
+    console.error('Error getting approved members with subcollections:', error);
+    console.timeEnd('getApprovedMembersWithSubcollections');
+    return {
+      organizations: [],
+      allMembers: []
+    };
+  }
+};
+
 // Get members with member portal access (approved + admin)
 export const getMembersWithPortalAccess = async (): Promise<UnifiedMember[]> => {
   try {
