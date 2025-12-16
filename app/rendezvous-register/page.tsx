@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 // Import the translations directly
 import translations from '../../messages/en.json';
 import { useSearchParams } from 'next/navigation';
@@ -17,7 +17,7 @@ interface Attendee {
   isFaseMember: boolean;
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   // Use translations directly
   const t = (key: string) => {
     const keys = key.split('.');
@@ -476,5 +476,13 @@ export default function RegisterPage() {
         </div>
       </section>
     </RendezvousPageLayout>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
