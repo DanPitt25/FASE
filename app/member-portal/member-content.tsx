@@ -227,11 +227,8 @@ export default function MemberContent() {
                   </svg>
                 </summary>
                 <div className="p-4 pt-0 border-t border-gray-100">
-                  <p className="text-fase-black mb-4">
+                  <p className="text-fase-black">
                     {t('overview.matching.description_1')}
-                  </p>
-                  <p className="text-fase-black font-medium">
-                    {t('overview.matching.description_2')}
                   </p>
                 </div>
               </details>
