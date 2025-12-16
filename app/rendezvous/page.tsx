@@ -18,7 +18,7 @@ export default function RendezvousPage() {
       buttons: [
         {
           text: t('intro.button.text'),
-          href: 'https://mga-rendezvous.fasemga.com/register',
+          href: 'https://mgarendezvous.com/register',
           variant: 'primary' as const
         }
       ]
