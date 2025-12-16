@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import translations from '../../messages/en.json';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import PageLayout from '../../components/PageLayout';
+import RendezvousPageLayout from '../../components/RendezvousPageLayout';
 import SearchableCountrySelect from '../../components/SearchableCountrySelectSubsite';
 
 interface Attendee {
@@ -207,7 +207,7 @@ export default function RegisterPage() {
 
   if (submitted) {
     return (
-      <PageLayout>
+      <RendezvousPageLayout>
         <section className="py-24 bg-white min-h-[60vh] flex items-center">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="bg-green-50 border border-green-200 rounded-lg p-8">
@@ -231,12 +231,12 @@ export default function RegisterPage() {
             </div>
           </div>
         </section>
-      </PageLayout>
+      </RendezvousPageLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <RendezvousPageLayout>
       {/* Hero Section */}
       <section className="py-16 bg-fase-navy text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -475,6 +475,6 @@ export default function RegisterPage() {
           </form>
         </div>
       </section>
-    </PageLayout>
+    </RendezvousPageLayout>
   );
 }

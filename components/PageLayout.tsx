@@ -1,49 +1,30 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { useState, ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 
 interface PageLayoutProps {
   children: ReactNode;
+  currentPage?: string;
 }
 
-export default function PageLayout({ children }: PageLayoutProps) {
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('scroll-visible');
-          entry.target.classList.remove('scroll-hidden');
-        }
-      });
-    }, observerOptions);
-
-    // Observe all elements with scroll-hidden class
-    const scrollElements = document.querySelectorAll('.scroll-hidden');
-    scrollElements.forEach((element) => {
-      observer.observe(element);
-    });
-
-    return () => {
-      scrollElements.forEach((element) => {
-        observer.unobserve(element);
-      });
-    };
-  }, []);
+export default function PageLayout({ 
+  children, 
+  currentPage
+}: PageLayoutProps) {
+  const [headerLoaded, setHeaderLoaded] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white font-dm-sans">
-      <Header />
-      <main className="flex-1">
+    <div className={`min-h-screen bg-fase-light-blue font-lato transition-opacity duration-300 overflow-x-hidden ${headerLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      <Header currentPage={currentPage} onLoad={() => setHeaderLoaded(true)} />
+      
+      {/* Main Content */}
+      <div>
         {children}
-      </main>
-      <Footer />
+        
+        <Footer />
+      </div>
     </div>
   );
 }
