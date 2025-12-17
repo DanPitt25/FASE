@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     const genderAwareGreeting = reminderEmail[`greeting${genderSuffix}`] || reminderEmail.greeting || "Payment Reminder";
     const genderAwareReminderText = reminderEmail[`reminder_text${genderSuffix}`] || reminderEmail.reminder_text || "We hope this message finds you well. This is a friendly reminder regarding the outstanding payment for your FASE membership application for {organizationName}.";
     
-    const emailContent = {
+    let emailContent = {
       subject: genderAwareSubject,
       greeting: genderAwareGreeting,
       dear: genderAwareDear,
@@ -162,6 +162,31 @@ export async function POST(request: NextRequest) {
       signature: signature.name,
       title: signature.title
     };
+
+    // Apply customizations if provided
+    if (requestData.customizedEmailContent) {
+      const customContent = requestData.customizedEmailContent;
+      const genderSuffix = testData.gender === 'f' ? '_f' : '_m';
+      
+      emailContent = {
+        subject: customContent[`subject${genderSuffix}`] || customContent.subject || emailContent.subject,
+        greeting: customContent[`greeting${genderSuffix}`] || customContent.greeting || emailContent.greeting,
+        dear: customContent[`dear${genderSuffix}`] || customContent.dear || emailContent.dear,
+        reminderText: (customContent[`reminder_text${genderSuffix}`] || customContent.reminder_text || reminderEmail.reminder_text || emailContent.reminderText).replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
+        paymentText: (customContent.payment_text || reminderEmail.payment_text || emailContent.paymentText).replace('{totalAmount}', testData.totalAmount.toString()),
+        paymentOptions: customContent.payment_options || emailContent.paymentOptions,
+        paypalOption: customContent.paypal_option || emailContent.paypalOption,
+        payOnline: customContent.pay_online || emailContent.payOnline,
+        bankTransfer: customContent.bank_transfer || emailContent.bankTransfer,
+        invoiceAttached: customContent.invoice_attached || emailContent.invoiceAttached,
+        benefitsText: customContent.benefits_text || emailContent.benefitsText,
+        accessText: customContent.access_text || emailContent.accessText,
+        contactText: customContent.contact_text || emailContent.contactText,
+        regards: customContent.regards || emailContent.regards,
+        signature: customContent.signature || emailContent.signature,
+        title: customContent.title || emailContent.title
+      };
+    }
 
     const emailData = {
       email: testData.email,

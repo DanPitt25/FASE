@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    const emailContent = {
+    let emailContent = {
       subject: welcomeEmail.subject || "Welcome to FASE - your member portal access",
       dear: getGenderedText('dear', "Dear"),
       welcomeIntro: (welcomeEmail.welcome_intro || "Welcome to FASE, the pan-European MGA federation. We're delighted to have {organizationName} as a founder member.").replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
@@ -90,6 +90,27 @@ export async function POST(request: NextRequest) {
       accessPortal: welcomeEmail.access_portal || "Access Member Portal",
       portalUrl: "https://fasemga.com/member-portal"
     };
+
+    // Apply customizations if provided
+    if (requestData.customizedEmailContent) {
+      const customContent = requestData.customizedEmailContent;
+      const genderSuffix = testData.gender === 'f' ? '_f' : '_m';
+      
+      emailContent = {
+        subject: customContent.subject || emailContent.subject,
+        dear: customContent[`dear${genderSuffix}`] || customContent.dear || emailContent.dear,
+        welcomeIntro: (customContent.welcome_intro || welcomeEmail.welcome_intro || emailContent.welcomeIntro).replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
+        portalAccess: customContent.portal_access || emailContent.portalAccess,
+        memberDirectory: (customContent.member_directory || welcomeEmail.member_directory || emailContent.memberDirectory).replace('{organizationName}', testData.organizationName),
+        closing: customContent.closing || emailContent.closing,
+        regards: customContent.regards || emailContent.regards,
+        signatureName: customContent.signature_name || emailContent.signatureName,
+        signatureFull: customContent.signature_full || emailContent.signatureFull,
+        signatureTitle: customContent.signature_title || emailContent.signatureTitle,
+        accessPortal: customContent.access_portal || emailContent.accessPortal,
+        portalUrl: emailContent.portalUrl
+      };
+    }
 
     const emailData = {
       email: testData.email,

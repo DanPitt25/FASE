@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Email content based on your specifications
-    const emailContent = {
+    let emailContent = {
       subject: "Outstanding Invoice for FASE",
       intro: `I am writing to follow up on your membership dues for FASE (Federation of European MGAs), issued on 5 November 2025, which remains outstanding. Please let me know the status of this payment.`,
       portalAccess: "We look forward to activating your FASE membership, providing you with access to the member portal, and inviting you to our upcoming events. If you require any additional documentation or have questions that would assist in processing the payment, please feel free to reach out to me or simply contact admin@fasemga.com. We are now able to provide European banking details, so just let me know if you need those.",
@@ -79,6 +79,26 @@ export async function POST(request: NextRequest) {
         email: "aline.sullivan@fasemga.com"
       }
     };
+
+    // Apply customizations if provided
+    if (requestData.customizedEmailContent) {
+      const customContent = requestData.customizedEmailContent;
+      
+      emailContent = {
+        subject: customContent.subject || emailContent.subject,
+        intro: customContent.intro_text || emailContent.intro,
+        portalAccess: customContent.follow_up_text || emailContent.portalAccess,
+        closing: customContent.closing_text || emailContent.closing,
+        signature: {
+          name: customContent.signature || emailContent.signature.name,
+          fullName: customContent.signature || emailContent.signature.fullName,
+          title: customContent.title || emailContent.signature.title,
+          company: emailContent.signature.company,
+          address: emailContent.signature.address,
+          email: customContent.email || emailContent.signature.email
+        }
+      };
+    }
 
     const emailHTML = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">

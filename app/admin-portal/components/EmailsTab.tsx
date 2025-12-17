@@ -300,10 +300,25 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     }
   };
 
+  const getTemplateKey = (emailTemplate: EmailTemplate): string => {
+    const templateKeyMap: Record<EmailTemplate, string> = {
+      'invoice': 'membership_acceptance_admin',
+      'standalone_invoice': 'invoice_delivery',
+      'lost_invoice': 'lost_invoice',
+      'member_portal_welcome': 'member_portal_welcome',
+      'reminder': 'payment_reminder',
+      'followup': 'membership_followup',
+      'freeform': 'invoice_delivery' // Use generic template for freeform
+    };
+    
+    return templateKeyMap[emailTemplate] || 'invoice_delivery';
+  };
+
   const handleCustomize = async () => {
-    // Load the default template for the membership acceptance email
+    // Load the default template for the selected email type
     try {
-      const response = await fetch('/api/get-email-template?templateKey=membership_acceptance_admin');
+      const templateKey = getTemplateKey(selectedTemplate);
+      const response = await fetch(`/api/get-email-template?templateKey=${templateKey}`);
       
       if (!response.ok) {
         throw new Error('Failed to load template');
@@ -1147,7 +1162,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   >
                     {previewing ? 'Refreshing...' : 'Refresh Preview'}
                   </Button>
-                  {selectedTemplate === 'invoice' && (
+                  {selectedTemplate !== 'freeform' && (
                     <>
                       <Button
                         variant="secondary"

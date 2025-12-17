@@ -15,10 +15,23 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Only allow reading the membership_acceptance_admin template for now
-    if (templateKey !== 'membership_acceptance_admin') {
+    // Define valid template keys
+    const validTemplateKeys = [
+      'membership_acceptance_admin',
+      'invoice_delivery', 
+      'lost_invoice',
+      'payment_reminder',
+      'member_portal_welcome',
+      'membership_followup',
+      'payment_confirmed_welcome',
+      'invoice',
+      'join_request_approved',
+      'join_request_update'
+    ];
+    
+    if (!validTemplateKeys.includes(templateKey)) {
       return NextResponse.json(
-        { error: 'Only membership_acceptance_admin template can be read' },
+        { error: `Invalid template key. Valid keys: ${validTemplateKeys.join(', ')}` },
         { status: 400 }
       );
     }
