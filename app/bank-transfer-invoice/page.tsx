@@ -95,7 +95,7 @@ function BankTransferInvoiceContent() {
           organizationName: orgName,
           invoiceNumber,
           greeting: fullName || 'Client',
-          totalAmount: parseFloat(amount),
+          totalAmount: originalAmount ? parseFloat(originalAmount) * (hasOtherAssociations ? 0.8 : 1.0) : parseFloat(amount),
           originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
           userLocale: searchParams?.get('locale') || 'en',
           gender: gender || 'm',
