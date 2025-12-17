@@ -468,6 +468,10 @@ interface MemberMapProps {
       clear_filter: string;
       no_results: string;
     };
+    usage?: {
+      title: string;
+      instructions: string;
+    };
     my_company?: {
       show_button: string;
       title: string;

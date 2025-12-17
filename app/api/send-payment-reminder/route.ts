@@ -3,6 +3,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createInvoiceRecord } from '../../../lib/firestore';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -348,6 +349,40 @@ export async function POST(request: NextRequest) {
       } catch (dbError) {
         console.error('❌ Failed to log payment reminder to database:', dbError);
         // Don't fail the request if database logging fails
+      }
+      
+      // Log email audit trail
+      try {
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: 'email_sent_payment_reminder',
+          success: true,
+          emailData: {
+            toEmail: emailData.email,
+            toName: testData.greeting,
+            ccEmails: emailData.cc ? [emailData.cc] : undefined,
+            organizationName: testData.organizationName,
+            subject: emailContent.subject,
+            emailType: 'payment_reminder',
+            htmlContent: emailData.invoiceHTML,
+            emailLanguage: locale,
+            templateUsed: 'payment_reminder',
+            customizedContent: !!requestData.customizedEmailContent,
+            attachments: pdfAttachment ? [{
+              filename: requestData.pdfFilename || 'FASE-Payment-Reminder.pdf',
+              type: 'pdf' as const,
+              size: undefined
+            }] : [],
+            emailServiceId: result.id,
+            invoiceAmount: testData.totalAmount,
+            currency: 'EUR',
+            paymentInstructions: 'Bank transfer and PayPal'
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
       }
       
       return NextResponse.json({

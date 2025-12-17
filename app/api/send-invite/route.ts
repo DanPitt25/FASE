@@ -104,9 +104,7 @@ export async function POST(request: NextRequest) {
             templateUsed: 'invite',
             customizedContent: false,
             attachments: [],
-            emailServiceId: result.id || 'firebase_function',
-            inviteUrl: inviteUrl,
-            inviterName: inviterName
+            emailServiceId: result.id || 'firebase_function'
           }
         });
         console.log('✅ Email audit logged successfully');

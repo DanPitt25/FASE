@@ -352,9 +352,7 @@ export async function POST(request: NextRequest) {
             emailServiceId: result.id,
             invoiceAmount: invoiceData.totalAmount,
             currency: 'EUR',
-            paymentInstructions: 'Stripe payment link and bank transfer',
-            stripeSessionId: session.id,
-            stripePaymentLink: stripeLink
+            paymentInstructions: 'Stripe payment link and bank transfer'
           }
         });
         console.log('✅ Email audit logged successfully');
