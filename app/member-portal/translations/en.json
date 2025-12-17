@@ -10,7 +10,7 @@
     "overview": "Overview",
     "messages": "Messages", 
     "alerts": "Alerts",
-    "map": "Member Map",
+    "map": "MGA Member Map",
     "directory": "Member Directory",
     "profile": "Manage Profile"
   },
@@ -227,7 +227,7 @@
     }
   },
   "map": {
-    "title": "Member Map",
+    "title": "MGA Member Map",
     "description": "",
     "loading": "Loading member locations...",
     "loading_map": "Loading map...",

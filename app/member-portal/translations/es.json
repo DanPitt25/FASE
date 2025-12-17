@@ -11,7 +11,7 @@
     "overview": "Resumen",
     "messages": "Mensajes",
     "alerts": "Alertas",
-    "map": "Mapa de Miembros",
+    "map": "Mapa de Miembros MGA",
     "directory": "Directorio de Miembros",
     "profile": "Gestionar Perfil"
   },
@@ -225,7 +225,7 @@
     }
   },
   "map": {
-    "title": "Mapa de Miembros",
+    "title": "Mapa de Miembros MGA",
     "description": "",
     "loading": "Cargando ubicaciones de miembros...",
     "loading_map": "Cargando mapa...",

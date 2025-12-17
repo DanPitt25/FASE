@@ -11,7 +11,7 @@
     "overview": "Übersicht",
     "messages": "Nachrichten",
     "alerts": "Benachrichtigungen",
-    "map": "Mitgliederkarte",
+    "map": "MGA-Mitgliederkarte",
     "directory": "Mitgliederverzeichnis",
     "profile": "Profil Verwalten"
   },
@@ -225,7 +225,7 @@
     }
   },
   "map": {
-    "title": "Mitgliederkarte",
+    "title": "MGA-Mitgliederkarte",
     "description": "",
     "loading": "Mitgliederstandorte werden geladen...",
     "member_count": "{{count}} Mitglieder",

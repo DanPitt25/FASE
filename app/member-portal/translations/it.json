@@ -11,7 +11,7 @@
     "overview": "Panoramica",
     "messages": "Messaggi",
     "alerts": "Avvisi",
-    "map": "Mappa dei Membri",
+    "map": "Mappa dei Membri MGA",
     "directory": "Elenco dei Membri",
     "profile": "Gestisci Profilo"
   },
@@ -225,7 +225,7 @@
     }
   },
   "map": {
-    "title": "Mappa dei Membri",
+    "title": "Mappa dei Membri MGA",
     "description": "",
     "loading": "Caricamento posizioni dei membri...",
     "member_count": "{{count}} membri",

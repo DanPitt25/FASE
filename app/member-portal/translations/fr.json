@@ -11,7 +11,7 @@
     "overview": "Aperçu",
     "messages": "Messages",
     "alerts": "Alertes",
-    "map": "Carte des Membres",
+    "map": "Carte des Membres MGA",
     "directory": "Répertoire des Membres",
     "profile": "Gérer le Profil"
   },
@@ -225,7 +225,7 @@
     }
   },
   "map": {
-    "title": "Carte des Membres",
+    "title": "Carte des Membres MGA",
     "description": "",
     "loading": "Chargement des emplacements des membres...",
     "member_count": "{{count}} membres",

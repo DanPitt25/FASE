@@ -11,7 +11,7 @@
     "overview": "Overzicht",
     "messages": "Berichten", 
     "alerts": "Meldingen",
-    "map": "Ledenkaart",
+    "map": "MGA-Ledenkaart",
     "directory": "Ledengids",
     "profile": "Profiel Beheren"
   },
@@ -225,7 +225,7 @@
     }
   },
   "map": {
-    "title": "Ledenkaart",
+    "title": "MGA-Ledenkaart",
     "description": "",
     "loading": "Ledenlocaties laden...",
     "member_count": "{{count}} leden",
