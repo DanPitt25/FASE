@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const invoiceData = {
+    const invoiceData: any = {
       email: requestData.email,
       organizationName: requestData.organizationName,
       invoiceNumber: requestData.invoiceNumber,
@@ -144,6 +144,13 @@ export async function POST(request: NextRequest) {
 
       const result = await generateInvoicePDF(invoiceGenerationData);
       pdfBase64 = result.pdfBase64;
+      
+      // Store currency conversion info for logging
+      invoiceData.generatedCurrency = result.currency;
+      invoiceData.convertedCurrency = result.convertedCurrency;
+      invoiceData.convertedAmount = result.convertedAmount;
+      invoiceData.exchangeRate = result.exchangeRate;
+      invoiceData.bankDetails = result.bankDetails;
     }
 
     const emailData = {
@@ -223,7 +230,7 @@ export async function POST(request: NextRequest) {
     // Log email audit trail (only if not preview mode)
     if (!isPreview) {
       try {
-        await AdminAuditLogger.logEmailSent({
+        const auditData = await AdminAuditLogger.logEmailSent({
           adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
           action: 'email_sent_invoice_only',
           success: true,
@@ -237,7 +244,7 @@ export async function POST(request: NextRequest) {
             htmlContent: emailData.invoiceHTML,
             emailLanguage: locale,
             templateUsed: 'invoice_only',
-            customizedContent: false,
+            customizedContent: !!requestData.customizedEmailContent,
             attachments: pdfBase64 ? [{
               filename: `FASE-Invoice-${invoiceData.invoiceNumber}.pdf`,
               type: 'pdf' as const,
@@ -246,8 +253,73 @@ export async function POST(request: NextRequest) {
             invoiceNumber: invoiceData.invoiceNumber,
             emailServiceId: result.id,
             invoiceAmount: invoiceData.totalAmount,
-            currency: 'EUR',
+            currency: invoiceData.generatedCurrency || 'EUR',
             paymentInstructions: 'Bank transfer or PayPal'
+          }
+        });
+        
+        // Log comprehensive invoice data in a separate action for full reconstruction
+        await AdminAuditLogger.logAction({
+          adminUserId: 'admin_portal',
+          memberAccountId: invoiceData.email,
+          memberEmail: invoiceData.email,
+          organizationName: invoiceData.organizationName,
+          action: 'invoice_data_comprehensive',
+          category: 'invoice',
+          success: true,
+          details: {
+            // Link to email audit record
+            emailAuditId: auditData,
+            
+            // Complete financial summary
+            financialSummary: {
+              amount: invoiceData.totalAmount,
+              originalAmount: invoiceData.originalAmount,
+              discountAmount: invoiceData.discountAmount,
+              discountReason: invoiceData.discountReason,
+              hasOtherAssociations: hasOtherAssociations,
+              
+              // Currency details (original and converted)
+              currency: invoiceData.generatedCurrency || 'EUR',
+              convertedCurrency: invoiceData.convertedCurrency,
+              convertedAmount: invoiceData.convertedAmount,
+              exchangeRate: invoiceData.exchangeRate,
+              forceCurrency: requestData.forceCurrency,
+              paymentRequired: true
+            },
+            
+            // Complete recipient information
+            recipientDetails: {
+              name: invoiceData.fullName,
+              email: invoiceData.email,
+              gender: invoiceData.gender,
+              greeting: invoiceData.greeting,
+              address: invoiceData.address,
+              organizationName: invoiceData.organizationName
+            },
+            
+            // Invoice metadata
+            invoiceMetadata: {
+              invoiceNumber: invoiceData.invoiceNumber,
+              language: locale,
+              generationSource: 'customer_request',
+              hasAttachments: !!pdfBase64,
+              customLineItem: invoiceData.customLineItem
+            },
+            
+            // Bank payment details for full reconstruction
+            paymentDetails: {
+              bankDetails: invoiceData.bankDetails,
+              instructions: 'Bank transfer or PayPal'
+            },
+            
+            // Email context
+            emailContext: {
+              subject: emailContent.subject,
+              templateUsed: 'invoice_only',
+              customizedContent: !!requestData.customizedEmailContent,
+              ccEmails: requestData.cc ? [requestData.cc] : []
+            }
           }
         });
         console.log('✅ Email audit logged successfully');
