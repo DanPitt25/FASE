@@ -4,21 +4,7 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 
-interface EmailTemplate {
-  subject: string;
-  welcome: string;
-  dear: string;
-  welcome_text: string;
-  payment_text: string;
-  payment_button: string;
-  bank_transfer_text: string;
-  engagement: string;
-  regards: string;
-  signature: string;
-  name: string;
-  title: string;
-  email: string;
-}
+type EmailTemplate = Record<string, any>;
 
 interface EmailEditorModalProps {
   isOpen: boolean;
@@ -65,48 +51,51 @@ export default function EmailEditorModal({
       .replace(/{totalAmount}/g, recipientData.totalAmount);
   };
 
+  // Get the most important fields to edit based on template structure
+  const getEditableFields = () => {
+    const fields = [];
+    const skipFields = ['dear_m', 'dear_f', 'subject_m', 'subject_f']; // Skip gender variants
+    
+    for (const [key, value] of Object.entries(originalTemplate)) {
+      if (typeof value === 'string' && !skipFields.includes(key)) {
+        fields.push({
+          key,
+          label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          value: editedContent[key] || '',
+          multiline: value.length > 100 || key.includes('text') || key.includes('intro') || key.includes('message')
+        });
+      }
+    }
+    
+    return fields.sort((a, b) => {
+      // Sort important fields first
+      const importantFields = ['subject', 'dear', 'welcome', 'intro', 'text'];
+      const aImportant = importantFields.some(field => a.key.includes(field));
+      const bImportant = importantFields.some(field => b.key.includes(field));
+      
+      if (aImportant && !bImportant) return -1;
+      if (!aImportant && bImportant) return 1;
+      return a.key.localeCompare(b.key);
+    });
+  };
+
   const generatePreview = () => {
+    // Generate a generic preview showing all the field values
+    const previewContent = Object.entries(editedContent)
+      .filter(([key, value]) => typeof value === 'string' && value.length > 0)
+      .map(([key, value]) => {
+        const displayValue = replaceVariables(value);
+        return `<p style="margin: 10px 0;"><strong>${key.replace(/_/g, ' ')}:</strong> ${displayValue}</p>`;
+      })
+      .join('');
+    
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
         <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
           <div style="text-align: center; margin-bottom: 30px;">
             <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
           </div>
-          <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${editedContent.welcome}</h2>
-          
-          <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-            ${editedContent.dear} ${recipientData.fullName},
-          </p>
-          
-          <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-            ${replaceVariables(editedContent.welcome_text).replace(recipientData.organizationName, `<strong>${recipientData.organizationName}</strong>`)}
-          </p>
-          
-          <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 25px 0;">
-            ${replaceVariables(editedContent.payment_text)}
-          </p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0; font-size: 15px;">
-              <strong>1. PayPal:</strong> <a href="#" style="color: #2D5574; text-decoration: none;">${editedContent.payment_button}</a>
-            </p>
-            
-            <p style="margin: 0; font-size: 15px;">
-              <strong>2. Bank Transfer:</strong> ${editedContent.bank_transfer_text}
-            </p>
-          </div>
-          
-          <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
-            ${editedContent.engagement}
-          </p>
-          
-          <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
-            ${editedContent.regards}<br><br>
-            <strong>${editedContent.signature}</strong><br><br>
-            ${editedContent.name}<br>
-            ${editedContent.title}<br>
-            <a href="mailto:${editedContent.email}" style="color: #2D5574;">${editedContent.email}</a>
-          </p>
+          ${previewContent}
         </div>
       </div>
     `;
@@ -144,83 +133,31 @@ export default function EmailEditorModal({
               </Button>
             </div>
 
-            {/* Subject */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Subject
-              </label>
-              <input
-                type="text"
-                value={editedContent.subject}
-                onChange={(e) => handleInputChange('subject', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-
-            {/* Welcome Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Title
-              </label>
-              <input
-                type="text"
-                value={editedContent.welcome}
-                onChange={(e) => handleInputChange('welcome', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-
-            {/* Greeting */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Greeting
-              </label>
-              <input
-                type="text"
-                value={editedContent.dear}
-                onChange={(e) => handleInputChange('dear', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-
-            {/* Welcome Text */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Welcome Message
-              </label>
-              <textarea
-                value={editedContent.welcome_text}
-                onChange={(e) => handleInputChange('welcome_text', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-
-            {/* Payment Text */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Instructions
-              </label>
-              <textarea
-                value={editedContent.payment_text}
-                onChange={(e) => handleInputChange('payment_text', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-
-            {/* Engagement Text */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Closing Message
-              </label>
-              <textarea
-                value={editedContent.engagement}
-                onChange={(e) => handleInputChange('engagement', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
+            {/* Dynamic Fields */}
+            {getEditableFields().map((field) => (
+              <div key={field.key}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {field.label}
+                </label>
+                {field.multiline ? (
+                  <textarea
+                    value={field.value}
+                    onChange={(e) => handleInputChange(field.key, e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={field.value}
+                    onChange={(e) => handleInputChange(field.key, e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                  />
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Preview Panel */}
