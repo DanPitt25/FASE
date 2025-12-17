@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
-import { convertCurrency, getWiseBankDetails, getCurrencySymbol } from '../../../lib/currency-conversion';
+import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -88,311 +88,42 @@ export async function POST(request: NextRequest) {
       signature: invoiceEmail.signature || 'The FASE Team'
     };
 
-    // Use EUR currency for European sponsorship invoices
-    const currencyConversion = {
-      originalAmount: invoiceData.totalAmount,
-      originalCurrency: 'EUR',
-      convertedAmount: invoiceData.totalAmount,
-      convertedCurrency: 'EUR',
-      roundedAmount: invoiceData.totalAmount,
-      exchangeRate: 1,
-      displayText: 'EUR'
-    };
-    
-    const wiseBankDetails = getWiseBankDetails('EUR');
-    
-    console.log('💰 Currency: EUR (European sponsorship invoice)');
-
-    // Generate PDF invoice
+    // Generate PDF invoice using the shared generator
     let pdfBase64 = requestData.pdfAttachment;
     
     if (!pdfBase64) {
-      console.log('Generating branded sponsorship invoice PDF...');
+      console.log('🧾 Generating sponsorship invoice PDF using shared generator...');
       
-      // Load the cleaned letterhead template
-      const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
-      const letterheadBytes = fs.readFileSync(letterheadPath);
-      const pdfDoc = await PDFDocument.load(letterheadBytes);
-      
-      // Get the first page
-      const pages = pdfDoc.getPages();
-      const firstPage = pages[0];
-      const { width, height } = firstPage.getSize();
-      
-      // Embed fonts
-      const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      
-      // FASE Brand Colors
-      const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
-      const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
-      const faseOrange = rgb(0.706, 0.416, 0.200);    // #B46A33
-      const faseCream = rgb(0.922, 0.910, 0.894);     // #EBE8E4
-      
-      // Layout constants
-      const margins = { left: 50, right: 50, top: 150, bottom: 80 };
-      const contentWidth = width - margins.left - margins.right;
-      const standardLineHeight = 18;
-      const sectionGap = 25;
-      
-      // Currency formatting
-      const formatEuro = (amount: number) => `€ ${amount.toLocaleString('en-EU')}`;
-      
-      // Load PDF text translations
-      const translations = loadEmailTranslations(locale);
-      const pdfTexts = {
-        invoice: 'INVOICE',
-        billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
-        invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
-        date: translations.pdf_invoice?.date || 'Date:',
-        terms: translations.pdf_invoice?.terms || 'Terms: Payment upon receipt',
-        description: translations.pdf_invoice?.description || 'Description',
-        quantity: translations.pdf_invoice?.quantity || 'Qty',
-        unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
-        total: translations.pdf_invoice?.total || 'Total',
-        totalAmountDue: translations.pdf_invoice?.total_amount_due || 'Total Amount Due:',
-        paymentInstructions: translations.pdf_invoice?.payment_instructions || 'Payment Instructions:'
+      const invoiceGenerationData: InvoiceGenerationData = {
+        invoiceNumber: invoiceData.invoiceNumber,
+        invoiceType: 'sponsorship',
+        
+        email: invoiceData.email,
+        fullName: invoiceData.fullName,
+        organizationName: invoiceData.organizationName,
+        greeting: invoiceData.greeting,
+        gender: invoiceData.gender,
+        address: invoiceData.address,
+        
+        totalAmount: invoiceData.totalAmount,
+        originalAmount: invoiceData.totalAmount,
+        
+        forceCurrency: 'EUR', // Sponsorship invoices are always EUR
+        userLocale: locale,
+        
+        // For sponsorship invoices, use a custom line item with the description
+        customLineItem: {
+          enabled: true,
+          description: invoiceData.description,
+          amount: invoiceData.totalAmount
+        },
+        
+        generationSource: 'admin_portal',
+        isPreview: isPreview
       };
 
-      // Current date
-      const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
-      const dateLocale = dateLocales[locale as keyof typeof dateLocales] || 'en-GB';
-      const currentDate = new Date().toLocaleDateString(dateLocale);
-      
-      // INVOICE HEADER SECTION
-      let currentY = height - margins.top;
-      
-      firstPage.drawText(pdfTexts.invoice, {
-        x: margins.left,
-        y: currentY,
-        size: 18,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      currentY -= 50;
-      
-      // BILL TO and INVOICE DETAILS
-      firstPage.drawText(pdfTexts.billTo, {
-        x: margins.left,
-        y: currentY,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Invoice details (right-aligned)
-      const invoiceDetailsX = width - margins.right - 150;
-      firstPage.drawText(`${pdfTexts.invoiceNumber} ${invoiceData.invoiceNumber}`, {
-        x: invoiceDetailsX,
-        y: currentY,
-        size: 11,
-        font: boldFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(`${pdfTexts.date} ${currentDate}`, {
-        x: invoiceDetailsX,
-        y: currentY - 16,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(pdfTexts.terms, {
-        x: invoiceDetailsX,
-        y: currentY - 32,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText('VAT Number Pending', {
-        x: invoiceDetailsX,
-        y: currentY - 48,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      currentY -= 20;
-      const billToLines = [
-        invoiceData.organizationName,
-        invoiceData.fullName,
-        invoiceData.address.line1,
-        ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),
-        `${invoiceData.address.city}, ${invoiceData.address.postcode}`,
-        invoiceData.address.country
-      ].filter(line => line && line.trim() !== '');
-      
-      billToLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - (index * standardLineHeight),
-          size: 10,
-          font: index === 0 ? boldFont : bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      currentY -= (billToLines.length * standardLineHeight) + sectionGap;
-      
-      // INVOICE TABLE
-      const rowHeight = 35;
-      const tableY = currentY;
-      const colWidths = [280, 60, 80, 80];
-      const colX = [
-        margins.left,
-        margins.left + colWidths[0],
-        margins.left + colWidths[0] + colWidths[1],
-        margins.left + colWidths[0] + colWidths[1] + colWidths[2]
-      ];
-      
-      // Table header background
-      firstPage.drawRectangle({
-        x: margins.left,
-        y: tableY - rowHeight,
-        width: contentWidth,
-        height: rowHeight,
-        color: faseCream,
-      });
-      
-      // Table headers
-      const headers = [pdfTexts.description, pdfTexts.quantity, pdfTexts.unitPrice, pdfTexts.total];
-      headers.forEach((header, i) => {
-        firstPage.drawText(header, {
-          x: colX[i] + 10,
-          y: tableY - 20,
-          size: 11,
-          font: boldFont,
-          color: faseNavy,
-        });
-      });
-      
-      currentY -= rowHeight;
-      
-      // Sponsorship item row
-      firstPage.drawText(invoiceData.description, {
-        x: colX[0] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-        maxWidth: colWidths[0] - 20,
-      });
-      
-      firstPage.drawText('1', {
-        x: colX[1] + 25,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-        x: colX[2] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-        x: colX[3] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      currentY -= sectionGap + 20;
-      
-      // TOTAL SECTION
-      const totalSectionWidth = 320;
-      const totalX = width - margins.right - totalSectionWidth;
-      const fixedGapBetweenTextAndAmount = 15;
-      const sectionHeight = 35;
-      
-      firstPage.drawRectangle({
-        x: totalX,
-        y: currentY - sectionHeight,
-        width: totalSectionWidth,
-        height: sectionHeight,
-        borderColor: faseNavy,
-        borderWidth: 2,
-      });
-      
-      const labelX = totalX + 15;
-      
-      firstPage.drawText(pdfTexts.totalAmountDue, {
-        x: labelX,
-        y: currentY - 22,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
-      const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
-      
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-        x: amountX,
-        y: currentY - 22,
-        size: 13,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      currentY -= 60;
-      
-      // PAYMENT INSTRUCTIONS
-      firstPage.drawLine({
-        start: { x: margins.left, y: currentY - 10 },
-        end: { x: width - margins.right, y: currentY - 10 },
-        thickness: 1,
-        color: faseNavy,
-      });
-      
-      firstPage.drawText(pdfTexts.paymentInstructions, {
-        x: margins.left,
-        y: currentY - 30,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // EUR bank details
-      const invoiceT = translations.pdf_invoice || {};
-      
-      if (!wiseBankDetails) {
-        throw new Error('Wise bank details not available for EUR invoices');
-      }
-      
-      const paymentLines = [
-        `${invoiceT.reference || 'Reference'}: ${wiseBankDetails.reference}`,
-        `${invoiceT.account_holder || 'Account holder'}: ${wiseBankDetails.accountHolder}`,
-        `BIC: ${wiseBankDetails.bic}`,
-        `IBAN: ${wiseBankDetails.iban}`,
-        '',
-        `${invoiceT.bank_name_address || 'Bank name and address'}:`,
-        wiseBankDetails.bankName,
-        ...wiseBankDetails.address
-      ];
-      
-      paymentLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - 50 - (index * standardLineHeight),
-          size: 10,
-          font: bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      // Generate PDF bytes and convert to base64
-      const pdfBytes = await pdfDoc.save();
-      pdfBase64 = Buffer.from(pdfBytes).toString('base64');
-      console.log('Sponsorship PDF generated successfully, size:', pdfBytes.length);
+      const result = await generateInvoicePDF(invoiceGenerationData);
+      pdfBase64 = result.pdfBase64;
     }
 
     const emailData = {
@@ -468,6 +199,43 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Sponsorship invoice email sent successfully:', result);
+    
+    // Log email audit trail (only if not preview mode)
+    if (!isPreview) {
+      try {
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: 'email_sent_sponsorship_invoice',
+          success: true,
+          emailData: {
+            toEmail: invoiceData.email,
+            toName: invoiceData.greeting,
+            ccEmails: requestData.cc ? [requestData.cc] : undefined,
+            organizationName: invoiceData.organizationName,
+            subject: emailContent.subject,
+            emailType: 'sponsorship_invoice',
+            htmlContent: emailData.invoiceHTML,
+            emailLanguage: locale,
+            templateUsed: 'sponsorship_invoice',
+            customizedContent: false,
+            attachments: pdfBase64 ? [{
+              filename: `FASE-Sponsorship-Invoice-${invoiceData.invoiceNumber}.pdf`,
+              type: 'pdf' as const,
+              size: undefined
+            }] : [],
+            invoiceNumber: invoiceData.invoiceNumber,
+            emailServiceId: result.id,
+            invoiceAmount: invoiceData.totalAmount,
+            currency: 'EUR',
+            paymentInstructions: 'Bank transfer'
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
+      }
+    }
     
     // Send admin copy
     try {

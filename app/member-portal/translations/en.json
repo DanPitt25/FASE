@@ -245,8 +245,8 @@
       "all_types": "All Types",
       "show_type": "Show {{type}}",
       "all_locations": "All Locations",
-      "business_locations": "Business Locations Only",
-      "market_locations": "Market Locations Only"
+      "business_locations": "Headquarters Only",
+      "market_locations": "Markets Only"
     },
     "sidebar": {
       "total_members": "Total Members",
@@ -261,13 +261,13 @@
     },
     "details": {
       "organization_type": "Organization Type",
-      "business_location": "Business Location",
-      "market_locations": "Market Locations", 
+      "business_location": "Headquarters",
+      "market_locations": "Markets", 
       "lines_of_business": "Lines of Business",
       "contact": "Contact",
       "contact_about": "Contact about {{country}}",
       "market_status": "Market Status",
-      "business_location_indicator": "Business Location",
+      "business_location_indicator": "Headquarters",
       "market_territory_indicator": "Market Territory",
       "operations_in": "Operations in {{country}}",
       "headquarters_and_market": "Headquarters & Market",
@@ -295,6 +295,10 @@
       "market_removed": "Market removed successfully",
       "changes_saved": "Changes saved successfully",
       "error_saving": "Error saving changes"
+    },
+    "usage": {
+      "title": "How to use the map:",
+      "instructions": "Click on colored countries to see MGAs operating there. Use the filter to view headquarters locations or market territories. Search for specific companies using the search box above."
     }
   },
   "directory": {

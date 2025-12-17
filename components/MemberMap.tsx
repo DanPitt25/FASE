@@ -77,10 +77,10 @@ function CompanyDetails({
         </div>
       )}
 
-      {/* Market Locations */}
+      {/* Markets */}
       {memberData.markets && memberData.markets.length > 0 && (
         <div className="mb-4">
-          <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.market_locations || 'Market Locations'}</div>
+          <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.market_locations || 'Markets'}</div>
           <div className="text-gray-900">
             {memberData.markets.map((market: string, index: number) => {
               const locale = translations.locale || 'en';
@@ -223,12 +223,14 @@ function MemberCard({
   member, 
   country, 
   translations, 
-  onViewDetails 
+  onViewDetails,
+  selectedLocationFilter 
 }: { 
   member: UnifiedMember; 
   country: string; 
   translations: any; 
   onViewDetails: (member: UnifiedMember) => void; 
+  selectedLocationFilter: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const memberData = member as any;
@@ -287,9 +289,11 @@ function MemberCard({
             <div className="text-xs">
               <span className="text-gray-600">{translations.details?.operations_in ? translations.details.operations_in.replace('{{country}}', countryName) : `Operations in ${countryName}`}: </span>
               <span className="text-gray-900">
-                {isBusinessLocation && isMarketLocation && (translations.details?.headquarters_and_market || 'Headquarters & Market')}
-                {isBusinessLocation && !isMarketLocation && (translations.details?.headquarters || 'Headquarters')}
-                {!isBusinessLocation && isMarketLocation && (translations.details?.market_territory || 'Market Territory')}
+                {selectedLocationFilter === 'all' && isBusinessLocation && isMarketLocation && (translations.details?.headquarters_and_market || 'Headquarters & Market')}
+                {selectedLocationFilter === 'all' && isBusinessLocation && !isMarketLocation && (translations.details?.headquarters || 'Headquarters')}
+                {selectedLocationFilter === 'all' && !isBusinessLocation && isMarketLocation && (translations.details?.market_territory || 'Market Territory')}
+                {selectedLocationFilter === 'business' && (translations.details?.headquarters || 'Headquarters')}
+                {selectedLocationFilter === 'markets' && (translations.details?.market_territory || 'Market Territory')}
               </span>
             </div>
             
@@ -338,7 +342,8 @@ function CountryDetails({
   translations, 
   onClose,
   setSelectedCompany,
-  setSelectedCountry
+  setSelectedCountry,
+  selectedLocationFilter
 }: {
   country: string;
   businessMembers: UnifiedMember[];
@@ -347,16 +352,25 @@ function CountryDetails({
   onClose: () => void;
   setSelectedCompany: (member: UnifiedMember) => void;
   setSelectedCountry: (country: string) => void;
+  selectedLocationFilter: string;
 }) {
-  // Combine and deduplicate members
-  const allMembers = deduplicateMembers(businessMembers, marketMembers);
+  // Filter members based on the current location filter
+  let filteredMembers: UnifiedMember[] = [];
+  
+  if (selectedLocationFilter === 'all') {
+    // Show all members (business + market, deduplicated)
+    filteredMembers = deduplicateMembers(businessMembers, marketMembers);
+  } else if (selectedLocationFilter === 'business') {
+    // Show only members with business locations in this country
+    filteredMembers = businessMembers;
+  } else if (selectedLocationFilter === 'markets') {
+    // Show only members with market operations in this country
+    filteredMembers = marketMembers;
+  }
 
   // Get country name from ISO2 code in current locale
   const locale = translations.locale || 'en';
   const countryName = countries.getName(country, locale) || countries.getName(country, 'en') || country;
-
-  // All members are MGAs, so no filtering needed
-  const filteredMembers = allMembers;
 
   return (
     <div className="h-full flex flex-col p-4">
@@ -388,6 +402,7 @@ function CountryDetails({
               member={member} 
               country={country}
               translations={translations}
+              selectedLocationFilter={selectedLocationFilter}
               onViewDetails={(selectedMember) => {
                 // Close current sidebar and open company details
                 onClose();
@@ -1110,7 +1125,14 @@ export default function MemberMap({ translations }: MemberMapProps) {
           </div>
         </div>
         
-        {/* Filters and Stats */}
+        {/* Usage Instructions */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="text-sm text-blue-800">
+            <strong>{translations.usage?.title || 'How to use the map:'}</strong> {translations.usage?.instructions || 'Click on colored countries to see MGAs operating there. Use the filter to view headquarters locations or market territories. Search for specific companies using the search box above.'}
+          </div>
+        </div>
+
+        {/* Filters */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             {/* Location Type Filter */}
@@ -1120,13 +1142,9 @@ export default function MemberMap({ translations }: MemberMapProps) {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-blue focus:border-transparent"
             >
               <option value="all">{translations.filters.all_locations}</option>
-              <option value="business">{translations.filters.business_locations}</option>
-              <option value="markets">{translations.filters.market_locations}</option>
+              <option value="business">{translations.filters.business_locations || 'Headquarters'}</option>
+              <option value="markets">{translations.filters.market_locations || 'Markets'}</option>
             </select>
-          </div>
-          <div className="text-sm text-fase-black">
-            <p>{translations.member_count.replace('{{count}}', filteredMembers.length.toString())}</p>
-            <p className="text-xs text-gray-500">{visibleCountriesWithMembers.length} countries</p>
           </div>
         </div>
 
@@ -1473,6 +1491,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       }}
                       setSelectedCompany={setSelectedCompany}
                       setSelectedCountry={setSelectedCountry}
+                      selectedLocationFilter={selectedLocationFilter}
                     />
                   ) : null}
                 </div>

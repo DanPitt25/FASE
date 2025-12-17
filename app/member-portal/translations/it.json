@@ -242,8 +242,8 @@
       "all_types": "Tutti i Tipi",
       "show_type": "Mostra {{type}}",
       "all_locations": "Tutte le Posizioni",
-      "business_locations": "Solo Posizioni di Business",
-      "market_locations": "Solo Posizioni di Mercato"
+      "business_locations": "Solo Sede Centrale",
+      "market_locations": "Solo Mercati"
     },
     "sidebar": {
       "total_members": "Totale Membri",
@@ -258,13 +258,13 @@
     },
     "details": {
       "organization_type": "Tipo di Organizzazione",
-      "business_location": "Sede di Business",
-      "market_locations": "Sedi di Mercato",
+      "business_location": "Sede Centrale",
+      "market_locations": "Mercati",
       "lines_of_business": "Settori di Attività",
       "contact": "Contatto",
       "contact_about": "Contatto riguardo {{country}}",
       "market_status": "Stato del Mercato",
-      "business_location_indicator": "Sede di Business",
+      "business_location_indicator": "Sede Centrale",
       "market_territory_indicator": "Territorio di Mercato",
       "operations_in": "Operazioni in {{country}}",
       "headquarters_and_market": "Sede Centrale e Mercato",

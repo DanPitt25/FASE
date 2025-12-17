@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInvoiceRecord } from '../../../lib/firestore';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -196,6 +197,33 @@ export async function POST(request: NextRequest) {
 
       const result = await response.json();
       console.log(`✅ Follow-up email sent to ${finalEmailData.email} via Resend:`, result.id);
+      
+      // Log email audit trail
+      try {
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: 'email_sent_followup',
+          success: true,
+          emailData: {
+            toEmail: finalEmailData.email,
+            toName: emailData.greeting,
+            ccEmails: finalEmailData.cc ? [finalEmailData.cc] : undefined,
+            organizationName: emailData.organizationName,
+            subject: emailContent.subject,
+            emailType: 'followup',
+            htmlContent: emailHTML,
+            emailLanguage: 'en', // Follow-up emails don't have language detection
+            templateUsed: 'followup',
+            customizedContent: !!requestData.customizedEmailContent,
+            attachments: [],
+            emailServiceId: result.id
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
+      }
       
       return NextResponse.json({
         success: true,

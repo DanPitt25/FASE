@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -85,6 +86,34 @@ export async function POST(request: NextRequest) {
 
       const result = await response.json();
       console.log('Invitation email sent successfully:', result);
+
+      // Log email audit trail
+      try {
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: 'email_sent_invite',
+          success: true,
+          emailData: {
+            toEmail: email,
+            toName: name,
+            organizationName: companyName,
+            subject: (emailTexts.subject || 'You\'re invited to join {{companyName}} on FASE').replace('{{companyName}}', companyName),
+            emailType: 'invite',
+            htmlContent: emailHtml,
+            emailLanguage: locale,
+            templateUsed: 'invite',
+            customizedContent: false,
+            attachments: [],
+            emailServiceId: result.id || 'firebase_function',
+            inviteUrl: inviteUrl,
+            inviterName: inviterName
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
+      }
 
       return NextResponse.json({ 
         success: true, 

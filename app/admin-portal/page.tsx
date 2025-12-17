@@ -26,6 +26,7 @@ import {
 } from '../../lib/unified-member';
 import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
+import { AdminActions } from '../../lib/admin-actions';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 
@@ -39,6 +40,7 @@ import EmailsTab from './components/EmailsTab';
 import InvoicesTab from './components/InvoicesTab';
 import WebsiteUpdateTab from './components/WebsiteUpdateTab';
 import TempAccountTab from './components/TempAccountTab';
+import AuditLogTab from './components/AuditLogTab';
 
 export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
@@ -176,6 +178,12 @@ export default function AdminPortalPage() {
 
   const handleMemberStatusUpdate = async (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => {
     try {
+      // Get current member data for audit logging
+      const currentMember = memberApplications.find(m => m.id === memberId);
+      if (!currentMember) {
+        throw new Error('Member not found');
+      }
+
       // Optimistic update - update UI immediately
       setMemberApplications(prev => 
         prev.map(member => 
@@ -185,8 +193,24 @@ export default function AdminPortalPage() {
         )
       );
 
-      // Then update the backend
-      await updateMemberStatus(memberId, newStatus);
+      // Update with audit logging
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      await AdminActions.updateMemberStatus({
+        adminUserId: user.uid,
+        adminUserEmail: user.email || 'Unknown',
+        memberAccountId: memberId,
+        memberEmail: currentMember.email,
+        organizationName: currentMember.organizationName,
+        oldStatus: currentMember.status,
+        newStatus: newStatus,
+        reason: adminNotes || 'Admin status update',
+        updateFunction: async () => {
+          return updateMemberStatus(memberId, newStatus);
+        }
+      });
       
       // No need to reload all data - the optimistic update already handled the UI
     } catch (error) {
@@ -592,6 +616,16 @@ export default function AdminPortalPage() {
         </svg>
       ),
       content: <TempAccountTab />
+    },
+    {
+      id: 'audit',
+      title: 'Audit Log',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      content: <AuditLogTab />
     }
   ];
 

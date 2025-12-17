@@ -242,8 +242,8 @@
       "all_types": "Tous les Types",
       "show_type": "Afficher {{type}}",
       "all_locations": "Tous les Emplacements",
-      "business_locations": "Emplacements Commerciaux Uniquement",
-      "market_locations": "Emplacements de Marché Uniquement"
+      "business_locations": "Siège Social Uniquement",
+      "market_locations": "Marchés Uniquement"
     },
     "sidebar": {
       "total_members": "Total des Membres",
@@ -258,13 +258,13 @@
     },
     "details": {
       "organization_type": "Type d'Organisation",
-      "business_location": "Emplacement Commercial",
-      "market_locations": "Emplacements de Marché",
+      "business_location": "Siège Social",
+      "market_locations": "Marchés",
       "lines_of_business": "Branches d'Activité",
       "contact": "Contact",
       "contact_about": "Contact au sujet de {{country}}",
       "market_status": "Statut du Marché",
-      "business_location_indicator": "Emplacement Commercial",
+      "business_location_indicator": "Siège Social",
       "market_territory_indicator": "Territoire de Marché",
       "operations_in": "Opérations en {{country}}",
       "headquarters_and_market": "Siège Social et Marché",

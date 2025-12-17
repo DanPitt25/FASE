@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -204,6 +205,38 @@ export async function POST(request: NextRequest) {
 
       const result = await response.json();
       console.log(`✅ Freeform email sent to ${emailData.email} via Resend:`, result.id);
+      
+      // Log email audit trail
+      try {
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: 'email_sent_freeform',
+          success: true,
+          emailData: {
+            toEmail: emailData.email,
+            toName: undefined,
+            ccEmails: emailData.cc ? [emailData.cc] : undefined,
+            organizationName: requestData.organizationName || undefined,
+            subject: emailData.subject,
+            emailType: 'freeform',
+            htmlContent: htmlContent, // The complete HTML email
+            textContent: requestData.freeformBody, // Original plain text
+            emailLanguage: 'en', // Freeform emails don't have language detection
+            templateUsed: 'freeform',
+            customizedContent: true, // Freeform is always custom
+            attachments: attachments.map(file => ({
+              filename: file.name,
+              type: 'document' as const, // Generic type for user uploads
+              size: file.size
+            })),
+            emailServiceId: result.id
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
+      }
       
       return NextResponse.json({
         success: true,

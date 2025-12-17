@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
-import { convertCurrency, getWiseBankDetails, getCurrencySymbol } from '../../../lib/currency-conversion';
+import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { createInvoiceRecord } from '../../../lib/firestore';
+import { getCurrencySymbol } from '../../../lib/currency-conversion';
+import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -99,23 +100,6 @@ export async function POST(request: NextRequest) {
     // Determine lost invoice flag early for currency conversion logic
     const isLostInvoice = requestData.isLostInvoice || false;
     
-    // Convert currency based on customer country (with optional override) - skip for lost invoices (old style)
-    let currencyConversion, wiseBankDetails;
-    if (isLostInvoice) {
-      // Lost invoices use old style - no currency conversion, EUR only
-      currencyConversion = {
-        convertedCurrency: 'EUR',
-        roundedAmount: invoiceData.totalAmount,
-        conversionRate: 1
-      };
-      wiseBankDetails = null; // Will use Lexicon Associates details instead
-    } else {
-      currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
-      wiseBankDetails = getWiseBankDetails(currencyConversion.convertedCurrency);
-    }
-    
-    console.log('💰 Currency conversion:', currencyConversion);
-    
     // Create payment link with amount and PayPal email (can be different from recipient email)
     const paypalEmail = requestData.paypalEmail || invoiceData.email; // Use separate PayPal email if provided
     const paypalParams = new URLSearchParams({
@@ -132,419 +116,66 @@ export async function POST(request: NextRequest) {
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
     
-
-    // Generate branded PDF invoice using the existing logic
+    // Determine email template type
+    const template = requestData.template || 'invoice';
+    
+    // Currency conversion for email content (PDF generator handles its own conversion)
+    let currencyConversion;
+    if (isLostInvoice) {
+      currencyConversion = {
+        convertedCurrency: 'EUR',
+        roundedAmount: invoiceData.totalAmount,
+        conversionRate: 1
+      };
+    } else {
+      const { convertCurrency } = await import('../../../lib/currency-conversion');
+      currencyConversion = await convertCurrency(invoiceData.totalAmount, invoiceData.address.country, requestData.forceCurrency);
+    }
+    
+    // Generate PDF invoice using the shared generator
     let pdfAttachment: string | null = null;
     try {
-      console.log('Generating branded invoice PDF...');
+      console.log('🧾 Generating membership invoice PDF using shared generator...');
       
-      // Load the cleaned letterhead template
-      const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
-      const letterheadBytes = fs.readFileSync(letterheadPath);
-      const pdfDoc = await PDFDocument.load(letterheadBytes);
-      
-      // Get the first page
-      const pages = pdfDoc.getPages();
-      const firstPage = pages[0];
-      const { width, height } = firstPage.getSize();
-      
-      // Embed fonts - using brand fonts (exactly like working script)
-      const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      
-      // FASE Brand Colors
-      const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
-      const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
-      const faseOrange = rgb(0.706, 0.416, 0.200);    // #B46A33
-      const faseCream = rgb(0.922, 0.910, 0.894);     // #EBE8E4
-      
-      // STANDARD 8.5x11 INVOICE LAYOUT with proper spacing
-      const margins = { left: 50, right: 50, top: 150, bottom: 80 };
-      const contentWidth = width - margins.left - margins.right;
-      const standardLineHeight = 18;
-      const sectionGap = 25;
-      
-      // Currency formatting functions
-      const formatEuro = (amount: number) => `€ ${amount}`;
-      const formatCurrency = (amount: number, currency: string) => {
-        const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
-        return `${symbols[currency] || currency} ${amount}`;
-      };
-      
-      // Load PDF text translations from JSON files
-      const translations = loadEmailTranslations(locale);
-      const pdfTexts = {
-        invoice: 'INVOICE', // Always use INVOICE for all types including lost invoices
-        billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
-        invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
-        date: translations.pdf_invoice?.date || 'Date:',
-        terms: translations.pdf_invoice?.terms || 'Terms: Payment upon receipt',
-        description: translations.pdf_invoice?.description || 'Description',
-        quantity: translations.pdf_invoice?.quantity || 'Qty',
-        unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
-        total: translations.pdf_invoice?.total || 'Total',
-        totalAmountDue: translations.pdf_invoice?.total_amount_due || 'Total Amount Due:',
-        paymentInstructions: translations.pdf_invoice?.payment_instructions || 'Payment Instructions:'
+      const invoiceGenerationData: InvoiceGenerationData = {
+        invoiceNumber: invoiceNumber,
+        invoiceType: template === 'followup' ? 'followup' : 
+                     isLostInvoice ? 'lost_invoice' : 'regular',
+        isLostInvoice: isLostInvoice,
+        
+        email: invoiceData.email,
+        fullName: invoiceData.fullName,
+        organizationName: invoiceData.organizationName,
+        greeting: invoiceData.greeting,
+        gender: invoiceData.gender,
+        address: invoiceData.address,
+        
+        totalAmount: invoiceData.totalAmount,
+        originalAmount: invoiceData.originalAmount,
+        discountAmount: invoiceData.discountAmount,
+        discountReason: invoiceData.discountReason,
+        hasOtherAssociations: invoiceData.hasOtherAssociations,
+        
+        membershipType: invoiceData.membershipType,
+        organizationType: invoiceData.organizationType,
+        grossWrittenPremiums: invoiceData.grossWrittenPremiums,
+        userId: invoiceData.userId,
+        
+        forceCurrency: requestData.forceCurrency,
+        userLocale: locale,
+        
+        generationSource: 'admin_portal',
+        isPreview: isPreview
       };
 
-      // Current date and due date
-      const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
-      const dateLocale = dateLocales[locale as keyof typeof dateLocales];
-      const currentDate = new Date().toLocaleDateString(dateLocale);
-      
-      // INVOICE HEADER SECTION (starts 150pt from top to avoid letterhead)
-      let currentY = height - margins.top;
-      
-      firstPage.drawText(pdfTexts.invoice, {
-        x: margins.left,
-        y: currentY,
-        size: 18,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      currentY -= 50; // Space after main header
-      
-      // BILL TO and INVOICE DETAILS on same line
-      firstPage.drawText(pdfTexts.billTo, {
-        x: margins.left,
-        y: currentY,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Invoice details (right-aligned)
-      const invoiceDetailsX = width - margins.right - 150;
-      firstPage.drawText(`${pdfTexts.invoiceNumber} ${invoiceNumber}`, {
-        x: invoiceDetailsX,
-        y: currentY,
-        size: 11,
-        font: boldFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(`${pdfTexts.date} ${currentDate}`, {
-        x: invoiceDetailsX,
-        y: currentY - 16,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      
-      firstPage.drawText(pdfTexts.terms, {
-        x: invoiceDetailsX,
-        y: currentY - 32,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText('VAT Number Pending', {
-        x: invoiceDetailsX,
-        y: currentY - 48,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      currentY -= 20;
-      const billToLines = [
-        invoiceData.organizationName,
-        invoiceData.fullName,
-        invoiceData.address.line1,
-        ...(invoiceData.address.line2 ? [invoiceData.address.line2] : []),
-        `${invoiceData.address.city}, ${invoiceData.address.postcode}`,
-        invoiceData.address.country
-      ].filter(line => line && line.trim() !== '');
-      
-      billToLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - (index * standardLineHeight),
-          size: 10,
-          font: index === 0 ? boldFont : bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      currentY -= (billToLines.length * standardLineHeight) + sectionGap;
-      
-      // INVOICE TABLE
-      const rowHeight = 35;
-      const tableY = currentY;
-      const colWidths = [280, 60, 80, 80];
-      const colX = [
-        margins.left,
-        margins.left + colWidths[0],
-        margins.left + colWidths[0] + colWidths[1],
-        margins.left + colWidths[0] + colWidths[1] + colWidths[2]
-      ];
-      
-      // Table header background
-      firstPage.drawRectangle({
-        x: margins.left,
-        y: tableY - rowHeight,
-        width: contentWidth,
-        height: rowHeight,
-        color: faseCream,
-      });
-      
-      // Table headers
-      const headers = [pdfTexts.description, pdfTexts.quantity, pdfTexts.unitPrice, pdfTexts.total];
-      headers.forEach((header, i) => {
-        firstPage.drawText(header, {
-          x: colX[i] + 10,
-          y: tableY - 20,
-          size: 11,
-          font: boldFont,
-          color: faseNavy,
-        });
-      });
-      
-      currentY -= rowHeight;
-      
-      // Invoice item row - Membership
-      firstPage.drawText('FASE Annual Membership', {
-        x: colX[0] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-        maxWidth: colWidths[0] - 20,
-      });
-      
-      firstPage.drawText('1', {
-        x: colX[1] + 25,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
-        x: colX[2] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
-        x: colX[3] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      // Add discount row if applicable
-      if (invoiceData.discountAmount > 0) {
-        currentY -= rowHeight;
-        
-        // Define green color for discount
-        const discountGreen = rgb(0.0, 0.6, 0.0); // Dark green
-        
-        firstPage.drawText(invoiceData.discountReason || 'Association Member Discount', {
-          x: colX[0] + 10,
-          y: currentY - 15,
-          size: 10,
-          font: bodyFont,
-          color: discountGreen,
-          maxWidth: colWidths[0] - 20,
-        });
-        
-        // Skip quantity and unit price columns for discount
-        
-        firstPage.drawText(`-${formatEuro(invoiceData.discountAmount)}`, {
-          x: colX[3] + 10,
-          y: currentY - 15,
-          size: 10,
-          font: bodyFont,
-          color: discountGreen,
-        });
-      }
-      
-      currentY -= sectionGap + 20;
-      
-      // TOTAL SECTION - Expanded for dual currency display
-      const totalSectionWidth = 320; // Expanded width for dual currency
-      const totalX = width - margins.right - totalSectionWidth;
-      const fixedGapBetweenTextAndAmount = 15; // Smaller gap for more space
-      
-      // Determine section height based on whether currency conversion is needed
-      const sectionHeight = currencyConversion.convertedCurrency === 'EUR' ? 35 : 55;
-      
-      firstPage.drawRectangle({
-        x: totalX,
-        y: currentY - sectionHeight,
-        width: totalSectionWidth,
-        height: sectionHeight,
-        borderColor: faseNavy,
-        borderWidth: 2,
-      });
-      
-      const labelX = totalX + 15;
-      
-      if (currencyConversion.convertedCurrency === 'EUR') {
-        // EUR only - single line display
-        firstPage.drawText(pdfTexts.totalAmountDue, {
-          x: labelX,
-          y: currentY - 22,
-          size: 12,
-          font: boldFont,
-          color: faseNavy,
-        });
-        
-        const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
-        const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
-        
-        firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-          x: amountX,
-          y: currentY - 22,
-          size: 13,
-          font: boldFont,
-          color: faseNavy,
-        });
-      } else {
-        // Dual currency display
-        firstPage.drawText('Base Amount (EUR):', {
-          x: labelX,
-          y: currentY - 18,
-          size: 11,
-          font: bodyFont,
-          color: faseNavy,
-        });
-        
-        firstPage.drawText(formatEuro(invoiceData.totalAmount), {
-          x: labelX + 130,
-          y: currentY - 18,
-          size: 11,
-          font: bodyFont,
-          color: faseNavy,
-        });
-        
-        firstPage.drawText(pdfTexts.totalAmountDue, {
-          x: labelX,
-          y: currentY - 38,
-          size: 12,
-          font: boldFont,
-          color: faseNavy,
-        });
-        
-        firstPage.drawText(formatCurrency(currencyConversion.roundedAmount, currencyConversion.convertedCurrency), {
-          x: labelX + 130,
-          y: currentY - 38,
-          size: 13,
-          font: boldFont,
-          color: faseNavy,
-        });
-        
-      }
-      
-      currentY -= 60;
-      
-      // PAYMENT INSTRUCTIONS - Bottom section with tasteful separation line
-      firstPage.drawLine({
-        start: { x: margins.left, y: currentY - 10 },
-        end: { x: width - margins.right, y: currentY - 10 },
-        thickness: 1,
-        color: faseNavy,
-      });
-      
-      firstPage.drawText(pdfTexts.paymentInstructions, {
-        x: margins.left,
-        y: currentY - 30,
-        size: 12,
-        font: boldFont,
-        color: faseNavy,
-      });
-      
-      // Load payment instructions from translations
-      const invoiceT = translations.pdf_invoice || {};
-      
-      // Use different bank details for lost invoices
-      let paymentLines: string[];
-      
-      if (isLostInvoice) {
-        // Lexicon Associates bank details for lost invoices
-        paymentLines = [
-          'Lexicon Associates',
-          'Citibank, N.A.',
-          'USCC CITISWEEP',
-          '100 Citibank Drive',
-          'San Antonio, TX 78245',
-          'Account Number: 1255828998',
-          'ABA: 221172610'
-        ];
-      } else {
-        // Currency-specific bank details from Wise for regular invoices
-        if (!wiseBankDetails) {
-          throw new Error('Wise bank details not available for regular invoices');
-        }
-        
-        paymentLines = [
-          `${invoiceT.reference || 'Reference'}: ${wiseBankDetails.reference}`,
-          `${invoiceT.account_holder || 'Account holder'}: ${wiseBankDetails.accountHolder}`,
-        ];
-        
-        // Add currency-specific payment details
-        switch (currencyConversion.convertedCurrency) {
-          case 'USD':
-            paymentLines.push(
-              `ACH and Wire routing number: ${wiseBankDetails.routingNumber}`,
-              `Account number: ${wiseBankDetails.accountNumber}`,
-              `Account type: ${wiseBankDetails.accountType}`
-            );
-            break;
-          case 'GBP':
-            paymentLines.push(
-              `Sort code: ${wiseBankDetails.sortCode}`,
-              `Account number: ${wiseBankDetails.accountNumber}`,
-              `IBAN: ${wiseBankDetails.iban}`
-            );
-            break;
-          case 'EUR':
-          default:
-            paymentLines.push(
-              `BIC: ${wiseBankDetails.bic}`,
-              `IBAN: ${wiseBankDetails.iban}`
-            );
-            break;
-        }
-        
-        paymentLines.push(
-          '',
-          `${invoiceT.bank_name_address || 'Bank name and address'}:`,
-          wiseBankDetails.bankName,
-          ...wiseBankDetails.address
-        );
-      }
-      
-      paymentLines.forEach((line, index) => {
-        firstPage.drawText(line, {
-          x: margins.left,
-          y: currentY - 50 - (index * standardLineHeight),
-          size: 10,
-          font: bodyFont,
-          color: faseBlack,
-        });
-      });
-      
-      // Save the PDF
-      const pdfBytes = await pdfDoc.save();
-      pdfAttachment = Buffer.from(pdfBytes).toString('base64');
-      console.log('PDF generated successfully, size:', pdfBytes.length);
+      const result = await generateInvoicePDF(invoiceGenerationData);
+      pdfAttachment = result.pdfBase64;
       
     } catch (pdfError: any) {
       console.error('Failed to generate branded PDF:', pdfError);
       console.error('PDF Error stack:', pdfError.stack);
       // Continue without PDF - will send HTML email instead
     }
-    
-    // Determine email template type
-    const template = requestData.template || 'invoice';
     
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
@@ -608,6 +239,8 @@ export async function POST(request: NextRequest) {
       if (requestData.customizedEmailContent) {
         const customContent = requestData.customizedEmailContent;
         const customInvoiceDate = requestData.invoiceDate || '2025-11-05';
+        const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
+        const dateLocale = dateLocales[locale as keyof typeof dateLocales] || 'en-GB';
         const formattedDate = new Date(customInvoiceDate).toLocaleDateString(dateLocale);
         
         emailContent = {
@@ -882,6 +515,46 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Membership acceptance email sent successfully:', result);
+    
+    // Log email audit trail (only if not preview mode)
+    if (!isPreview) {
+      try {
+        const emailType = template === 'followup' ? 'membership_followup' : 
+                         isLostInvoice ? 'lost_invoice' : 'membership_acceptance';
+        
+        await AdminAuditLogger.logEmailSent({
+          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
+          action: `email_sent_${emailType}`,
+          success: true,
+          emailData: {
+            toEmail: invoiceData.email,
+            toName: invoiceData.fullName,
+            ccEmails: requestData.cc ? [requestData.cc] : undefined,
+            organizationName: invoiceData.organizationName,
+            subject: emailContent.subject,
+            emailType: emailType,
+            htmlContent: emailData.invoiceHTML,
+            emailLanguage: locale,
+            templateUsed: template || 'invoice',
+            customizedContent: !!requestData.customizedEmailContent,
+            attachments: pdfAttachment ? [{
+              filename: `FASE-Invoice-${invoiceNumber}.pdf`,
+              type: 'pdf' as const,
+              size: undefined // PDF size not available here
+            }] : [],
+            invoiceNumber: invoiceNumber,
+            emailServiceId: result.id,
+            invoiceAmount: invoiceData.totalAmount,
+            currency: currencyConversion.convertedCurrency,
+            paymentInstructions: 'Bank transfer or PayPal'
+          }
+        });
+        console.log('✅ Email audit logged successfully');
+      } catch (auditError) {
+        console.error('❌ Failed to log email audit:', auditError);
+        // Don't fail the request if audit logging fails
+      }
+    }
     
     // Log invoice to database after successful sending
     try {
