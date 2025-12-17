@@ -2,11 +2,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { createInvoiceRecord } from '../../lib/firestore';
 
 function BankTransferInvoiceContent() {
@@ -17,8 +15,6 @@ function BankTransferInvoiceContent() {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [cc, setCc] = useState('');
-  const [accountData, setAccountData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   
   const amount = searchParams?.get('amount');
   const originalAmount = searchParams?.get('originalAmount');
@@ -48,27 +44,6 @@ function BankTransferInvoiceContent() {
   }
 
 
-  useEffect(() => {
-    const fetchAccountData = async () => {
-      if (recipientEmail) {
-        try {
-          const accountsRef = collection(db, 'accounts');
-          const q = query(accountsRef, where('email', '==', recipientEmail));
-          const querySnapshot = await getDocs(q);
-          
-          if (!querySnapshot.empty) {
-            const data = querySnapshot.docs[0].data();
-            setAccountData(data);
-          }
-        } catch (error) {
-          console.error('Error fetching account data:', error);
-        }
-      }
-      setLoading(false);
-    };
-
-    fetchAccountData();
-  }, [recipientEmail]);
 
   const generateInvoice = async () => {
     if (!amount || !orgName) {
@@ -98,11 +73,11 @@ function BankTransferInvoiceContent() {
     setError('');
 
     const addressData = {
-      line1: accountData?.businessAddress?.line1 || addressLine1 || address || 'Not provided',
-      line2: accountData?.businessAddress?.line2 || addressLine2 || '',
-      city: accountData?.businessAddress?.city || city || 'Not provided',
-      postcode: accountData?.businessAddress?.postcode || postcode || 'Not provided',
-      country: accountData?.businessAddress?.country || country || 'Netherlands'
+      line1: addressLine1 || address || 'Not provided',
+      line2: addressLine2 || '',
+      city: city || 'Not provided',
+      postcode: postcode || 'Not provided',
+      country: country || 'Netherlands'
     };
 
     // Generate invoice number to use consistently
@@ -119,7 +94,7 @@ function BankTransferInvoiceContent() {
           cc: cc.trim() || undefined,
           organizationName: orgName,
           invoiceNumber,
-          greeting: fullName || accountData?.accountAdministrator?.name || 'Client',
+          greeting: fullName || 'Client',
           totalAmount: parseFloat(amount),
           originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
           userLocale: searchParams?.get('locale') || 'en',
@@ -143,7 +118,7 @@ function BankTransferInvoiceContent() {
         const invoiceData: any = {
           invoiceNumber,
           recipientEmail: email.trim(),
-          recipientName: fullName || accountData?.accountAdministrator?.name || 'Client',
+          recipientName: fullName || 'Client',
           organizationName: orgName,
           amount: parseFloat(amount),
           currency: currency,
@@ -206,22 +181,6 @@ function BankTransferInvoiceContent() {
     );
   }
 
-  if (loading) {
-    return (
-      <PageLayout>
-        <div className="min-h-screen bg-gray-50 py-12">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading account data...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
 
   return (
     <PageLayout>
@@ -247,16 +206,16 @@ function BankTransferInvoiceContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('organization')}:</strong> {orgName}</p>
-                    {(fullName || accountData?.accountAdministrator?.name) && 
+                    {fullName && 
                       <p className="mb-4 text-fase-black">
-                        <strong>{t('contact')}:</strong> {fullName || accountData?.accountAdministrator?.name}
+                        <strong>{t('contact')}:</strong> {fullName}
                       </p>
                     }
-                    {(accountData?.businessAddress || address) && 
+                    {(addressLine1 || address) && 
                       <p className="mb-4 text-fase-black">
                         <strong>Address:</strong> {
-                          accountData?.businessAddress ? 
-                            `${accountData.businessAddress.line1}, ${accountData.businessAddress.city}, ${accountData.businessAddress.postcode}, ${accountData.businessAddress.country}` :
+                          addressLine1 ? 
+                            `${addressLine1}${addressLine2 ? ', ' + addressLine2 : ''}, ${city}, ${postcode}, ${country}` :
                           address
                         }
                       </p>
