@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       dear: getGenderedText('dear', "Dear"),
       welcomeIntro: (welcomeEmail.welcome_intro || "Welcome to FASE, the pan-European MGA federation. We're delighted to have {organizationName} as a founder member.").replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
       portalAccess: welcomeEmail.portal_access || "You can access our member portal here. In the coming weeks, we will continue to release, through the portal, new tools and data resources to support the growth of your business in Europe.",
-      memberDirectory: (welcomeEmail.member_directory || "Next month we will also be publishing the first iteration of FASE's member directory. You can use the portal to share relevant details of {organizationName} that you would like to share with other members through the portal and with the broader market through our website.").replace('{organizationName}', testData.organizationName),
+      memberDirectory: (welcomeEmail.member_directory || "We have now published FASE's member directory. You can use the portal to share relevant details of {organizationName} that you would like to share with other members through the portal and with the broader market through our website.").replace('{organizationName}', testData.organizationName),
       closing: welcomeEmail.closing || "Please do not hesitate to reach out if you have any questions.",
       regards: welcomeEmail.regards || "Best regards,",
       signatureName: welcomeEmail.signature_name || "William",
