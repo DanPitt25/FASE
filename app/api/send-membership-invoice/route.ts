@@ -603,6 +603,26 @@ export async function POST(request: NextRequest) {
         title: lostInvoiceEmail.title || "Chief Operating Officer, FASE",
         email: lostInvoiceEmail.email || "aline.sullivan@fasemga.com"
       };
+
+      // Apply customizations for lost invoice if provided
+      if (requestData.customizedEmailContent) {
+        const customContent = requestData.customizedEmailContent;
+        const customInvoiceDate = requestData.invoiceDate || '2025-11-05';
+        const formattedDate = new Date(customInvoiceDate).toLocaleDateString(dateLocale);
+        
+        emailContent = {
+          subject: customContent.subject || emailContent.subject,
+          welcome: customContent.welcome || emailContent.welcome,
+          dear: customContent[`dear${genderSuffix}`] || customContent.dear || emailContent.dear,
+          welcomeText: customContent.intro_text?.replace('{invoiceDate}', formattedDate) || emailContent.welcomeText,
+          paymentText: customContent.follow_up_text || emailContent.paymentText,
+          engagement: customContent.closing_text || emailContent.engagement,
+          regards: customContent.regards || emailContent.regards,
+          signature: customContent.signature || emailContent.signature,
+          title: customContent.title || emailContent.title,
+          email: customContent.email || emailContent.email
+        };
+      }
     } else {
       // Original invoice template
       const adminEmail = emailTranslations.membership_acceptance_admin || {};

@@ -26,12 +26,15 @@ export default function EmailEditorModal({
   recipientData, 
   originalTemplate
 }: EmailEditorModalProps) {
-  const [editedContent, setEditedContent] = useState<EmailTemplate>({ ...originalTemplate });
+  const [editedContent, setEditedContent] = useState<EmailTemplate>({});
   const [showPreview, setShowPreview] = useState(false);
 
   // Reset edited content when modal opens or template changes
   useEffect(() => {
-    setEditedContent({ ...originalTemplate });
+    if (isOpen && originalTemplate) {
+      console.log('Initializing EmailEditorModal with template:', originalTemplate);
+      setEditedContent({ ...originalTemplate });
+    }
   }, [isOpen, originalTemplate]);
 
   const handleInputChange = (field: keyof EmailTemplate, value: string) => {
@@ -54,22 +57,23 @@ export default function EmailEditorModal({
   // Get the most important fields to edit based on template structure
   const getEditableFields = () => {
     const fields = [];
-    const skipFields = ['dear_m', 'dear_f', 'subject_m', 'subject_f']; // Skip gender variants
+    const skipFields = ['dear_m', 'dear_f', 'subject_m', 'subject_f', 'welcome_m', 'welcome_f', 'greeting_m', 'greeting_f', 'congratulations_m', 'congratulations_f', 'reminder_text_m', 'reminder_text_f']; // Skip gender variants
     
     for (const [key, value] of Object.entries(originalTemplate)) {
       if (typeof value === 'string' && !skipFields.includes(key)) {
         fields.push({
           key,
           label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          value: editedContent[key] || '',
-          multiline: value.length > 100 || key.includes('text') || key.includes('intro') || key.includes('message')
+          value: editedContent[key] || '', // Start with edited value or empty for customization
+          placeholder: value, // Show original value as placeholder
+          multiline: value.length > 100 || key.includes('text') || key.includes('intro') || key.includes('message') || key.includes('description') || key.includes('instruction') || key.includes('access') || key.includes('portal') || key.includes('directory') || key.includes('closing') || key.includes('benefits') || key.includes('congratulations')
         });
       }
     }
     
     return fields.sort((a, b) => {
       // Sort important fields first
-      const importantFields = ['subject', 'dear', 'welcome', 'intro', 'text'];
+      const importantFields = ['subject', 'dear', 'welcome', 'greeting', 'intro', 'text', 'title'];
       const aImportant = importantFields.some(field => a.key.includes(field));
       const bImportant = importantFields.some(field => b.key.includes(field));
       
@@ -80,12 +84,15 @@ export default function EmailEditorModal({
   };
 
   const generatePreview = () => {
-    // Generate a generic preview showing all the field values
-    const previewContent = Object.entries(editedContent)
-      .filter(([key, value]) => typeof value === 'string' && value.length > 0)
-      .map(([key, value]) => {
+    // Generate a generic preview showing all the field values (customized or original)
+    const previewContent = Object.entries(originalTemplate)
+      .filter(([key, value]) => typeof value === 'string' && !['dear_m', 'dear_f', 'subject_m', 'subject_f', 'welcome_m', 'welcome_f', 'greeting_m', 'greeting_f', 'congratulations_m', 'congratulations_f', 'reminder_text_m', 'reminder_text_f'].includes(key))
+      .map(([key, originalValue]) => {
+        // Use customized value if available, otherwise use original
+        const value = editedContent[key] || originalValue;
         const displayValue = replaceVariables(value);
-        return `<p style="margin: 10px 0;"><strong>${key.replace(/_/g, ' ')}:</strong> ${displayValue}</p>`;
+        const isCustomized = editedContent[key] && editedContent[key] !== originalValue;
+        return `<p style="margin: 10px 0;${isCustomized ? 'background-color: #fef3cd; padding: 5px; border-radius: 3px;' : ''}"><strong>${key.replace(/_/g, ' ')}:</strong> ${displayValue}${isCustomized ? ' <em>(customized)</em>' : ''}</p>`;
       })
       .join('');
     
@@ -145,7 +152,7 @@ export default function EmailEditorModal({
                     onChange={(e) => handleInputChange(field.key, e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
                   />
                 ) : (
                   <input
@@ -153,7 +160,7 @@ export default function EmailEditorModal({
                     value={field.value}
                     onChange={(e) => handleInputChange(field.key, e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    placeholder={`Enter ${field.label.toLowerCase()}...`}
+                    placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
                   />
                 )}
               </div>
@@ -166,7 +173,7 @@ export default function EmailEditorModal({
               <h4 className="text-lg font-semibold text-fase-navy">Email Preview</h4>
               <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                 <div className="text-sm text-gray-600 mb-3">
-                  <strong>Subject:</strong> {editedContent.subject}
+                  <strong>Subject:</strong> {editedContent.subject || originalTemplate.subject}
                 </div>
                 <div 
                   className="bg-white rounded border"
