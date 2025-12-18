@@ -6,13 +6,9 @@ import DashboardLayout from '../../components/DashboardLayout';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 import { 
   getUserAlerts, 
-  getUserMessages, 
   markAlertAsRead, 
   dismissAlert, 
-  markMessageAsRead, 
-  deleteMessageForUser, 
-  createAlert, 
-  sendMessage 
+  createAlert 
 } from '../../lib/unified-messaging';
 import { 
   searchMembersByOrganizationName, 
@@ -25,7 +21,7 @@ import {
   rejectJoinRequest 
 } from '../../lib/unified-member';
 import type { JoinRequest } from '../../lib/unified-member';
-import type { Alert, UserAlert, Message, UserMessage } from '../../lib/unified-messaging';
+import type { Alert, UserAlert } from '../../lib/unified-messaging';
 import { AdminActions } from '../../lib/admin-actions';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
@@ -33,7 +29,6 @@ import Modal from '../../components/Modal';
 // Import modular tab components
 import OverviewTab from './components/OverviewTab';
 import MembersTab from './components/MembersTab';
-import MessagesTab from './components/MessagesTab';
 import AlertsTab from './components/AlertsTab';
 import JoinRequestsTab from './components/JoinRequestsTab';
 import EmailsTab from './components/EmailsTab';
@@ -50,13 +45,11 @@ export default function AdminPortalPage() {
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
   const [pendingJoinRequests, setPendingJoinRequests] = useState<(JoinRequest & { companyData?: UnifiedMember })[]>([]);
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
-  const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
   
   // Track loading state per tab
   const [loading, setLoading] = useState({
     overview: false,
     members: false,
-    messages: false,
     alerts: false,
     joinRequests: false,
   });
@@ -65,7 +58,6 @@ export default function AdminPortalPage() {
   const [dataLoaded, setDataLoaded] = useState({
     overview: false,
     members: false,
-    messages: false,
     alerts: false,
     joinRequests: false,
   });
@@ -74,7 +66,6 @@ export default function AdminPortalPage() {
 
   // Modal states
   const [showCreateAlert, setShowCreateAlert] = useState(false);
-  const [showCreateMessage, setShowCreateMessage] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   
   // Processing states
@@ -102,15 +93,6 @@ export default function AdminPortalPage() {
     expiresAt: ''
   });
 
-  const [messageForm, setMessageForm] = useState({
-    subject: '',
-    content: '',
-    recipientType: 'all_members' as 'all_users' | 'all_members' | 'all_admins' | 'user' | 'member_type' | 'specific_members',
-    recipientId: '',
-    organizationType: '' as '' | 'MGA' | 'carrier' | 'provider',
-    organizationSearch: '',
-    selectedOrganizations: [] as string[],
-  });
 
   const [organizationSearchResults, setOrganizationSearchResults] = useState<UnifiedMember[]>([]);
 
@@ -180,20 +162,6 @@ export default function AdminPortalPage() {
     }
   }, [user?.uid, isAdmin, dataLoaded.members]);
 
-  const loadMessagesData = useCallback(async () => {
-    if (!user?.uid || !isAdmin || dataLoaded.messages) return;
-
-    try {
-      setLoading(prev => ({ ...prev, messages: true }));
-      const messagesData = await getUserMessages(user.uid);
-      setMessages(messagesData);
-      setDataLoaded(prev => ({ ...prev, messages: true }));
-    } catch (error) {
-      console.error('Error loading messages data:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, messages: false }));
-    }
-  }, [user?.uid, isAdmin, dataLoaded.messages]);
 
   const loadAlertsData = useCallback(async () => {
     if (!user?.uid || !isAdmin || dataLoaded.alerts) return;
@@ -234,9 +202,6 @@ export default function AdminPortalPage() {
       case 'members':
         loadMembersData();
         break;
-      case 'messages':
-        loadMessagesData();
-        break;
       case 'alerts':
         loadAlertsData();
         break;
@@ -244,7 +209,7 @@ export default function AdminPortalPage() {
         loadJoinRequestsData();
         break;
     }
-  }, [activeSection, loadOverviewData, loadMembersData, loadMessagesData, loadAlertsData, loadJoinRequestsData]);
+  }, [activeSection, loadOverviewData, loadMembersData, loadAlertsData, loadJoinRequestsData]);
 
   // Load overview data on initial load
   useEffect(() => {
@@ -413,66 +378,6 @@ export default function AdminPortalPage() {
     }
   };
 
-  const handleCreateMessage = async () => {
-    if (!user?.uid) return;
-
-    try {
-      let userIds: string[] = [];
-
-      if (messageForm.recipientType === 'specific_members') {
-        userIds = messageForm.selectedOrganizations;
-      } else if (messageForm.recipientType === 'member_type') {
-        userIds = await getUserIdsForMemberCriteria({ 
-          organizationType: messageForm.organizationType || undefined 
-        });
-      }
-
-      // Map form values to Message interface values
-      let mappedRecipientType: 'user' | 'all_members' | 'all_admins' | 'all_users';
-      if (messageForm.recipientType === 'member_type' || messageForm.recipientType === 'specific_members') {
-        mappedRecipientType = 'all_members';
-      } else {
-        mappedRecipientType = messageForm.recipientType as 'user' | 'all_members' | 'all_admins' | 'all_users';
-      }
-
-      await sendMessage({
-        subject: messageForm.subject,
-        content: messageForm.content,
-        recipientType: mappedRecipientType,
-        recipientId: messageForm.recipientId || undefined,
-        organizationType: messageForm.organizationType || undefined,
-        senderId: user.uid,
-        senderName: member?.personalName || 'Admin',
-        senderEmail: user.email || '',
-        messageType: 'announcement',
-        priority: 'medium',
-        isRead: false
-      });
-
-      // Reset form
-      setMessageForm({
-        subject: '',
-        content: '',
-        recipientType: 'all_members',
-        recipientId: '',
-        organizationType: '',
-        organizationSearch: '',
-        selectedOrganizations: [],
-      });
-
-      setShowCreateMessage(false);
-      
-      // Optimistic update - just reload messages instead of all data
-      try {
-        const updatedMessages = await getUserMessages(user.uid);
-        setMessages(updatedMessages);
-      } catch (error) {
-        console.error('Error reloading messages:', error);
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  };
 
   const handleJoinRequestAction = async (action: 'approve' | 'reject', companyId: string, requestId: string, requestData: any) => {
     setProcessingRequest({ action, companyId, requestId, requestData });
@@ -561,54 +466,8 @@ export default function AdminPortalPage() {
       )
     },
     {
-      id: 'messages',
-      title: 'Messages',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
-      content: (
-        <MessagesTab
-          messages={messages}
-          loading={loading.messages}
-          onCreateMessage={() => setShowCreateMessage(true)}
-          onMarkAsRead={async (messageId) => {
-            // Optimistic update
-            setMessages(prev => 
-              prev.map(msg => 
-                msg.id === messageId ? { ...msg, isRead: true } : msg
-              )
-            );
-            
-            try {
-              await markMessageAsRead(messageId);
-            } catch (error) {
-              console.error('Error marking message as read:', error);
-              // Revert optimistic update
-              const updatedMessages = await getUserMessages(user?.uid || '');
-              setMessages(updatedMessages);
-            }
-          }}
-          onDeleteMessage={async (messageId) => {
-            // Optimistic update
-            setMessages(prev => prev.filter(msg => msg.id !== messageId));
-            
-            try {
-              await deleteMessageForUser(messageId);
-            } catch (error) {
-              console.error('Error deleting message:', error);
-              // Revert optimistic update
-              const updatedMessages = await getUserMessages(user?.uid || '');
-              setMessages(updatedMessages);
-            }
-          }}
-        />
-      )
-    },
-    {
       id: 'alerts',
-      title: 'Alerts',
+      title: 'Announcements',
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -762,7 +621,7 @@ export default function AdminPortalPage() {
       <Modal 
         isOpen={showCreateAlert} 
         onClose={() => setShowCreateAlert(false)} 
-        title="Create New Alert"
+        title="Create New Announcement"
         maxWidth="xl"
       >
         <div className="space-y-6">
@@ -770,31 +629,31 @@ export default function AdminPortalPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Alert Title *
+                Announcement Title *
               </label>
               <input
                 type="text"
                 value={alertForm.title}
                 onChange={(e) => setAlertForm(prev => ({ ...prev, title: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                placeholder="Enter alert title"
+                placeholder="e.g., New Member Directory Live, System Maintenance, Event Registration Open"
                 required
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Alert Type
+                Announcement Type
               </label>
               <select
                 value={alertForm.type}
                 onChange={(e) => setAlertForm(prev => ({ ...prev, type: e.target.value as any }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               >
-                <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
-                <option value="success">Success</option>
+                <option value="info">General Info</option>
+                <option value="success">Good News / Feature</option>
+                <option value="warning">Important Notice</option>
+                <option value="error">Urgent / Action Required</option>
               </select>
             </div>
           </div>
@@ -853,10 +712,97 @@ export default function AdminPortalPage() {
             </div>
           )}
 
-          {/* Alert Message with Markdown Support */}
+          {/* Specific Organizations Selection */}
+          {alertForm.targetAudience === 'specific_members' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search and Select Organizations
+              </label>
+              <input
+                type="text"
+                value={alertForm.organizationSearch}
+                onChange={(e) => {
+                  const searchValue = e.target.value;
+                  setAlertForm(prev => ({ ...prev, organizationSearch: searchValue }));
+                  
+                  // Search for organizations
+                  if (searchValue.length >= 2) {
+                    searchMembersByOrganizationName(searchValue).then(results => {
+                      setOrganizationSearchResults(results);
+                    }).catch(console.error);
+                  } else {
+                    setOrganizationSearchResults([]);
+                  }
+                }}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                placeholder="Type organization name to search..."
+              />
+              
+              {/* Search Results */}
+              {organizationSearchResults.length > 0 && (
+                <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg">
+                  {organizationSearchResults.map((org) => (
+                    <button
+                      key={org.id}
+                      type="button"
+                      onClick={() => {
+                        if (!alertForm.selectedOrganizations.includes(org.id)) {
+                          setAlertForm(prev => ({
+                            ...prev,
+                            selectedOrganizations: [...prev.selectedOrganizations, org.id],
+                            organizationSearch: ''
+                          }));
+                          setOrganizationSearchResults([]);
+                        }
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                    >
+                      {org.organizationName}
+                      <span className="text-gray-500 ml-2">({org.status})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {/* Selected Organizations */}
+              {alertForm.selectedOrganizations.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    Selected Organizations ({alertForm.selectedOrganizations.length}):
+                  </p>
+                  <div className="space-y-1">
+                    {alertForm.selectedOrganizations.map((orgId, index) => {
+                      const org = memberApplications.find(m => m.id === orgId);
+                      return (
+                        <div key={orgId} className="flex items-center justify-between bg-gray-50 px-3 py-1 rounded">
+                          <span className="text-sm">
+                            {org?.organizationName || `Organization ${index + 1}`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAlertForm(prev => ({
+                                ...prev,
+                                selectedOrganizations: prev.selectedOrganizations.filter(id => id !== orgId)
+                              }));
+                            }}
+                            className="text-red-600 hover:text-red-800 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Announcement Message with Markdown Support */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Alert Message * 
+              Announcement Message * 
               <span className="text-xs text-gray-500 ml-2">(Markdown supported)</span>
             </label>
             <textarea
@@ -864,7 +810,7 @@ export default function AdminPortalPage() {
               onChange={(e) => setAlertForm(prev => ({ ...prev, message: e.target.value }))}
               rows={4}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              placeholder="Enter alert message... You can use **bold**, *italic*, [links](url), etc."
+              placeholder="Share updates, news, feature announcements, or important information... You can use **bold**, *italic*, [links](url), etc."
               required
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -940,31 +886,12 @@ export default function AdminPortalPage() {
               onClick={handleCreateAlert}
               disabled={!alertForm.title || !alertForm.message}
             >
-              Create Alert
+              Create Announcement
             </Button>
           </div>
         </div>
       </Modal>
 
-      {/* Create Message Modal */}
-      <Modal 
-        isOpen={showCreateMessage} 
-        onClose={() => setShowCreateMessage(false)} 
-        title="Send New Message"
-        maxWidth="xl"
-      >
-        <div className="space-y-6">
-          {/* Message form fields would go here - simplified for refactoring */}
-          <div className="flex justify-end space-x-3">
-            <Button variant="secondary" onClick={() => setShowCreateMessage(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleCreateMessage}>
-              Send Message
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       {/* Join Request Confirmation Modal */}
       <Modal 
