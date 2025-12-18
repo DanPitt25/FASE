@@ -1,7 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import { Alert, UserAlert } from '../../../lib/unified-messaging';
 import Button from '../../../components/Button';
+
+// Simple markdown renderer for alert content
+function renderMarkdown(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Bold **text**
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic *text*
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Code `text`
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
+    // Links [text](url)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+}
 
 interface AlertsTabProps {
   alerts: (Alert & UserAlert)[];
@@ -158,14 +176,15 @@ export default function AlertsTab({
                             <span className="ml-2 text-xs bg-current text-white px-2 py-1 rounded-full">NEW</span>
                           )}
                         </h4>
-                        <p className={`text-sm mb-2 ${
-                          alert.type === 'error' ? 'text-red-700' :
-                          alert.type === 'warning' ? 'text-amber-700' :
-                          alert.type === 'success' ? 'text-green-700' :
-                          'text-blue-700'
-                        }`}>
-                          {alert.message}
-                        </p>
+                        <div 
+                          className={`text-sm mb-2 ${
+                            alert.type === 'error' ? 'text-red-700' :
+                            alert.type === 'warning' ? 'text-amber-700' :
+                            alert.type === 'success' ? 'text-green-700' :
+                            'text-blue-700'
+                          }`}
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
+                        />
                         <div className="flex items-center space-x-3 text-xs">
                           <span className={`px-2 py-1 rounded-full border ${getPriorityColor(alert.priority)}`}>
                             {alert.priority.charAt(0).toUpperCase() + alert.priority.slice(1)}

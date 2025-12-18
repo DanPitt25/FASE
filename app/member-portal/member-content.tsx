@@ -12,6 +12,23 @@ import ContactButton from "../../components/ContactButton";
 import { getUserAlerts, markAlertAsRead, dismissAlert, Alert, UserAlert } from "../../lib/unified-messaging";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
+// Simple markdown renderer for alert content
+function renderMarkdown(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Bold **text**
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic *text*
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Code `text`
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
+    // Links [text](url)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+}
+
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
   const { t, loading: translationsLoading, translations, locale } = usePortalTranslations();
@@ -426,14 +443,15 @@ export default function MemberContent() {
                     </div>
                   </div>
                   
-                  <p className={`text-sm mb-3 ${
-                    alert.type === 'error' ? 'text-red-800' :
-                    alert.type === 'warning' ? 'text-yellow-800' :
-                    alert.type === 'success' ? 'text-green-800' :
-                    'text-blue-800'
-                  }`}>
-                    {alert.message}
-                  </p>
+                  <div 
+                    className={`text-sm mb-3 ${
+                      alert.type === 'error' ? 'text-red-800' :
+                      alert.type === 'warning' ? 'text-yellow-800' :
+                      alert.type === 'success' ? 'text-green-800' :
+                      'text-blue-800'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
+                  />
                   
                   {alert.actionUrl && alert.actionText && (
                     <div className="mb-3">

@@ -763,15 +763,183 @@ export default function AdminPortalPage() {
         isOpen={showCreateAlert} 
         onClose={() => setShowCreateAlert(false)} 
         title="Create New Alert"
-        maxWidth="xl"
+        maxWidth="2xl"
       >
         <div className="space-y-6">
-          {/* Alert form fields would go here - simplified for refactoring */}
+          {/* Basic Alert Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alert Title *
+              </label>
+              <input
+                type="text"
+                value={alertForm.title}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, title: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                placeholder="Enter alert title"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alert Type
+              </label>
+              <select
+                value={alertForm.type}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, type: e.target.value as any }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+                <option value="success">Success</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Priority
+              </label>
+              <select
+                value={alertForm.priority}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, priority: e.target.value as any }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Audience
+              </label>
+              <select
+                value={alertForm.targetAudience}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, targetAudience: e.target.value as any }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="all">All Users</option>
+                <option value="members">All Members</option>
+                <option value="admins">Admins Only</option>
+                <option value="member_type">By Organization Type</option>
+                <option value="specific_members">Specific Organizations</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Organization Type Filter */}
+          {alertForm.targetAudience === 'member_type' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Organization Type
+              </label>
+              <select
+                value={alertForm.organizationType}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, organizationType: e.target.value as any }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="">Select Type</option>
+                <option value="MGA">MGA</option>
+                <option value="carrier">Carrier</option>
+                <option value="provider">Provider</option>
+              </select>
+            </div>
+          )}
+
+          {/* Alert Message with Markdown Support */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alert Message * 
+              <span className="text-xs text-gray-500 ml-2">(Markdown supported)</span>
+            </label>
+            <textarea
+              value={alertForm.message}
+              onChange={(e) => setAlertForm(prev => ({ ...prev, message: e.target.value }))}
+              rows={4}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              placeholder="Enter alert message... You can use **bold**, *italic*, [links](url), etc."
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Supports: **bold**, *italic*, [links](url), `code`, lists, etc.
+            </p>
+          </div>
+
+          {/* Action Button */}
+          <div className="border-t pt-4">
+            <div className="flex items-center mb-3">
+              <input
+                type="checkbox"
+                id="actionRequired"
+                checked={alertForm.actionRequired}
+                onChange={(e) => setAlertForm(prev => ({ ...prev, actionRequired: e.target.checked }))}
+                className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+              />
+              <label htmlFor="actionRequired" className="ml-2 text-sm text-gray-700">
+                Include action button
+              </label>
+            </div>
+
+            {alertForm.actionRequired && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Button Text
+                  </label>
+                  <input
+                    type="text"
+                    value={alertForm.actionText}
+                    onChange={(e) => setAlertForm(prev => ({ ...prev, actionText: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="e.g., View Details, Update Profile"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Action URL
+                  </label>
+                  <input
+                    type="url"
+                    value={alertForm.actionUrl}
+                    onChange={(e) => setAlertForm(prev => ({ ...prev, actionUrl: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="https://example.com/action"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Expiration */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Expires At (Optional)
+            </label>
+            <input
+              type="datetime-local"
+              value={alertForm.expiresAt}
+              onChange={(e) => setAlertForm(prev => ({ ...prev, expiresAt: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+            />
+          </div>
+
           <div className="flex justify-end space-x-3">
             <Button variant="secondary" onClick={() => setShowCreateAlert(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleCreateAlert}>
+            <Button 
+              variant="primary" 
+              onClick={handleCreateAlert}
+              disabled={!alertForm.title || !alertForm.message}
+            >
               Create Alert
             </Button>
           </div>
