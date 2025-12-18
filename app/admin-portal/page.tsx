@@ -272,13 +272,13 @@ export default function AdminPortalPage() {
 
       if (alertForm.targetAudience === 'specific_members') {
         // Remove duplicates from selected organizations
-        userIds = [...new Set(alertForm.selectedOrganizations)];
+        userIds = Array.from(new Set(alertForm.selectedOrganizations));
       } else if (alertForm.targetAudience === 'member_type') {
         const memberIds = await getUserIdsForMemberCriteria({ 
           organizationType: alertForm.organizationType || undefined 
         });
         // Remove duplicates from member criteria results
-        userIds = [...new Set(memberIds)];
+        userIds = Array.from(new Set(memberIds));
       }
 
       // Map form values to Alert interface values
@@ -721,9 +721,9 @@ export default function AdminPortalPage() {
                       // Get unique organizations by name
                       const selectedOrgs = alertForm.selectedOrganizations
                         .map(orgId => memberApplications.find(m => m.id === orgId))
-                        .filter(org => org) // Remove any undefined results
+                        .filter((org): org is UnifiedMember => org !== undefined) // Remove any undefined results
                         .filter((org, index, self) => 
-                          index === self.findIndex(o => o?.organizationName === org?.organizationName)
+                          index === self.findIndex(o => o?.organizationName === org.organizationName)
                         );
                       
                       return selectedOrgs.map((org) => (

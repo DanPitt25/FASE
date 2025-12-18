@@ -150,7 +150,7 @@ export default function MembersTab({
                   </td>
                   <td className="px-4 py-4">
                     <div className="text-sm">
-                      <div className="text-gray-900">{member.accountAdministrator?.name || 'Unknown'}</div>
+                      <div className="text-gray-900">{member.primaryContact?.name || member.personalName || 'Unknown'}</div>
                       <div className="text-gray-500 text-xs">{member.email || 'No email'}</div>
                     </div>
                   </td>
@@ -206,7 +206,7 @@ export default function MembersTab({
           setShowStatusModal(false);
           setSelectedMember(null);
         }}
-        title={`Change Status - ${selectedMember?.accountAdministrator?.name || 'Unknown'}`}
+        title={`Change Status - ${selectedMember?.primaryContact?.name || selectedMember?.personalName || 'Unknown'}`}
         maxWidth="lg"
       >
         {selectedMember && (

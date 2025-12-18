@@ -231,7 +231,7 @@ const createUserAlertsForAudienceUnified = async (
     }
     
     // Remove duplicates to prevent creating multiple userAlerts for the same user
-    const uniqueRecipientUIDs = [...new Set(recipientUIDs)];
+    const uniqueRecipientUIDs = Array.from(new Set(recipientUIDs));
     
     const userAlertPromises = uniqueRecipientUIDs.map(uid => {
       const userAlertRef = doc(collection(db, 'userAlerts'));
@@ -255,7 +255,7 @@ const createUserAlertsForAudienceUnified = async (
 const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
   try {
     // Remove duplicates to prevent creating multiple userAlerts for the same user
-    const uniqueUserIds = [...new Set(userIds)];
+    const uniqueUserIds = Array.from(new Set(userIds));
     
     const userAlertPromises = uniqueUserIds.map(userId => {
       const userAlertRef = doc(collection(db, 'userAlerts'));
