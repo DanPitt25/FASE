@@ -46,12 +46,30 @@ export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
   const router = useRouter();
 
-  // State for data
+  // State for data - now loaded lazily per tab
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
   const [pendingJoinRequests, setPendingJoinRequests] = useState<(JoinRequest & { companyData?: UnifiedMember })[]>([]);
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   const [messages, setMessages] = useState<(Message & UserMessage)[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Track loading state per tab
+  const [loading, setLoading] = useState({
+    overview: false,
+    members: false,
+    messages: false,
+    alerts: false,
+    joinRequests: false,
+  });
+  
+  // Track which data has been loaded
+  const [dataLoaded, setDataLoaded] = useState({
+    overview: false,
+    members: false,
+    messages: false,
+    alerts: false,
+    joinRequests: false,
+  });
+  
   const [activeSection, setActiveSection] = useState<string>('overview');
 
   // Modal states
@@ -103,23 +121,45 @@ export default function AdminPortalPage() {
     }
   }, [user, isAdmin, authLoading, router]);
 
-  // Load data
-  const loadData = useCallback(async () => {
-    if (!user?.uid || !isAdmin) return;
+  // Lazy load functions for each tab
+  const loadOverviewData = useCallback(async () => {
+    if (!user?.uid || !isAdmin || dataLoaded.overview) return;
 
     try {
-      setLoading(true);
-      // Get all accounts by combining all statuses
-      const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts, alertsData, messagesData, joinRequestsData] = await Promise.all([
+      setLoading(prev => ({ ...prev, overview: true }));
+      // Only load summary data for overview - just pending counts
+      const [pendingAccounts, pendingJoinRequests] = await Promise.all([
+        getAccountsByStatus('pending'),
+        getAllPendingJoinRequests()
+      ]);
+
+      // Store minimal data for overview
+      setMemberApplications(prev => {
+        const filtered = prev.filter(m => m.status !== 'pending');
+        return [...filtered, ...pendingAccounts];
+      });
+      setPendingJoinRequests(pendingJoinRequests);
+      setDataLoaded(prev => ({ ...prev, overview: true }));
+    } catch (error) {
+      console.error('Error loading overview data:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, overview: false }));
+    }
+  }, [user?.uid, isAdmin, dataLoaded.overview]);
+
+  const loadMembersData = useCallback(async () => {
+    if (!user?.uid || !isAdmin || dataLoaded.members) return;
+
+    try {
+      setLoading(prev => ({ ...prev, members: true }));
+      // Load all member data only when Members tab is accessed
+      const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts] = await Promise.all([
         getAccountsByStatus('pending'),
         getAccountsByStatus('pending_invoice'),
         getAccountsByStatus('approved'),
         getAccountsByStatus('admin'),
         getAccountsByStatus('invoice_sent'),
-        getAccountsByStatus('flagged'),
-        getUserAlerts(user.uid),
-        getUserMessages(user.uid),
-        getAllPendingJoinRequests()
+        getAccountsByStatus('flagged')
       ]);
 
       const membersData = [
@@ -132,19 +172,86 @@ export default function AdminPortalPage() {
       ];
 
       setMemberApplications(membersData);
-      setAlerts(alertsData);
-      setMessages(messagesData);
-      setPendingJoinRequests(joinRequestsData);
+      setDataLoaded(prev => ({ ...prev, members: true }));
     } catch (error) {
-      console.error('Error loading admin data:', error);
+      console.error('Error loading members data:', error);
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, members: false }));
     }
-  }, [user?.uid, isAdmin]);
+  }, [user?.uid, isAdmin, dataLoaded.members]);
 
+  const loadMessagesData = useCallback(async () => {
+    if (!user?.uid || !isAdmin || dataLoaded.messages) return;
+
+    try {
+      setLoading(prev => ({ ...prev, messages: true }));
+      const messagesData = await getUserMessages(user.uid);
+      setMessages(messagesData);
+      setDataLoaded(prev => ({ ...prev, messages: true }));
+    } catch (error) {
+      console.error('Error loading messages data:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, messages: false }));
+    }
+  }, [user?.uid, isAdmin, dataLoaded.messages]);
+
+  const loadAlertsData = useCallback(async () => {
+    if (!user?.uid || !isAdmin || dataLoaded.alerts) return;
+
+    try {
+      setLoading(prev => ({ ...prev, alerts: true }));
+      const alertsData = await getUserAlerts(user.uid);
+      setAlerts(alertsData);
+      setDataLoaded(prev => ({ ...prev, alerts: true }));
+    } catch (error) {
+      console.error('Error loading alerts data:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, alerts: false }));
+    }
+  }, [user?.uid, isAdmin, dataLoaded.alerts]);
+
+  const loadJoinRequestsData = useCallback(async () => {
+    if (!user?.uid || !isAdmin || dataLoaded.joinRequests) return;
+
+    try {
+      setLoading(prev => ({ ...prev, joinRequests: true }));
+      const joinRequestsData = await getAllPendingJoinRequests();
+      setPendingJoinRequests(joinRequestsData);
+      setDataLoaded(prev => ({ ...prev, joinRequests: true }));
+    } catch (error) {
+      console.error('Error loading join requests data:', error);
+    } finally {
+      setLoading(prev => ({ ...prev, joinRequests: false }));
+    }
+  }, [user?.uid, isAdmin, dataLoaded.joinRequests]);
+
+  // Load data based on active section
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    switch (activeSection) {
+      case 'overview':
+        loadOverviewData();
+        break;
+      case 'members':
+        loadMembersData();
+        break;
+      case 'messages':
+        loadMessagesData();
+        break;
+      case 'alerts':
+        loadAlertsData();
+        break;
+      case 'join-requests':
+        loadJoinRequestsData();
+        break;
+    }
+  }, [activeSection, loadOverviewData, loadMembersData, loadMessagesData, loadAlertsData, loadJoinRequestsData]);
+
+  // Load overview data on initial load
+  useEffect(() => {
+    if (user?.uid && isAdmin) {
+      loadOverviewData();
+    }
+  }, [user?.uid, isAdmin, loadOverviewData]);
 
   // Status badge for header
   const statusBadge = () => {
@@ -229,8 +336,9 @@ export default function AdminPortalPage() {
         }
       } catch (revertError) {
         console.error('Error reverting optimistic update:', revertError);
-        // As last resort, reload all data
-        await loadData();
+        // As last resort, reload members data
+        setDataLoaded(prev => ({ ...prev, members: false }));
+        await loadMembersData();
       }
     }
   };
@@ -399,8 +507,9 @@ export default function AdminPortalPage() {
         setPendingJoinRequests(updatedRequests);
       } catch (revertError) {
         console.error('Error reverting join request update:', revertError);
-        // As last resort, reload all data
-        await loadData();
+        // As last resort, reload join requests data
+        setDataLoaded(prev => ({ ...prev, joinRequests: false }));
+        await loadJoinRequestsData();
       }
       
       setProcessingRequest(null);
@@ -409,12 +518,17 @@ export default function AdminPortalPage() {
   };
 
   // Show loading while checking auth
-  if (authLoading || !isAdmin) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy"></div>
       </div>
     );
+  }
+
+  // Redirect non-admins
+  if (!isAdmin) {
+    return null; // useEffect will handle redirect
   }
 
   // Dashboard sections using modular components
@@ -427,7 +541,7 @@ export default function AdminPortalPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ),
-      content: <OverviewTab memberApplications={memberApplications} loading={loading} />
+      content: <OverviewTab memberApplications={memberApplications} loading={loading.overview} />
     },
     {
       id: 'members',
@@ -440,7 +554,7 @@ export default function AdminPortalPage() {
       content: (
         <MembersTab
           memberApplications={memberApplications}
-          loading={loading}
+          loading={loading.members}
           onEmailFormOpen={handleEmailFormOpen}
           onStatusUpdate={handleMemberStatusUpdate}
         />
@@ -457,7 +571,7 @@ export default function AdminPortalPage() {
       content: (
         <MessagesTab
           messages={messages}
-          loading={loading}
+          loading={loading.messages}
           onCreateMessage={() => setShowCreateMessage(true)}
           onMarkAsRead={async (messageId) => {
             // Optimistic update
@@ -516,7 +630,7 @@ export default function AdminPortalPage() {
           alerts={alerts}
           pendingApplications={memberApplications.filter(m => m.status === 'pending')}
           pendingJoinRequests={pendingJoinRequests}
-          loading={loading}
+          loading={loading.alerts}
           onCreateAlert={() => setShowCreateAlert(true)}
           onMarkAsRead={async (alertId) => {
             // Optimistic update
@@ -562,7 +676,7 @@ export default function AdminPortalPage() {
       content: (
         <JoinRequestsTab
           pendingJoinRequests={pendingJoinRequests}
-          loading={loading}
+          loading={loading.joinRequests}
           onApprove={(companyId, requestId, requestData) => 
             handleJoinRequestAction('approve', companyId, requestId, requestData)
           }
@@ -603,7 +717,7 @@ export default function AdminPortalPage() {
       content: (
         <WebsiteUpdateTab
           memberApplications={memberApplications}
-          loading={loading}
+          loading={loading.members}
         />
       )
     },
