@@ -50,11 +50,19 @@
       }
     },
     "relationships": {
-      "title": "Costruzione di relazioni",
-      "description_1": "Il MGA Rendezvous, la nostra conferenza annuale, unirà la comunità europea MGA per due giorni di costruzione di relazioni e networking, accompagnati da presentazioni di figure di spicco del mercato.",
-      "description_2": "Annunceremo le date e la location per il MGA Rendezvous 2026 nei prossimi giorni.",
-      "description_3": "Eventi aggiuntivi (location che riflettono la domanda dei membri) aiuteranno gli MGA a espandere i loro canali di distribuzione e le relazioni di capacità su base più locale.",
-      "description_4": "Nel 2027, il MGA Rendezvous sarà aperto ai non membri, ma a un prezzo significativamente più alto rispetto ai membri. (I membri riceveranno uno sconto del 50% dal prezzo per non membri). Dal 2026, tutti gli eventi FASE saranno solo per membri."
+      "title": "Costruzione di relazioni (Il MGA Rendezvous 2026 e altri eventi)",
+      "description_1": "Il MGA Rendezvous, la nostra conferenza annuale, unirà la comunità europea MGA per un giorno e mezzo di costruzione di relazioni e networking, accompagnati da presentazioni di figure di spicco del mercato.",
+      "description_2": "Il MGA Rendezvous 2026 avrà luogo l'11 e 12 maggio di quest'anno presso l'Hotel Arts di Barcellona.",
+      "description_3": "Stiamo progettando il formato del Rendezvous per collegare, nel modo più efficiente possibile, i talenti europei di underwriting e l'esperienza del mercato locale con assicuratori e riassicuratori da tutto il mondo.",
+      "description_4": "Nell'arco di un giorno e mezzo, il Rendezvous riunirà MGA e fornitori di capacità in un formato strutturato per costruire relazioni e perseguire opportunità di crescita redditizie. Prima dell'evento, inviteremo assicuratori e riassicuratori a condividere informazioni sul loro appetito per il rischio e gli MGA a condividere informazioni sul loro focus di rischio.",
+      "description_5": "Il risultato, speriamo, saranno incontri efficienti e produttivi senza sprecare nemmeno un minuto.",
+      "description_6": "Il Rendezvous includerà anche un programma di classe mondiale di presentazioni e discussioni di panel da figure di spicco del mercato europeo MGA."
+    },
+    "member_discounts": {
+      "title": "Sconti per i membri",
+      "description_1": "Le registrazioni per il MGA Rendezvous 2026 apriranno il 12 gennaio. I biglietti per l'evento hanno sconti significativi (del 50%) per i membri FASE.",
+      "description_2": "Un biglietto per un membro MGA di FASE costerebbe quindi 400€, rispetto alla tariffa MGA non-membro di 800€. Per un assicuratore, la tariffa scontata sarà di 550€, rispetto alla tariffa assicuratore non-membro di 1.100€.",
+      "description_3": "Per i fornitori di servizi, la tariffa membro è di 700€, rispetto a 1.400€."
     }
   },
   "messages": {

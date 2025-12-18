@@ -316,8 +316,35 @@ export default function MemberContent() {
                   <p className="text-fase-black mb-4">
                     {t('overview.relationships.description_3')}
                   </p>
-                  <p className="text-fase-black">
+                  <p className="text-fase-black mb-4">
                     {t('overview.relationships.description_4')}
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    {t('overview.relationships.description_5')}
+                  </p>
+                  <p className="text-fase-black">
+                    {t('overview.relationships.description_6')}
+                  </p>
+                </div>
+              </details>
+
+              {/* Member discounts */}
+              <details className="group border border-gray-200 rounded-lg">
+                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.member_discounts.title')}</h3>
+                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="p-4 pt-0 border-t border-gray-100">
+                  <p className="text-fase-black mb-4">
+                    {t('overview.member_discounts.description_1')}
+                  </p>
+                  <p className="text-fase-black mb-4">
+                    {t('overview.member_discounts.description_2')}
+                  </p>
+                  <p className="text-fase-black">
+                    {t('overview.member_discounts.description_3')}
                   </p>
                 </div>
               </details>

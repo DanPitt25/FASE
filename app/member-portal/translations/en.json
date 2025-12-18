@@ -49,11 +49,19 @@
       }
     },
     "relationships": {
-      "title": "Relationship building",
-      "description_1": "The MGA Rendezvous, our annual conference, will unite the European MGA community for two days of relationship-building and networking, accompanied by presentations from leading lights in the market.",
-      "description_2": "We will be announcing the dates and location for the 2026 MGA Rendezvous in the coming days.",
-      "description_3": "Additional events (locations reflecting member demand) will help MGAs expand their distribution channels and capacity relationships on a more local basis.",
-      "description_4": "In 2027, the MGA Rendezvous will be open to non-members, but at a significantly higher price than for members. (Members will receive a 50% discount from the non-member price). From 2026, all of FASE's events will be members-only."
+      "title": "Relationship building (The 2026 MGA Rendezvous and other events)",
+      "description_1": "The MGA Rendezvous, our annual conference, will unite the European MGA community for a day and a half of relationship-building and networking, accompanied by presentations from leading lights in the market.",
+      "description_2": "The 2026 MGA Rendezvous will take place on May 11 and 12 this coming year at the Hotel Arts in Barcelona.",
+      "description_3": "We're designing the format of the Rendezvous to connect, in the most efficient way possible, European underwriting talent and local market expertise with insurers and reinsurers from around the world.",
+      "description_4": "Over one and a half days, the Rendezvous will bring MGAs and capacity providers together in a structured format to build relationships and pursue profitable growth opportunities. Prior to the event, we'll be inviting insurers and reinsurers to share information on their risk appetite and MGAs to share information on their risk focus.",
+      "description_5": "The result, we hope, will be efficient and productive meetings with not a minute wasted.",
+      "description_6": "The Rendezvous will also include a world-class program of presentations and panel discussions by leading lights within the European MGA market."
+    },
+    "member_discounts": {
+      "title": "Member discounts",
+      "description_1": "Registration for the 2026 MGA Rendezvous will open on January 12. Passes to the event are deeply discounted (by 50%) for FASE members.",
+      "description_2": "A pass for an MGA member of FASE would therefore be €400, versus the non-member MGA rate of €800. For a carrier the discounted rate will be €550, versus the non-member carrier rate of €1,100.",
+      "description_3": "For service providers, the member rate is €700, versus €1,400."
     }
   },
   "messages": {

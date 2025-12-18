@@ -50,11 +50,19 @@
       }
     },
     "relationships": {
-      "title": "Relatieopbouw",
-      "description_1": "De GA Rendezvous, onze jaarlijkse conferentie, zal de Europese GA-gemeenschap twee dagen lang verenigen voor relatieopbouw en netwerken, vergezeld van presentaties van vooraanstaande figuren in de markt.",
-      "description_2": "We zullen de data en locatie voor de 2026 GA Rendezvous de komende dagen bekendmaken.",
-      "description_3": "Aanvullende evenementen (locaties gebaseerd op ledenvraag) zullen GA's helpen hun distributiekanalen en capaciteitsrelaties op lokaal niveau uit te breiden.",
-      "description_4": "In 2027 staat de GA Rendezvous open voor niet-leden, maar tegen een aanzienlijk hogere prijs dan voor leden. (Leden krijgen 50% korting op de niet-ledenprijs). Vanaf 2026 zijn alle FASE-evenementen uitsluitend voor leden."
+      "title": "Relatieopbouw (De GA Rendezvous 2026 en andere evenementen)",
+      "description_1": "De GA Rendezvous, onze jaarlijkse conferentie, zal de Europese GA-gemeenschap anderhalve dag lang verenigen voor relatieopbouw en netwerken, vergezeld van presentaties van vooraanstaande figuren in de markt.",
+      "description_2": "De GA Rendezvous 2026 vindt plaats op 11 en 12 mei dit jaar in Hotel Arts in Barcelona.",
+      "description_3": "We ontwerpen het format van de Rendezvous om, op de meest efficiënte manier mogelijk, Europees underwriting talent en lokale marktexpertise te verbinden met verzekeraars en herverzekeraars van over de hele wereld.",
+      "description_4": "Gedurende anderhalve dag zal de Rendezvous GA's en capaciteitsverleners samenbrengen in een gestructureerd format om relaties op te bouwen en winstgevende groeikansen na te streven. Voorafgaand aan het evenement nodigen we verzekeraars en herverzekeraars uit om informatie over hun risicobereidheid te delen en GA's om informatie over hun risicofocus te delen.",
+      "description_5": "Het resultaat, hopen we, zullen efficiënte en productieve bijeenkomsten zijn zonder een minuut te verspillen.",
+      "description_6": "De Rendezvous zal ook een wereldklasse programma van presentaties en paneldiscussies bevatten door vooraanstaande figuren binnen de Europese GA-markt."
+    },
+    "member_discounts": {
+      "title": "Ledenkortingen",
+      "description_1": "Registratie voor de GA Rendezvous 2026 opent op 12 januari. Tickets voor het evenement hebben flinke kortingen (van 50%) voor FASE-leden.",
+      "description_2": "Een ticket voor een GA-lid van FASE zou daarom €400 kosten, tegenover het niet-lid GA-tarief van €800. Voor een verzekeraar zal het gereduceerde tarief €550 zijn, tegenover het niet-lid verzekeraar tarief van €1.100.",
+      "description_3": "Voor serviceverleners is het ledentarief €700, tegenover €1.400."
     }
   },
   "messages": {

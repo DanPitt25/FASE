@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs, Timestamp, startAfter } from 'firebase/firestore';
 
 export interface ActionRecord {
   id?: string;
@@ -20,7 +20,7 @@ export interface ActionRecord {
     invoiceNumber?: string;
     [key: string]: any;
   };
-  category: 'member_management' | 'email_communication' | 'payment' | 'system_admin' | 'auth';
+  category: 'member' | 'email' | 'payment' | 'invoice' | 'system';
   ipAddress?: string;
   userAgent?: string;
   success: boolean;
@@ -99,7 +99,7 @@ export class AuditLogger {
         newValue: data.newValue,
         reason: data.reason
       },
-      category: 'member_management',
+      category: 'member',
       success: data.success ?? true,
       errorMessage: data.errorMessage
     });
@@ -133,7 +133,7 @@ export class AuditLogger {
         templateUsed: data.templateUsed,
         subject: data.subject
       },
-      category: 'email_communication',
+      category: 'email',
       success: data.success ?? true,
       errorMessage: data.errorMessage
     });
@@ -290,7 +290,7 @@ export class AuditLogger {
         // Email customizations
         emailCustomizations: data.invoiceData.customizedEmailContent
       },
-      category: 'payment',
+      category: 'invoice',
       success: data.success ?? true,
       errorMessage: data.errorMessage
     });
@@ -343,21 +343,28 @@ export class AuditLogger {
   }
 
   /**
-   * Get recent actions across all users
+   * Get recent actions across all users with pagination support
    */
-  static async getRecentActions(limitCount: number = 100): Promise<ActionRecord[]> {
+  static async getRecentActions(limitCount: number = 100, offsetCount: number = 0): Promise<ActionRecord[]> {
     try {
+      // For simplicity, we'll get a larger set and slice it client-side
+      // In production, you'd want proper Firestore pagination with cursors
+      const totalToFetch = limitCount + offsetCount;
+      
       const q = query(
         collection(db, this.collectionName),
         orderBy('timestamp', 'desc'),
-        limit(limitCount)
+        limit(totalToFetch)
       );
       
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      const allDocs = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as ActionRecord));
+      
+      // Slice to get the requested page
+      return allDocs.slice(offsetCount, offsetCount + limitCount);
     } catch (error) {
       console.error('Failed to get recent actions:', error);
       return [];
@@ -418,7 +425,7 @@ export async function withAuditLog<T>(
         ...options.additionalDetails,
         duration: Date.now() - startTime
       },
-      category: options.category || 'system_admin',
+      category: options.category || 'system',
       success: true,
       duration: Date.now() - startTime
     });
@@ -435,7 +442,7 @@ export async function withAuditLog<T>(
         ...options.additionalDetails,
         duration: Date.now() - startTime
       },
-      category: options.category || 'system_admin',
+      category: options.category || 'system',
       success: false,
       errorMessage: error.message,
       duration: Date.now() - startTime
