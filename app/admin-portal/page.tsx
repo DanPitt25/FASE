@@ -763,7 +763,7 @@ export default function AdminPortalPage() {
         isOpen={showCreateAlert} 
         onClose={() => setShowCreateAlert(false)} 
         title="Create New Alert"
-        maxWidth="2xl"
+        maxWidth="xl"
       >
         <div className="space-y-6">
           {/* Basic Alert Info */}
