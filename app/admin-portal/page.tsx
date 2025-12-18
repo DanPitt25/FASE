@@ -15,22 +15,16 @@ import {
   getUserIdsForMemberCriteria, 
   UnifiedMember, 
   getAccountsByStatus, 
-  updateMemberStatus, 
-  getAllPendingJoinRequests, 
-  approveJoinRequest, 
-  rejectJoinRequest 
+  updateMemberStatus 
 } from '../../lib/unified-member';
-import type { JoinRequest } from '../../lib/unified-member';
 import type { Alert, UserAlert } from '../../lib/unified-messaging';
 import { AdminActions } from '../../lib/admin-actions';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 
 // Import modular tab components
-import OverviewTab from './components/OverviewTab';
 import MembersTab from './components/MembersTab';
 import AlertsTab from './components/AlertsTab';
-import JoinRequestsTab from './components/JoinRequestsTab';
 import EmailsTab from './components/EmailsTab';
 import InvoicesTab from './components/InvoicesTab';
 import WebsiteUpdateTab from './components/WebsiteUpdateTab';
@@ -43,39 +37,26 @@ export default function AdminPortalPage() {
 
   // State for data - now loaded lazily per tab
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
-  const [pendingJoinRequests, setPendingJoinRequests] = useState<(JoinRequest & { companyData?: UnifiedMember })[]>([]);
   const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
   
   // Track loading state per tab
   const [loading, setLoading] = useState({
-    overview: false,
     members: false,
     alerts: false,
-    joinRequests: false,
   });
   
   // Track which data has been loaded
   const [dataLoaded, setDataLoaded] = useState({
-    overview: false,
     members: false,
     alerts: false,
-    joinRequests: false,
   });
   
-  const [activeSection, setActiveSection] = useState<string>('overview');
+  const [activeSection, setActiveSection] = useState<string>('members');
 
   // Modal states
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   
-  // Processing states
-  const [processingRequest, setProcessingRequest] = useState<{
-    action: 'approve' | 'reject';
-    companyId: string;
-    requestId: string;
-    requestData: any;
-  } | null>(null);
-  const [adminNotes, setAdminNotes] = useState('');
 
   // Form states for modals
   const [alertForm, setAlertForm] = useState({
@@ -103,31 +84,6 @@ export default function AdminPortalPage() {
     }
   }, [user, isAdmin, authLoading, router]);
 
-  // Lazy load functions for each tab
-  const loadOverviewData = useCallback(async () => {
-    if (!user?.uid || !isAdmin || dataLoaded.overview) return;
-
-    try {
-      setLoading(prev => ({ ...prev, overview: true }));
-      // Only load summary data for overview - just pending counts
-      const [pendingAccounts, pendingJoinRequests] = await Promise.all([
-        getAccountsByStatus('pending'),
-        getAllPendingJoinRequests()
-      ]);
-
-      // Store minimal data for overview
-      setMemberApplications(prev => {
-        const filtered = prev.filter(m => m.status !== 'pending');
-        return [...filtered, ...pendingAccounts];
-      });
-      setPendingJoinRequests(pendingJoinRequests);
-      setDataLoaded(prev => ({ ...prev, overview: true }));
-    } catch (error) {
-      console.error('Error loading overview data:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, overview: false }));
-    }
-  }, [user?.uid, isAdmin, dataLoaded.overview]);
 
   const loadMembersData = useCallback(async () => {
     if (!user?.uid || !isAdmin || dataLoaded.members) return;
@@ -178,56 +134,34 @@ export default function AdminPortalPage() {
     }
   }, [user?.uid, isAdmin, dataLoaded.alerts]);
 
-  const loadJoinRequestsData = useCallback(async () => {
-    if (!user?.uid || !isAdmin || dataLoaded.joinRequests) return;
-
-    try {
-      setLoading(prev => ({ ...prev, joinRequests: true }));
-      const joinRequestsData = await getAllPendingJoinRequests();
-      setPendingJoinRequests(joinRequestsData);
-      setDataLoaded(prev => ({ ...prev, joinRequests: true }));
-    } catch (error) {
-      console.error('Error loading join requests data:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, joinRequests: false }));
-    }
-  }, [user?.uid, isAdmin, dataLoaded.joinRequests]);
 
   // Load data based on active section
   useEffect(() => {
     switch (activeSection) {
-      case 'overview':
-        loadOverviewData();
-        break;
       case 'members':
         loadMembersData();
         break;
       case 'alerts':
         loadAlertsData();
         break;
-      case 'join-requests':
-        loadJoinRequestsData();
-        break;
     }
-  }, [activeSection, loadOverviewData, loadMembersData, loadAlertsData, loadJoinRequestsData]);
+  }, [activeSection, loadMembersData, loadAlertsData]);
 
-  // Load overview data on initial load
+  // Load members data on initial load
   useEffect(() => {
     if (user?.uid && isAdmin) {
-      loadOverviewData();
+      loadMembersData();
     }
-  }, [user?.uid, isAdmin, loadOverviewData]);
+  }, [user?.uid, isAdmin, loadMembersData]);
 
   // Status badge for header
   const statusBadge = () => {
     const pendingCount = memberApplications.filter(m => m.status === 'pending').length;
-    const joinRequestCount = pendingJoinRequests.length;
-    const totalPending = pendingCount + joinRequestCount;
     
-    if (totalPending > 0) {
+    if (pendingCount > 0) {
       return (
         <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-medium">
-          {totalPending} Pending
+          {pendingCount} Pending
         </span>
       );
     }
@@ -379,48 +313,6 @@ export default function AdminPortalPage() {
   };
 
 
-  const handleJoinRequestAction = async (action: 'approve' | 'reject', companyId: string, requestId: string, requestData: any) => {
-    setProcessingRequest({ action, companyId, requestId, requestData });
-  };
-
-  const confirmJoinRequestAction = async () => {
-    if (!processingRequest || !user?.uid) return;
-
-    try {
-      // Optimistic update - remove the join request from UI immediately
-      setPendingJoinRequests(prev => 
-        prev.filter(req => req.id !== processingRequest.requestId)
-      );
-
-      if (processingRequest.action === 'approve') {
-        await approveJoinRequest(processingRequest.companyId, processingRequest.requestId, user.uid, adminNotes);
-      } else {
-        await rejectJoinRequest(processingRequest.companyId, processingRequest.requestId, user.uid, adminNotes);
-      }
-
-      setProcessingRequest(null);
-      setAdminNotes('');
-      
-      // No need to reload all data - the optimistic update already handled the UI
-    } catch (error) {
-      console.error('Error processing join request:', error);
-      
-      // On error, reload just the join requests
-      try {
-        const { getAllPendingJoinRequests } = await import('../../lib/unified-member');
-        const updatedRequests = await getAllPendingJoinRequests();
-        setPendingJoinRequests(updatedRequests);
-      } catch (revertError) {
-        console.error('Error reverting join request update:', revertError);
-        // As last resort, reload join requests data
-        setDataLoaded(prev => ({ ...prev, joinRequests: false }));
-        await loadJoinRequestsData();
-      }
-      
-      setProcessingRequest(null);
-      setAdminNotes('');
-    }
-  };
 
   // Show loading while checking auth
   if (authLoading) {
@@ -438,16 +330,6 @@ export default function AdminPortalPage() {
 
   // Dashboard sections using modular components
   const dashboardSections = [
-    {
-      id: 'overview',
-      title: 'Overview',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-      content: <OverviewTab memberApplications={memberApplications} loading={loading.overview} />
-    },
     {
       id: 'members',
       title: `Members (${memberApplications.length})`,
@@ -475,9 +357,7 @@ export default function AdminPortalPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 19H9l4-4h-1a2 2 0 01-2-2V9a2 2 0 012-2h1l-4-4h4l4 4v4a2 2 0 01-2 2h-1l4 4z" />
           </svg>
           {/* Alert indicator */}
-          {(memberApplications.filter(m => m.status === 'pending').length > 0 || 
-            pendingJoinRequests.length > 0 || 
-            alerts.filter(a => !a.isRead).length > 0) && (
+          {alerts.filter(a => !a.isRead).length > 0 && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
               !
             </span>
@@ -488,7 +368,7 @@ export default function AdminPortalPage() {
         <AlertsTab
           alerts={alerts}
           pendingApplications={memberApplications.filter(m => m.status === 'pending')}
-          pendingJoinRequests={pendingJoinRequests}
+          pendingJoinRequests={[]}
           loading={loading.alerts}
           onCreateAlert={() => setShowCreateAlert(true)}
           onMarkAsRead={async (alertId) => {
@@ -521,27 +401,6 @@ export default function AdminPortalPage() {
               setAlerts(updatedAlerts);
             }
           }}
-        />
-      )
-    },
-    {
-      id: 'join-requests',
-      title: `Join Requests${pendingJoinRequests.length > 0 ? ` (${pendingJoinRequests.length})` : ''}`,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-        </svg>
-      ),
-      content: (
-        <JoinRequestsTab
-          pendingJoinRequests={pendingJoinRequests}
-          loading={loading.joinRequests}
-          onApprove={(companyId, requestId, requestData) => 
-            handleJoinRequestAction('approve', companyId, requestId, requestData)
-          }
-          onReject={(companyId, requestId, requestData) => 
-            handleJoinRequestAction('reject', companyId, requestId, requestData)
-          }
         />
       )
     },
@@ -614,7 +473,7 @@ export default function AdminPortalPage() {
         statusBadge={statusBadge()}
         activeSection={activeSection}
         onActiveSectionChange={handleActiveSectionChange}
-        defaultActiveSection="overview"
+        defaultActiveSection="members"
       />
 
       {/* Create Alert Modal */}
@@ -893,46 +752,6 @@ export default function AdminPortalPage() {
       </Modal>
 
 
-      {/* Join Request Confirmation Modal */}
-      <Modal 
-        isOpen={!!processingRequest} 
-        onClose={() => setProcessingRequest(null)} 
-        title={`${processingRequest?.action === 'approve' ? 'Approve' : 'Reject'} Join Request`}
-      >
-        {processingRequest && (
-          <div className="space-y-4">
-            <p>
-              Are you sure you want to {processingRequest.action} the join request from{' '}
-              <strong>{processingRequest.requestData.fullName}</strong> at{' '}
-              <strong>{processingRequest.requestData.companyName}</strong>?
-            </p>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Admin Notes (optional)
-              </label>
-              <textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                rows={3}
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <Button variant="secondary" onClick={() => setProcessingRequest(null)}>
-                Cancel
-              </Button>
-              <Button 
-                variant={processingRequest.action === 'approve' ? 'primary' : 'secondary'}
-                onClick={confirmJoinRequestAction}
-              >
-                {processingRequest.action === 'approve' ? 'Approve' : 'Reject'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </>
   );
 }
