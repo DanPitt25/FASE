@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Read data from request body

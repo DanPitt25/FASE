@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
+
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
   try {

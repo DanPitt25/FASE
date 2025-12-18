@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 

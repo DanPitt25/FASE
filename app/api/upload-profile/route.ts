@@ -3,6 +3,9 @@ import * as admin from 'firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 import { DatabaseMonitor } from '../../../lib/monitoring';
 
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
+
 // Initialize Firebase Admin using service account key
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {

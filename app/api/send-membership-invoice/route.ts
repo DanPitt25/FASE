@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';

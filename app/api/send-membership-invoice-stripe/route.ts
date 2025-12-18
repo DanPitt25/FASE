@@ -6,6 +6,9 @@ import * as path from 'path';
 import { convertCurrency, detectCurrency } from '../../../lib/currency-conversion';
 import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
+
 // Initialize Stripe
 let stripe: Stripe | null = null;
 
