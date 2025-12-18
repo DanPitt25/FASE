@@ -31,6 +31,18 @@ import WebsiteUpdateTab from './components/WebsiteUpdateTab';
 import TempAccountTab from './components/TempAccountTab';
 import AuditLogTab from './components/AuditLogTab';
 
+// Simple markdown renderer for alert content
+function renderMarkdown(text: string): string {
+  if (!text) return '';
+  
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/\n/g, '<br>');
+}
+
 export default function AdminPortalPage() {
   const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
   const router = useRouter();
@@ -62,6 +74,14 @@ export default function AdminPortalPage() {
   const [alertForm, setAlertForm] = useState({
     title: '',
     message: '',
+    translations: {
+      en: { title: '', message: '', actionText: '' },
+      fr: { title: '', message: '', actionText: '' },
+      de: { title: '', message: '', actionText: '' },
+      es: { title: '', message: '', actionText: '' },
+      it: { title: '', message: '', actionText: '' },
+      nl: { title: '', message: '', actionText: '' }
+    },
     type: 'info' as 'info' | 'warning' | 'error' | 'success',
     priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     targetAudience: 'members' as 'all' | 'members' | 'admins' | 'specific' | 'member_type' | 'specific_members',
@@ -73,6 +93,8 @@ export default function AdminPortalPage() {
     actionText: '',
     expiresAt: ''
   });
+
+  const [currentLanguage, setCurrentLanguage] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
 
 
   const [organizationSearchResults, setOrganizationSearchResults] = useState<UnifiedMember[]>([]);
@@ -249,11 +271,14 @@ export default function AdminPortalPage() {
       let userIds: string[] = [];
 
       if (alertForm.targetAudience === 'specific_members') {
-        userIds = alertForm.selectedOrganizations;
+        // Remove duplicates from selected organizations
+        userIds = [...new Set(alertForm.selectedOrganizations)];
       } else if (alertForm.targetAudience === 'member_type') {
-        userIds = await getUserIdsForMemberCriteria({ 
+        const memberIds = await getUserIdsForMemberCriteria({ 
           organizationType: alertForm.organizationType || undefined 
         });
+        // Remove duplicates from member criteria results
+        userIds = [...new Set(memberIds)];
       }
 
       // Map form values to Alert interface values
@@ -266,26 +291,54 @@ export default function AdminPortalPage() {
         mappedTargetAudience = alertForm.targetAudience as 'all' | 'members' | 'admins' | 'specific';
       }
 
-      await createAlert({
-        title: alertForm.title,
-        message: alertForm.message,
-        type: alertForm.type,
-        priority: alertForm.priority,
-        targetAudience: mappedTargetAudience,
-        targetUsers: userIds.length > 0 ? userIds : undefined,
-        organizationType: alertForm.organizationType || undefined,
-        actionRequired: alertForm.actionRequired,
-        actionUrl: alertForm.actionUrl || undefined,
-        actionText: alertForm.actionText || undefined,
-        expiresAt: alertForm.expiresAt ? new Date(alertForm.expiresAt) : undefined,
-        createdBy: user.uid,
-        isActive: true
-      });
+      // Create alerts for each language that has content
+      for (const [locale, translation] of Object.entries(alertForm.translations)) {
+        if (translation.title && translation.message) {
+          const alertData: any = {
+            title: translation.title,
+            message: translation.message,
+            type: alertForm.type,
+            priority: alertForm.priority,
+            targetAudience: mappedTargetAudience,
+            actionRequired: alertForm.actionRequired,
+            createdBy: user.uid,
+            isActive: true,
+            locale: locale as 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'
+          };
+
+          // Only add optional fields if they have values
+          if (userIds.length > 0) {
+            alertData.targetUsers = userIds;
+          }
+          if (alertForm.organizationType) {
+            alertData.organizationType = alertForm.organizationType;
+          }
+          if (alertForm.actionUrl) {
+            alertData.actionUrl = alertForm.actionUrl;
+          }
+          if (translation.actionText) {
+            alertData.actionText = translation.actionText;
+          }
+          if (alertForm.expiresAt) {
+            alertData.expiresAt = new Date(alertForm.expiresAt);
+          }
+
+          await createAlert(alertData);
+        }
+      }
 
       // Reset form
       setAlertForm({
         title: '',
         message: '',
+        translations: {
+          en: { title: '', message: '', actionText: '' },
+          fr: { title: '', message: '', actionText: '' },
+          de: { title: '', message: '', actionText: '' },
+          es: { title: '', message: '', actionText: '' },
+          it: { title: '', message: '', actionText: '' },
+          nl: { title: '', message: '', actionText: '' }
+        },
         type: 'info',
         priority: 'medium',
         targetAudience: 'members',
@@ -297,6 +350,7 @@ export default function AdminPortalPage() {
         actionText: '',
         expiresAt: ''
       });
+      setCurrentLanguage('en');
 
       setShowCreateAlert(false);
       
@@ -349,7 +403,7 @@ export default function AdminPortalPage() {
     },
     {
       id: 'alerts',
-      title: 'Announcements',
+      title: 'Alerts',
       icon: (
         <div className="relative">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +534,7 @@ export default function AdminPortalPage() {
       <Modal 
         isOpen={showCreateAlert} 
         onClose={() => setShowCreateAlert(false)} 
-        title="Create New Announcement"
+        title="Create New Alert"
         maxWidth="xl"
       >
         <div className="space-y-6">
@@ -488,31 +542,40 @@ export default function AdminPortalPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Announcement Title *
+                Alert Title *
               </label>
               <input
                 type="text"
-                value={alertForm.title}
-                onChange={(e) => setAlertForm(prev => ({ ...prev, title: e.target.value }))}
+                value={alertForm.translations.en.title}
+                onChange={(e) => setAlertForm(prev => ({
+                  ...prev,
+                  translations: {
+                    ...prev.translations,
+                    en: {
+                      ...prev.translations.en,
+                      title: e.target.value
+                    }
+                  }
+                }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                placeholder="e.g., New Member Directory Live, System Maintenance, Event Registration Open"
+                placeholder="Alert title"
                 required
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Announcement Type
+                Alert Type
               </label>
               <select
                 value={alertForm.type}
                 onChange={(e) => setAlertForm(prev => ({ ...prev, type: e.target.value as any }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               >
-                <option value="info">General Info</option>
-                <option value="success">Good News / Feature</option>
-                <option value="warning">Important Notice</option>
-                <option value="error">Urgent / Action Required</option>
+                <option value="info">Info</option>
+                <option value="success">Success</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
               </select>
             </div>
           </div>
@@ -584,11 +647,18 @@ export default function AdminPortalPage() {
                   const searchValue = e.target.value;
                   setAlertForm(prev => ({ ...prev, organizationSearch: searchValue }));
                   
-                  // Search for organizations
-                  if (searchValue.length >= 2) {
-                    searchMembersByOrganizationName(searchValue).then(results => {
-                      setOrganizationSearchResults(results);
-                    }).catch(console.error);
+                  // Search within existing memberApplications data
+                  if (searchValue.length >= 1) {
+                    // Get unique organizations from memberApplications
+                    const uniqueOrgs = memberApplications
+                      .filter(member => 
+                        member.organizationName?.toLowerCase().includes(searchValue.toLowerCase())
+                      )
+                      .filter((org, index, self) => 
+                        index === self.findIndex(o => o.organizationName === org.organizationName)
+                      )
+                      .slice(0, 10); // Limit to 10 results for performance
+                    setOrganizationSearchResults(uniqueOrgs);
                   } else {
                     setOrganizationSearchResults([]);
                   }
@@ -605,10 +675,20 @@ export default function AdminPortalPage() {
                       key={org.id}
                       type="button"
                       onClick={() => {
-                        if (!alertForm.selectedOrganizations.includes(org.id)) {
+                        // Get all member IDs from this organization
+                        const orgMemberIds = memberApplications
+                          .filter(m => m.organizationName === org.organizationName)
+                          .map(m => m.id);
+                        
+                        // Check if any members from this org are already selected
+                        const alreadySelected = orgMemberIds.some(id => 
+                          alertForm.selectedOrganizations.includes(id)
+                        );
+                        
+                        if (!alreadySelected) {
                           setAlertForm(prev => ({
                             ...prev,
-                            selectedOrganizations: [...prev.selectedOrganizations, org.id],
+                            selectedOrganizations: [...prev.selectedOrganizations, ...orgMemberIds],
                             organizationSearch: ''
                           }));
                           setOrganizationSearchResults([]);
@@ -617,7 +697,7 @@ export default function AdminPortalPage() {
                       className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
                     >
                       {org.organizationName}
-                      <span className="text-gray-500 ml-2">({org.status})</span>
+                      <span className="text-gray-500 ml-2">({memberApplications.filter(m => m.organizationName === org.organizationName).length} members)</span>
                     </button>
                   ))}
                 </div>
@@ -627,22 +707,40 @@ export default function AdminPortalPage() {
               {alertForm.selectedOrganizations.length > 0 && (
                 <div className="mt-3">
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    Selected Organizations ({alertForm.selectedOrganizations.length}):
+                    Selected Organizations ({(() => {
+                      const uniqueOrgNames = new Set(
+                        alertForm.selectedOrganizations
+                          .map(orgId => memberApplications.find(m => m.id === orgId)?.organizationName)
+                          .filter(Boolean)
+                      );
+                      return uniqueOrgNames.size;
+                    })()} organizations):
                   </p>
                   <div className="space-y-1">
-                    {alertForm.selectedOrganizations.map((orgId, index) => {
-                      const org = memberApplications.find(m => m.id === orgId);
-                      return (
-                        <div key={orgId} className="flex items-center justify-between bg-gray-50 px-3 py-1 rounded">
+                    {(() => {
+                      // Get unique organizations by name
+                      const selectedOrgs = alertForm.selectedOrganizations
+                        .map(orgId => memberApplications.find(m => m.id === orgId))
+                        .filter(org => org) // Remove any undefined results
+                        .filter((org, index, self) => 
+                          index === self.findIndex(o => o?.organizationName === org?.organizationName)
+                        );
+                      
+                      return selectedOrgs.map((org) => (
+                        <div key={org.id} className="flex items-center justify-between bg-gray-50 px-3 py-1 rounded">
                           <span className="text-sm">
-                            {org?.organizationName || `Organization ${index + 1}`}
+                            {org.organizationName}
                           </span>
                           <button
                             type="button"
                             onClick={() => {
+                              // Remove all members from this organization
+                              const orgMemberIds = memberApplications
+                                .filter(m => m.organizationName === org.organizationName)
+                                .map(m => m.id);
                               setAlertForm(prev => ({
                                 ...prev,
-                                selectedOrganizations: prev.selectedOrganizations.filter(id => id !== orgId)
+                                selectedOrganizations: prev.selectedOrganizations.filter(id => !orgMemberIds.includes(id))
                               }));
                             }}
                             className="text-red-600 hover:text-red-800 text-xs"
@@ -650,34 +748,279 @@ export default function AdminPortalPage() {
                             Remove
                           </button>
                         </div>
-                      );
-                    })}
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Announcement Message with Markdown Support */}
+          {/* Alert Message with Markdown Editor */}
           <div>
+            {/* Language Tabs for Text Content */}
+            <div className="mb-4">
+              <div className="flex space-x-1 border-b border-gray-200">
+                {Object.entries({
+                  en: 'English',
+                  fr: 'Français', 
+                  de: 'Deutsch',
+                  es: 'Español',
+                  it: 'Italiano',
+                  nl: 'Nederlands'
+                }).map(([locale, name]) => (
+                  <button
+                    key={locale}
+                    type="button"
+                    onClick={() => setCurrentLanguage(locale as any)}
+                    className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+                      currentLanguage === locale
+                        ? 'bg-fase-navy text-white border-b-2 border-fase-navy'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {name}
+                    {alertForm.translations[locale as keyof typeof alertForm.translations]?.title && (
+                      <span className="ml-1 text-green-400">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Announcement Message * 
-              <span className="text-xs text-gray-500 ml-2">(Markdown supported)</span>
+              Alert Title ({currentLanguage === 'en' ? 'English *' : Object.entries({
+                fr: 'Français', 
+                de: 'Deutsch',
+                es: 'Español',
+                it: 'Italiano',
+                nl: 'Nederlands'
+              }).find(([code]) => code === currentLanguage)?.[1] || currentLanguage.toUpperCase()})
             </label>
-            <textarea
-              value={alertForm.message}
-              onChange={(e) => setAlertForm(prev => ({ ...prev, message: e.target.value }))}
-              rows={4}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              placeholder="Share updates, news, feature announcements, or important information... You can use **bold**, *italic*, [links](url), etc."
-              required
+            <input
+              type="text"
+              value={alertForm.translations[currentLanguage].title}
+              onChange={(e) => setAlertForm(prev => ({
+                ...prev,
+                translations: {
+                  ...prev.translations,
+                  [currentLanguage]: {
+                    ...prev.translations[currentLanguage],
+                    title: e.target.value
+                  }
+                }
+              }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              placeholder={`Alert title (${currentLanguage.toUpperCase()})`}
+              required={currentLanguage === 'en'}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Supports: **bold**, *italic*, [links](url), `code`, lists, etc.
-            </p>
+
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alert Message ({currentLanguage === 'en' ? 'English *' : Object.entries({
+                fr: 'Français', 
+                de: 'Deutsch',
+                es: 'Español',
+                it: 'Italiano',
+                nl: 'Nederlands'
+              }).find(([code]) => code === currentLanguage)?.[1] || currentLanguage.toUpperCase()})
+            </label>
+            
+            {/* Markdown Toolbar */}
+            <div className="border border-gray-300 rounded-t-lg bg-gray-50 px-3 py-2 flex gap-1 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  const textarea = document.querySelector('textarea[data-markdown-editor]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end) || 'bold text';
+                    const newText = textarea.value.substring(0, start) + `**${selectedText}**` + textarea.value.substring(end);
+                    setAlertForm(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        [currentLanguage]: {
+                          ...prev.translations[currentLanguage],
+                          message: newText
+                        }
+                      }
+                    }));
+                  }
+                }}
+                className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+                title="Bold"
+              >
+                <strong>B</strong>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const textarea = document.querySelector('textarea[data-markdown-editor]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end) || 'italic text';
+                    const newText = textarea.value.substring(0, start) + `*${selectedText}*` + textarea.value.substring(end);
+                    setAlertForm(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        [currentLanguage]: {
+                          ...prev.translations[currentLanguage],
+                          message: newText
+                        }
+                      }
+                    }));
+                  }
+                }}
+                className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+                title="Italic"
+              >
+                <em>I</em>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const textarea = document.querySelector('textarea[data-markdown-editor]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end) || 'code';
+                    const newText = textarea.value.substring(0, start) + `\`${selectedText}\`` + textarea.value.substring(end);
+                    setAlertForm(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        [currentLanguage]: {
+                          ...prev.translations[currentLanguage],
+                          message: newText
+                        }
+                      }
+                    }));
+                  }
+                }}
+                className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 font-mono"
+                title="Code"
+              >
+                {'</>'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const linkText = prompt('Link text:') || 'link text';
+                  const linkUrl = prompt('URL:') || 'https://example.com';
+                  const textarea = document.querySelector('textarea[data-markdown-editor]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const newText = textarea.value.substring(0, start) + `[${linkText}](${linkUrl})` + textarea.value.substring(start);
+                    setAlertForm(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        [currentLanguage]: {
+                          ...prev.translations[currentLanguage],
+                          message: newText
+                        }
+                      }
+                    }));
+                  }
+                }}
+                className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+                title="Link"
+              >
+                🔗
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const textarea = document.querySelector('textarea[data-markdown-editor]') as HTMLTextAreaElement;
+                  if (textarea) {
+                    const start = textarea.selectionStart;
+                    const newText = textarea.value.substring(0, start) + '- List item\n' + textarea.value.substring(start);
+                    setAlertForm(prev => ({
+                      ...prev,
+                      translations: {
+                        ...prev.translations,
+                        [currentLanguage]: {
+                          ...prev.translations[currentLanguage],
+                          message: newText
+                        }
+                      }
+                    }));
+                  }
+                }}
+                className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+                title="Bullet List"
+              >
+                • List
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Editor */}
+              <div>
+                <textarea
+                  data-markdown-editor
+                  value={alertForm.translations[currentLanguage].message}
+                  onChange={(e) => setAlertForm(prev => ({
+                    ...prev,
+                    translations: {
+                      ...prev.translations,
+                      [currentLanguage]: {
+                        ...prev.translations[currentLanguage],
+                        message: e.target.value
+                      }
+                    }
+                  }))}
+                  rows={6}
+                  className="w-full border border-gray-300 border-t-0 rounded-b-lg rounded-tr-none px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder={`Write your alert message here (${currentLanguage.toUpperCase()})...`}
+                  required={currentLanguage === 'en'}
+                />
+              </div>
+              
+              {/* Preview */}
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Preview:</div>
+                <div 
+                  className="border border-gray-300 rounded-lg px-3 py-2 min-h-[6rem] bg-gray-50 text-sm"
+                  dangerouslySetInnerHTML={{ 
+                    __html: alertForm.translations[currentLanguage].message ? renderMarkdown(alertForm.translations[currentLanguage].message) : '<span class="text-gray-400">Preview will appear here...</span>' 
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Action Button Text (Language-specific) */}
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Action Button Text ({currentLanguage === 'en' ? 'English' : Object.entries({
+                fr: 'Français', 
+                de: 'Deutsch',
+                es: 'Español',
+                it: 'Italiano',
+                nl: 'Nederlands'
+              }).find(([code]) => code === currentLanguage)?.[1] || currentLanguage.toUpperCase()}) - Optional
+            </label>
+            <input
+              type="text"
+              value={alertForm.translations[currentLanguage].actionText}
+              onChange={(e) => setAlertForm(prev => ({
+                ...prev,
+                translations: {
+                  ...prev.translations,
+                  [currentLanguage]: {
+                    ...prev.translations[currentLanguage],
+                    actionText: e.target.value
+                  }
+                }
+              }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              placeholder={`Button text (${currentLanguage.toUpperCase()}) - only if you want an action button`}
+            />
           </div>
 
-          {/* Action Button */}
+          {/* Action Button Settings */}
           <div className="border-t pt-4">
             <div className="flex items-center mb-3">
               <input
@@ -693,32 +1036,18 @@ export default function AdminPortalPage() {
             </div>
 
             {alertForm.actionRequired && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Button Text
-                  </label>
-                  <input
-                    type="text"
-                    value={alertForm.actionText}
-                    onChange={(e) => setAlertForm(prev => ({ ...prev, actionText: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    placeholder="e.g., View Details, Update Profile"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Action URL
-                  </label>
-                  <input
-                    type="url"
-                    value={alertForm.actionUrl}
-                    onChange={(e) => setAlertForm(prev => ({ ...prev, actionUrl: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    placeholder="https://example.com/action"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Action URL *
+                </label>
+                <input
+                  type="url"
+                  value={alertForm.actionUrl}
+                  onChange={(e) => setAlertForm(prev => ({ ...prev, actionUrl: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder="https://example.com"
+                  required
+                />
               </div>
             )}
           </div>
@@ -743,9 +1072,9 @@ export default function AdminPortalPage() {
             <Button 
               variant="primary" 
               onClick={handleCreateAlert}
-              disabled={!alertForm.title || !alertForm.message}
+              disabled={!alertForm.translations.en.title || !alertForm.translations.en.message}
             >
-              Create Announcement
+              Create Alert
             </Button>
           </div>
         </div>

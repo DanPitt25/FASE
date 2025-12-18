@@ -119,25 +119,22 @@ export default function MembersTab({
       {/* Members Table */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-fase-light-gold">
+          <table className="w-full divide-y divide-fase-light-gold">
             <thead className="bg-fase-navy">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Organization
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Applied
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -145,37 +142,34 @@ export default function MembersTab({
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4">
                     <div className="text-sm">
                       <div className="font-medium text-gray-900">{member.organizationName}</div>
-                      <div className="text-gray-500">{member.organizationType}</div>
+                      <div className="text-gray-500 text-xs">{member.organizationType}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4">
                     <div className="text-sm">
-                      <div className="text-gray-900">{member.personalName || 'Unknown'}</div>
-                      <div className="text-gray-500">{member.email || 'No email'}</div>
+                      <div className="text-gray-900">{member.accountAdministrator?.name || 'Unknown'}</div>
+                      <div className="text-gray-500 text-xs">{member.email || 'No email'}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {member.membershipType}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-4">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.status)}`}>
                       {formatStatus(member.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString() : 'Unknown'}
+                  <td className="px-3 py-4 text-xs text-gray-500">
+                    {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Unknown'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-y-1">
-                    <div className="flex flex-col gap-1">
+                  <td className="px-4 py-4 text-sm font-medium">
+                    <div className="flex gap-2">
                       <Button
                         variant="secondary"
                         size="small"
                         onClick={() => handleViewMembers(member)}
                       >
-                        View Members
+                        View
                       </Button>
                       <Button
                         variant="secondary"
@@ -189,7 +183,7 @@ export default function MembersTab({
                         size="small"
                         onClick={() => handleStatusChangeClick(member)}
                       >
-                        Change Status
+                        Status
                       </Button>
                     </div>
                   </td>
@@ -212,7 +206,7 @@ export default function MembersTab({
           setShowStatusModal(false);
           setSelectedMember(null);
         }}
-        title={`Change Status - ${selectedMember?.personalName}`}
+        title={`Change Status - ${selectedMember?.accountAdministrator?.name || 'Unknown'}`}
         maxWidth="lg"
       >
         {selectedMember && (

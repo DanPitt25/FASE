@@ -66,7 +66,12 @@ export default function MemberContent() {
         
         const userAlerts = await getUserAlerts(member.id); // Use Firestore account ID
         
-        setAlerts(userAlerts);
+        // Filter alerts by current locale
+        const localeFilteredAlerts = userAlerts.filter(alert => 
+          alert.locale === locale || !alert.locale // Show alerts with no locale (legacy) or matching locale
+        );
+        
+        setAlerts(localeFilteredAlerts);
       } catch (error) {
       } finally {
         setLoadingAlerts(false);
@@ -74,7 +79,7 @@ export default function MemberContent() {
     };
 
     loadData();
-  }, [user, member]);
+  }, [user, member, locale]);
 
 
   // Alert handlers
@@ -408,94 +413,89 @@ export default function MemberContent() {
           ) : (
             <div className="space-y-4">
               {alerts.map((alert) => (
-                <div key={alert.id} className={`border rounded-lg p-4 ${
-                  alert.type === 'error' ? 'bg-red-50 border-red-200' :
-                  alert.type === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-                  alert.type === 'success' ? 'bg-green-50 border-green-200' :
-                  'bg-blue-50 border-blue-200'
-                }`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className={`font-medium ${
-                      alert.type === 'error' ? 'text-red-900' :
-                      alert.type === 'warning' ? 'text-yellow-900' :
-                      alert.type === 'success' ? 'text-green-900' :
-                      'text-blue-900'
-                    }`}>
-                      {alert.title}
-                    </h4>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        alert.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                        alert.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                        alert.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {t(`alerts.priority.${alert.priority}`)}
-                      </span>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                        alert.type === 'error' ? 'bg-red-100 text-red-800' :
-                        alert.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                        alert.type === 'success' ? 'bg-green-100 text-green-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {t(`alerts.types.${alert.type}`)}
-                      </span>
+                <article 
+                  key={alert.id} 
+                  className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${
+                    !alert.isRead ? 'border-fase-navy/20 bg-gray-50/30' : ''
+                  }`}
+                >
+                  {/* Header */}
+                  <div className="px-6 py-4 border-b border-gray-100">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy leading-tight">
+                          {alert.title}
+                        </h3>
+                        {!alert.isRead && (
+                          <span className="inline-block mt-1 text-xs font-medium text-fase-navy/70">
+                            Unread
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 ml-4">
+                        <span className="text-xs text-gray-500">
+                          {alert.createdAt?.toDate?.()?.toLocaleDateString()}
+                        </span>
+                        {alert.priority === 'urgent' && (
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded">
+                            {t(`alerts.priority.${alert.priority}`)}
+                          </span>
+                        )}
+                        {alert.priority === 'high' && (
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-50 rounded">
+                            {t(`alerts.priority.${alert.priority}`)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div 
-                    className={`text-sm mb-3 ${
-                      alert.type === 'error' ? 'text-red-800' :
-                      alert.type === 'warning' ? 'text-yellow-800' :
-                      alert.type === 'success' ? 'text-green-800' :
-                      'text-blue-800'
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
-                  />
+                  {/* Content */}
+                  <div className="px-6 py-4">
+                    <div 
+                      className="prose prose-sm prose-gray max-w-none leading-relaxed text-fase-black"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
+                    />
+                  </div>
                   
+                  {/* Action button */}
                   {alert.actionUrl && alert.actionText && (
-                    <div className="mb-3">
+                    <div className="px-6 pb-4">
                       <a
                         href={alert.actionUrl}
-                        className={`inline-flex items-center px-3 py-1 rounded text-sm font-medium ${
-                          alert.type === 'error' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
-                          alert.type === 'warning' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                          alert.type === 'success' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                          'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                        }`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-fase-navy hover:bg-gray-800 rounded transition-colors duration-200"
                       >
                         {alert.actionText}
+                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </a>
                     </div>
                   )}
                   
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      {alert.createdAt?.toDate?.()?.toLocaleDateString()}
-                    </span>
-                    <div className="flex space-x-2">
+                  {/* Footer Actions */}
+                  <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100">
+                    <div className="flex justify-end space-x-4">
                       {!alert.isRead && (
                         <button
                           onClick={() => handleMarkAlertAsRead(alert.id)}
-                          className={`text-xs font-medium ${
-                            alert.type === 'error' ? 'text-red-600 hover:text-red-800' :
-                            alert.type === 'warning' ? 'text-yellow-600 hover:text-yellow-800' :
-                            alert.type === 'success' ? 'text-green-600 hover:text-green-800' :
-                            'text-blue-600 hover:text-blue-800'
-                          }`}
+                          className="text-xs font-medium text-gray-600 hover:text-fase-navy transition-colors duration-200"
                         >
                           {t('alerts.mark_read')}
                         </button>
                       )}
                       <button
                         onClick={() => handleDismissAlert(alert.id)}
-                        className="text-xs text-gray-600 hover:text-gray-800 font-medium"
+                        className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors duration-200"
                       >
                         {t('alerts.dismiss')}
                       </button>
                     </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}

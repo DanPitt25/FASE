@@ -62,6 +62,7 @@ export interface Alert {
   actionRequired: boolean;
   actionUrl?: string;
   actionText?: string;
+  locale?: 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'; // Language of the alert
 }
 
 export interface UserAlert {
@@ -229,7 +230,10 @@ const createUserAlertsForAudienceUnified = async (
       recipientUIDs = filteredMembers.map(member => member.id); // Firebase Auth UIDs
     }
     
-    const userAlertPromises = recipientUIDs.map(uid => {
+    // Remove duplicates to prevent creating multiple userAlerts for the same user
+    const uniqueRecipientUIDs = [...new Set(recipientUIDs)];
+    
+    const userAlertPromises = uniqueRecipientUIDs.map(uid => {
       const userAlertRef = doc(collection(db, 'userAlerts'));
       const userAlert: UserAlert = {
         id: userAlertRef.id,
@@ -250,7 +254,10 @@ const createUserAlertsForAudienceUnified = async (
 
 const createUserAlertsForUsers = async (alertId: string, userIds: string[]) => {
   try {
-    const userAlertPromises = userIds.map(userId => {
+    // Remove duplicates to prevent creating multiple userAlerts for the same user
+    const uniqueUserIds = [...new Set(userIds)];
+    
+    const userAlertPromises = uniqueUserIds.map(userId => {
       const userAlertRef = doc(collection(db, 'userAlerts'));
       const userAlert: UserAlert = {
         id: userAlertRef.id,

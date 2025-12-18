@@ -32,7 +32,7 @@ export default function NewsPage() {
       try {
         // For now, manually list the known articles
         // In a real app, you'd have an API endpoint that lists all markdown files
-        const baseArticleSlugs = ['clyde-co-partnership', 'fase-formation-announcement', 'sample-press-release'];
+        const baseArticleSlugs = ['mga-rendezvous', 'clyde-co-partnership', 'fase-formation-announcement', 'sample-press-release'];
         
         const articlePromises = baseArticleSlugs.map(async (baseSlug) => {
           try {
@@ -147,43 +147,44 @@ export default function NewsPage() {
                   <p className="text-gray-600 mt-4">Loading articles...</p>
                 </div>
               ) : articles.length > 0 ? (
-                <div className="flex flex-wrap justify-center gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {articles.map((article) => (
                     <Link 
                       key={article.slug}
                       href={`/about/news/${article.slug}`}
-                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm"
+                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1"
                     >
                       {article.metadata.bannerImage && (
-                        <Image 
-                          src={article.metadata.bannerImage}
-                          alt={article.metadata.bannerImageAlt || article.metadata.title}
-                          width={400}
-                          height={192}
-                          className="w-full h-48 object-cover"
-                        />
+                        <div className="aspect-video relative overflow-hidden">
+                          <Image 
+                            src={article.metadata.bannerImage}
+                            alt={article.metadata.bannerImageAlt || article.metadata.title}
+                            fill
+                            className="object-cover transition-transform duration-200 hover:scale-105"
+                          />
+                        </div>
                       )}
                       <div className="p-6">
-                        <div className="text-sm text-gray-500 mb-2">
-                          {new Date(article.metadata.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                          {article.metadata.author && (
-                            <span> • By {article.metadata.author}</span>
-                          )}
+                        <div className="text-sm text-gray-500 mb-3">
+                          <time dateTime={article.metadata.date}>
+                            {new Date(article.metadata.date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </time>
                         </div>
-                        <h3 className="text-xl font-noto-serif font-bold text-fase-navy mb-3 line-clamp-2">
+                        <h3 className="text-xl font-noto-serif font-bold text-fase-navy mb-3 leading-tight line-clamp-2">
                           {article.metadata.title}
                         </h3>
-                        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                        <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
                           {article.metadata.excerpt}
                         </p>
-                        <div className="mt-4">
-                          <span className="text-fase-navy font-medium text-sm hover:underline">
-                            Read more →
-                          </span>
+                        <div className="flex items-center text-fase-navy font-medium text-sm group">
+                          <span className="group-hover:underline">Read more</span>
+                          <svg className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
                         </div>
                       </div>
                     </Link>
