@@ -8,6 +8,7 @@ import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
 import MemberMap from "../../components/MemberMap";
 import MembershipDirectory from "../../components/MembershipDirectory";
+import ContactButton from "../../components/ContactButton";
 import { getUserAlerts, markAlertAsRead, dismissAlert, Alert, UserAlert } from "../../lib/unified-messaging";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 
@@ -183,7 +184,7 @@ export default function MemberContent() {
                     <div className="border-t border-gray-200 pt-6">
                       <h5 className="text-base font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h5>
                       <p className="text-fase-black leading-relaxed mb-4">
-                        {t('logo_access.directory_description')} <a href="mailto:admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</a>:
+                        {t('logo_access.directory_description')} <ContactButton email="admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</ContactButton>:
                       </p>
                       <ul className="space-y-2 text-fase-black">
                         <li className="flex items-start">
@@ -322,30 +323,23 @@ export default function MemberContent() {
                   <p className="text-fase-black mb-4">
                     {t('overview.relationships.description_5')}
                   </p>
-                  <p className="text-fase-black">
+                  <p className="text-fase-black mb-6">
                     {t('overview.relationships.description_6')}
                   </p>
-                </div>
-              </details>
-
-              {/* Member discounts */}
-              <details className="group border border-gray-200 rounded-lg">
-                <summary className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-fase-navy">{t('overview.member_discounts.title')}</h3>
-                  <svg className="w-5 h-5 text-fase-navy group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="p-4 pt-0 border-t border-gray-100">
-                  <p className="text-fase-black mb-4">
-                    {t('overview.member_discounts.description_1')}
-                  </p>
-                  <p className="text-fase-black mb-4">
-                    {t('overview.member_discounts.description_2')}
-                  </p>
-                  <p className="text-fase-black">
-                    {t('overview.member_discounts.description_3')}
-                  </p>
+                  
+                  {/* Member discounts subsection */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="text-base font-semibold text-fase-navy mb-4">{t('overview.member_discounts.title')}</h4>
+                    <p className="text-fase-black mb-4">
+                      {t('overview.member_discounts.description_1')}
+                    </p>
+                    <p className="text-fase-black mb-4">
+                      {t('overview.member_discounts.description_2')}
+                    </p>
+                    <p className="text-fase-black">
+                      {t('overview.member_discounts.description_3')}
+                    </p>
+                  </div>
                 </div>
               </details>
             </div>

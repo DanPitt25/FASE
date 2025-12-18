@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UnifiedMember } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
+import CompanyMembersModal from './CompanyMembersModal';
 
 interface MembersTabProps {
   memberApplications: UnifiedMember[];
@@ -21,6 +22,8 @@ export default function MembersTab({
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<UnifiedMember | null>(null);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string } | null>(null);
 
   if (loading) {
     return (
@@ -68,6 +71,11 @@ export default function MembersTab({
       setShowStatusModal(false);
       setSelectedMember(null);
     }
+  };
+
+  const handleViewMembers = (member: UnifiedMember) => {
+    setSelectedCompany({ id: member.id, name: member.organizationName || 'Unknown Organization' });
+    setShowMembersModal(true);
   };
 
   const getAvailableStatuses = (currentStatus: UnifiedMember['status']): { status: UnifiedMember['status'], label: string, description: string }[] => {
@@ -165,6 +173,13 @@ export default function MembersTab({
                       <Button
                         variant="secondary"
                         size="small"
+                        onClick={() => handleViewMembers(member)}
+                      >
+                        View Members
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="small"
                         onClick={() => onEmailFormOpen(member)}
                       >
                         Email
@@ -255,6 +270,17 @@ export default function MembersTab({
           </div>
         )}
       </Modal>
+
+      {/* Company Members Modal */}
+      <CompanyMembersModal
+        isOpen={showMembersModal}
+        onClose={() => {
+          setShowMembersModal(false);
+          setSelectedCompany(null);
+        }}
+        companyId={selectedCompany?.id || ''}
+        companyName={selectedCompany?.name || ''}
+      />
     </div>
   );
 }

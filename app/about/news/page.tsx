@@ -32,7 +32,7 @@ export default function NewsPage() {
       try {
         // For now, manually list the known articles
         // In a real app, you'd have an API endpoint that lists all markdown files
-        const baseArticleSlugs = ['fase-formation-announcement', 'sample-press-release'];
+        const baseArticleSlugs = ['clyde-co-partnership', 'fase-formation-announcement', 'sample-press-release'];
         
         const articlePromises = baseArticleSlugs.map(async (baseSlug) => {
           try {

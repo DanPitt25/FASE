@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Header from './Header';
 import Footer from './Footer';
 import PricingAccordion from './PricingAccordion';
+import ContactButton from './ContactButton';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface SplitSection {
@@ -616,12 +617,12 @@ export default function ContentPageLayout({
                                 <svg className="w-6 h-6 text-fase-navy mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                <a 
-                                  href={`mailto:${item}`}
+                                <ContactButton
+                                  email={item}
                                   className="text-lg text-fase-navy hover:text-fase-blue transition-colors"
                                 >
                                   {item}
-                                </a>
+                                </ContactButton>
                               </>
                             ) : item.startsWith('+') ? (
                               <>
@@ -655,12 +656,12 @@ export default function ContentPageLayout({
                             <svg className="w-6 h-6 text-fase-navy mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
-                            <a 
-                              href="mailto:info@fasemga.com"
+                            <ContactButton
+                              email="info@fasemga.com"
                               className="text-lg text-fase-navy hover:text-fase-blue transition-colors"
                             >
                               info@fasemga.com
-                            </a>
+                            </ContactButton>
                           </div>
                         )}
                       </div>
@@ -703,13 +704,13 @@ export default function ContentPageLayout({
                             {parts.map((part, partIdx) => {
                               if (emailRegex.test(part)) {
                                 return (
-                                  <a 
+                                  <ContactButton
                                     key={partIdx}
-                                    href={`mailto:${part}`}
+                                    email={part}
                                     className="text-fase-navy hover:text-fase-gold transition-colors underline"
                                   >
                                     {part}
-                                  </a>
+                                  </ContactButton>
                                 );
                               }
                               return part;

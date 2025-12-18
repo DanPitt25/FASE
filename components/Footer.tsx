@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import ContactButton from './ContactButton';
 
 export default function Footer() {
   const tFooter = useTranslations('footer');
@@ -33,7 +34,14 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-noto-serif font-semibold mb-4 text-white">{tFooter('connect')}</h4>
             <ul className="space-y-2 text-fase-cream">
-              <li><a href="mailto:info@fasemga.com" className="hover:text-fase-navy transition duration-200">{tFooter('contact_us')}</a></li>
+              <li>
+                <ContactButton 
+                  email="info@fasemga.com"
+                  className="hover:text-fase-gold transition duration-200"
+                >
+                  {tFooter('contact_us')}
+                </ContactButton>
+              </li>
               <li><a href="/about" className="hover:text-fase-navy transition duration-200">{tFooter('about_fase')}</a></li>
               <li><a href="/privacy-policy" className="hover:text-fase-navy transition duration-200">{tFooter('privacy_policy')}</a></li>
               <li>
