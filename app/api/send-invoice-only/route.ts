@@ -4,6 +4,9 @@ import * as path from 'path';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
+
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
   try {
