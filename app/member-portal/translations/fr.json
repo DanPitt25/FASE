@@ -46,7 +46,7 @@
       },
       "webinars": {
         "title": "Archive de webinaires",
-        "description": "Tous les webinaires éducatifs de FASE, axés sur les questions préoccupant les MGA, seront archivés dans ce portail. Nous vous enverrons bientôt des invitations à la première de notre série de webinaires, qui commencera en décembre."
+        "description": "Tous les webinaires éducatifs de FASE, axés sur les questions préoccupant les MGA, seront archivés dans ce portail. Nous vous enverrons des invitations à notre série de webinaires."
       }
     },
     "relationships": {
@@ -61,7 +61,7 @@
     "member_discounts": {
       "title": "Remises pour les membres",
       "description_1": "L'inscription au MGA Rendezvous 2026 ouvrira le 12 janvier. Les passes pour l'événement bénéficient d'importantes remises (de 50%) pour les membres FASE.",
-      "description_2": "Un pass pour un membre MGA de FASE coûterait donc 400€, contre le tarif MGA non-membre de 800€. Pour un assureur, le tarif réduit sera de 550€, contre le tarif assureur non-membre de 1 100€.",
+      "description_2": "Un pass pour un membre MGA de FASE coûtera 400€, contre le tarif MGA non-membre de 800€. Pour un assureur, le tarif réduit sera de 550€, contre le tarif assureur non-membre de 1 100€.",
       "description_3": "Pour les fournisseurs de services, le tarif membre est de 700€, contre 1 400€."
     }
   },

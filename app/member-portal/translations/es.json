@@ -46,7 +46,7 @@
       },
       "webinars": {
         "title": "Archivo de webinars",
-        "description": "Todos los webinars educativos de FASE, enfocados en temas de interés para MGAs, serán archivados dentro de este portal. Pronto le enviaremos invitaciones al primero de nuestra serie de webinars, que comenzará en diciembre."
+        "description": "Todos los webinars educativos de FASE, enfocados en temas de interés para MGAs, serán archivados dentro de este portal. Le enviaremos invitaciones a nuestra serie de webinars."
       }
     },
     "relationships": {
@@ -61,7 +61,7 @@
     "member_discounts": {
       "title": "Descuentos para miembros",
       "description_1": "El registro para el MGA Rendezvous 2026 abrirá el 12 de enero. Los pases para el evento tienen importantes descuentos (del 50%) para los miembros de FASE.",
-      "description_2": "Un pase para un miembro MGA de FASE costaría por tanto 400€, frente a la tarifa MGA no miembro de 800€. Para una aseguradora, la tarifa con descuento será de 550€, frente a la tarifa de aseguradora no miembro de 1.100€.",
+      "description_2": "Un pase para un miembro MGA de FASE costará 400€, frente a la tarifa MGA no miembro de 800€. Para una aseguradora, la tarifa con descuento será de 550€, frente a la tarifa de aseguradora no miembro de 1.100€.",
       "description_3": "Para proveedores de servicios, la tarifa de miembro es de 700€, frente a 1.400€."
     }
   },
