@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       organizationName: requestData.organizationName || "Sample Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
       userId: requestData.userId || "user-123",
-      membershipType: requestData.membershipType || "corporate",
       organizationType: requestData.organizationType || "MGA",
       grossWrittenPremiums: requestData.grossWrittenPremiums || "10-20m",
       hasOtherAssociations: requestData.hasOtherAssociations || false,
@@ -159,7 +158,6 @@ export async function POST(request: NextRequest) {
         discountReason: invoiceData.discountReason,
         hasOtherAssociations: invoiceData.hasOtherAssociations,
         
-        membershipType: invoiceData.membershipType,
         organizationType: invoiceData.organizationType,
         grossWrittenPremiums: invoiceData.grossWrittenPremiums,
         userId: invoiceData.userId,

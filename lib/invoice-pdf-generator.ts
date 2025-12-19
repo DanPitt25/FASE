@@ -48,7 +48,6 @@ export interface InvoiceGenerationData {
   hasOtherAssociations?: boolean;
   
   // Membership details
-  membershipType?: 'corporate' | 'individual';
   organizationType?: 'MGA' | 'carrier' | 'provider';
   grossWrittenPremiums?: string;
   userId?: string;
@@ -101,7 +100,6 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
       originalAmount: data.originalAmount || data.totalAmount,
       discountAmount: data.discountAmount || (data.hasOtherAssociations ? data.totalAmount * 0.2 : 0),
       discountReason: data.discountReason || (data.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : ''),
-      membershipType: data.membershipType || 'corporate',
       organizationType: data.organizationType || 'MGA',
       address: data.address || {
         line1: 'Not provided',
@@ -578,7 +576,6 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
       convertedAmount: currencyConversion.roundedAmount,
       exchangeRate: currencyConversion.exchangeRate,
       
-      membershipType: invoiceData.membershipType,
       organizationType: invoiceData.organizationType,
       grossWrittenPremiums: data.grossWrittenPremiums || undefined,
       hasOtherAssociations: data.hasOtherAssociations || false,
@@ -662,7 +659,6 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
           totalAmount: data.totalAmount,
           originalAmount: data.originalAmount || data.totalAmount,
           currency: 'EUR',
-          membershipType: (data.membershipType || 'corporate') as 'corporate' | 'individual',
           organizationType: (data.organizationType || 'MGA') as 'MGA' | 'carrier' | 'provider',
           emailTemplate: 'pdf_generation_failed',
           emailLanguage: data.userLocale || 'en',

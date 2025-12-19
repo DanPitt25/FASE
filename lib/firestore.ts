@@ -35,7 +35,6 @@ export interface MemberApplication {
   updatedAt: any;
   
   // Basic information
-  membershipType: 'corporate' | 'individual';
   organizationName: string;
   organizationType: 'MGA' | 'carrier' | 'provider';
   logoURL?: string; // URL to uploaded logo
@@ -263,7 +262,6 @@ export const createMemberApplication = async (
 // Simplified version for integrated registration flow
 export const createMemberApplicationSimple = async (
   membershipData: {
-    membershipType: 'individual' | 'corporate';
     organizationName: string;
     organizationType?: string;
     primaryContact: {
@@ -309,7 +307,6 @@ export const createMemberApplicationSimple = async (
       updatedAt: serverTimestamp(),
       
       // Basic information
-      membershipType: membershipData.membershipType,
       organizationName: membershipData.organizationName,
       organizationType: (membershipData.organizationType as 'MGA' | 'carrier' | 'provider') || 'MGA',
       ...(membershipData.logoUrl && { logoURL: membershipData.logoUrl }),

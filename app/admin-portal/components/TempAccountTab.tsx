@@ -50,7 +50,6 @@ export default function TempAccountTab() {
         organizationName: formData.organizationName,
         personalName: formData.personalName || formData.organizationName,
         organizationType: formData.organizationType,
-        membershipType: 'individual', // Default to individual for directory
         status: 'approved', // Make visible in directory
         registeredAddress: {
           country: formData.country

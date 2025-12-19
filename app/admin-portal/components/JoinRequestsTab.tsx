@@ -69,7 +69,6 @@ export default function JoinRequestsTab({
                           <div className="grid grid-cols-2 gap-2 text-xs">
                             <div><strong>Status:</strong> {request.companyData.status}</div>
                             <div><strong>Type:</strong> {request.companyData.organizationType}</div>
-                            <div><strong>Membership:</strong> {request.companyData.membershipType}</div>
                             {request.companyData.businessAddress && (
                               <div><strong>Location:</strong> {request.companyData.businessAddress.country}</div>
                             )}

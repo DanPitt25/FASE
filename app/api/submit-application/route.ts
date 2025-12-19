@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
       firstName,
       surname,
       organizationName,
-      membershipType,
       organizationType,
       hasOtherAssociations,
       addressLine1,
@@ -38,11 +37,9 @@ export async function POST(request: NextRequest) {
     const currentDate = new Date().toLocaleDateString('en-GB');
     const orgName = organizationName || `${firstName} ${surname}`;
     
-    // Get primary contact info for corporate memberships
+    // Get primary contact info (all memberships are corporate)
     const primaryContact = members?.find((m: any) => m.isPrimaryContact);
-    const contactPhone = membershipType === 'corporate' 
-      ? (primaryContact?.phone || 'N/A')
-      : 'N/A';
+    const contactPhone = primaryContact?.phone || 'N/A';
     
     let applicationDetails = `
       <h3>Applicant Information</h3>
@@ -50,24 +47,24 @@ export async function POST(request: NextRequest) {
       <p><strong>Contact:</strong> ${firstName} ${surname}</p>
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Phone:</strong> ${contactPhone}</p>
-      <p><strong>Membership Type:</strong> ${membershipType}</p>
+      <p><strong>Membership Type:</strong> Corporate</p>
       
       <h3>Membership Fee</h3>
       <p><strong>Annual Fee:</strong> €${membershipFee.toLocaleString()}</p>
     `;
 
-    if (membershipType === 'corporate') {
-      applicationDetails += `
-        <p><strong>Organization Type:</strong> ${organizationType}</p>
-      `;
+    // All memberships are corporate
+    applicationDetails += `
+      <p><strong>Organization Type:</strong> ${organizationType}</p>
+    `;
 
-      // Add team members information
-      if (members && members.length > 0) {
+    // Add team members information
+    if (members && members.length > 0) {
+      applicationDetails += `
+        <h4>Team Members</h4>
+      `;
+      members.forEach((member: any) => {
         applicationDetails += `
-          <h4>Team Members</h4>
-        `;
-        members.forEach((member: any) => {
-          applicationDetails += `
             <div style="margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 5px;">
               <p><strong>${member.firstName} ${member.lastName}</strong> ${member.isPrimaryContact ? '(Primary Contact)' : ''}</p>
               <p>Email: ${member.email}</p>
@@ -75,26 +72,25 @@ export async function POST(request: NextRequest) {
               <p>Job Title: ${member.jobTitle}</p>
             </div>
           `;
-        });
-      }
+      });
+    }
 
-      // MGA Information
-      if (organizationType === 'MGA' && (grossWrittenPremiums || selectedLinesOfBusiness || selectedMarkets)) {
-        applicationDetails += `<h4>MGA Information</h4>`;
-        if (grossWrittenPremiums) {
-          applicationDetails += `<p><strong>Gross Written Premiums:</strong> ${gwpCurrency || 'EUR'} ${parseFloat(grossWrittenPremiums).toLocaleString()}</p>`;
-        }
-        if (selectedLinesOfBusiness?.length > 0) {
-          applicationDetails += `<p><strong>Lines of Business:</strong> ${selectedLinesOfBusiness.join(', ')}</p>`;
-        }
-        if (selectedMarkets?.length > 0) {
-          applicationDetails += `<p><strong>Markets:</strong> ${selectedMarkets.join(', ')}</p>`;
-        }
+    // MGA Information
+    if (organizationType === 'MGA' && (grossWrittenPremiums || selectedLinesOfBusiness || selectedMarkets)) {
+      applicationDetails += `<h4>MGA Information</h4>`;
+      if (grossWrittenPremiums) {
+        applicationDetails += `<p><strong>Gross Written Premiums:</strong> ${gwpCurrency || 'EUR'} ${parseFloat(grossWrittenPremiums).toLocaleString()}</p>`;
       }
+      if (selectedLinesOfBusiness?.length > 0) {
+        applicationDetails += `<p><strong>Lines of Business:</strong> ${selectedLinesOfBusiness.join(', ')}</p>`;
+      }
+      if (selectedMarkets?.length > 0) {
+        applicationDetails += `<p><strong>Markets:</strong> ${selectedMarkets.join(', ')}</p>`;
+      }
+    }
 
-      if (hasOtherAssociations !== undefined) {
-        applicationDetails += `<p><strong>Member of other European associations:</strong> ${hasOtherAssociations ? 'Yes' : 'No'}</p>`;
-      }
+    if (hasOtherAssociations !== undefined) {
+      applicationDetails += `<p><strong>Member of other European associations:</strong> ${hasOtherAssociations ? 'Yes' : 'No'}</p>`;
     }
 
     applicationDetails += `

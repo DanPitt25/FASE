@@ -9,9 +9,7 @@ interface OverviewTabProps {
 
 // Calculate membership fee helper function
 const calculateMembershipFee = (member: UnifiedMember): number => {
-  if (member.membershipType === 'individual') {
-    return 500;
-  }
+  // All memberships are corporate
   
   let baseFee = 900; // Default for MGA
   

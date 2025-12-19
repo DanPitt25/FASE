@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     const paymentData = {
       organizationName: organizationName, // Used in PayPal plan name
       organizationType: "MGA", // Used in PayPal plan name  
-      membershipType: "corporate", // Used in PayPal plan name
       grossWrittenPremiums: "10-20m", // API expects it but PayPal ignores
       userEmail: userEmail, // PayPal uses for receipts
       userId: `FASE-${Date.now()}`, // Our tracking

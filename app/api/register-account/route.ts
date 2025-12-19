@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     });
     
     const formData = await request.json();
-    console.log('Form data received:', { email: formData.email, membershipType: formData.membershipType });
+    console.log('Form data received:', { email: formData.email, organizationType: formData.organizationType });
     
     if (!formData.email || !formData.password) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Create Firebase Auth account
     const fullName = `${formData.firstName} ${formData.surname}`.trim();
-    const orgForAuth = formData.membershipType === 'corporate' ? formData.organizationName : undefined;
+    const orgForAuth = formData.organizationName; // All memberships are corporate
     const displayName = orgForAuth && orgForAuth.trim()
       ? `${fullName} (${orgForAuth})`
       : fullName;
@@ -73,18 +73,18 @@ export async function POST(request: NextRequest) {
     // Step 2: Create Firestore documents using Admin SDK (no permission issues!)
     const batch = db.batch();
 
-    if (formData.membershipType === 'corporate') {
-      const companyId = userRecord.uid;
+    // All memberships are corporate
+    const companyId = userRecord.uid;
+    
+    // Find primary contact
+    const primaryContactMember = formData.members.find((m: any) => m.isPrimaryContact);
+    if (!primaryContactMember) {
+      throw new Error("No account administrator designated");
+    }
       
-      // Find primary contact
-      const primaryContactMember = formData.members.find((m: any) => m.isPrimaryContact);
-      if (!primaryContactMember) {
-        throw new Error("No account administrator designated");
-      }
-      
-      // Create company document
-      const companyRef = db.collection('accounts').doc(companyId);
-      const companyRecord = {
+    // Create company document
+    const companyRef = db.collection('accounts').doc(companyId);
+    const companyRecord = {
         id: companyId,
         email: userRecord.email,
         displayName: formData.organizationName,
@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
         isCompanyAccount: true,
         primaryContactMemberId: userRecord.uid,
         paymentUserId: userRecord.uid,
-        membershipType: 'corporate',
         organizationName: formData.organizationName,
         organizationType: formData.organizationType,
         accountAdministrator: {
@@ -172,41 +171,7 @@ export async function POST(request: NextRequest) {
         batch.set(memberRef, memberRecord);
       }
       
-    } else {
-      // Individual membership
-      const accountRef = db.collection('accounts').doc(userRecord.uid);
-      
-      const dataToWrite = {
-        email: userRecord.email,
-        displayName: userRecord.displayName,
-        status: formData.status || 'pending',
-        membershipType: formData.membershipType,
-        personalName: fullName,
-        organizationName: fullName,
-        paymentUserId: userRecord.uid,
-        accountAdministrator: {
-          name: fullName,
-          email: userRecord.email,
-          phone: '',
-          role: 'Individual Member'
-        },
-        businessAddress: {
-          line1: formData.addressLine1,
-          line2: formData.addressLine2,
-          city: formData.city,
-          county: formData.state,
-          postcode: formData.postalCode,
-          country: formData.country
-        },
-        hasOtherAssociations: formData.hasOtherAssociations ?? false,
-        otherAssociations: formData.hasOtherAssociations ? formData.otherAssociations : [],
-        logoUrl: null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      };
-      
-      batch.set(accountRef, dataToWrite);
-    }
+    // All memberships are corporate - no individual membership handling needed
 
     // Commit all writes atomically
     await batch.commit();

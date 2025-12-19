@@ -552,7 +552,8 @@ export default function MemberContent() {
     const personalName = member?.personalName || user?.displayName || "";
     const companyName = member?.organizationName;
     
-    if (personalName && companyName && member?.membershipType === 'corporate') {
+    // All members are corporate
+    if (personalName && companyName) {
       return t('portal.welcome_company', { name: personalName, company: companyName });
     } else if (personalName) {
       return t('portal.welcome_personal', { name: personalName });

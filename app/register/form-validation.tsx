@@ -26,7 +26,6 @@ export const validateStep1 = (
 };
 
 export const validateStep2 = (
-  membershipType: 'individual' | 'corporate',
   organizationName: string,
   organizationType: string | undefined,
   members: Member[],
@@ -34,56 +33,54 @@ export const validateStep2 = (
   surname?: string
 ): string | null => {
   const fullName = firstName && surname ? `${firstName} ${surname}`.trim() : '';
-  const orgName = membershipType === 'individual' ? fullName : organizationName;
+  const orgName = organizationName; // All memberships are corporate
   
   if (!orgName.trim()) return "Organization name is required";
   
-  if (membershipType === 'corporate' && !organizationType) {
-    return "Organization type is required for corporate memberships";
+  if (!organizationType) {
+    return "Organization type is required";
   }
   
   // Validate members for corporate membership
-  if (membershipType === 'corporate') {
-    if (members.length === 0) {
-      return "At least one team member is required";
+  // All memberships are corporate
+  if (members.length === 0) {
+    return "At least one team member is required";
+  }
+  
+  const hasPrimaryContact = members.some(m => m.isPrimaryContact);
+  if (!hasPrimaryContact) {
+    return "You must designate one person as the account administrator";
+  }
+  
+  // Validate each member
+  for (const member of members) {
+    if (!member.firstName.trim() || !member.lastName.trim()) {
+      return "All team members must have first and last names";
     }
-    
-    const hasPrimaryContact = members.some(m => m.isPrimaryContact);
-    if (!hasPrimaryContact) {
-      return "You must designate one person as the account administrator";
+    if (!member.email.trim()) {
+      return "All team members must have email addresses";
     }
-    
-    // Validate each member
-    for (const member of members) {
-      if (!member.firstName.trim() || !member.lastName.trim()) {
-        return "All team members must have first and last names";
-      }
-      if (!member.email.trim()) {
-        return "All team members must have email addresses";
-      }
-      if (!member.jobTitle.trim()) {
-        return "All team members must have job titles";
-      }
-      // Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(member.email)) {
-        return `Invalid email format for ${member.firstName} ${member.lastName}`;
-      }
+    if (!member.jobTitle.trim()) {
+      return "All team members must have job titles";
     }
-    
-    // Check for duplicate emails
-    const emails = members.map(m => m.email.toLowerCase());
-    const uniqueEmails = new Set(emails);
-    if (emails.length !== uniqueEmails.size) {
-      return "Each team member must have a unique email address";
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(member.email)) {
+      return `Invalid email format for ${member.firstName} ${member.lastName}`;
     }
+  }
+  
+  // Check for duplicate emails
+  const emails = members.map(m => m.email.toLowerCase());
+  const uniqueEmails = new Set(emails);
+  if (emails.length !== uniqueEmails.size) {
+    return "Each team member must have a unique email address";
   }
   
   return null;
 };
 
 export const validateStep3 = (
-  membershipType: 'individual' | 'corporate',
   organizationType: string | undefined,
   addressLine1: string,
   city: string,
@@ -109,7 +106,7 @@ export const validateStep3 = (
     return "Address information is required";
   }
   
-  if (membershipType === 'corporate' && organizationType === 'MGA') {
+  if (organizationType === 'MGA') {
     // Check if GWP is entered using the separate fields or the total field
     const hasGwpInput = gwpBillions || gwpMillions || gwpThousands || (grossWrittenPremiums && !isNaN(parseFloat(grossWrittenPremiums)) && parseFloat(grossWrittenPremiums) > 0);
     if (!hasGwpInput) {
@@ -126,7 +123,7 @@ export const validateStep3 = (
   }
   
   // Carrier validation - only for specific organization types
-  if (membershipType === 'corporate' && organizationType === 'carrier') {
+  if (organizationType === 'carrier') {
     // Only validate delegating/fronting/startup fields for specific carrier types
     if (carrierOrganizationType === 'insurance_company' || 
         carrierOrganizationType === 'reinsurance_company' || 
@@ -156,7 +153,7 @@ export const validateStep3 = (
   }
   
   // Service provider validation (from git history)
-  if (membershipType === 'corporate' && organizationType === 'provider') {
+  if (organizationType === 'provider') {
     if (!servicesProvided || servicesProvided.length === 0) {
       return "Service selection is required";
     }

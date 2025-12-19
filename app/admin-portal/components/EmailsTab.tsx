@@ -19,7 +19,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     greeting: '',
     gender: 'm',
     organizationName: prefilledData?.organizationName || '',
-    membershipType: prefilledData?.membershipType || 'corporate',
     organizationType: prefilledData?.organizationType || 'MGA',
     hasOtherAssociations: prefilledData?.hasOtherAssociations || false,
     userLocale: 'en',
@@ -66,8 +65,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         email: prefilledData.email || '',
         fullName: prefilledData?.accountAdministrator?.name || prefilledData.personalName || prefilledData?.fullName || '',
         organizationName: prefilledData.organizationName || '',
-        membershipType: prefilledData.membershipType || 'corporate',
-        organizationType: prefilledData.organizationType || 'MGA',
+            organizationType: prefilledData.organizationType || 'MGA',
         hasOtherAssociations: prefilledData.hasOtherAssociations || false,
         address: {
           line1: prefilledData.businessAddress?.line1 || prefilledData.registeredAddress?.line1 || '',
@@ -83,9 +81,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
 
   // Calculate pricing automatically
   const calculateOriginalAmount = () => {
-    if (formData.membershipType === 'individual') {
-      return 500;
-    } else if (formData.organizationType === 'MGA') {
+    // All memberships are corporate - no individual pricing
+    if (formData.organizationType === 'MGA') {
       // Use prefilledData GWP if available, otherwise default to lowest tier
       const gwp = prefilledData?.portfolio?.grossWrittenPremiums;
       switch (gwp) {

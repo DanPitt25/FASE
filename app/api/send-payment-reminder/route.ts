@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
       organizationName: requestData.organizationName || "Test Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
       userId: requestData.userId || "test-user-123",
-      membershipType: requestData.membershipType || "corporate",
       organizationType: requestData.organizationType || "MGA",
       grossWrittenPremiums: requestData.grossWrittenPremiums || "10-20m",
       hasOtherAssociations: requestData.hasOtherAssociations || false,

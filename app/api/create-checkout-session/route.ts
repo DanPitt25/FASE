@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
     const { 
       organizationName, 
       organizationType, 
-      membershipType,
       grossWrittenPremiums, 
       userEmail,
       userId 
@@ -59,15 +58,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For corporate memberships, organizationType is required
-    if (membershipType === 'corporate' && !organizationType) {
+    // OrganizationType is required for all memberships
+    if (!organizationType) {
       return NextResponse.json(
-        { error: 'Organization type is required for corporate memberships' },
+        { error: 'Organization type is required' },
         { status: 400 }
       );
     }
 
-    if (membershipType === 'corporate' && organizationType === 'MGA' && !grossWrittenPremiums) {
+    if (organizationType === 'MGA' && !grossWrittenPremiums) {
       return NextResponse.json(
         { error: 'Gross written premiums required for MGA subscriptions' },
         { status: 400 }
@@ -82,8 +81,7 @@ export async function POST(request: NextRequest) {
     
     if (isTestPayment) {
       priceInCents = 50; // 50 cents for admin testing
-    } else if (membershipType === 'individual') {
-      priceInCents = 50000; // €500 for individual memberships
+    // All memberships are corporate
     } else if (organizationType === 'MGA') {
       priceInCents = getPriceForPremiumBracket(grossWrittenPremiums);
     }
@@ -104,13 +102,11 @@ export async function POST(request: NextRequest) {
             currency: 'eur',
             product_data: {
               name: isTestPayment 
-                ? `[ADMIN TEST] FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`
-                : `FASE ${membershipType === 'individual' ? 'Individual' : organizationType} Membership`,
+                ? `[ADMIN TEST] FASE ${organizationType} Corporate Membership`
+                : `FASE ${organizationType} Corporate Membership`,
               description: isTestPayment
                 ? `ADMIN TEST PAYMENT - 50 cent test charge for ${organizationName}`
-                : membershipType === 'individual' 
-                  ? `Annual individual membership for ${organizationName}`
-                  : organizationType === 'MGA' 
+                : organizationType === 'MGA' 
                     ? `Annual membership for ${organizationName} (${grossWrittenPremiums} premium bracket)`
                     : `Annual corporate membership for ${organizationName}`,
             },
@@ -126,12 +122,11 @@ export async function POST(request: NextRequest) {
       ],
       metadata: {
         organization_name: organizationName,
-        organization_type: organizationType || 'individual',
-        membership_type: membershipType,
+        organization_type: organizationType,
         user_id: userId || '',
         user_email: userEmail || '',
         test_payment: isTestPayment ? 'true' : 'false',
-        ...(membershipType === 'corporate' && organizationType === 'MGA' && { gross_written_premiums: grossWrittenPremiums })
+        ...(organizationType === 'MGA' && { gross_written_premiums: grossWrittenPremiums })
       },
       success_url: `${baseUrl}/member-portal?session_id={CHECKOUT_SESSION_ID}&success=true`,
       cancel_url: `${baseUrl}/member-portal?canceled=true`,

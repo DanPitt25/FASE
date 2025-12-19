@@ -48,8 +48,6 @@ export const useRegistrationState = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [showPasswordReqs, setShowPasswordReqs] = useState(false);
   
-  // Membership type
-  const [membershipType, setMembershipType] = useState<'individual' | 'corporate'>('corporate');
   const [organizationName, setOrganizationName] = useState('');
   const [organizationType, setOrganizationType] = useState<'MGA' | 'carrier' | 'provider'>('MGA');
   
@@ -129,8 +127,6 @@ export const useRegistrationState = () => {
     verificationCode, setVerificationCode,
     showPasswordReqs, setShowPasswordReqs,
     
-    // Membership type
-    membershipType, setMembershipType,
     organizationName, setOrganizationName,
     organizationType, setOrganizationType,
     

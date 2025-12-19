@@ -35,15 +35,14 @@ export const getGWPBand = (eurValue: number): '<10m' | '10-20m' | '20-50m' | '50
 
 // Calculate membership fee
 export const calculateMembershipFee = (
-  membershipType: 'individual' | 'corporate',
   organizationType: 'MGA' | 'carrier' | 'provider',
   grossWrittenPremiums: string,
   gwpCurrency: string,
   hasOtherAssociations?: boolean
 ) => {
-  if (membershipType === 'individual') {
-    return 500;
-  } else if (membershipType === 'corporate' && organizationType === 'MGA') {
+  // All memberships are corporate
+  
+  if (organizationType === 'MGA') {
     const gwpValue = parseFloat(grossWrittenPremiums) || 0;
     if (gwpValue === 0) return 900; // Default if no GWP input
     
@@ -60,9 +59,9 @@ export const calculateMembershipFee = (
       case '500m+': return 7000;
       default: return 900;
     }
-  } else if (membershipType === 'corporate' && organizationType === 'carrier') {
+  } else if (organizationType === 'carrier') {
     return 4000; // Flat rate for carriers
-  } else if (membershipType === 'corporate' && organizationType === 'provider') {
+  } else if (organizationType === 'provider') {
     return 5000; // Flat rate for service providers
   } else {
     return 900; // Default corporate rate
@@ -71,14 +70,14 @@ export const calculateMembershipFee = (
 
 // Get discounted fee
 export const getDiscountedFee = (
-  membershipType: 'individual' | 'corporate',
   organizationType: 'MGA' | 'carrier' | 'provider',
   grossWrittenPremiums: string,
   gwpCurrency: string,
   hasOtherAssociations?: boolean
 ) => {
-  const baseFee = calculateMembershipFee(membershipType, organizationType, grossWrittenPremiums, gwpCurrency, hasOtherAssociations);
-  if (membershipType === 'corporate' && hasOtherAssociations) {
+  const baseFee = calculateMembershipFee(organizationType, grossWrittenPremiums, gwpCurrency, hasOtherAssociations);
+  // Apply discount to corporate memberships (all memberships are corporate)
+  if (hasOtherAssociations) {
     return Math.round(baseFee * 0.8); // 20% discount
   }
   return baseFee;

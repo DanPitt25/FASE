@@ -20,8 +20,7 @@ export const AddressSection = ({
   setCountry,
   touchedFields,
   attemptedNext,
-  markFieldTouched,
-  membershipType = 'corporate'
+  markFieldTouched
 }: {
   addressLine1: string;
   setAddressLine1: (value: string) => void;
@@ -38,14 +37,13 @@ export const AddressSection = ({
   touchedFields: Record<string, boolean>;
   attemptedNext: boolean;
   markFieldTouched: (fieldKey: string) => void;
-  membershipType?: 'individual' | 'corporate';
 }) => {
   const t = useTranslations('register_form.address');
   
   return (
     <div className="space-y-4">
       <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">
-        {membershipType === 'individual' ? t('personal_title') : t('business_title')}
+        {t('business_title')} {/* All memberships are corporate */}
       </h4>
       
       <ValidatedInput

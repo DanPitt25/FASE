@@ -31,19 +31,11 @@ export async function POST(request: NextRequest) {
     
     const { auth, db } = await initializeAdmin();
 
-    // Validate required fields and ensure user can only create membership for themselves
-    if (!membershipData.membershipType) {
-      return NextResponse.json(
-        { error: 'Membership type is required' },
-        { status: 400 }
-      );
-    }
     
     // Use authenticated user's UID, not from request body
     membershipData.userUid = userUid;
 
     const { 
-      membershipType,
       personalName,
       organizationName,
       organizationType,
@@ -58,7 +50,6 @@ export async function POST(request: NextRequest) {
     // Simply update the existing account document with membership information
     const updateData: any = {
       status: 'pending_payment',
-      membershipType,
       personalName,
       primaryContact,
       registeredAddress,
@@ -68,16 +59,13 @@ export async function POST(request: NextRequest) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
-    if (membershipType === 'individual') {
-      updateData.organizationName = personalName;
-    } else {
-      updateData.organizationName = organizationName;
-      updateData.organizationType = organizationType;
-      
-      // Add portfolio for MGAs
-      if (organizationType === 'MGA' && portfolio) {
-        updateData.portfolio = portfolio;
-      }
+    // All memberships are corporate
+    updateData.organizationName = organizationName;
+    updateData.organizationType = organizationType;
+    
+    // Add portfolio for MGAs
+    if (organizationType === 'MGA' && portfolio) {
+      updateData.portfolio = portfolio;
     }
 
     // Update the existing account document
@@ -88,7 +76,7 @@ export async function POST(request: NextRequest) {
       type: 'auth_success',
       userId: userUid,
       email: authResult.email,
-      details: { action: 'membership_created', membershipType },
+      details: { action: 'membership_created', organizationType },
       severity: 'low',
       ...clientInfo
     });

@@ -41,7 +41,6 @@ async function getPayPalAccessToken() {
 
 // Pricing calculation using the same logic as the registration form
 const getMembershipPrice = (
-  membershipType: string, 
   organizationType: string, 
   grossWrittenPremiums: string | undefined,
   hasOtherAssociations: boolean = false
@@ -53,7 +52,6 @@ const getMembershipPrice = (
 
   // Use the same calculation logic as the registration form
   return calculateMembershipFee(
-    membershipType as 'individual' | 'corporate',
     organizationType as 'MGA' | 'carrier' | 'provider', 
     grossWrittenPremiums || '',
     'EUR', // Default currency for PayPal
@@ -68,7 +66,6 @@ export async function POST(request: NextRequest) {
     const { 
       organizationName, 
       organizationType, 
-      membershipType,
       grossWrittenPremiums, 
       userEmail,
       userId,
@@ -82,7 +79,7 @@ export async function POST(request: NextRequest) {
     // Calculate price (including any applicable discounts)
     const finalPrice = testPayment 
       ? 0.50 
-      : getMembershipPrice(membershipType, organizationType, grossWrittenPremiums, hasOtherAssociations);
+      : getMembershipPrice(organizationType, grossWrittenPremiums, hasOtherAssociations);
 
     // Get environment
     const environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';
@@ -105,8 +102,8 @@ export async function POST(request: NextRequest) {
           }
         },
         items: [{
-          name: `FASE ${membershipType === 'individual' ? 'Individual' : `${organizationType} Corporate`} Membership${hasOtherAssociations && membershipType === 'corporate' ? ' (20% Member Discount)' : ''}`,
-          description: `Annual FASE membership for ${organizationName}${hasOtherAssociations && membershipType === 'corporate' ? ' - Discounted rate for MGA association member' : ''}`,
+          name: `FASE ${organizationType} Membership${hasOtherAssociations ? ' (20% Member Discount)' : ''}`,
+          description: `Annual FASE membership for ${organizationName}${hasOtherAssociations ? ' - Discounted rate for MGA association member' : ''}`,
           unit_amount: {
             currency_code: 'EUR',
             value: finalPrice.toFixed(2)

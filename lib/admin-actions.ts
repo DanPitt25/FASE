@@ -275,7 +275,6 @@ export class AdminActions {
         convertedAmount: data.invoiceData.convertedAmount,
         exchangeRate: data.invoiceData.exchangeRate,
         
-        membershipType: data.invoiceData.membershipType || 'corporate',
         organizationType: data.invoiceData.organizationType || 'MGA',
         grossWrittenPremiums: data.invoiceData.grossWrittenPremiums,
         hasOtherAssociations: data.invoiceData.hasOtherAssociations || false,
@@ -320,7 +319,6 @@ export class AdminActions {
         totalAmount: data.invoiceData.totalAmount || 0,
         originalAmount: data.invoiceData.originalAmount || data.invoiceData.totalAmount || 0,
         currency: data.invoiceData.forceCurrency || 'EUR',
-        membershipType: data.invoiceData.membershipType || 'corporate' as const,
         organizationType: data.invoiceData.organizationType || 'MGA' as const,
         emailTemplate: data.invoiceData.template || 'unknown',
         emailLanguage: data.invoiceData.userLocale || 'en',

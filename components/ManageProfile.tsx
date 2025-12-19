@@ -536,8 +536,8 @@ export default function ManageProfile() {
                 )}
               </div>
               
-              {/* Show company name separately for corporate members */}
-              {member?.membershipType === 'corporate' && member?.organizationName && (
+              {/* Show company name for all members (all are corporate) */}
+              {member?.organizationName && (
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
                   <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">

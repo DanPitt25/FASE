@@ -134,7 +134,6 @@ export async function POST(request: NextRequest) {
     const { 
       organizationName, 
       organizationType, 
-      membershipType,
       userEmail,
       userId,
       hasOtherAssociations = false,
@@ -156,7 +155,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create product and billing plan
-    const planName = `FASE ${membershipType === 'individual' ? 'Individual' : `${organizationType} Corporate`} Membership${hasOtherAssociations && membershipType === 'corporate' ? ' (Discounted)' : ''}`;
+    const planName = `FASE ${organizationType} Corporate Membership${hasOtherAssociations ? ' (Discounted)' : ''}`;
     const plan = await createProductAndPlan(accessToken, finalPrice, planName);
 
     // Get environment

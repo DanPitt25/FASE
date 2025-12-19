@@ -69,8 +69,8 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
     
     // Step 2: Fallback - search as team member in corporate accounts
     // This handles team members who are not primary contacts
+    // All accounts are corporate - search all accounts for team members
     const accountsSnapshot = await db.collection('accounts')
-      .where('membershipType', '==', 'corporate')
       .get();
     
     for (const orgDoc of accountsSnapshot.docs) {

@@ -55,7 +55,6 @@ export const createAccountAndMembership = async (
     password: string;
     firstName: string;
     surname: string;
-    membershipType: 'individual' | 'corporate';
     organizationName: string;
     organizationType: 'MGA' | 'carrier' | 'provider';
     members: Member[];
@@ -152,7 +151,7 @@ export const continueWithPayPalPayment = async (formData: any) => {
     }
     
     const fullName = `${formData.firstName} ${formData.surname}`.trim();
-    const orgName = formData.membershipType === 'individual' ? fullName : formData.organizationName;
+    const orgName = formData.organizationName; // All memberships are corporate
     
     const response = await fetch('/api/create-paypal-order', {
       method: 'POST',
@@ -161,9 +160,8 @@ export const continueWithPayPalPayment = async (formData: any) => {
       },
       body: JSON.stringify({
         organizationName: orgName,
-        organizationType: formData.membershipType === 'individual' ? 'individual' : formData.organizationType,
-        membershipType: formData.membershipType,
-        grossWrittenPremiums: formData.membershipType === 'corporate' && formData.organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)) : undefined,
+        organizationType: formData.organizationType, // All memberships are corporate
+        grossWrittenPremiums: formData.organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)) : undefined, // All memberships are corporate
         userEmail: formData.email,
         userId: auth.currentUser.uid,
         testPayment: false

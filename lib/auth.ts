@@ -292,7 +292,8 @@ const calculateMembershipFee = (applicationData: any): number => {
   
   // For MGAs, we need to convert the GWP band back to a numeric value
   let gwpValue = '0';
-  if (applicationData.membershipType === 'corporate' && applicationData.organizationType === 'MGA' && applicationData.grossWrittenPremiums) {
+  // All applications are corporate
+  if (applicationData.organizationType === 'MGA' && applicationData.grossWrittenPremiums) {
     // Convert GWP band back to a representative value for calculation
     switch (applicationData.grossWrittenPremiums) {
       case '<10m': gwpValue = '5000000'; break;  // 5M as representative
@@ -306,7 +307,6 @@ const calculateMembershipFee = (applicationData: any): number => {
   }
   
   return getDiscountedFee(
-    applicationData.membershipType,
     applicationData.organizationType,
     gwpValue,
     applicationData.gwpCurrency || 'EUR',
@@ -321,9 +321,8 @@ const generateApplicationEmailHTML = (applicationData: any, applicationNumber: s
   
   // Get primary contact info for corporate memberships
   const primaryContact = applicationData.members?.find((m: any) => m.isPrimaryContact);
-  const contactPhone = applicationData.membershipType === 'corporate' 
-    ? (primaryContact?.phone || 'N/A')
-    : 'N/A'; // Individual memberships don't include phone in applicationData
+  // All memberships are corporate - get contact phone
+  const contactPhone = primaryContact?.phone || 'N/A';
   
   let applicationDetails = `
     <h3>Applicant Information</h3>
@@ -331,61 +330,60 @@ const generateApplicationEmailHTML = (applicationData: any, applicationNumber: s
     <p><strong>Contact:</strong> ${applicationData.firstName} ${applicationData.surname}</p>
     <p><strong>Email:</strong> ${applicationData.email}</p>
     <p><strong>Phone:</strong> ${contactPhone}</p>
-    <p><strong>Membership Type:</strong> ${applicationData.membershipType}</p>
     
     <h3>Membership Fee</h3>
     <p><strong>Annual Fee:</strong> €${membershipFee.toLocaleString()}</p>
   `;
 
-  if (applicationData.membershipType === 'corporate') {
+  // All memberships are corporate - add organization details
+  applicationDetails += `
+    <p><strong>Organization Type:</strong> ${applicationData.organizationType}</p>
+  `;
+
+  // Add team members information
+  if (applicationData.members && applicationData.members.length > 0) {
     applicationDetails += `
-      <p><strong>Organization Type:</strong> ${applicationData.organizationType}</p>
+      <h4>Team Members</h4>
     `;
-
-    // Add team members information
-    if (applicationData.members && applicationData.members.length > 0) {
+    applicationData.members.forEach((member: any) => {
       applicationDetails += `
-        <h4>Team Members</h4>
+        <div style="margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 5px;">
+          <p><strong>${member.firstName} ${member.lastName}</strong> ${member.isPrimaryContact ? '(Primary Contact)' : ''}</p>
+          <p>Email: ${member.email}</p>
+          <p>Phone: ${member.phone || 'N/A'}</p>
+          <p>Job Title: ${member.jobTitle}</p>
+        </div>
       `;
-      applicationData.members.forEach((member: any) => {
-        applicationDetails += `
-          <div style="margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 5px;">
-            <p><strong>${member.firstName} ${member.lastName}</strong> ${member.isPrimaryContact ? '(Primary Contact)' : ''}</p>
-            <p>Email: ${member.email}</p>
-            <p>Phone: ${member.phone || 'N/A'}</p>
-            <p>Job Title: ${member.jobTitle}</p>
-          </div>
-        `;
-      });
-    }
+    });
+  }
 
-    // Show all organization-specific information regardless of type
-    
-    // MGA Information (always show if available)
-    if (applicationData.grossWrittenPremiums || applicationData.gwpCurrency || applicationData.selectedLinesOfBusiness || applicationData.selectedMarkets || applicationData.hasOtherAssociations !== undefined) {
-      applicationDetails += `<h4>MGA Information</h4>`;
-      if (applicationData.grossWrittenPremiums) {
-        applicationDetails += `<p><strong>Gross Written Premiums Band:</strong> ${applicationData.grossWrittenPremiums}</p>`;
-      }
-      if (applicationData.gwpCurrency) {
-        applicationDetails += `<p><strong>GWP Currency:</strong> ${applicationData.gwpCurrency}</p>`;
-      }
-      if (applicationData.selectedLinesOfBusiness?.length > 0) {
-        applicationDetails += `<p><strong>Lines of Business:</strong> ${applicationData.selectedLinesOfBusiness.join(', ')}</p>`;
-      }
-      if (applicationData.selectedMarkets?.length > 0) {
-        applicationDetails += `<p><strong>Markets:</strong> ${applicationData.selectedMarkets.join(', ')}</p>`;
-      }
-      if (applicationData.hasOtherAssociations !== undefined) {
-        applicationDetails += `<p><strong>Member of other European associations:</strong> ${applicationData.hasOtherAssociations ? 'Yes' : 'No'}</p>`;
-        if (applicationData.hasOtherAssociations && applicationData.otherAssociations?.length > 0) {
-          applicationDetails += `<p><strong>Other associations:</strong> ${applicationData.otherAssociations.join(', ')}</p>`;
-        }
+  // Show all organization-specific information regardless of type
+  
+  // MGA Information (always show if available)
+  if (applicationData.grossWrittenPremiums || applicationData.gwpCurrency || applicationData.selectedLinesOfBusiness || applicationData.selectedMarkets || applicationData.hasOtherAssociations !== undefined) {
+    applicationDetails += `<h4>MGA Information</h4>`;
+    if (applicationData.grossWrittenPremiums) {
+      applicationDetails += `<p><strong>Gross Written Premiums Band:</strong> ${applicationData.grossWrittenPremiums}</p>`;
+    }
+    if (applicationData.gwpCurrency) {
+      applicationDetails += `<p><strong>GWP Currency:</strong> ${applicationData.gwpCurrency}</p>`;
+    }
+    if (applicationData.selectedLinesOfBusiness?.length > 0) {
+      applicationDetails += `<p><strong>Lines of Business:</strong> ${applicationData.selectedLinesOfBusiness.join(', ')}</p>`;
+    }
+    if (applicationData.selectedMarkets?.length > 0) {
+      applicationDetails += `<p><strong>Markets:</strong> ${applicationData.selectedMarkets.join(', ')}</p>`;
+    }
+    if (applicationData.hasOtherAssociations !== undefined) {
+      applicationDetails += `<p><strong>Member of other European associations:</strong> ${applicationData.hasOtherAssociations ? 'Yes' : 'No'}</p>`;
+      if (applicationData.hasOtherAssociations && applicationData.otherAssociations?.length > 0) {
+        applicationDetails += `<p><strong>Other associations:</strong> ${applicationData.otherAssociations.join(', ')}</p>`;
       }
     }
+  }
 
-    // Carrier Information (always show if available)
-    if (applicationData.isDelegatingInEurope || applicationData.frontingOptions || applicationData.considerStartupMGAs || applicationData.amBestRating) {
+  // Carrier Information (always show if available)
+  if (applicationData.isDelegatingInEurope || applicationData.frontingOptions || applicationData.considerStartupMGAs || applicationData.amBestRating) {
       applicationDetails += `<h4>Carrier information</h4>`;
       if (applicationData.isDelegatingInEurope) {
         applicationDetails += `<p><strong>Currently writing delegated authority business in Europe:</strong> ${applicationData.isDelegatingInEurope}</p>`;
@@ -419,7 +417,6 @@ const generateApplicationEmailHTML = (applicationData: any, applicationNumber: s
         <p><strong>Services provided:</strong> ${applicationData.servicesProvided.join(', ')}</p>
       `;
     }
-  }
 
   applicationDetails += `
     <h3>Address Information</h3>

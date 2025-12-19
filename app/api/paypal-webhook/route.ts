@@ -163,7 +163,7 @@ async function processPayment(customId: string, paymentMethod: string, paymentId
           <h2 style="color: #2D5574;">New FASE Membership Application</h2>
           
           <p><strong>Organization:</strong> ${accountData.organizationName || accountData.displayName}</p>
-          <p><strong>Type:</strong> ${accountData.membershipType === 'individual' ? 'Individual' : `${accountData.organizationType} Corporate`}</p>
+          <p><strong>Type:</strong> ${accountData.organizationType} Corporate</p>
           <p><strong>Contact:</strong> ${accountData.accountAdministrator?.name}</p>
           <p><strong>Email:</strong> ${accountData.accountAdministrator?.email}</p>
           <p><strong>Phone:</strong> ${accountData.accountAdministrator?.phone}</p>

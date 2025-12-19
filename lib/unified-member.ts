@@ -50,7 +50,6 @@ export interface CompanyMember {
 // Organization-level interface for main accounts documents
 export interface OrganizationAccount {
   id: string; // Company account ID
-  membershipType: 'corporate' | 'individual';
   organizationName: string;
   organizationType?: 'MGA' | 'carrier' | 'provider';
   status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent';
@@ -148,7 +147,6 @@ export interface UnifiedMember {
   organizationId?: string; // Points to the organization account
   organizationName?: string;
   organizationType?: 'MGA' | 'carrier' | 'provider';
-  membershipType: 'corporate' | 'individual';
   
   // Access control - inherited from organization for corporate members
   status: 'guest' | 'pending' | 'approved' | 'admin' | 'pending_invoice' | 'pending_payment' | 'invoice_sent' | 'flagged';
@@ -221,7 +219,6 @@ export const createUnifiedMember = async (
     id: uid,
     email,
     personalName,
-    membershipType: 'individual',
     organizationName,
     organizationType,
     status,
@@ -255,69 +252,44 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
     if (accountSnap.exists()) {
       const data = accountSnap.data();
       
-      // Individual account (Firebase Auth UID = Account ID)
-      if (data.membershipType === 'individual' || !data.membershipType) {
+      // All accounts are corporate - check if this is a primary contact account
+      // Check if this user exists in the members subcollection by querying the 'id' field
+      const membersRef = collection(db, 'accounts', uid, 'members');
+      const memberQuery = query(membersRef, where('id', '==', uid));
+      const memberSnapshot = await getDocs(memberQuery);
+      
+      if (!memberSnapshot.empty) {
+        const memberDoc = memberSnapshot.docs[0];
+        const memberData = memberDoc.data();
+        
         return {
           id: uid,
-          email: data.email,
-          personalName: data.personalName || data.displayName || 'Unknown',
-          membershipType: 'individual',
-          status: data.status || 'guest',
+          email: memberData.email,
+          personalName: memberData.personalName || memberData.name || 'Unknown',
+          jobTitle: memberData.jobTitle,
+          isPrimaryContact: memberData.isPrimaryContact,
+          memberJoinedAt: memberData.joinedAt,
+          organizationId: uid, // Account ID = Primary Contact UID after migration
           organizationName: data.organizationName,
           organizationType: data.organizationType,
-          // Organization data for individual accounts
+          status: data.status || 'approved',
+          // Organization data (from main accounts document)
           portfolio: data.portfolio,
           hasOtherAssociations: data.hasOtherAssociations,
           primaryContact: data.primaryContact,
           registeredAddress: data.registeredAddress,
           logoURL: data.logoURL,
           linesOfBusiness: data.linesOfBusiness,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt
+          createdAt: memberData.createdAt,
+          updatedAt: memberData.updatedAt
         } as UnifiedMember;
-      }
-      
-      // Corporate account (Firebase Auth UID = Primary Contact UID = Account ID)
-      if (data.membershipType === 'corporate') {
-        // Check if this user exists in the members subcollection by querying the 'id' field
-        const membersRef = collection(db, 'accounts', uid, 'members');
-        const memberQuery = query(membersRef, where('id', '==', uid));
-        const memberSnapshot = await getDocs(memberQuery);
-        
-        if (!memberSnapshot.empty) {
-          const memberDoc = memberSnapshot.docs[0];
-          const memberData = memberDoc.data();
-          
-          return {
-            id: uid,
-            email: memberData.email,
-            personalName: memberData.personalName || memberData.name || 'Unknown',
-            jobTitle: memberData.jobTitle,
-            isPrimaryContact: memberData.isPrimaryContact,
-            memberJoinedAt: memberData.joinedAt,
-            membershipType: 'corporate',
-            organizationId: uid, // Account ID = Primary Contact UID after migration
-            organizationName: data.organizationName,
-            organizationType: data.organizationType,
-            status: data.status || 'approved',
-            // Organization data (from main accounts document)
-            portfolio: data.portfolio,
-            hasOtherAssociations: data.hasOtherAssociations,
-            primaryContact: data.primaryContact,
-            registeredAddress: data.registeredAddress,
-            logoURL: data.logoURL,
-            linesOfBusiness: data.linesOfBusiness,
-            createdAt: memberData.createdAt,
-            updatedAt: memberData.updatedAt
-          } as UnifiedMember;
-        }
       }
     }
     
     // Step 2: Fallback - search as team member in other corporate accounts
     // This handles team members who are not primary contacts
     const accountsRef = collection(db, 'accounts');
-    const corporateQuery = query(accountsRef, where('membershipType', '==', 'corporate'));
+    const corporateQuery = query(accountsRef);
     const corporateSnapshot = await getDocs(corporateQuery);
     
     // First, collect all matching memberships to implement priority logic
@@ -367,7 +339,6 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
         jobTitle: memberData.jobTitle,
         isPrimaryContact: memberData.isPrimaryContact,
         memberJoinedAt: memberData.joinedAt,
-        membershipType: 'corporate',
         organizationId: orgDocId, // This will be primary contact's Firebase UID after migration
         organizationName: orgData.organizationName,
         organizationType: orgData.organizationType,
@@ -393,10 +364,7 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
 
 // Get organization data for a member
 export const getOrganizationForMember = async (member: UnifiedMember): Promise<OrganizationAccount | null> => {
-  if (member.membershipType === 'individual') {
-    return null;
-  }
-  
+  // All accounts are corporate
   if (!member.organizationId) {
     return null;
   }
@@ -441,41 +409,11 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
     console.log(`🔍 getMembersByStatus: Querying for status '${status}'...`);
     const allMembers: UnifiedMember[] = [];
     
-    // 1. Get individual accounts with matching status
+    // Get corporate accounts with matching status and their members
     const accountsRef = collection(db, 'accounts');
-    const individualQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'individual'));
-    console.log('🔍 getMembersByStatus: Running individual accounts query...');
-    const individualSnapshot = await getDocs(individualQuery);
-    console.log(`🔍 getMembersByStatus: Found ${individualSnapshot.docs.length} individual accounts with status '${status}'`);
-    
-    individualSnapshot.docs.forEach(doc => {
-      const data = doc.data();
-      allMembers.push({
-        id: doc.id,
-        email: data.email,
-        personalName: data.personalName || data.displayName || 'Unknown',
-        membershipType: 'individual',
-        status: data.status,
-        organizationName: data.organizationName,
-        organizationType: data.organizationType,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-        // Include organization data for individual accounts
-        portfolio: data.portfolio,
-        hasOtherAssociations: data.hasOtherAssociations,
-        primaryContact: data.primaryContact,
-        registeredAddress: data.registeredAddress,
-        businessAddress: data.businessAddress,
-        logoURL: data.logoURL,
-        linesOfBusiness: data.linesOfBusiness,
-        website: data.website,
-        carrierInfo: data.carrierInfo
-      } as UnifiedMember);
-    });
-    
-    // 2. Get corporate accounts with matching status and their members
     console.log('🔍 getMembersByStatus: Running corporate accounts query...');
-    const corporateQuery = query(accountsRef, where('status', '==', status), where('membershipType', '==', 'corporate'));
+    // All accounts are corporate now - query by status only
+    const corporateQuery = query(accountsRef, where('status', '==', status));
     const corporateSnapshot = await getDocs(corporateQuery);
     console.log(`🔍 getMembersByStatus: Found ${corporateSnapshot.docs.length} corporate accounts with status '${status}'`);
     
@@ -495,8 +433,7 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
           jobTitle: memberData.jobTitle,
           isPrimaryContact: memberData.isPrimaryContact,
           memberJoinedAt: memberData.joinedAt,
-          membershipType: 'corporate',
-          organizationId: orgDoc.id,
+            organizationId: orgDoc.id,
           organizationName: orgData.organizationName,
           organizationType: orgData.organizationType,
           status: orgData.status,
@@ -518,8 +455,6 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
     
     console.log(`🔍 getMembersByStatus: Total members found with status '${status}':`, {
       total: allMembers.length,
-      individual: allMembers.filter(m => m.membershipType === 'individual').length,
-      corporate: allMembers.filter(m => m.membershipType === 'corporate').length,
       withLocation: allMembers.filter(m => m.registeredAddress?.country).length
     });
     
@@ -551,7 +486,6 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
         id: doc.id, // This is the account ID, not member ID
         email: data.email,
         personalName: data.personalName || data.displayName || 'Unknown',
-        membershipType: data.membershipType,
         status: data.status,
         organizationName: data.organizationName,
         organizationType: data.organizationType,
@@ -613,11 +547,8 @@ export const getApprovedMembersWithSubcollections = async (): Promise<{
     const allOrgs = [...approvedOrgs, ...invoiceSentOrgs];
     console.log(`📊 Found ${allOrgs.length} approved organizations`);
     
-    // Filter corporate organizations for parallel member fetching
-    const corporateOrgs = allOrgs.filter(org => org.membershipType === 'corporate');
-    
-    // Fetch all subcollection members in parallel
-    const memberPromises = corporateOrgs.map(async (org) => {
+    // All organizations are corporate - fetch subcollection members in parallel
+    const memberPromises = allOrgs.map(async (org) => {
       try {
         const membersRef = collection(db, 'accounts', org.id, 'members');
         const membersSnapshot = await getDocs(membersRef);
@@ -632,7 +563,6 @@ export const getApprovedMembersWithSubcollections = async (): Promise<{
             personalName: memberData.personalName,
             organizationName: org.organizationName, // Use organization name
             organizationType: org.organizationType,
-            membershipType: 'corporate',
             status: org.status,
             createdAt: memberData.createdAt,
             updatedAt: memberData.updatedAt,
@@ -657,7 +587,7 @@ export const getApprovedMembersWithSubcollections = async (): Promise<{
     const memberArrays = await Promise.all(memberPromises);
     const allMembers = memberArrays.flat(); // Flatten the arrays
     
-    console.log(`📊 Found ${allMembers.length} total members across ${corporateOrgs.length} corporate organizations`);
+    console.log(`📊 Found ${allMembers.length} total members across ${allOrgs.length} organizations`);
     console.timeEnd('getApprovedMembersWithSubcollections');
     
     return {
@@ -778,7 +708,6 @@ export const createCompanyWithMember = async (
     const companyRef = doc(db, 'accounts', companyId);
     const companyRecord: OrganizationAccount = {
       id: companyId,
-      membershipType: 'corporate',
       organizationName: companyData.organizationName || 'Company Account',
       organizationType: companyData.organizationType,
       status: 'pending',
@@ -824,8 +753,9 @@ export const getCompanyMembers = async (companyId: string): Promise<CompanyMembe
 };
 
 // Check if a UnifiedMember is part of a corporate account
+// All members are now corporate
 export const isCorporateMember = (member: UnifiedMember): boolean => {
-  return member.membershipType === 'corporate';
+  return true;
 };
 
 // === JOIN REQUEST MANAGEMENT ===
@@ -854,13 +784,12 @@ export const getAllPendingJoinRequests = async (): Promise<(JoinRequest & { comp
     const allRequests: (JoinRequest & { companyData?: UnifiedMember })[] = [];
     
     for (const company of approvedMembers) {
-      if (company.membershipType === 'corporate') {
-        const requests = await getJoinRequestsForCompany(company.id);
-        const pendingRequests = requests
-          .filter(req => req.status === 'pending')
-          .map(req => ({ ...req, companyData: company }));
-        allRequests.push(...pendingRequests);
-      }
+      // All companies are corporate
+      const requests = await getJoinRequestsForCompany(company.id);
+      const pendingRequests = requests
+        .filter(req => req.status === 'pending')
+        .map(req => ({ ...req, companyData: company }));
+      allRequests.push(...pendingRequests);
     }
     
     return allRequests.sort((a, b) => b.requestedAt?.toDate?.() - a.requestedAt?.toDate?.());

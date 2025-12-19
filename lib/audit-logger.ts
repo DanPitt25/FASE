@@ -211,7 +211,6 @@ export class AuditLogger {
       exchangeRate?: number;
       
       // Membership details
-      membershipType: 'corporate' | 'individual';
       organizationType: 'MGA' | 'carrier' | 'provider';
       grossWrittenPremiums?: string;
       hasOtherAssociations?: boolean;
