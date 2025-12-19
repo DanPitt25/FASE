@@ -1,6 +1,6 @@
 ---
 title: MGA Rendezvous 2026
-date: 2024-12-19
+date: 2025-12-19
 excerpt: FASE is proud to partner with ASASE to co-host the inaugural MGA Rendezvous at the Hotel Arts Barcelona on May 11-12, 2026. Sponsored by Howden, this event will provide a unique forum for the MGA community.
 author: FASE Communications
 bannerImage: /view.jpg
