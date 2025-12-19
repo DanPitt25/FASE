@@ -46,7 +46,7 @@
       },
       "webinars": {
         "title": "Webinar archief",
-        "description": "Alle educatieve webinars van FASE, gericht op kwesties die GA's aangaan, worden gearchiveerd binnen dit portaal. We sturen u binnenkort uitnodigingen voor de eerste van onze webinarseries, die in december van start gaat."
+        "description": "Alle educatieve webinars van FASE, gericht op kwesties die GA's aangaan, worden gearchiveerd binnen dit portaal. We sturen u uitnodigingen voor onze webinarseries."
       }
     },
     "relationships": {
@@ -61,7 +61,7 @@
     "member_discounts": {
       "title": "Ledenkortingen",
       "description_1": "Registratie voor de GA Rendezvous 2026 opent op 12 januari. Tickets voor het evenement hebben flinke kortingen (van 50%) voor FASE-leden.",
-      "description_2": "Een ticket voor een GA-lid van FASE zou daarom €400 kosten, tegenover het niet-lid GA-tarief van €800. Voor een verzekeraar zal het gereduceerde tarief €550 zijn, tegenover het niet-lid verzekeraar tarief van €1.100.",
+      "description_2": "Een ticket voor een GA-lid van FASE zal €400 kosten, tegenover het niet-lid GA-tarief van €800. Voor een verzekeraar zal het gereduceerde tarief €550 zijn, tegenover het niet-lid verzekeraar tarief van €1.100.",
       "description_3": "Voor serviceverleners is het ledentarief €700, tegenover €1.400."
     }
   },

@@ -45,7 +45,7 @@
       },
       "webinars": {
         "title": "Webinar archive",
-        "description": "All of FASE's educational webinars, focusing on issues of concern to MGAs, will be archived within this portal. We will shortly be sending you invitations to the first of our webinar series, which will start in December."
+        "description": "All of FASE's educational webinars, focusing on issues of concern to MGAs, will be archived within this portal. We will be sending you invitations to our webinar series."
       }
     },
     "relationships": {
@@ -60,7 +60,7 @@
     "member_discounts": {
       "title": "Member discounts",
       "description_1": "Registration for the 2026 MGA Rendezvous will open on January 12. Passes to the event are deeply discounted (by 50%) for FASE members.",
-      "description_2": "A pass for an MGA member of FASE would therefore be €400, versus the non-member MGA rate of €800. For a carrier the discounted rate will be €550, versus the non-member carrier rate of €1,100.",
+      "description_2": "A pass for an MGA member of FASE will be €400, versus the non-member MGA rate of €800. For a carrier the discounted rate will be €550, versus the non-member carrier rate of €1,100.",
       "description_3": "For service providers, the member rate is €700, versus €1,400."
     }
   },
