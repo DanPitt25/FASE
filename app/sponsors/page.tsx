@@ -17,12 +17,12 @@ interface SponsorCardProps {
 function SponsorCard({ sponsor, locale, onViewDetails }: SponsorCardProps) {
   return (
     <div 
-      className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer w-80 h-48"
+      className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer w-80 h-80"
       onClick={() => onViewDetails(sponsor)}
     >
       <div className="p-8 h-full flex flex-col justify-center">
         <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-4">
+          <div className="relative w-48 h-48 mx-auto mb-4">
             <Image
               src={sponsor.logoUrl}
               alt={`${sponsor.name} logo`}
