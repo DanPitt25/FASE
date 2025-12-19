@@ -66,7 +66,6 @@ export default function DirectoryPage() {
   // Filter members based on search and filters
   const filteredMembers = members.filter(member => {
     const matchesSearch = !searchTerm || 
-      member.personalName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.organizationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.registeredAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (member as any).businessAddress?.country?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -346,13 +345,8 @@ export default function DirectoryPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-noto-serif font-bold text-fase-navy">
-                          {member.organizationName || member.personalName}
+                          {member.organizationName}
                         </h3>
-                        {member.organizationName && member.personalName && member.organizationName !== member.personalName && (
-                          <p className="text-base text-fase-black mt-1">
-                            {member.personalName}
-                          </p>
-                        )}
                         {member.primaryContact?.role && (
                           <p className="text-sm text-gray-600 mt-1">{member.primaryContact.role}</p>
                         )}
