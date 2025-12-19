@@ -8,7 +8,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 // Removed sendVerificationCode and verifyCode imports - no longer needed
 import Button from "../../components/Button";
-import { ValidatedInput, validatePassword } from './form-components';
+import { ValidatedInput, validatePassword, validateEmail } from './form-components';
 import { Member } from './registration-hooks';
 import { AccountInformationStep, OrganizationTypeSelector } from './step-components';
 import { TeamMembersSection } from './member-management';
@@ -48,8 +48,7 @@ export default function IntegratedRegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-  // Membership fields
-  const [membershipType] = useState<'individual' | 'corporate'>('corporate');
+  // All memberships are corporate
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState(typeFromUrl || "");
   
@@ -58,7 +57,8 @@ export default function IntegratedRegisterForm() {
   
   // Initialize with registrant as first member 
   useEffect(() => {
-    if (membershipType === 'corporate' && members.length === 0) {
+    // All memberships are corporate
+    if (members.length === 0) {
       const fullName = `${firstName} ${surname}`.trim();
       if (fullName && email) {
         setMembers([{
@@ -73,13 +73,14 @@ export default function IntegratedRegisterForm() {
         }]);
       }
     }
-  }, [membershipType, firstName, surname, email]);
+  }, [firstName, surname, email]);
 
   // Update registrant member when personal info changes
   useEffect(() => {
     if (updatingMembersRef.current) return; // Prevent infinite loop
     
-    if (membershipType === 'corporate' && members.length > 0) {
+    // All memberships are corporate
+    if (members.length > 0) {
       const registrantIndex = members.findIndex(m => m.id === 'registrant');
       if (registrantIndex !== -1) {
         const registrant = members[registrantIndex];
@@ -107,7 +108,7 @@ export default function IntegratedRegisterForm() {
         }
       }
     }
-  }, [firstName, surname, email, membershipType, members]);
+  }, [firstName, surname, email, members]);
 
   
   // Address fields
@@ -230,6 +231,12 @@ export default function IntegratedRegisterForm() {
         return;
       }
       
+      // Validate email format
+      if (!validateEmail(email)) {
+        setError(t('errors.invalid_email_format'));
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError(t('errors.passwords_dont_match'));
         return;
@@ -264,20 +271,20 @@ export default function IntegratedRegisterForm() {
     } else if (step === 2) {
       // Validate membership basic fields
       const fullName = `${firstName} ${surname}`.trim();
-      const orgName = membershipType === 'individual' ? fullName : organizationName;
+      const orgName = organizationName; // All memberships are corporate
       if (!orgName.trim()) {
         setError(t('errors.organization_name_required'));
         return;
       }
       
-      if (membershipType === 'corporate' && !organizationType) {
+      if (!organizationType) { // All memberships are corporate
         setError(t('errors.organization_type_required'));
         return;
       }
       
       // Validate members for corporate membership
-      if (membershipType === 'corporate') {
-        if (members.length === 0) {
+      // All memberships are corporate
+      if (members.length === 0) {
           setError(t('errors.team_member_required'));
           return;
         }
@@ -303,7 +310,6 @@ export default function IntegratedRegisterForm() {
             return;
           }
         }
-      }
       
       setError("");
       setStep(3);
@@ -317,7 +323,7 @@ export default function IntegratedRegisterForm() {
       }
       
       
-      if (membershipType === 'corporate' && organizationType === 'MGA') {
+      if (organizationType === 'MGA') {
         const actualTotal = calculateTotalGWP(gwpBillions, gwpMillions, gwpThousands);
         if (actualTotal <= 0) {
           setError(t('errors.gwp_must_be_greater_than_zero'));
@@ -336,7 +342,7 @@ export default function IntegratedRegisterForm() {
       }
       
       // Carrier validation - only for specific organization types
-      if (membershipType === 'corporate' && organizationType === 'carrier') {
+      if (organizationType === 'carrier') {
         // Only validate delegating/fronting/startup fields for specific carrier types
         if (carrierOrganizationType === 'insurance_company' || 
             carrierOrganizationType === 'reinsurance_company' || 
@@ -371,7 +377,7 @@ export default function IntegratedRegisterForm() {
       }
       
       // Service provider validation
-      if (membershipType === 'corporate' && organizationType === 'provider') {
+      if (organizationType === 'provider') {
         if (!servicesProvided || servicesProvided.length === 0) {
           setError(t('errors.service_provider_services_required'));
           return;
@@ -402,12 +408,12 @@ export default function IntegratedRegisterForm() {
 
   const getCurrentMembershipFee = () => {
     const actualTotal = getActualGWPTotal();
-    return calculateMembershipFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency);
+    return calculateMembershipFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency);
   };
 
   const getCurrentDiscountedFee = () => {
     const actualTotal = getActualGWPTotal();
-    return getDiscountedFee(membershipType, organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
+    return getDiscountedFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
   };
 
 
@@ -647,11 +653,10 @@ export default function IntegratedRegisterForm() {
             touchedFields={touchedFields}
             attemptedNext={attemptedNext}
             markFieldTouched={markFieldTouched}
-            membershipType={membershipType}
           />
 
           {/* Portfolio Information for MGAs */}
-          {membershipType === 'corporate' && organizationType === 'MGA' && (
+          {organizationType === 'MGA' && (
             <MGAPortfolioSection
               grossWrittenPremiums={grossWrittenPremiums}
               setGrossWrittenPremiums={setGrossWrittenPremiums}
@@ -679,7 +684,7 @@ export default function IntegratedRegisterForm() {
 
 
           {/* Carrier-specific Information */}
-          {membershipType === 'corporate' && organizationType === 'carrier' && (
+          {organizationType === 'carrier' && (
             <CarrierInformationSection
               carrierOrganizationType={carrierOrganizationType}
               setCarrierOrganizationType={setCarrierOrganizationType}
@@ -701,7 +706,7 @@ export default function IntegratedRegisterForm() {
           )}
 
           {/* Service Provider Information */}
-          {membershipType === 'corporate' && organizationType === 'provider' && (
+          {organizationType === 'provider' && (
             <ServiceProviderSection
               servicesProvided={servicesProvided}
               setServicesProvided={setServicesProvided}
@@ -709,7 +714,7 @@ export default function IntegratedRegisterForm() {
           )}
 
           {/* European MGA Associations - for all organization types */}
-          {membershipType === 'corporate' && (
+          {/* All memberships are corporate */ (
             <EuropeanAssociationsSection
               hasOtherAssociations={hasOtherAssociations}
               setHasOtherAssociations={setHasOtherAssociations}
@@ -808,26 +813,20 @@ export default function IntegratedRegisterForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-fase-navy font-medium">{t('application_summary.organization')}:</span>
-                <p className="text-fase-black">{membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName}</p>
+                <p className="text-fase-black">{organizationName}</p>
               </div>
               
               <div>
                 <span className="text-fase-navy font-medium">{t('application_summary.membership_type')}:</span>
                 <p className="text-fase-black">
-                  {membershipType === 'individual' 
-                    ? t('membership_types.individual') 
-                    : `${organizationType.charAt(0).toUpperCase() + organizationType.slice(1)}`
-                  }
+                  {`${organizationType.charAt(0).toUpperCase() + organizationType.slice(1)} Corporate`}
                 </p>
               </div>
               
               <div>
                 <span className="text-fase-navy font-medium">{t('application_summary.contact_email')}:</span>
                 <p className="text-fase-black">
-                  {membershipType === 'corporate' 
-                    ? members.find(m => m.isPrimaryContact)?.email || email
-                    : email
-                  }
+                  {members.find(m => m.isPrimaryContact)?.email || email}
                 </p>
               </div>
               
@@ -836,7 +835,7 @@ export default function IntegratedRegisterForm() {
                 <p className="text-fase-black">{country}</p>
               </div>
               
-              {membershipType === 'corporate' && organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
+              {organizationType === 'MGA' && (gwpBillions || gwpMillions || gwpThousands) && (
                 <div className="md:col-span-2">
                   <span className="text-fase-navy font-medium">{t('application_summary.gwp')}:</span>
                   <p className="text-fase-black">
@@ -863,7 +862,7 @@ export default function IntegratedRegisterForm() {
                 <span className="text-fase-navy font-semibold">€{getCurrentMembershipFee().toLocaleString()}</span>
               </div>
               
-              {membershipType === 'corporate' && hasOtherAssociations && (
+              {hasOtherAssociations && (
                 <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
                   <span className="text-green-600 font-medium">{t('pricing.discount')}</span>
                   <span className="text-green-600 font-semibold">-€{(getCurrentMembershipFee() - getCurrentDiscountedFee()).toLocaleString()}</span>
@@ -875,7 +874,7 @@ export default function IntegratedRegisterForm() {
                 <span className="text-fase-navy text-xl font-bold">€{getCurrentDiscountedFee().toLocaleString()}</span>
               </div>
               
-              {membershipType === 'corporate' && hasOtherAssociations && (
+              {hasOtherAssociations && (
                 <p className="text-sm text-green-600 italic">{t('pricing.discount_note')}</p>
               )}
             </div>
@@ -903,7 +902,6 @@ export default function IntegratedRegisterForm() {
                     password,
                     firstName,
                     surname,
-                    membershipType,
                     organizationName,
                     organizationType: organizationType as 'MGA' | 'carrier' | 'provider',
                     members,
@@ -954,8 +952,7 @@ export default function IntegratedRegisterForm() {
                       firstName,
                       surname,
                       organizationName,
-                      membershipType,
-                      organizationType,
+                        organizationType,
                       hasOtherAssociations,
                       addressLine1,
                       addressLine2,
@@ -980,7 +977,7 @@ export default function IntegratedRegisterForm() {
                   }
                   
                   // Store application data for thank you page
-                  const applicantName = membershipType === 'individual' ? `${firstName} ${surname}`.trim() : organizationName;
+                  const applicantName = organizationName;
                   sessionStorage.setItem('applicationSubmission', JSON.stringify({
                     applicationNumber: applicationNumber,
                     applicantName: applicantName,
@@ -999,7 +996,6 @@ export default function IntegratedRegisterForm() {
                     email: email,
                     organizationName: organizationName,
                     organizationType: organizationType,
-                    membershipType: membershipType,
                     timestamp: new Date().toISOString(),
                     userAgent: window.navigator.userAgent
                   };
@@ -1029,7 +1025,6 @@ export default function IntegratedRegisterForm() {
                     email: email,
                     organizationName: organizationName,
                     organizationType: organizationType,
-                    membershipType: membershipType,
                     timestamp: new Date().toISOString()
                   });
                 }

@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from 'next-intl';
 
+// Email validation function
+export const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+};
+
 // Password validation function
 export const validatePassword = (password: string) => {
   const requirements = {
