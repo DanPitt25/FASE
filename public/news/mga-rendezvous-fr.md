@@ -1,13 +1,17 @@
 ---
-title: "Le MGA Rendezvous | Hotel Arts, Barcelone, 11-12 mai 2026 | Là où l'Europe accueille le monde"
-date: "2024-12-19"
-excerpt: "FASE est fière de s'associer à ASASE pour co-organiser le premier MGA Rendezvous à l'Hotel Arts Barcelone les 11-12 mai 2026. Parrainé par Howden, cet événement offrira un forum unique pour la communauté des agences de souscription."
-author: "FASE"
-tags: ["événements", "mga", "barcelone", "networking"]
-featured: true
+title: MGA Rendezvous 2026
+date: 2024-12-19
+excerpt: FASE est fière de s'associer à ASASE pour co-organiser le premier MGA Rendezvous à l'Hotel Arts Barcelone les 11-12 mai 2026. Parrainé par Howden, cet événement offrira un forum unique pour la communauté des agences de souscription.
+author: FASE Communications
+bannerImage: /view.jpg
+bannerImageAlt: Annonce MGA Rendezvous 2026
+language: fr
+primarySlug: mga-rendezvous
 ---
 
-# Le MGA Rendezvous | Hotel Arts, Barcelone, 11-12 mai 2026 | Là où l'Europe accueille le monde
+**Le MGA Rendezvous | Hotel Arts, Barcelone, 11-12 mai 2026 | Là où l'Europe accueille le monde**
+
+&nbsp;
 
 FASE (Fédération des Agences de Souscription Européennes) est fière de s'associer à ASASE pour co-organiser le premier MGA Rendezvous à l'Hotel Arts Barcelone les 11-12 mai 2026.
 
