@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Asociarse con FASE",
+      "title": "Nuestros Patrocinadores",
       "banner_alt": "Asociación empresarial estratégica"
     },
-    "partnership_opportunities": {
-      "title": "Oportunidades de Asociación Estratégica",
-      "content": [
-        "Asóciese con FASE para conectar con las agencias de suscripción líderes de Europa, proveedores de capacidad y profesionales de seguros. Nuestras oportunidades de patrocinio proporcionan acceso directo a tomadores de decisiones clave en los mercados europeos de seguros.",
-        "Desde patrocinio de conferencias hasta plataformas de liderazgo intelectual, ofrecemos paquetes de asociación personalizados que se alinean con sus objetivos empresariales y metas de alcance de mercado."
-      ],
-      "image_alt": "Conferencia profesional y networking"
+    "intro": {
+      "title": "Apoyando la Comunidad Europea de Agencias de Suscripción",
+      "content": "FASE se enorgullece de trabajar con organizaciones líderes que comparten nuestra misión de fortalecer y profundizar los vínculos dentro del ecosistema europeo de agencias de suscripción. Nuestros patrocinadores desempeñan un papel vital en la conexión de las agencias de suscripción con proveedores de capacidad, distribuidores y socios de servicios en los mercados europeos."
     },
-    "partnership_benefits": {
-      "title": "Beneficios de la Asociación",
-      "subtitle": "Conecte con la comunidad de agencias de suscripción más influyente de Europa a través de oportunidades de asociación estratégica.",
-      "network_access": {
-        "title": "Acceso a la Red",
-        "description": "Acceso directo a ejecutivos de nivel C de las agencias de suscripción y proveedores de capacidad líderes de Europa a través de eventos exclusivos de networking.",
-        "image_alt": "Evento de networking ejecutivo"
-      },
-      "thought_leadership": {
-        "title": "Liderazgo Intelectual",
-        "description": "Posicione su organización como líder de la industria a través de oportunidades de presentación y asociaciones de contenido.",
-        "image_alt": "Conferencia de liderazgo de la industria"
-      },
-      "market_intelligence": {
-        "title": "Inteligencia de Mercado",
-        "description": "Obtenga insights exclusivos sobre las tendencias del mercado europeo de agencias de suscripción y oportunidades a través de nuestra investigación y eventos.",
-        "image_alt": "Análisis e investigación de mercado"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silver"
+    },
+    "no_sponsors": {
+      "title": "Patrocinadores próximamente",
+      "message": "Estamos construyendo alianzas con organizaciones que apoyan la comunidad europea de agencias de suscripción. Vuelva pronto para ver nuestros patrocinadores."
+    },
+    "modal": {
+      "about_prefix": "Acerca de",
+      "visit_website": "Visitar sitio web →",
+      "close": "Cerrar"
+    },
+    "partnership": {
+      "title": "Convertirse en Patrocinador",
+      "content": "Asóciese con FASE para conectar con las agencias de suscripción europeas líderes, proveedores de capacidad y profesionales de seguros. Nuestras oportunidades de patrocinio proporcionan acceso directo a tomadores de decisiones clave en los mercados europeos de seguros.",
+      "contact_button": "Contáctanos sobre patrocinio"
     }
   },
   "events": {

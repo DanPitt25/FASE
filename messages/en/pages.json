@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Partner with FASE",
+      "title": "Our Sponsors",
       "banner_alt": "Strategic business partnership"
     },
-    "partnership_opportunities": {
-      "title": "Strategic Partnership Opportunities",
-      "content": [
-        "Partner with FASE to connect with Europe's leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.",
-        "From conference sponsorship to thought leadership platforms, we offer tailored partnership packages that align with your business objectives and market reach goals."
-      ],
-      "image_alt": "Professional conference and networking"
+    "intro": {
+      "title": "Supporting Europe's MGA Community",
+      "content": "FASE is proud to work with leading organizations that share our mission to strengthen and deepen ties within Europe's MGA ecosystem. Our sponsors play a vital role in connecting MGAs with capacity providers, distributors, and service partners across European markets."
     },
-    "partnership_benefits": {
-      "title": "Partnership Benefits",
-      "subtitle": "Connect with Europe's most influential MGA community through strategic partnership opportunities.",
-      "network_access": {
-        "title": "Network Access",
-        "description": "Direct access to C-level executives from Europe's leading MGAs and capacity providers through exclusive networking events.",
-        "image_alt": "Executive networking event"
-      },
-      "thought_leadership": {
-        "title": "Thought Leadership",
-        "description": "Position your organization as an industry leader through speaking opportunities and content partnerships.",
-        "image_alt": "Industry leadership conference"
-      },
-      "market_intelligence": {
-        "title": "Market Intelligence",
-        "description": "Gain exclusive insights into European MGA market trends and opportunities through our research and events.",
-        "image_alt": "Market analysis and research"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silver"
+    },
+    "no_sponsors": {
+      "title": "Sponsors Coming Soon",
+      "message": "We're building partnerships with organizations that support Europe's MGA community. Check back soon to see our sponsors."
+    },
+    "modal": {
+      "about_prefix": "About",
+      "visit_website": "Visit Website →",
+      "close": "Close"
+    },
+    "partnership": {
+      "title": "Become a Sponsor",
+      "content": "Partner with FASE to connect with Europe's leading MGAs, capacity providers, and insurance professionals. Our sponsorship opportunities provide direct access to key decision-makers across European insurance markets.",
+      "contact_button": "Contact Us About Sponsorship"
     }
   },
   "events": {

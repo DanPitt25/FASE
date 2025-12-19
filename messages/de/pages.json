@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Partner von FASE",
+      "title": "Unsere Partner",
       "banner_alt": "Strategische Geschäftspartnerschaft"
     },
-    "partnership_opportunities": {
-      "title": "Strategische Partnerschaftsmöglichkeiten",
-      "content": [
-        "Partnerschaft mit FASE, um sich mit Europas führenden MGAs, Kapazitätsanbietern und Versicherungsfachleuten zu verbinden. Unsere Sponsoring-Möglichkeiten bieten direkten Zugang zu wichtigen Entscheidungsträgern in europäischen Versicherungsmärkten.",
-        "Von Konferenz-Sponsoring bis hin zu Thought-Leadership-Plattformen bieten wir maßgeschneiderte Partnerschaftspakete, die sich an Ihren Geschäftszielen und Marktreichweitenzielen orientieren."
-      ],
-      "image_alt": "Professionelle Konferenz und Networking"
+    "intro": {
+      "title": "Unterstützung der Europäischen MGA-Gemeinschaft",
+      "content": "FASE ist stolz darauf, mit führenden Organisationen zusammenzuarbeiten, die unsere Mission teilen, die Verbindungen innerhalb des europäischen MGA-Ökosystems zu stärken und zu vertiefen. Unsere Partner spielen eine wichtige Rolle bei der Verbindung von MGAs mit Kapazitätsanbietern, Distributoren und Servicepartnern in den europäischen Märkten."
     },
-    "partnership_benefits": {
-      "title": "Partnerschaftsvorteile",
-      "subtitle": "Verbinden Sie sich mit Europas einflussreichster MGA-Gemeinschaft durch strategische Partnerschaftsmöglichkeiten.",
-      "network_access": {
-        "title": "Netzwerkzugang",
-        "description": "Direkter Zugang zu C-Level-Führungskräften von Europas führenden MGAs und Kapazitätsanbietern durch exklusive Networking-Veranstaltungen.",
-        "image_alt": "Executive-Networking-Veranstaltung"
-      },
-      "thought_leadership": {
-        "title": "Thought Leadership",
-        "description": "Positionieren Sie Ihre Organisation als Branchenführer durch Sprechmöglichkeiten und Content-Partnerschaften.",
-        "image_alt": "Branchenführungskonferenz"
-      },
-      "market_intelligence": {
-        "title": "Marktintelligenz",
-        "description": "Erhalten Sie exklusive Einblicke in europäische MGA-Markttrends und -möglichkeiten durch unsere Forschung und Veranstaltungen.",
-        "image_alt": "Marktanalyse und Forschung"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silber"
+    },
+    "no_sponsors": {
+      "title": "Partner kommen bald",
+      "message": "Wir bauen Partnerschaften mit Organisationen auf, die die europäische MGA-Gemeinschaft unterstützen. Schauen Sie bald wieder vorbei, um unsere Partner zu sehen."
+    },
+    "modal": {
+      "about_prefix": "Über",
+      "visit_website": "Website besuchen →",
+      "close": "Schließen"
+    },
+    "partnership": {
+      "title": "Partner werden",
+      "content": "Partnerschaft mit FASE, um sich mit Europas führenden MGAs, Kapazitätsanbietern und Versicherungsfachleuten zu verbinden. Unsere Partnerschaftsmöglichkeiten bieten direkten Zugang zu wichtigen Entscheidungsträgern in europäischen Versicherungsmärkten.",
+      "contact_button": "Kontaktieren Sie uns über Partnerschaft"
     }
   },
   "events": {

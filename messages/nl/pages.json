@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Partner met FASE",
+      "title": "Onze Sponsors",
       "banner_alt": "Strategisch zakelijk partnerschap"
     },
-    "partnership_opportunities": {
-      "title": "Strategische Partnerschapskansen",
-      "content": [
-        "Partner met FASE om verbinding te maken met Europa's leidende GA's, capaciteitsverschaffers en verzekeringsprofessionals. Onze sponsorshipkansen bieden directe toegang tot belangrijke besluitvormers over Europese verzekeringsmarkten.",
-        "Van conferentiesponsoring tot thought leadership platforms, we bieden op maat gemaakte partnerschapspakketten die aansluiten bij uw bedrijfsdoelstellingen en marktbereikdoelen."
-      ],
-      "image_alt": "Professionele conferentie en netwerken"
+    "intro": {
+      "title": "Ondersteuning van Europa's Gevolmachtigde Agenten Gemeenschap",
+      "content": "FASE is trots om samen te werken met vooraanstaande organisaties die onze missie delen om de banden binnen Europa's gevolmachtigde agenten ecosysteem te versterken en te verdiepen. Onze sponsors spelen een vitale rol in het verbinden van gevolmachtigde agenten met capaciteitsverschaffers, distributeurs en servicepartners over Europese markten."
     },
-    "partnership_benefits": {
-      "title": "Partnerschapsvoordelen",
-      "subtitle": "Verbind met Europa's meest invloedrijke GA-gemeenschap via strategische partnerschapskansen.",
-      "network_access": {
-        "title": "Netwerktoegang",
-        "description": "Directe toegang tot C-level executives van Europa's leidende GA's en capaciteitsverschaffers via exclusieve netwerkevenementen.",
-        "image_alt": "Executive netwerk evenement"
-      },
-      "thought_leadership": {
-        "title": "Thought Leadership",
-        "description": "Positioneer uw organisatie als brancheleider via spreekgelegenheden en contentpartnerschappen.",
-        "image_alt": "Brancheleiderschap conferentie"
-      },
-      "market_intelligence": {
-        "title": "Marktintelligentie",
-        "description": "Krijg exclusieve inzichten in Europese GA-markttrends en kansen via ons onderzoek en evenementen.",
-        "image_alt": "Marktanalyse en onderzoek"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silver"
+    },
+    "no_sponsors": {
+      "title": "Sponsors binnenkort beschikbaar",
+      "message": "We bouwen partnerschappen op met organisaties die de Europese gevolmachtigde agenten gemeenschap ondersteunen. Kom binnenkort terug om onze sponsors te zien."
+    },
+    "modal": {
+      "about_prefix": "Over",
+      "visit_website": "Website bezoeken →",
+      "close": "Sluiten"
+    },
+    "partnership": {
+      "title": "Word Sponsor",
+      "content": "Partner met FASE om verbinding te maken met Europa's vooraanstaande gevolmachtigde agenten, capaciteitsverschaffers en verzekeringsprofessionals. Onze sponsorshipmogelijkheden bieden directe toegang tot belangrijke besluitvormers over Europese verzekeringsmarkten.",
+      "contact_button": "Neem contact op over sponsorship"
     }
   },
   "events": {

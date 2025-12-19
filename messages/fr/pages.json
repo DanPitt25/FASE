@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Partenariat avec FASE",
+      "title": "Nos Partenaires",
       "banner_alt": "Partenariat commercial stratégique"
     },
-    "partnership_opportunities": {
-      "title": "Opportunités de Partenariat Stratégique",
-      "content": [
-        "Partenaire avec FASE pour vous connecter avec les principales agences de souscription, fournisseurs de capacité et professionnels de l'assurance d'Europe. Nos opportunités de partenariat fournissent un accès direct aux décideurs clés des marchés européens de l'assurance.",
-        "Du partenariat de conférence aux plateformes de leadership éclairé, nous offrons des packages de partenariat sur mesure qui s'alignent avec vos objectifs commerciaux et vos buts de portée de marché."
-      ],
-      "image_alt": "Conférence professionnelle et réseautage"
+    "intro": {
+      "title": "Soutenir la Communauté Européenne des Agences de Souscription",
+      "content": "FASE est fière de travailler avec des organisations de premier plan qui partagent notre mission de renforcer et d'approfondir les liens au sein de l'écosystème européen des agences de souscription. Nos partenaires jouent un rôle vital en connectant les agences de souscription avec les fournisseurs de capacité, les distributeurs et les partenaires de services à travers les marchés européens."
     },
-    "partnership_benefits": {
-      "title": "Avantages du Partenariat",
-      "subtitle": "Connectez-vous avec la communauté d'agences de souscription la plus influente d'Europe grâce aux opportunités de partenariat stratégique.",
-      "network_access": {
-        "title": "Accès au Réseau",
-        "description": "Accès direct aux dirigeants de niveau C des principales agences de souscription et fournisseurs de capacité d'Europe à travers des événements de réseautage exclusifs.",
-        "image_alt": "Événement de réseautage exécutif"
-      },
-      "thought_leadership": {
-        "title": "Leadership Éclairé",
-        "description": "Positionnez votre organisation comme un leader de l'industrie à travers des opportunités de prise de parole et des partenariats de contenu.",
-        "image_alt": "Conférence de leadership industriel"
-      },
-      "market_intelligence": {
-        "title": "Intelligence de Marché",
-        "description": "Obtenez des analyses exclusives sur les tendances et opportunités du marché européen des agences de souscription à travers nos recherches et événements.",
-        "image_alt": "Analyse et recherche de marché"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silver"
+    },
+    "no_sponsors": {
+      "title": "Partenaires à venir",
+      "message": "Nous développons des partenariats avec des organisations qui soutiennent la communauté européenne des agences de souscription. Revenez bientôt pour découvrir nos partenaires."
+    },
+    "modal": {
+      "about_prefix": "À propos de",
+      "visit_website": "Visiter le site web →",
+      "close": "Fermer"
+    },
+    "partnership": {
+      "title": "Devenir Partenaire",
+      "content": "Partenaire avec FASE pour vous connecter avec les agences de souscription européennes de premier plan, les fournisseurs de capacité et les professionnels de l'assurance. Nos opportunités de partenariat offrent un accès direct aux décideurs clés des marchés européens de l'assurance.",
+      "contact_button": "Nous contacter pour un partenariat"
     }
   },
   "events": {

@@ -177,35 +177,31 @@
   },
   "sponsors": {
     "page": {
-      "title": "Partnership con FASE",
+      "title": "I Nostri Sponsor",
       "banner_alt": "Partnership aziendale strategica"
     },
-    "partnership_opportunities": {
-      "title": "Opportunità di Partnership Strategica",
-      "content": [
-        "Collabori con FASE per connettersi con le principali agenzie di sottoscrizione europee, fornitori di capacità e professionisti assicurativi. Le nostre opportunità di sponsorizzazione forniscono accesso diretto ai decisori chiave nei mercati assicurativi europei.",
-        "Dalla sponsorizzazione di conferenze alle piattaforme di leadership intellettuale, offriamo pacchetti di partnership personalizzati che si allineano con i Suoi obiettivi aziendali e le mete di portata del mercato."
-      ],
-      "image_alt": "Conferenza professionale e networking"
+    "intro": {
+      "title": "Sostenere la Comunità Europea delle Agenzie di Sottoscrizione",
+      "content": "FASE è orgogliosa di lavorare con organizzazioni leader che condividono la nostra missione di rafforzare e approfondire i legami all'interno dell'ecosistema europeo delle agenzie di sottoscrizione. I nostri sponsor svolgono un ruolo vitale nel collegare le agenzie di sottoscrizione con fornitori di capacità, distributori e partner di servizi nei mercati europei."
     },
-    "partnership_benefits": {
-      "title": "Benefici della Partnership",
-      "subtitle": "Si connetta con la comunità di agenzie di sottoscrizione più influente d'Europa attraverso opportunità di partnership strategica.",
-      "network_access": {
-        "title": "Accesso alla Rete",
-        "description": "Accesso diretto ai dirigenti di livello C delle principali agenzie di sottoscrizione e fornitori di capacità europei attraverso eventi esclusivi di networking.",
-        "image_alt": "Evento di networking esecutivo"
-      },
-      "thought_leadership": {
-        "title": "Leadership Intellettuale",
-        "description": "Posizioni la Sua organizzazione come leader del settore attraverso opportunità di presentazione e partnership di contenuto.",
-        "image_alt": "Conferenza di leadership del settore"
-      },
-      "market_intelligence": {
-        "title": "Intelligence di Mercato",
-        "description": "Ottenga insights esclusivi sulle tendenze del mercato europeo delle agenzie di sottoscrizione e opportunità attraverso la nostra ricerca ed eventi.",
-        "image_alt": "Analisi e ricerca di mercato"
-      }
+    "tiers": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "silver": "Silver"
+    },
+    "no_sponsors": {
+      "title": "Sponsor in arrivo",
+      "message": "Stiamo costruendo partnership con organizzazioni che supportano la comunità europea delle agenzie di sottoscrizione. Tornate presto per vedere i nostri sponsor."
+    },
+    "modal": {
+      "about_prefix": "Informazioni su",
+      "visit_website": "Visita il sito web →",
+      "close": "Chiudi"
+    },
+    "partnership": {
+      "title": "Diventa Sponsor",
+      "content": "Collabori con FASE per connettersi con le principali agenzie di sottoscrizione europee, fornitori di capacità e professionisti assicurativi. Le nostre opportunità di sponsorizzazione forniscono accesso diretto ai decisori chiave nei mercati assicurativi europei.",
+      "contact_button": "Contattaci per sponsorizzazione"
     }
   },
   "events": {
