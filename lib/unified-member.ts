@@ -47,6 +47,16 @@ export interface CompanyMember {
   updatedAt: any;
 }
 
+// Company summary interface for bio management with admin approval
+export interface CompanySummary {
+  text: string;
+  status: 'draft' | 'pending_review' | 'approved' | 'rejected';
+  submittedAt?: any; // Firestore timestamp
+  reviewedAt?: any; 
+  reviewedBy?: string; // Admin user ID
+  rejectionReason?: string;
+}
+
 // Organization-level interface for main accounts documents
 export interface OrganizationAccount {
   id: string; // Company account ID
@@ -57,6 +67,9 @@ export interface OrganizationAccount {
   // Organization data only - NO personal identifiers
   createdAt: any;
   updatedAt: any;
+  
+  // Company bio
+  companySummary?: CompanySummary;
   
   // Organization details
   organizationDetails?: {
@@ -182,6 +195,7 @@ export interface UnifiedMember {
   
   // Additional organization data
   logoURL?: string;
+  companySummary?: CompanySummary;
   linesOfBusiness?: string[];
   
   // Timestamps

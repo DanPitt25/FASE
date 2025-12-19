@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Button from './Button';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
-import { getCompanyMembers } from '../lib/unified-member';
+import { getCompanyMembers, OrganizationAccount } from '../lib/unified-member';
 import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { usePortalTranslations } from '../app/member-portal/hooks/usePortalTranslations';
 import { sendPasswordReset } from '../lib/auth';
 import { updateProfile } from 'firebase/auth';
+import OrganizationLogo from './OrganizationLogo';
 
 
 interface CompanyInfo {
@@ -63,6 +64,17 @@ export default function ManageProfile() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
+  
+  // Company bio state
+  const [organizationAccount, setOrganizationAccount] = useState<OrganizationAccount | null>(null);
+  const [bioText, setBioText] = useState('');
+  const [savingBio, setSavingBio] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
+  const [bioMessage, setBioMessage] = useState<string | null>(null);
+  
+  // Directory settings state
+  const [directoryInclusion, setDirectoryInclusion] = useState(true);
+  const [publicContact, setPublicContact] = useState(true);
 
 
   // Helper function to check if member needs an invite (has generated ID and hasn't confirmed account)
@@ -70,9 +82,9 @@ export default function ManageProfile() {
     return member.id.startsWith('member_') && !member.accountConfirmed;
   };
 
-  // Fetch company members
+  // Fetch company data and members
   useEffect(() => {
-    const fetchMembers = async () => {
+    const fetchData = async () => {
       if (!user || !member) {
         return;
       }
@@ -141,6 +153,23 @@ export default function ManageProfile() {
         };
         setCompany(companyInfo);
         
+        // Set organization account for bio management
+        const orgAccount: OrganizationAccount = {
+          id: userAccountId,
+          organizationName: userAccountData.organizationName || 'Unknown Company',
+          organizationType: userAccountData.organizationType,
+          status: userAccountData.status || 'pending',
+          createdAt: userAccountData.createdAt,
+          updatedAt: userAccountData.updatedAt,
+          ...userAccountData
+        };
+        setOrganizationAccount(orgAccount);
+        
+        // Initialize bio text from company summary
+        if (userAccountData.companySummary?.text) {
+          setBioText(userAccountData.companySummary.text);
+        }
+        
         // Transform CompanyMember[] to Member[] by mapping isPrimaryContact to isAccountAdministrator
         // Handle both old data (with isPrimaryContact) and new data (with isAccountAdministrator already set)
         const transformedMembers: Member[] = membersData.map(member => ({
@@ -156,7 +185,7 @@ export default function ManageProfile() {
       }
     };
 
-    fetchMembers();
+    fetchData();
   }, [user?.uid, member?.id, member?.organizationId]);
 
   const handleEditMember = (memberToEdit: Member) => {
@@ -297,7 +326,7 @@ export default function ManageProfile() {
       setError(null);
 
       // Generate a unique member ID
-      const memberId = `member_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const memberId = `member_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
       // Create member document with all required fields
       const memberRef = doc(db, 'accounts', member.organizationId!, 'members', memberId);
@@ -439,7 +468,97 @@ export default function ManageProfile() {
     }
   };
 
+  // Bio submission handler
+  const handleSubmitBio = async () => {
+    if (!organizationAccount || !bioText.trim()) return;
+    
+    try {
+      setSavingBio(true);
+      setBioError(null);
+      setBioMessage(null);
+      
+      const accountRef = doc(db, 'accounts', organizationAccount.id);
+      await updateDoc(accountRef, {
+        'companySummary.text': bioText.trim(),
+        'companySummary.status': 'pending_review',
+        'companySummary.submittedAt': serverTimestamp(),
+        'companySummary.reviewedAt': null,
+        'companySummary.reviewedBy': null,
+        'companySummary.rejectionReason': null,
+        updatedAt: serverTimestamp()
+      });
+      
+      // Update local state
+      setOrganizationAccount(prev => prev ? {
+        ...prev,
+        companySummary: {
+          text: bioText.trim(),
+          status: 'pending_review',
+          submittedAt: { toDate: () => new Date() }
+        }
+      } : null);
+      
+      setBioMessage('Profile submitted for review. You will be notified once approved.');
+      setTimeout(() => setBioMessage(null), 5000);
+    } catch (error) {
+      setBioError('Failed to submit profile. Please try again.');
+      console.error('Error submitting bio:', error);
+    } finally {
+      setSavingBio(false);
+    }
+  };
 
+  // Bio draft save handler
+  const handleSaveBioDraft = async () => {
+    if (!organizationAccount) return;
+    
+    try {
+      setSavingBio(true);
+      setBioError(null);
+      setBioMessage(null);
+      
+      const accountRef = doc(db, 'accounts', organizationAccount.id);
+      await updateDoc(accountRef, {
+        'companySummary.text': bioText.trim(),
+        'companySummary.status': 'draft',
+        updatedAt: serverTimestamp()
+      });
+      
+      // Update local state
+      setOrganizationAccount(prev => prev ? {
+        ...prev,
+        companySummary: {
+          ...prev.companySummary,
+          text: bioText.trim(),
+          status: 'draft'
+        }
+      } : null);
+      
+      setBioMessage('Draft saved successfully.');
+      setTimeout(() => setBioMessage(null), 3000);
+    } catch (error) {
+      setBioError('Failed to save draft. Please try again.');
+      console.error('Error saving bio draft:', error);
+    } finally {
+      setSavingBio(false);
+    }
+  };
+
+  // Helper function to get bio status badge
+  const getBioStatusBadge = () => {
+    const status = organizationAccount?.companySummary?.status;
+    
+    switch (status) {
+      case 'pending_review':
+        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Review</span>;
+      case 'approved':
+        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>;
+      case 'rejected':
+        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>;
+      default:
+        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Draft</span>;
+    }
+  };
 
   if (loading) {
     return (
@@ -468,149 +587,211 @@ export default function ManageProfile() {
       </div>
     );
   }
-
-  // Remove the corporate membership check since we're determining account type dynamically
-
   return (
-    <div className="space-y-6">
-      {/* Company Info */}
-      {company && (
-        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">
-                {company.organizationName}
-              </h3>
+    <div className="space-y-8">
+      {/* Your Profile Section */}
+      <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">Your Profile</h2>
+        
+        <div className="space-y-6">
+          {/* Personal Name */}
+          <div>
+            <label className="block text-sm font-medium text-fase-navy mb-2">Personal Name</label>
+            {editingProfile ? (
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={profileData.displayName}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  placeholder="Enter your name"
+                />
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleSaveProfile}
+                    disabled={savingProfile}
+                    variant="primary"
+                    size="small"
+                  >
+                    {savingProfile ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={handleCancelEdit}
+                    variant="secondary"
+                    size="small"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black mr-3">
+                  {member?.personalName || user?.displayName || 'Not set'}
+                </div>
+                <Button
+                  onClick={handleEditProfile}
+                  variant="secondary"
+                  size="small"
+                >
+                  Edit
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Password Security */}
+          <div className="border-t border-gray-100 pt-4">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Security</h3>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-gray-700">Password</span>
+                <p className="text-xs text-gray-500">Reset your account password</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                {passwordResetSent && (
+                  <span className="text-sm text-green-600 font-medium">Reset email sent!</span>
+                )}
+                <Button
+                  onClick={handlePasswordReset}
+                  disabled={sendingPasswordReset}
+                  variant="secondary"
+                  size="small"
+                >
+                  {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                </Button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Company Information Section */}
+      {company && organizationAccount && (
+        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Company Profile</h2>
           
-          {/* Account & Company Settings - Always visible */}
-          <div className="border-t border-gray-100 pt-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">Account & Company Settings</h4>
-            <div className="space-y-6">
+          <div className="text-sm text-gray-600 mb-4">
+            {company.organizationName} • {company.organizationType}
+          </div>
+
+            {/* Directory Profile */}
+            <div className="flex gap-4 p-4 border border-gray-200 rounded-lg">
+              {/* Logo */}
+              <div className="flex-shrink-0">
+                <OrganizationLogo 
+                  organizationName={company.organizationName}
+                  logoURL={company.logoURL}
+                  onLogoChange={(logoURL) => {
+                    if (logoURL) {
+                      setCompany(prev => prev ? { ...prev, logoURL } : null);
+                    }
+                  }}
+                />
+              </div>
               
-              {/* Personal Information */}
-              <div>
-                <label className="block text-sm font-medium text-fase-navy mb-1">Personal Name</label>
-                {editingProfile ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={profileData.displayName}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                      placeholder="Enter your name"
-                    />
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={handleSaveProfile}
-                        disabled={savingProfile}
-                        variant="primary"
-                        size="small"
-                      >
-                        {savingProfile ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button
-                        onClick={handleCancelEdit}
-                        variant="secondary"
-                        size="small"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+              {/* Bio */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900">Directory Profile</span>
+                  {getBioStatusBadge()}
+                </div>
+                
+                <textarea
+                  value={bioText}
+                  onChange={(e) => setBioText(e.target.value)}
+                  placeholder="Describe your company for the directory (subject to translation)..."
+                  rows={4}
+                  maxLength={500}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy resize-none text-sm mb-2"
+                  disabled={organizationAccount.companySummary?.status === 'pending_review'}
+                />
+                
+                <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
+                  <span>{bioText.length}/500</span>
+                </div>
+                
+                {/* Error message */}
+                {organizationAccount.companySummary?.status === 'rejected' && organizationAccount.companySummary.rejectionReason && (
+                  <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 mb-3">
+                    <strong>Rejected:</strong> {organizationAccount.companySummary.rejectionReason}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                      {member?.personalName || user?.displayName || 'Not set'}
-                    </div>
-                    <Button
-                      onClick={handleEditProfile}
-                      variant="secondary"
-                      size="small"
-                      className="ml-3"
-                    >
-                      Edit
+                )}
+                
+                {/* Success/Error messages */}
+                {bioMessage && <div className="text-sm text-green-600 mb-2">{bioMessage}</div>}
+                {bioError && <div className="text-sm text-red-600 mb-2">{bioError}</div>}
+                
+                {/* Actions */}
+                {organizationAccount.companySummary?.status !== 'pending_review' && (
+                  <div className="flex space-x-2">
+                    <Button onClick={handleSubmitBio} disabled={savingBio || !bioText.trim()} variant="primary" size="small">
+                      {savingBio ? 'Submitting...' : 'Submit'}
+                    </Button>
+                    <Button onClick={handleSaveBioDraft} disabled={savingBio} variant="secondary" size="small">
+                      Draft
                     </Button>
                   </div>
                 )}
               </div>
-              
-              {/* Show company name for all members (all are corporate) */}
-              {member?.organizationName && (
-                <div>
-                  <label className="block text-sm font-medium text-fase-navy mb-1">Company</label>
-                  <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black">
-                    {member.organizationName}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Contact support to change your company information</p>
-                </div>
-              )}
+            </div>
+        </div>
+      )}
 
-              {/* Security Section */}
-              <div className="border-t border-gray-100 pt-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">{t('profile.security')}</h5>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">{t('profile.password')}</span>
-                    <p className="text-xs text-gray-500">{t('profile.password_desc')}</p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    {passwordResetSent && (
-                      <span className="text-sm text-green-600 font-medium">{t('profile.reset_email_sent')}</span>
-                    )}
-                    <Button
-                      onClick={handlePasswordReset}
-                      disabled={sendingPasswordReset}
-                      variant="secondary"
-                      size="small"
-                    >
-                      {sendingPasswordReset ? t('profile.sending') : t('profile.reset_password')}
-                    </Button>
-                  </div>
-                </div>
+      {/* Directory Settings Section */}
+      {company && (
+        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+          <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">Directory Settings</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-gray-700">Include in Directory</span>
+                <p className="text-xs text-gray-500">Show your company in the public membership directory</p>
               </div>
-
-              {/* Company Settings */}
-              <div className="border-t border-gray-100 pt-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">Company Settings</h5>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">{t('manage_profile.directory_inclusion')}</span>
-                      <p className="text-xs text-gray-500">{t('manage_profile.directory_inclusion_desc')}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact')}</span>
-                      <p className="text-xs text-gray-500">{t('manage_profile.public_contact_desc')}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={directoryInclusion}
+                  onChange={(e) => setDirectoryInclusion(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-gray-700">Public Contact Information</span>
+                <p className="text-xs text-gray-500">Allow directory visitors to see your contact details</p>
               </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={publicContact}
+                  onChange={(e) => setPublicContact(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
             </div>
           </div>
         </div>
       )}
 
 
-      {/* Members List */}
+      {/* Team Management Section */}
       <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-fase-light-gold">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-              {t('manage_profile.team_members')} ({members.length}/3)
-            </h3>
+            <div>
+              <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">
+                Team Management
+              </h2>
+              <p className="text-sm text-gray-600">
+                Manage your organization&apos;s team members ({members.length}/3)
+              </p>
+            </div>
             {(() => {
               const currentUserMember = members.find(m => m.id === user?.uid);
               const isAdmin = currentUserMember?.isAccountAdministrator;
@@ -636,8 +817,8 @@ export default function ManageProfile() {
 
         {/* Add Member Form */}
         {showAddForm && (
-          <div className="px-6 py-4 border-b border-fase-light-gold bg-gray-50">
-            <h4 className="text-md font-medium text-fase-navy mb-4">{t('manage_profile.add_new_member')}</h4>
+          <div className="px-6 py-6 border-b border-fase-light-gold bg-gray-50">
+            <h3 className="text-lg font-medium text-fase-navy mb-4">Add New Team Member</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

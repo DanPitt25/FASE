@@ -9,6 +9,36 @@ import type { UnifiedMember } from '../../lib/unified-member';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
 import countries from 'i18n-iso-countries';
 
+// Component for logo with error handling
+function CompanyLogo({ member }: { member: UnifiedMember }) {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!member.logoURL || imageError) {
+    return (
+      <div className="w-16 h-16 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+        <span className="text-gray-400 text-xs font-medium">
+          {member.organizationName ? 
+            member.organizationName.split(' ').map(word => word.charAt(0)).join('').substring(0, 2).toUpperCase()
+            : 'N/A'
+          }
+        </span>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="relative w-16 h-16 overflow-hidden rounded-lg border border-gray-200">
+      <Image
+        src={member.logoURL}
+        alt={`${member.organizationName} logo`}
+        fill
+        className="object-contain"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
+
 // Register locales
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/es.json"));
@@ -340,78 +370,104 @@ export default function DirectoryPage() {
                 {filteredMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="bg-white border border-fase-light-gold rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className="bg-white border border-fase-light-gold rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-noto-serif font-bold text-fase-navy">
-                          {member.organizationName}
-                        </h3>
-                        {member.primaryContact?.role && (
-                          <p className="text-sm text-gray-600 mt-1">{member.primaryContact.role}</p>
-                        )}
+                    {/* Company Logo and Header */}
+                    <div className="p-6 pb-4">
+                      <div className="flex items-start gap-4 mb-4">
+                        {/* Company Logo */}
+                        <div className="flex-shrink-0">
+                          <CompanyLogo member={member} />
+                        </div>
+
+                        {/* Company Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-noto-serif font-bold text-fase-navy mb-1 truncate">
+                            {member.organizationName}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-fase-light-blue text-fase-navy">
+                              {getDisplayOrganizationType(member)}
+                            </span>
+                          </div>
+                          {member.primaryContact?.role && (
+                            <p className="text-sm text-gray-600 mt-1">{member.primaryContact.role}</p>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Company Bio */}
+                      {member.companySummary?.status === 'approved' && member.companySummary.text && (
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                            {member.companySummary.text}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-2 text-sm text-fase-black">
-                      {(member.registeredAddress?.country || (member as any).businessAddress?.country) && (
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>
-                            {(() => {
-                              const countryCode = member.registeredAddress?.country || (member as any).businessAddress?.country;
-                              return countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
-                            })()}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Website */}
-                      {(member as any).website && (
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <a 
-                            href={(() => {
-                              let url = (member as any).website;
-                              // Remove protocol if present
-                              url = url.replace(/^https?:\/\//, '');
-                              // Add www. if not present
-                              if (!url.startsWith('www.')) {
-                                url = `www.${url}`;
-                              }
-                              return `https://${url}`;
-                            })()}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-fase-blue hover:underline"
-                          >
-                            {(() => {
-                              let displayUrl = (member as any).website;
-                              // Remove protocol if present
-                              displayUrl = displayUrl.replace(/^https?:\/\//, '');
-                              // Add www. if not present
-                              if (!displayUrl.startsWith('www.')) {
-                                displayUrl = `www.${displayUrl}`;
-                              }
-                              return displayUrl;
-                            })()}
-                          </a>
-                        </div>
-                      )}
+                    {/* Company Details */}
+                    <div className="px-6 pb-6">
+                      <div className="space-y-2 text-sm text-fase-black">
+                        {(member.registeredAddress?.country || (member as any).businessAddress?.country) && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>
+                              {(() => {
+                                const countryCode = member.registeredAddress?.country || (member as any).businessAddress?.country;
+                                return countries.getName(countryCode, locale) || countries.getName(countryCode, 'en') || countryCode;
+                              })()}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Website */}
+                        {(member as any).website && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <a 
+                              href={(() => {
+                                let url = (member as any).website;
+                                // Remove protocol if present
+                                url = url.replace(/^https?:\/\//, '');
+                                // Add www. if not present
+                                if (!url.startsWith('www.')) {
+                                  url = `www.${url}`;
+                                }
+                                return `https://${url}`;
+                              })()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-fase-blue hover:underline"
+                            >
+                              {(() => {
+                                let displayUrl = (member as any).website;
+                                // Remove protocol if present
+                                displayUrl = displayUrl.replace(/^https?:\/\//, '');
+                                // Add www. if not present
+                                if (!displayUrl.startsWith('www.')) {
+                                  displayUrl = `www.${displayUrl}`;
+                                }
+                                return displayUrl;
+                              })()}
+                            </a>
+                          </div>
+                        )}
 
-                      {member.primaryContact?.phone && (
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          <span>{member.primaryContact.phone}</span>
-                        </div>
-                      )}
+                        {member.primaryContact?.phone && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>{member.primaryContact.phone}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

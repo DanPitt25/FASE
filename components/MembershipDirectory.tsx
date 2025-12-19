@@ -1,9 +1,40 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { getApprovedMembersWithSubcollections } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
+
+// Component for logo with error handling
+function CompanyLogo({ organization }: { organization: UnifiedMember }) {
+  const [imageError, setImageError] = useState(false);
+  
+  if (!organization.logoURL || imageError) {
+    return (
+      <div className="w-16 h-16 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+        <span className="text-gray-400 text-xs font-medium">
+          {(organization.organizationName || organization.personalName) ? 
+            (organization.organizationName || organization.personalName)!.split(' ').map(word => word.charAt(0)).join('').substring(0, 2).toUpperCase()
+            : 'N/A'
+          }
+        </span>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="relative w-16 h-16 overflow-hidden rounded-lg border border-gray-200">
+      <Image
+        src={organization.logoURL}
+        alt={`${organization.organizationName} logo`}
+        fill
+        className="object-contain"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+}
 
 interface MembershipDirectoryProps {
   translations: {
@@ -47,24 +78,40 @@ function OrganizationCard({
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex justify-between items-start">
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-fase-navy text-lg truncate mb-2">
-              {organization.organizationName || organization.personalName}
-            </h4>
-            <div className="text-sm text-gray-600 mb-2">
-              {organization.organizationType === 'MGA' ? 'Managing General Agent' :
-               organization.organizationType === 'carrier' ? 'Insurance Carrier' :
-               organization.organizationType === 'provider' ? 'Service Provider' :
-               organization.organizationType}
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            {/* Company Logo */}
+            <div className="flex-shrink-0">
+              <CompanyLogo organization={organization} />
             </div>
-            {orgData.businessAddress?.country && (
-              <div className="text-sm text-gray-500 mb-2">
-                {orgData.businessAddress.city && `${orgData.businessAddress.city}, `}
-                {orgData.businessAddress.country}
+
+            {/* Organization Info */}
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-fase-navy text-lg truncate mb-2">
+                {organization.organizationName || organization.personalName}
+              </h4>
+              <div className="text-sm text-gray-600 mb-2">
+                {organization.organizationType === 'MGA' ? 'Managing General Agent' :
+                 organization.organizationType === 'carrier' ? 'Insurance Carrier' :
+                 organization.organizationType === 'provider' ? 'Service Provider' :
+                 organization.organizationType}
               </div>
-            )}
-            <div className="text-xs text-gray-500">
-              {organizationMembers.length} {organizationMembers.length === 1 ? 'member' : 'members'}
+              {orgData.businessAddress?.country && (
+                <div className="text-sm text-gray-500 mb-2">
+                  {orgData.businessAddress.city && `${orgData.businessAddress.city}, `}
+                  {orgData.businessAddress.country}
+                </div>
+              )}
+
+              {/* Company Bio Preview */}
+              {organization.companySummary?.status === 'approved' && organization.companySummary.text && (
+                <div className="text-sm text-gray-700 mb-2 line-clamp-2 leading-relaxed">
+                  {organization.companySummary.text}
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                {organizationMembers.length} {organizationMembers.length === 1 ? 'member' : 'members'}
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -86,6 +133,16 @@ function OrganizationCard({
           {/* Organization Details */}
           <div className="p-4 bg-gray-50">
             <div className="space-y-3">
+              {/* Company Bio - Full Text */}
+              {organization.companySummary?.status === 'approved' && organization.companySummary.text && (
+                <div>
+                  <div className="text-xs font-medium text-gray-700 mb-1">About</div>
+                  <div className="text-sm text-gray-900 leading-relaxed">
+                    {organization.companySummary.text}
+                  </div>
+                </div>
+              )}
+
               {/* Lines of Business */}
               {organization.linesOfBusiness && organization.linesOfBusiness.length > 0 && (
                 <div>
