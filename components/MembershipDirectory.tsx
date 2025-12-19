@@ -21,6 +21,8 @@ interface MembershipDirectoryProps {
     lines_of_business?: string;
     email?: string;
     locale?: string;
+    copy_email?: string;
+    email_copied?: string;
   };
 }
 
@@ -132,15 +134,6 @@ function OrganizationCard({
                       </div>
                     )}
                   </div>
-                  {member.email && (
-                    <a 
-                      href={`mailto:${member.email}?subject=FASE Member Inquiry`}
-                      className="ml-3 inline-flex items-center px-3 py-1 bg-fase-navy text-white text-xs font-medium rounded hover:bg-fase-orange transition-colors"
-                    >
-                      <span className="mr-1">✉</span>
-                      Contact
-                    </a>
-                  )}
                 </div>
               ))}
             </div>
@@ -179,10 +172,7 @@ export default function MembershipDirectory({ translations }: MembershipDirector
         
         // Filter organizations that have members (suppress empty ones)
         const orgsWithMembers = orgs.filter(org => {
-          if (org.membershipType === 'individual') {
-            return true; // Always include individual memberships
-          }
-          // For corporate, check if there are subcollection members
+          // All memberships are corporate, check if there are subcollection members
           return membersByOrg.has(org.id) && membersByOrg.get(org.id)!.length > 0;
         });
         
