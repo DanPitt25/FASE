@@ -222,8 +222,7 @@ export async function POST(request: NextRequest) {
             organizationName: requestData.organizationName || undefined,
             subject: emailData.subject,
             emailType: 'freeform',
-            htmlContent: htmlContent, // The complete HTML email
-            textContent: requestData.freeformBody, // Original plain text
+            htmlContent: htmlContent, // Only used for content length, not stored
             emailLanguage: 'en', // Freeform emails don't have language detection
             templateUsed: 'freeform',
             customizedContent: true, // Freeform is always custom
