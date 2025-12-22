@@ -1,4 +1,4 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin SDK if not already initialized
@@ -62,7 +62,7 @@ export class AdminAuditLogger {
       // Filter out undefined values recursively to avoid Firestore errors
       const cleanData = this.cleanUndefined({
         ...actionData,
-        timestamp: new Date()
+        timestamp: FieldValue.serverTimestamp()
       });
 
       const docRef = await adminDb.collection(this.collectionName).add(cleanData);
@@ -76,7 +76,7 @@ export class AdminAuditLogger {
   }
 
   /**
-   * Log email communication with full content and metadata
+   * Log email communication - essential data only
    */
   static async logEmailSent(data: {
     adminUserId?: string;
@@ -94,8 +94,7 @@ export class AdminAuditLogger {
       // Email content
       subject: string;
       emailType: string; // template type like 'membership_invoice', 'sponsorship', etc.
-      htmlContent: string;
-      textContent?: string;
+      htmlContent?: string; // Only used for content length
       
       // Email metadata
       emailLanguage?: string;
@@ -128,21 +127,15 @@ export class AdminAuditLogger {
       organizationName: data.emailData.organizationName,
       action: data.action,
       details: {
-        // Complete email snapshot
-        emailSnapshot: data.emailData,
-        
-        // Key summary fields for quick reference
+        // Essential email info only - NO massive HTML content
         emailType: data.emailData.emailType,
         subject: data.emailData.subject,
         toEmail: data.emailData.toEmail,
+        toName: data.emailData.toName,
         ccEmails: data.emailData.ccEmails,
         templateUsed: data.emailData.templateUsed,
-        hasAttachments: (data.emailData.attachments?.length || 0) > 0,
-        
-        // Content analysis
-        contentLength: data.emailData.htmlContent?.length || 0,
-        customizedContent: data.emailData.customizedContent,
         language: data.emailData.emailLanguage,
+        customizedContent: data.emailData.customizedContent,
         
         // Related records
         invoiceNumber: data.emailData.invoiceNumber,
@@ -151,19 +144,15 @@ export class AdminAuditLogger {
         
         // Financial summary (for invoice emails)
         ...(data.emailData.invoiceAmount && {
-          financialSummary: {
-            amount: data.emailData.invoiceAmount,
-            currency: data.emailData.currency,
-            paymentRequired: true
-          }
+          invoiceAmount: data.emailData.invoiceAmount,
+          currency: data.emailData.currency,
+          paymentInstructions: data.emailData.paymentInstructions
         }),
         
-        // Attachment summary
-        attachmentsSummary: data.emailData.attachments?.map(att => ({
-          filename: att.filename,
-          type: att.type,
-          size: att.size
-        })) || []
+        // Attachments summary
+        hasAttachments: (data.emailData.attachments?.length || 0) > 0,
+        attachmentCount: data.emailData.attachments?.length || 0,
+        attachmentTypes: data.emailData.attachments?.map(att => att.type) || []
       },
       category: 'email',
       success: data.success ?? true,

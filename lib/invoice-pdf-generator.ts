@@ -162,10 +162,10 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     const sectionGap = 25;
     
     // Currency formatting functions
-    const formatEuro = (amount: number) => `€ ${amount}`;
+    const formatEuro = (amount: number) => `€ ${amount.toLocaleString()}`;
     const formatCurrency = (amount: number, currency: string) => {
       const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
-      return `${symbols[currency] || currency} ${amount}`;
+      return `${symbols[currency] || currency} ${amount.toLocaleString()}`;
     };
     
     // Load PDF text translations
@@ -304,40 +304,42 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     
     currentY = tableY - 40;
     
-    // Main invoice item - FASE Annual Membership
-    firstPage.drawText('FASE Annual Membership', {
-      x: colX[0] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-    
-    firstPage.drawText('1', {
-      x: colX[1] + 25,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-    
-    firstPage.drawText(formatEuro(invoiceData.originalAmount), {
-      x: colX[2] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-    
-    firstPage.drawText(formatEuro(invoiceData.originalAmount), {
-      x: colX[3] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-    
-    currentY -= 30;
+    // Main invoice item - FASE Annual Membership (skip for sponsorship invoices)
+    if (data.invoiceType !== 'sponsorship') {
+      firstPage.drawText('FASE Annual Membership', {
+        x: colX[0] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText('1', {
+        x: colX[1] + 25,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+        x: colX[2] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+        x: colX[3] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+      
+      currentY -= 30;
+    }
     
     // Discount line (if applicable)
     if (invoiceData.discountAmount > 0) {

@@ -6,6 +6,20 @@ import { getApprovedMembersWithSubcollections } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 
+// Helper function to get display organization type (matches external directory exactly)
+const getDisplayOrganizationType = (member: UnifiedMember): string => {
+  if (member.organizationType === 'MGA') return 'MGA';
+  if (member.organizationType === 'provider') return 'Service Provider';
+  if (member.organizationType === 'carrier') {
+    const carrierInfo = (member as any).carrierInfo;
+    if (carrierInfo?.organizationType === 'insurance_broker' || carrierInfo?.organizationType === 'reinsurance_broker') {
+      return 'Broker';
+    }
+    return 'Carrier';
+  }
+  return member.organizationType || 'Other';
+};
+
 // Component for logo with error handling
 function CompanyLogo({ organization }: { organization: UnifiedMember }) {
   const [imageError, setImageError] = useState(false);
@@ -90,10 +104,7 @@ function OrganizationCard({
                 {organization.organizationName || organization.personalName}
               </h4>
               <div className="text-sm text-gray-600 mb-2">
-                {organization.organizationType === 'MGA' ? 'Managing General Agent' :
-                 organization.organizationType === 'carrier' ? 'Insurance Carrier' :
-                 organization.organizationType === 'provider' ? 'Service Provider' :
-                 organization.organizationType}
+                {getDisplayOrganizationType(organization)}
               </div>
               {orgData.businessAddress?.country && (
                 <div className="text-sm text-gray-500 mb-2">
@@ -269,18 +280,33 @@ export default function MembershipDirectory({ translations }: MembershipDirector
       });
     }
 
-    // Filter by organization type
+    // Filter by organization type (using display type)
     if (organizationFilter !== 'all') {
-      filtered = filtered.filter(org => org.organizationType === organizationFilter);
+      filtered = filtered.filter(org => getDisplayOrganizationType(org) === organizationFilter);
     }
 
     setFilteredOrganizations(filtered);
   }, [searchQuery, organizationFilter, directoryData]);
 
-  // Get unique organization types for filter
+  // Get unique organization types for filter (using display types with same sort order as public directory)
   const organizationTypes = ['all', ...Array.from(new Set(
-    directoryData.organizations.map(m => m.organizationType).filter(Boolean)
-  ))];
+    directoryData.organizations.map(m => getDisplayOrganizationType(m)).filter(Boolean)
+  )).sort((a, b) => {
+    // Custom sort order: MGA, Carrier, Broker, Service Provider, then alphabetical
+    const order = ['MGA', 'Carrier', 'Broker', 'Service Provider'];
+    const indexA = order.indexOf(a);
+    const indexB = order.indexOf(b);
+    
+    // If both are in the custom order, sort by their position
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    // If only one is in the custom order, prioritize it
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    // If neither is in the custom order, sort alphabetically
+    return a.localeCompare(b);
+  })];
 
   if (loading) {
     return (
