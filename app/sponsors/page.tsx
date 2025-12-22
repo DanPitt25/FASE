@@ -22,7 +22,7 @@ function SponsorCard({ sponsor, locale, onViewDetails }: SponsorCardProps) {
     >
       <div className="p-8 h-full flex flex-col justify-center">
         <div className="text-center">
-          <div className="relative w-48 h-48 mx-auto mb-4">
+          <div className="relative w-64 h-64 mx-auto mb-4">
             <Image
               src={sponsor.logoUrl}
               alt={`${sponsor.name} logo`}
@@ -140,19 +140,33 @@ export default function SponsorsPage() {
     });
   }
 
-  // Add partnership CTA section
+  // Add contact section for sponsor enquiries
   sections.push({
-    type: 'cta' as const,
-    title: t('partnership.title'),
-    description: t('partnership.content'),
-    backgroundImage: '/earlyMorning.jpg',
-    buttons: [
-      {
-        text: t('partnership.contact_button'),
-        href: '/contact',
-        variant: 'primary' as const
-      }
-    ]
+    type: 'custom' as const,
+    content: (
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-noto-serif font-medium text-fase-navy mb-12 text-center">
+          Sponsor Enquiries
+        </h2>
+        
+        <div className="space-y-8">
+          <div className="text-center">
+            <p className="text-lg text-fase-black mb-8">
+              For sponsor enquiries, please contact:
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-center">
+            <svg className="w-6 h-6 text-fase-navy mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span className="text-lg text-fase-navy">
+              william.pitt@fasemga.com
+            </span>
+          </div>
+        </div>
+      </div>
+    )
   });
 
 
