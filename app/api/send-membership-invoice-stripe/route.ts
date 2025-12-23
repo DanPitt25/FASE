@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // Create product for Payment Link (persistent, no expiration)
     const product = await stripeInstance.products.create({
-      name: `FASE Corporate Membership`,
+      name: `FASE Annual Membership`,
       description: `Annual membership for ${invoiceData.organizationName}`,
       metadata: {
         invoice_number: invoiceNumber,
