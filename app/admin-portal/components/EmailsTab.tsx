@@ -46,7 +46,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       description: '',
       amount: 0,
       enabled: false
-    }
+    },
+    // Test payment
+    testPayment: false
   });
 
   const [sending, setSending] = useState(false);
@@ -648,6 +650,16 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     className="mr-2"
                   />
                   <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.testPayment}
+                    onChange={(e) => setFormData(prev => ({ ...prev, testPayment: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Test payment (50 cents instead of full amount)</span>
                 </label>
                 
                 <div>
