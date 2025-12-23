@@ -243,10 +243,15 @@ export async function POST(request: NextRequest) {
     // Send admin copy
     try {
       const adminEmailData = {
-        ...emailData,
         email: 'admin@fasemga.com',
         subject: `Admin Copy: ${emailData.subject}`,
+        invoiceHTML: emailData.invoiceHTML,
+        invoiceNumber: emailData.invoiceNumber,
+        organizationName: emailData.organizationName,
+        totalAmount: emailData.totalAmount,
+        pdfAttachment: emailData.pdfAttachment,
         pdfFilename: `ADMIN-COPY-${invoiceData.invoiceNumber}.pdf`
+        // Deliberately omitting 'cc' field to prevent CC-ing original recipients
       };
 
       await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
