@@ -132,25 +132,32 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
-    // Prepare line items for Stripe
-    const lineItems = [
-      {
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: `FASE Membership Invoice ${invoiceNumber}`,
-            description: `Payment for ${invoiceData.organizationName} membership`,
-          },
-          unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
-        },
-        quantity: 1,
-      },
-    ];
+    // Create product for Payment Link (persistent, no expiration)
+    const product = await stripeInstance.products.create({
+      name: `FASE Membership Invoice ${invoiceNumber}`,
+      description: `Payment for ${invoiceData.organizationName} membership`,
+      metadata: {
+        invoice_number: invoiceNumber,
+        organization_name: invoiceData.organizationName,
+        organization_type: invoiceData.organizationType || 'individual',
+      }
+    });
 
-    const session = await stripeInstance.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: lineItems,
+    // Create price for the product
+    const price = await stripeInstance.prices.create({
+      currency: 'eur',
+      product: product.id,
+      unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
+    });
+
+    // Create Payment Link (persistent, no expiration)
+    const paymentLink = await stripeInstance.paymentLinks.create({
+      line_items: [
+        {
+          price: price.id,
+          quantity: 1,
+        }
+      ],
       metadata: {
         invoice_number: invoiceNumber,
         organization_name: invoiceData.organizationName,
@@ -158,12 +165,17 @@ export async function POST(request: NextRequest) {
         user_id: invoiceData.userId || '',
         user_email: invoiceData.email,
       },
-      success_url: `${baseUrl}/payment-succeeded?session_id={CHECKOUT_SESSION_ID}&invoice=${invoiceNumber}`,
-      cancel_url: `${baseUrl}/payment-failed?invoice=${invoiceNumber}`,
-      customer_email: invoiceData.email,
+      after_completion: {
+        type: 'redirect',
+        redirect: {
+          url: `${baseUrl}/payment-succeeded?payment_link_id={PAYMENT_LINK_ID}&invoice=${invoiceNumber}`,
+        }
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto'
     });
 
-    const stripeLink = session.url;
+    const stripeLink = paymentLink.url;
     
     console.log('✅ Stripe payment link generated:', stripeLink);
     

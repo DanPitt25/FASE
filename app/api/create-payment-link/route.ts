@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
       organizationType, 
       grossWrittenPremiums, 
       userEmail,
-      userId 
+      userId,
+      invoiceNumber,
+      amount
     } = requestData;
 
     // Validate required fields
@@ -81,9 +83,13 @@ export async function POST(request: NextRequest) {
     
     if (isTestPayment) {
       priceInCents = 50; // 50 cents for admin testing
-    // All memberships are corporate
     } else if (organizationType === 'MGA') {
       priceInCents = getPriceForPremiumBracket(grossWrittenPremiums);
+    }
+
+    // Override with custom amount if provided
+    if (amount && !isTestPayment) {
+      priceInCents = Math.round(amount * 100); // Convert to cents
     }
 
     // Get the base URL for redirects
@@ -91,8 +97,7 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
-
-    // Create product for Payment Link (persistent, no expiration)
+    // Create product first (required for Payment Links)
     const product = await stripeInstance.products.create({
       name: isTestPayment 
         ? `[ADMIN TEST] FASE ${organizationType} Corporate Membership`
@@ -105,6 +110,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         organization_name: organizationName,
         organization_type: organizationType,
+        invoice_number: invoiceNumber || '',
         ...(organizationType === 'MGA' && { gross_written_premiums: grossWrittenPremiums })
       }
     });
@@ -135,16 +141,27 @@ export async function POST(request: NextRequest) {
         user_id: userId || '',
         user_email: userEmail || '',
         test_payment: isTestPayment ? 'true' : 'false',
+        invoice_number: invoiceNumber || '',
         ...(organizationType === 'MGA' && { gross_written_premiums: grossWrittenPremiums })
       },
       after_completion: {
         type: 'redirect',
         redirect: {
-          url: `${baseUrl}/member-portal?payment_link_id={PAYMENT_LINK_ID}&success=true`,
+          url: `${baseUrl}/member-portal?payment_link_success=true&payment_link_id={PAYMENT_LINK_ID}`,
         }
       },
+      // Payment Links don't expire by default - they remain active indefinitely
       allow_promotion_codes: true,
-      billing_address_collection: 'auto'
+      billing_address_collection: 'auto',
+      ...(userEmail && {
+        custom_fields: [
+          {
+            key: 'customer_email',
+            label: { type: 'builtin', builtin: 'order.email' },
+            type: 'text'
+          }
+        ]
+      })
     });
 
     return NextResponse.json({ 
@@ -152,15 +169,17 @@ export async function POST(request: NextRequest) {
       url: paymentLink.url,
       productId: product.id,
       priceId: price.id,
+      amount: priceInCents,
+      currency: 'eur',
       persistent: true // Flag to indicate this link doesn't expire
     });
 
   } catch (error: any) {
-    console.error('Error creating checkout session:', error);
+    console.error('Error creating payment link:', error);
     
     return NextResponse.json(
       { 
-        error: 'Failed to create checkout session',
+        error: 'Failed to create payment link',
         details: error.message || 'Unknown error'
       },
       { status: 500 }
