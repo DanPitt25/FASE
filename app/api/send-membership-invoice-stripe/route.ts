@@ -143,11 +143,14 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create price for the product
+    // Create price for the product (annual subscription)
     const price = await stripeInstance.prices.create({
       currency: 'eur',
       product: product.id,
       unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
+      recurring: {
+        interval: 'year',
+      }
     });
 
     // Create Payment Link (persistent, no expiration)
