@@ -2,7 +2,6 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 import { convertCurrency, getWiseBankDetails, getCurrencySymbol } from './currency-conversion';
-import { AdminAuditLogger } from './admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -63,7 +62,7 @@ export interface InvoiceGenerationData {
     amount: number;
   } | null;
   
-  // Admin context (for audit logging)
+  // Admin context
   adminUserId?: string;
   adminUserEmail?: string;
   generationSource?: 'admin_portal' | 'customer_request' | 'system';
@@ -79,7 +78,71 @@ export interface InvoiceGenerationResult {
   convertedAmount?: number;
   exchangeRate?: number;
   bankDetails: any;
-  auditLogId?: string;
+}
+
+interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  isDiscount?: boolean;
+}
+
+function buildLineItems(data: InvoiceGenerationData, locale: string): InvoiceLineItem[] {
+  const lineItems: InvoiceLineItem[] = [];
+
+  // Skip main membership line for sponsorship invoices
+  if (data.invoiceType !== 'sponsorship') {
+    // Main membership line item - use original amount as the base price
+    const membershipDescription = locale === 'nl' ? 
+      'FASE Jaarlijks Lidmaatschap (1/1/2026 - 1/1/2027)' : 
+      'FASE Annual Membership (1/1/2026 - 1/1/2027)';
+    
+    const originalAmount = data.originalAmount || data.totalAmount;
+    
+    lineItems.push({
+      description: membershipDescription,
+      quantity: 1,
+      unitPrice: originalAmount,
+      total: originalAmount,
+      isDiscount: false
+    });
+
+    // Add discount line if applicable
+    if (data.discountAmount && data.discountAmount > 0) {
+      let discountDescription = data.discountReason || 'Association Member Discount';
+      
+      // Use localized discount text for Dutch
+      if (locale === 'nl' && discountDescription.includes('Multi-Association Member Discount')) {
+        discountDescription = 'Lidmaatschapskorting voor Meerdere Verenigingen (20%)';
+      }
+      
+      lineItems.push({
+        description: discountDescription,
+        quantity: 1,
+        unitPrice: -data.discountAmount,
+        total: -data.discountAmount,
+        isDiscount: true
+      });
+    }
+  }
+
+  // Add custom line item if applicable
+  if (data.customLineItem?.enabled && data.customLineItem.description) {
+    lineItems.push({
+      description: data.customLineItem.description,
+      quantity: 1,
+      unitPrice: data.customLineItem.amount,
+      total: data.customLineItem.amount,
+      isDiscount: false
+    });
+  }
+
+  return lineItems;
+}
+
+function calculateInvoiceTotal(lineItems: InvoiceLineItem[]): number {
+  return lineItems.reduce((sum, item) => sum + item.total, 0);
 }
 
 export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<InvoiceGenerationResult> {
@@ -188,6 +251,10 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     const dateLocales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
     const dateLocale = dateLocales[locale as keyof typeof dateLocales] || 'en-GB';
     const currentDate = new Date().toLocaleDateString(dateLocale);
+    
+    // Build line items and calculate total
+    const lineItems = buildLineItems(data, locale);
+    const calculatedTotal = calculateInvoiceTotal(lineItems);
     
     // Start drawing content
     let currentY = height - margins.top;
@@ -304,102 +371,56 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     
     currentY = tableY - 40;
     
-    // Main invoice item - FASE Annual Membership (skip for sponsorship invoices)
-    if (data.invoiceType !== 'sponsorship') {
-      firstPage.drawText('FASE Annual Membership', {
+    // Render line items
+    lineItems.forEach((item) => {
+      const color = item.isDiscount ? rgb(0.0, 0.6, 0.0) : faseBlack;
+      
+      // Description
+      firstPage.drawText(item.description, {
         x: colX[0] + 10,
         y: currentY - 15,
         size: 10,
         font: bodyFont,
-        color: faseBlack,
+        color: color,
       });
       
-      firstPage.drawText('1', {
+      // Quantity
+      firstPage.drawText(item.quantity.toString(), {
         x: colX[1] + 25,
         y: currentY - 15,
         size: 10,
         font: bodyFont,
-        color: faseBlack,
+        color: color,
       });
       
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+      // Unit Price
+      const unitPriceText = item.isDiscount ? 
+        `-${formatEuro(Math.abs(item.unitPrice))}` : 
+        formatEuro(item.unitPrice);
+      
+      firstPage.drawText(unitPriceText, {
         x: colX[2] + 10,
         y: currentY - 15,
         size: 10,
         font: bodyFont,
-        color: faseBlack,
+        color: color,
       });
       
-      firstPage.drawText(formatEuro(invoiceData.originalAmount), {
+      // Total
+      const totalText = item.isDiscount ? 
+        `-${formatEuro(Math.abs(item.total))}` : 
+        formatEuro(item.total);
+      
+      firstPage.drawText(totalText, {
         x: colX[3] + 10,
         y: currentY - 15,
         size: 10,
         font: bodyFont,
-        color: faseBlack,
+        color: color,
       });
       
       currentY -= 30;
-    }
-    
-    // Discount line (if applicable)
-    if (invoiceData.discountAmount > 0) {
-      const discountGreen = rgb(0.0, 0.6, 0.0);
-      
-      firstPage.drawText(invoiceData.discountReason || 'Association Member Discount', {
-        x: colX[0] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: discountGreen,
-      });
-      
-      firstPage.drawText(`-${formatEuro(invoiceData.discountAmount)}`, {
-        x: colX[3] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: discountGreen,
-      });
-      
-      currentY -= 30;
-    }
-    
-    // Custom line item (if applicable)
-    if (data.customLineItem?.enabled && data.customLineItem.description) {
-      firstPage.drawText(data.customLineItem.description, {
-        x: colX[0] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText('1', {
-        x: colX[1] + 25,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(data.customLineItem.amount), {
-        x: colX[2] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      firstPage.drawText(formatEuro(data.customLineItem.amount), {
-        x: colX[3] + 10,
-        y: currentY - 15,
-        size: 10,
-        font: bodyFont,
-        color: faseBlack,
-      });
-      
-      currentY -= 30;
-    }
+    });
     
     // Total section
     currentY -= 20;
@@ -436,7 +457,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
       const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
       const amountX = labelX + textWidth + fixedGapBetweenTextAndAmount;
       
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
+      firstPage.drawText(formatEuro(calculatedTotal), {
         x: amountX,
         y: currentY - 22,
         size: 13,
@@ -453,7 +474,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
         color: faseNavy,
       });
       
-      firstPage.drawText(formatEuro(invoiceData.totalAmount), {
+      firstPage.drawText(formatEuro(calculatedTotal), {
         x: labelX + 130,
         y: currentY - 18,
         size: 11,
@@ -558,118 +579,21 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     
     console.log('✅ PDF generated successfully, size:', pdfBytes.length);
 
-    // Prepare comprehensive audit data
-    const auditInvoiceData = {
-      invoiceNumber: invoiceData.invoiceNumber,
-      invoiceType: (data.invoiceType || 'regular') as 'lost_invoice' | 'reminder' | 'followup' | 'regular' | 'sponsorship',
-      isLostInvoice: data.isLostInvoice || false,
-      
-      recipientEmail: invoiceData.email,
-      recipientName: invoiceData.fullName,
-      organizationName: invoiceData.organizationName,
-      address: invoiceData.address,
-      
-      originalAmount: invoiceData.originalAmount,
-      discountAmount: invoiceData.discountAmount,
-      discountReason: invoiceData.discountReason,
-      totalAmount: invoiceData.totalAmount,
-      currency: baseCurrency,
-      convertedCurrency: currencyConversion.convertedCurrency,
-      convertedAmount: currencyConversion.roundedAmount,
-      exchangeRate: currencyConversion.exchangeRate,
-      
-      organizationType: invoiceData.organizationType,
-      grossWrittenPremiums: data.grossWrittenPremiums || undefined,
-      hasOtherAssociations: data.hasOtherAssociations || false,
-      
-      bankDetails: {
-        accountName: bankDetails.accountHolder,
-        accountNumber: bankDetails.accountNumber,
-        iban: bankDetails.iban,
-        bic: bankDetails.bic,
-        bankName: bankDetails.bankName,
-        reference: invoiceData.invoiceNumber
-      },
-      
-      emailTemplate: 'pdf_generation',
-      emailLanguage: locale,
-      emailSubject: `Invoice ${invoiceData.invoiceNumber}`,
-      customizedEmailContent: null,
-      
-      pdfGenerated: true,
-      emailId: undefined,
-      invoiceDate: currentDate,
-      
-      attachments: [{
-        filename: `FASE-Invoice-${invoiceData.invoiceNumber}.pdf`,
-        type: 'pdf' as const,
-        size: pdfBytes.length
-      }],
-      
-      customLineItem: data.customLineItem
-    };
 
-    // Log comprehensive audit data (only if not a preview)
-    let auditLogId: string | undefined;
-    if (!data.isPreview) {
-      try {
-        auditLogId = await AdminAuditLogger.logInvoiceGeneration({
-          adminUserId: data.adminUserId || 'system',
-          adminUserEmail: data.adminUserEmail,
-          action: `invoice_pdf_generated_${auditInvoiceData.invoiceType}`,
-          success: true,
-          invoiceData: auditInvoiceData
-        });
-        console.log('✅ Invoice audit logged:', auditLogId);
-      } catch (auditError) {
-        console.error('❌ Failed to log invoice audit:', auditError);
-        // Don't fail PDF generation if audit logging fails
-      }
-    } else {
-      console.log('📋 Preview mode - skipping audit logging');
-    }
 
     return {
       pdfBase64,
       invoiceNumber: invoiceData.invoiceNumber,
-      totalAmount: invoiceData.totalAmount,
+      totalAmount: calculatedTotal,
       currency: baseCurrency,
       convertedCurrency: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.convertedCurrency : undefined,
       convertedAmount: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.roundedAmount : undefined,
       exchangeRate: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.exchangeRate : undefined,
-      bankDetails,
-      auditLogId
+      bankDetails
     };
 
   } catch (error: any) {
     console.error('❌ Failed to generate invoice PDF:', error);
-    
-    // Log failed attempt
-    try {
-      await AdminAuditLogger.logInvoiceGeneration({
-        adminUserId: data.adminUserId || 'system',
-        adminUserEmail: data.adminUserEmail,
-        action: 'invoice_pdf_generation_failed',
-        success: false,
-        errorMessage: error.message,
-        invoiceData: {
-          invoiceNumber: data.invoiceNumber,
-          invoiceType: (data.invoiceType || 'regular') as 'lost_invoice' | 'reminder' | 'followup' | 'regular' | 'sponsorship',
-          recipientEmail: data.email,
-          recipientName: data.fullName || data.greeting || 'unknown',
-          organizationName: data.organizationName,
-          totalAmount: data.totalAmount,
-          originalAmount: data.originalAmount || data.totalAmount,
-          currency: 'EUR',
-          organizationType: (data.organizationType || 'MGA') as 'MGA' | 'carrier' | 'provider',
-          emailTemplate: 'pdf_generation_failed',
-          emailLanguage: data.userLocale || 'en',
-          pdfGenerated: false
-        }
-      });
-    } catch (auditError) {
-      console.error('❌ Failed to log failed invoice audit:', auditError);
-    }
     
     throw error;
   }

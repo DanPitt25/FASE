@@ -70,24 +70,13 @@
     "no_messages_desc": "Non ha ancora messaggi.",
     "mark_read": "Segna come Letto",
     "delete": "Elimina",
-    "from": "Da",
-    "priority": {
-      "high": "alta",
-      "medium": "media",
-      "low": "bassa"
-    }
+    "from": "Da"
   },
   "alerts": {
     "no_alerts": "Nessun Avviso",
     "no_alerts_desc": "È aggiornato! Torni più tardi per aggiornamenti importanti.",
     "mark_read": "Segna come Letto",
     "dismiss": "Ignora",
-    "priority": {
-      "urgent": "urgente",
-      "high": "alta",
-      "medium": "media",
-      "low": "bassa"
-    },
     "types": {
       "error": "errore",
       "warning": "avvertimento",

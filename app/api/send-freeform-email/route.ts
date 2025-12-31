@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
-import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -122,8 +121,9 @@ export async function POST(request: NextRequest) {
 
     <div style="font-size: 16px; line-height: 1.5; color: #333;">
       <p style="margin: 0 0 5px 0;">${signature.regards}</p>
+      <p style="margin: 0 0 20px 0;">Aline</p>
       <p style="margin: 0 0 3px 0;"><strong>${signature.name}</strong></p>
-      ${signature.title ? `<p style="margin: 0; color: #666;">${signature.title}</p>` : ''}
+      ${signature.title ? `<p style="margin: 0; color: #666; font-style: italic;">${signature.title}</p>` : ''}
     </div>
   </div>
 </div>`;
@@ -209,36 +209,6 @@ export async function POST(request: NextRequest) {
       const result = await response.json();
       console.log(`✅ Freeform email sent to ${emailData.email} via Resend:`, result.id);
       
-      // Log email audit trail
-      try {
-        await AdminAuditLogger.logEmailSent({
-          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
-          action: 'email_sent_freeform',
-          success: true,
-          emailData: {
-            toEmail: emailData.email,
-            toName: undefined,
-            ccEmails: emailData.cc ? [emailData.cc] : undefined,
-            organizationName: requestData.organizationName || undefined,
-            subject: emailData.subject,
-            emailType: 'freeform',
-            htmlContent: htmlContent, // Only used for content length, not stored
-            emailLanguage: 'en', // Freeform emails don't have language detection
-            templateUsed: 'freeform',
-            customizedContent: true, // Freeform is always custom
-            attachments: attachments.map(file => ({
-              filename: file.name,
-              type: 'document' as const, // Generic type for user uploads
-              size: file.size
-            })),
-            emailServiceId: result.id
-          }
-        });
-        console.log('✅ Email audit logged successfully');
-      } catch (auditError) {
-        console.error('❌ Failed to log email audit:', auditError);
-        // Don't fail the request if audit logging fails
-      }
       
       return NextResponse.json({
         success: true,

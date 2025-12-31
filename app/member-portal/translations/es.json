@@ -70,24 +70,13 @@
     "no_messages_desc": "Aún no tiene mensajes.",
     "mark_read": "Marcar como Leído",
     "delete": "Eliminar",
-    "from": "De",
-    "priority": {
-      "high": "alta",
-      "medium": "media",
-      "low": "baja"
-    }
+    "from": "De"
   },
   "alerts": {
     "no_alerts": "Sin Alertas",
     "no_alerts_desc": "¡Está al día! Vuelva más tarde para actualizaciones importantes.",
     "mark_read": "Marcar como Leído",
     "dismiss": "Descartar",
-    "priority": {
-      "urgent": "urgente",
-      "high": "alta",
-      "medium": "media",
-      "low": "baja"
-    },
     "types": {
       "error": "error",
       "warning": "advertencia",

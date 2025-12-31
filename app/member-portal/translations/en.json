@@ -69,24 +69,13 @@
     "no_messages_desc": "You don't have any messages yet.",
     "mark_read": "Mark as Read",
     "delete": "Delete",
-    "from": "From",
-    "priority": {
-      "high": "high",
-      "medium": "medium",
-      "low": "low"
-    }
+    "from": "From"
   },
   "alerts": {
     "no_alerts": "No Alerts",
     "no_alerts_desc": "You're all caught up! Check back later for important updates.",
     "mark_read": "Mark as Read", 
     "dismiss": "Dismiss",
-    "priority": {
-      "urgent": "urgent",
-      "high": "high",
-      "medium": "medium",
-      "low": "low"
-    },
     "types": {
       "error": "error",
       "warning": "warning", 

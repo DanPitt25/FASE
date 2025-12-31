@@ -102,8 +102,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       if (memberData.status === 'admin' && !adminClaim) {
         try {
           await setAdminClaim(firebaseUser.uid);
-          // Reload the user to get the new claims
-          await firebaseUser.reload();
+          // Note: No reload needed since we use memberData.status as fallback
         } catch (error) {
           // Silently handle admin claim setting errors
         }

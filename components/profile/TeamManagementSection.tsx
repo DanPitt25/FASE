@@ -1,0 +1,567 @@
+'use client';
+
+import { useState } from 'react';
+import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import Button from '../Button';
+import ConfirmModal from '../ConfirmModal';
+import { usePortalTranslations } from '../../app/member-portal/hooks/usePortalTranslations';
+import { useCurrentUser, useIsCurrentUserAdmin } from './useCurrentUser';
+import type { User } from 'firebase/auth';
+import type { UnifiedMember } from '../../lib/unified-member';
+
+interface Member {
+  id: string;
+  email: string;
+  personalName: string;
+  jobTitle?: string;
+  isAccountAdministrator: boolean;
+  joinedAt: any;
+  addedBy?: string;
+  createdAt: any;
+  updatedAt: any;
+  accountConfirmed?: boolean;
+}
+
+interface EditingMember {
+  id: string;
+  personalName: string;
+  jobTitle: string;
+  isAccountAdministrator: boolean;
+}
+
+interface TeamManagementSectionProps {
+  user: User;
+  member: UnifiedMember;
+  members: Member[];
+  onMembersChange: (members: Member[]) => void;
+  showSuccess: (message: string) => void;
+  showError: (message: string) => void;
+}
+
+// Extract invite token generation to avoid duplication
+function generateInviteToken(memberId: string, companyId: string, email: string, name: string, companyName: string): string {
+  return btoa(JSON.stringify({
+    memberId,
+    companyId,
+    email,
+    name,
+    companyName,
+    timestamp: Date.now()
+  })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+export default function TeamManagementSection({ 
+  user, 
+  member, 
+  members, 
+  onMembersChange,
+  showSuccess,
+  showError
+}: TeamManagementSectionProps) {
+  const { t } = usePortalTranslations();
+  
+  const currentUser = useCurrentUser(user, members);
+  const isCurrentUserAdmin = useIsCurrentUserAdmin(user, members);
+  
+  const [editingMember, setEditingMember] = useState<EditingMember | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [inviting, setInviting] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newMember, setNewMember] = useState({
+    email: '',
+    personalName: '',
+    jobTitle: ''
+  });
+  const [adding, setAdding] = useState(false);
+  
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
+
+  // Helper function to check if member needs an invite
+  const memberNeedsInvite = (memberItem: Member) => {
+    return memberItem.id.startsWith('member_') && !memberItem.accountConfirmed;
+  };
+
+  const showConfirmation = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm
+    });
+  };
+
+  const hideConfirmation = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleEditMember = (memberToEdit: Member) => {
+    setEditingMember({
+      id: memberToEdit.id,
+      personalName: memberToEdit.personalName,
+      jobTitle: memberToEdit.jobTitle || '',
+      isAccountAdministrator: memberToEdit.isAccountAdministrator
+    });
+  };
+
+  const handleSaveMember = async () => {
+    if (!editingMember || !member?.organizationId) return;
+
+    try {
+      setSaving(true);
+
+      const memberRef = doc(db, 'accounts', member.organizationId, 'members', editingMember.id);
+      await updateDoc(memberRef, {
+        personalName: editingMember.personalName,
+        jobTitle: editingMember.jobTitle,
+        isAccountAdministrator: editingMember.isAccountAdministrator,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local state
+      onMembersChange(members.map(m => 
+        m.id === editingMember.id 
+          ? { ...m, ...editingMember } 
+          : m
+      ));
+
+      setEditingMember(null);
+      showSuccess('Member updated successfully');
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to update member');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveMemberConfirm = (memberToRemove: Member) => {
+    if (!isCurrentUserAdmin) return;
+    
+    if (user.uid === memberToRemove.id) {
+      showError('You cannot remove yourself from the team');
+      return;
+    }
+
+    showConfirmation(
+      'Remove Team Member',
+      `Are you sure you want to remove ${memberToRemove.personalName} from your team? This action cannot be undone.`,
+      () => handleRemoveMember(memberToRemove)
+    );
+  };
+
+  const handleRemoveMember = async (memberToRemove: Member) => {
+    if (!member?.organizationId) return;
+    
+    try {
+      const memberRef = doc(db, 'accounts', member.organizationId, 'members', memberToRemove.id);
+      await deleteDoc(memberRef);
+
+      onMembersChange(members.filter(m => m.id !== memberToRemove.id));
+      showSuccess(`${memberToRemove.personalName} has been removed from your team`);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to remove member');
+    }
+  };
+
+  const sendInviteEmail = async (email: string, name: string, inviteUrl: string) => {
+    const response = await fetch('/api/send-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        companyName: member.organizationName,
+        inviteUrl,
+        inviterName: currentUser?.personalName || user.email || 'Administrator',
+        locale: localStorage.getItem('fase-locale') || 'en'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to send invitation email');
+    }
+  };
+
+  const handleInviteMember = async (memberToInvite: Member) => {
+    if (!member?.organizationId) return;
+
+    try {
+      setInviting(memberToInvite.id);
+
+      const inviteToken = generateInviteToken(
+        memberToInvite.id,
+        member.organizationId,
+        memberToInvite.email,
+        memberToInvite.personalName,
+        member.organizationName || ''
+      );
+
+      const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+      await sendInviteEmail(memberToInvite.email, memberToInvite.personalName, inviteUrl);
+
+      showSuccess(`Invitation sent to ${memberToInvite.personalName} (${memberToInvite.email})`);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to send invitation');
+    } finally {
+      setInviting(null);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!member?.organizationId || !newMember.email || !newMember.personalName) return;
+    if (!isCurrentUserAdmin) return;
+
+    if (members.length >= 3) {
+      showError('Maximum of 3 team members allowed');
+      return;
+    }
+
+    try {
+      setAdding(true);
+
+      const memberId = `member_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+      const memberRef = doc(db, 'accounts', member.organizationId, 'members', memberId);
+      const memberData = {
+        id: memberId,
+        email: newMember.email.toLowerCase().trim(),
+        personalName: newMember.personalName.trim(),
+        jobTitle: newMember.jobTitle.trim() || '',
+        isAccountAdministrator: false,
+        isRegistrant: false,
+        accountConfirmed: false,
+        addedBy: user.uid,
+        joinedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(memberRef, memberData);
+
+      // Add to local state
+      const newMemberForState: Member = {
+        ...memberData,
+        joinedAt: { toDate: () => new Date() },
+        createdAt: { toDate: () => new Date() },
+        updatedAt: { toDate: () => new Date() }
+      };
+      onMembersChange([...members, newMemberForState]);
+
+      // Send invitation email automatically
+      try {
+        const inviteToken = generateInviteToken(
+          memberId,
+          member.organizationId,
+          newMember.email,
+          newMember.personalName,
+          member.organizationName || ''
+        );
+
+        const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+        await sendInviteEmail(newMember.email, newMember.personalName, inviteUrl);
+      } catch (inviteError) {
+        // Don't fail the whole process if email fails
+        showError('Member added but failed to send invitation email. You can resend it from the team list.');
+      }
+
+      // Reset form
+      setNewMember({ email: '', personalName: '', jobTitle: '' });
+      setShowAddForm(false);
+      showSuccess(`${newMember.personalName} has been added to your team`);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to add member');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b border-fase-light-gold">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">
+              Team Management
+            </h2>
+            <p className="text-sm text-gray-600">
+              Manage your organization&apos;s team members ({members.length}/3)
+            </p>
+          </div>
+          {isCurrentUserAdmin && members.length < 3 && (
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              variant="primary"
+              size="small"
+            >
+              {showAddForm ? 'Cancel' : 'Add Member'}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Add Member Form */}
+      {showAddForm && (
+        <div className="px-6 py-6 border-b border-fase-light-gold bg-gray-50">
+          <h3 className="text-lg font-medium text-fase-navy mb-4">Add New Team Member</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={newMember.email}
+                  onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  placeholder="colleague@company.com"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-fase-navy mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={newMember.personalName}
+                  onChange={(e) => setNewMember(prev => ({ ...prev, personalName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  placeholder="John Smith"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-1">
+                Job Title
+              </label>
+              <input
+                type="text"
+                value={newMember.jobTitle}
+                onChange={(e) => setNewMember(prev => ({ ...prev, jobTitle: e.target.value }))}
+                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                placeholder="e.g. Operations Manager"
+              />
+            </div>
+            <div className="flex space-x-3">
+              <Button
+                onClick={handleAddMember}
+                disabled={adding || !newMember.email || !newMember.personalName}
+                variant="primary"
+                size="small"
+              >
+                {adding ? 'Adding...' : 'Add Member'}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setNewMember({ email: '', personalName: '', jobTitle: '' });
+                }}
+                variant="secondary"
+                size="small"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="divide-y divide-fase-light-gold">
+        {members.map((memberItem) => (
+          <div key={memberItem.id} className="p-6">
+            {editingMember?.id === memberItem.id ? (
+              // Edit Mode
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editingMember.personalName}
+                      onChange={(e) => setEditingMember(prev => 
+                        prev ? { ...prev, personalName: e.target.value } : null
+                      )}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-fase-navy mb-1">
+                      Job Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editingMember.jobTitle}
+                      onChange={(e) => setEditingMember(prev => 
+                        prev ? { ...prev, jobTitle: e.target.value } : null
+                      )}
+                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`admin-${memberItem.id}`}
+                    checked={editingMember.isAccountAdministrator}
+                    onChange={(e) => setEditingMember(prev => 
+                      prev ? { ...prev, isAccountAdministrator: e.target.checked } : null
+                    )}
+                    className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-fase-light-gold rounded"
+                  />
+                  <label htmlFor={`admin-${memberItem.id}`} className="ml-2 text-sm text-fase-black">
+                    Account Administrator
+                  </label>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={handleSaveMember}
+                    disabled={saving}
+                    variant="primary"
+                    size="small"
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={() => setEditingMember(null)}
+                    variant="secondary"
+                    size="small"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // View Mode
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-fase-navy rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-medium text-sm">
+                      {memberItem.personalName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h4 className="font-medium text-fase-navy">
+                        {memberItem.personalName}
+                      </h4>
+                      {memberItem.isAccountAdministrator && (
+                        <span className="text-xs font-medium text-gray-600">
+                          (Account Administrator)
+                        </span>
+                      )}
+                      {memberItem.id === user?.uid && (
+                        <span className="text-xs font-medium text-gray-600">
+                          (You)
+                        </span>
+                      )}
+                      {memberNeedsInvite(memberItem) && (
+                        <span className="text-xs font-medium text-amber-600">
+                          (Pending Invite)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-fase-black">{memberItem.email}</p>
+                    {memberItem.jobTitle && (
+                      <p className="text-sm text-gray-600">{memberItem.jobTitle}</p>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      Joined {memberItem.joinedAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex space-x-2">
+                  {memberNeedsInvite(memberItem) ? (
+                    // For pending invites, show both resend and remove buttons
+                    isCurrentUserAdmin ? (
+                      <>
+                        <Button
+                          onClick={() => handleInviteMember(memberItem)}
+                          disabled={inviting === memberItem.id}
+                          variant="primary"
+                          size="small"
+                        >
+                          {inviting === memberItem.id ? 'Sending...' : 'Resend Invite'}
+                        </Button>
+                        <Button
+                          onClick={() => handleRemoveMemberConfirm(memberItem)}
+                          variant="secondary"
+                          size="small"
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Remove
+                        </Button>
+                      </>
+                    ) : null
+                  ) : (
+                    <>
+                      {(isCurrentUserAdmin || memberItem.id === user?.uid) && (
+                        <Button
+                          onClick={() => handleEditMember(memberItem)}
+                          variant="secondary"
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {isCurrentUserAdmin && memberItem.id !== user?.uid && (
+                        <Button
+                          onClick={() => handleRemoveMemberConfirm(memberItem)}
+                          variant="secondary"
+                          size="small"
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {members.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No team members</h3>
+          <p className="text-fase-black">Add team members to collaborate on your account</p>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={hideConfirmation}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+    </div>
+  );
+}

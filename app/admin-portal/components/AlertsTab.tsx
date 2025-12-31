@@ -84,16 +84,6 @@ export default function AlertsTab({
     return date.toLocaleDateString();
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
   return (
     <div className="space-y-4">
       {/* Administrative Alerts Section */}
@@ -165,17 +155,27 @@ export default function AlertsTab({
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className={`font-medium mb-1 ${
-                          alert.type === 'error' ? 'text-red-800' :
+                        <div className="flex items-center gap-2">
+                          <h4 className={`font-medium mb-1 ${
+                            alert.type === 'error' ? 'text-red-800' :
                           alert.type === 'warning' ? 'text-amber-800' :
                           alert.type === 'success' ? 'text-green-800' :
                           'text-blue-800'
                         }`}>
-                          {alert.title}
+                            {alert.title}
+                          </h4>
                           {!alert.isRead && (
-                            <span className="ml-2 text-xs bg-current text-white px-2 py-1 rounded-full">NEW</span>
+                            <span className="text-xs bg-current text-white px-2 py-0.5 rounded-full">NEW</span>
                           )}
-                        </h4>
+                          {alert.emailSent && (
+                            <span className="text-xs bg-gray-600 text-white px-2 py-0.5 rounded-full flex items-center">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              EMAIL SENT
+                            </span>
+                          )}
+                        </div>
                         <div 
                           className={`text-sm mb-2 ${
                             alert.type === 'error' ? 'text-red-700' :
@@ -185,13 +185,8 @@ export default function AlertsTab({
                           }`}
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
                         />
-                        <div className="flex items-center space-x-3 text-xs">
-                          <span className={`px-2 py-1 rounded-full border ${getPriorityColor(alert.priority)}`}>
-                            {alert.priority.charAt(0).toUpperCase() + alert.priority.slice(1)}
-                          </span>
-                          <span className="text-gray-500">
-                            {formatDate(alert.createdAt)}
-                          </span>
+                        <div className="text-xs text-gray-500">
+                          {formatDate(alert.createdAt)}
                         </div>
                       </div>
                       <div className="flex space-x-2 ml-4">

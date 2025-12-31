@@ -194,10 +194,16 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       if (selectedTemplate === 'standalone_invoice') {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
+        payload.originalAmount = originalAmount;
+        payload.hasOtherAssociations = formData.hasOtherAssociations;
+        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
+        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
         payload.country = formData.address.country;
         payload.address = formData.address;
         payload.userLocale = formData.userLocale;
         payload.forceCurrency = formData.forceCurrency;
+        // Add custom line item data if enabled
+        payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
         // Remove template field for send-invoice-only API
         delete payload.template;
       } else {
@@ -206,7 +212,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.totalAmount = finalAmount;
           payload.exactTotalAmount = finalAmount;
           payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount).toString() : '0';
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
           payload.forceCurrency = formData.forceCurrency;
@@ -362,10 +368,16 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       if (selectedTemplate === 'standalone_invoice') {
         payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
         payload.totalAmount = finalAmount;
+        payload.originalAmount = originalAmount;
+        payload.hasOtherAssociations = formData.hasOtherAssociations;
+        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
+        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
         payload.country = formData.address.country;
         payload.address = formData.address;
         payload.userLocale = formData.userLocale;
         payload.forceCurrency = formData.forceCurrency;
+        // Add custom line item data if enabled
+        payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
         // Remove template field for send-invoice-only API
         delete payload.template;
       } else {
@@ -374,7 +386,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           payload.totalAmount = finalAmount;
           payload.exactTotalAmount = finalAmount;
           payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount).toString() : '0';
+          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
           payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
           payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
           payload.forceCurrency = formData.forceCurrency;
@@ -789,8 +801,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Address - Only for invoice and reminder emails */}
-          {(selectedTemplate === 'invoice' || selectedTemplate === 'reminder') && (
+          {/* Address - For invoice, standalone invoice, and reminder emails */}
+          {(selectedTemplate === 'invoice' || selectedTemplate === 'standalone_invoice' || selectedTemplate === 'reminder') && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Address</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -881,9 +893,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
               <div className="text-sm space-y-1">
                 <div>Base Fee: €{originalAmount}</div>
                 {formData.hasOtherAssociations && (
-                  <div>Discount (20%): -€{originalAmount - finalAmount}</div>
+                  <div>Multi-Association Discount (20%): -€{originalAmount - baseAmount}</div>
                 )}
-                <div className="font-semibold">Total: €{finalAmount}</div>
+                {formData.customLineItem.enabled && formData.customLineItem.amount > 0 && (
+                  <div>{formData.customLineItem.description || 'Custom Item'}: €{formData.customLineItem.amount}</div>
+                )}
+                <div className="font-semibold pt-2 border-t border-gray-300">Total: €{finalAmount}</div>
               </div>
             </div>
           )}
@@ -1059,7 +1074,10 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
               disabled={sending || previewing}
               className="w-full"
             >
-              {sending ? 'Sending...' : `Send ${emailTemplates[selectedTemplate].title}`}
+              {sending ? 'Sending...' : 
+                selectedTemplate === 'standalone_invoice' ? 'Send Standalone Invoice' :
+                selectedTemplate === 'freeform' ? 'Send Email' :
+                `Send ${emailTemplates[selectedTemplate].title}`}
             </Button>
           </div>
 

@@ -543,7 +543,6 @@ export interface Alert {
   title: string;
   message: string;
   type: 'info' | 'warning' | 'error' | 'success';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
   targetAudience: 'all' | 'members' | 'admins' | 'specific';
   targetUsers?: string[]; // Array of user IDs if targetAudience is 'specific'
   isActive: boolean;

@@ -5,7 +5,6 @@ import * as path from 'path';
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
-import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -203,42 +202,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ Sponsorship invoice email sent successfully:', result);
     
-    // Log email audit trail (only if not preview mode)
-    if (!isPreview) {
-      try {
-        await AdminAuditLogger.logEmailSent({
-          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
-          action: 'email_sent_sponsorship_invoice',
-          success: true,
-          emailData: {
-            toEmail: invoiceData.email,
-            toName: invoiceData.greeting,
-            ccEmails: requestData.cc ? [requestData.cc] : undefined,
-            organizationName: invoiceData.organizationName,
-            subject: emailContent.subject,
-            emailType: 'sponsorship_invoice',
-            htmlContent: emailData.invoiceHTML,
-            emailLanguage: locale,
-            templateUsed: 'sponsorship_invoice',
-            customizedContent: false,
-            attachments: pdfBase64 ? [{
-              filename: `FASE-Sponsorship-Invoice-${invoiceData.invoiceNumber}.pdf`,
-              type: 'pdf' as const,
-              size: undefined
-            }] : [],
-            invoiceNumber: invoiceData.invoiceNumber,
-            emailServiceId: result.id,
-            invoiceAmount: invoiceData.totalAmount,
-            currency: 'EUR',
-            paymentInstructions: 'Bank transfer'
-          }
-        });
-        console.log('✅ Email audit logged successfully');
-      } catch (auditError) {
-        console.error('❌ Failed to log email audit:', auditError);
-        // Don't fail the request if audit logging fails
-      }
-    }
     
     // Send admin copy
     try {

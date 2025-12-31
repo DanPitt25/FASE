@@ -70,24 +70,13 @@
     "no_messages_desc": "Sie haben noch keine Nachrichten.",
     "mark_read": "Als Gelesen Markieren",
     "delete": "Löschen",
-    "from": "Von",
-    "priority": {
-      "high": "hoch",
-      "medium": "mittel",
-      "low": "niedrig"
-    }
+    "from": "Von"
   },
   "alerts": {
     "no_alerts": "Keine Benachrichtigungen",
     "no_alerts_desc": "Sie sind auf dem neuesten Stand! Schauen Sie später für wichtige Updates wieder vorbei.",
     "mark_read": "Als Gelesen Markieren",
     "dismiss": "Verwerfen",
-    "priority": {
-      "urgent": "dringend",
-      "high": "hoch",
-      "medium": "mittel",
-      "low": "niedrig"
-    },
     "types": {
       "error": "Fehler",
       "warning": "Warnung",

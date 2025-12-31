@@ -292,7 +292,7 @@ export default function KnowledgeBaseWebinarsPage() {
                           await createComment(
                             selectedVideo.id,
                             user.uid,
-                            user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                            member?.personalName || user.email?.split('@')[0] || 'Anonymous',
                             newComment.trim()
                           );
                           setNewComment('');

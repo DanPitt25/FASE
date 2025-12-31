@@ -25,7 +25,6 @@ export interface Message {
   recipientType: 'user' | 'all_members' | 'all_admins' | 'all_users';
   organizationType?: 'MGA' | 'carrier' | 'provider'; // Filter by organization type
   messageType: 'direct' | 'announcement' | 'system';
-  priority: 'low' | 'medium' | 'high';
   isRead: boolean;
   createdAt: any;
   updatedAt: any;
@@ -50,7 +49,6 @@ export interface Alert {
   title: string;
   message: string;
   type: 'info' | 'warning' | 'error' | 'success';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
   targetAudience: 'all' | 'members' | 'admins' | 'specific';
   targetUsers?: string[];
   organizationType?: 'MGA' | 'carrier' | 'provider'; // Filter by organization type
@@ -63,6 +61,7 @@ export interface Alert {
   actionUrl?: string;
   actionText?: string;
   locale?: 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'; // Language of the alert
+  emailSent?: boolean; // Track if email notification was sent
 }
 
 export interface UserAlert {

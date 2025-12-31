@@ -90,7 +90,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       {tAuth('logged_in_as')} {
                         member?.personalName 
                           ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
-                          : user.displayName || user.email?.split("@")[0]
+                          : user.email?.split("@")[0] || 'User'
                       }
                     </div>
                     {isAdmin && locale === 'en' && (
@@ -375,7 +375,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   {tAuth('signed_in_as')} {
                     member?.personalName 
                       ? `${member.personalName}${member.organizationName ? ` (${member.organizationName})` : ''}` 
-                      : user.displayName || user.email?.split('@')[0]
+                      : user.email?.split('@')[0] || 'User'
                   }
                 </div>
                 <button

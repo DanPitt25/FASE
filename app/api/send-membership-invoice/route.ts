@@ -7,7 +7,6 @@ export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';
-import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -517,45 +516,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ Membership acceptance email sent successfully:', result);
     
-    // Log email audit trail (only if not preview mode)
-    if (!isPreview) {
-      try {
-        const emailType = template === 'followup' ? 'membership_followup' : 
-                         isLostInvoice ? 'lost_invoice' : 'membership_acceptance';
-        
-        await AdminAuditLogger.logEmailSent({
-          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
-          action: `email_sent_${emailType}`,
-          success: true,
-          emailData: {
-            toEmail: invoiceData.email,
-            toName: invoiceData.fullName,
-            ccEmails: requestData.cc ? [requestData.cc] : undefined,
-            organizationName: invoiceData.organizationName,
-            subject: emailContent.subject,
-            emailType: emailType,
-            htmlContent: emailData.invoiceHTML,
-            emailLanguage: locale,
-            templateUsed: template || 'invoice',
-            customizedContent: !!requestData.customizedEmailContent,
-            attachments: pdfAttachment ? [{
-              filename: `FASE-Invoice-${invoiceNumber}.pdf`,
-              type: 'pdf' as const,
-              size: undefined // PDF size not available here
-            }] : [],
-            invoiceNumber: invoiceNumber,
-            emailServiceId: result.id,
-            invoiceAmount: invoiceData.totalAmount,
-            currency: currencyConversion.convertedCurrency,
-            paymentInstructions: 'Bank transfer or PayPal'
-          }
-        });
-        console.log('✅ Email audit logged successfully');
-      } catch (auditError) {
-        console.error('❌ Failed to log email audit:', auditError);
-        // Don't fail the request if audit logging fails
-      }
-    }
     
     // Log invoice to database after successful sending
     try {

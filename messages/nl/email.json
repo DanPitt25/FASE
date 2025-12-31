@@ -174,7 +174,8 @@
     "bank_name_address": "Banknaam en adres",
     "payment_company": "Lexicon Associates, LLC accepteert betalingen namens Fédération des Agences de Souscription (FASE B.V.)",
     "account_number": "Rekeningnummer: 1255828998",
-    "payment_reference": "Betalingsreferentie: {invoiceNumber}"
+    "payment_reference": "Betalingsreferentie: {invoiceNumber}",
+    "multi_association_discount": "Lidmaatschapskorting voor Meerdere Verenigingen (20%)"
   },
   "signatures": {
     "william_pitt": {

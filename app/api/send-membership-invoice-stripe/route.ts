@@ -4,7 +4,6 @@ import Stripe from 'stripe';
 import * as fs from 'fs';
 import * as path from 'path';
 import { convertCurrency, detectCurrency } from '../../../lib/currency-conversion';
-import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -345,38 +344,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ Membership acceptance email sent successfully:', result);
     
-    // Log email audit trail (only if not preview mode)
-    if (!isPreview) {
-      try {
-        await AdminAuditLogger.logEmailSent({
-          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
-          action: 'email_sent_membership_stripe',
-          success: true,
-          emailData: {
-            toEmail: invoiceData.email,
-            toName: invoiceData.greeting,
-            ccEmails: requestData.cc ? [requestData.cc] : undefined,
-            organizationName: invoiceData.organizationName,
-            subject: emailContent.subject,
-            emailType: 'membership_stripe',
-            htmlContent: emailData.invoiceHTML,
-            emailLanguage: locale,
-            templateUsed: 'membership_acceptance_stripe',
-            customizedContent: !!requestData.customizedEmailContent,
-            attachments: [],
-            invoiceNumber: invoiceNumber,
-            emailServiceId: result.id,
-            invoiceAmount: invoiceData.totalAmount,
-            currency: 'EUR',
-            paymentInstructions: 'Stripe payment link and bank transfer'
-          }
-        });
-        console.log('✅ Email audit logged successfully');
-      } catch (auditError) {
-        console.error('❌ Failed to log email audit:', auditError);
-        // Don't fail the request if audit logging fails
-      }
-    }
     
     return NextResponse.json({
       success: true,

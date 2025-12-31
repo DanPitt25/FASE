@@ -433,21 +433,9 @@ export default function MemberContent() {
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-3 ml-4">
-                        <span className="text-xs text-gray-500">
-                          {alert.createdAt?.toDate?.()?.toLocaleDateString()}
-                        </span>
-                        {alert.priority === 'urgent' && (
-                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded">
-                            {t(`alerts.priority.${alert.priority}`)}
-                          </span>
-                        )}
-                        {alert.priority === 'high' && (
-                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-50 rounded">
-                            {t(`alerts.priority.${alert.priority}`)}
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-xs text-gray-500 ml-4">
+                        {alert.createdAt?.toDate?.()?.toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                   
@@ -545,11 +533,11 @@ export default function MemberContent() {
 
   // Construct title with personal name and company name (if applicable)
   const getWelcomeTitle = () => {
-    if (!user?.displayName && !member?.personalName) {
+    if (!member?.personalName) {
       return t('portal.welcome_title');
     }
     
-    const personalName = member?.personalName || user?.displayName || "";
+    const personalName = member?.personalName || "";
     const companyName = member?.organizationName;
     
     // All members are corporate

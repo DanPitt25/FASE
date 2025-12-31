@@ -22,9 +22,17 @@ export default function BioReviewTab() {
   const [loading, setLoading] = useState(true);
   const [pendingBios, setPendingBios] = useState<CompanyWithBio[]>([]);
   const [selectedBio, setSelectedBio] = useState<CompanyWithBio | null>(null);
-  const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
+  const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | 'edit' | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [processingReview, setProcessingReview] = useState(false);
+  const [editedBioText, setEditedBioText] = useState('');
+  const [translations, setTranslations] = useState({
+    fr: '',
+    de: '',
+    es: '',
+    it: '',
+    nl: ''
+  });
 
   // Load pending bio submissions
   useEffect(() => {
@@ -73,33 +81,63 @@ export default function BioReviewTab() {
     }
   };
 
-  const handleReviewBio = async (companyId: string, action: 'approve' | 'reject', reason?: string) => {
+  const handleReviewBio = async (companyId: string, action: 'approve' | 'reject' | 'edit', reason?: string) => {
     if (!user?.uid) return;
 
     try {
       setProcessingReview(true);
 
       const accountRef = doc(db, 'accounts', companyId);
-      const updateData: any = {
-        'companySummary.status': action === 'approve' ? 'approved' : 'rejected',
+      let updateData: any = {
         'companySummary.reviewedAt': serverTimestamp(),
         'companySummary.reviewedBy': user.uid,
         updatedAt: serverTimestamp()
       };
 
-      if (action === 'reject' && reason) {
-        updateData['companySummary.rejectionReason'] = reason;
+      if (action === 'edit') {
+        // Update bio text and translations, keep status as approved
+        updateData['companySummary.text'] = editedBioText;
+        updateData['companySummary.status'] = 'approved';
+        
+        // Add translations if provided
+        const bioTranslations: any = {};
+        Object.entries(translations).forEach(([lang, text]) => {
+          if (text.trim()) {
+            bioTranslations[lang] = text;
+          }
+        });
+        
+        if (Object.keys(bioTranslations).length > 0) {
+          updateData['companySummary.translations'] = bioTranslations;
+        }
+      } else {
+        updateData['companySummary.status'] = action === 'approve' ? 'approved' : 'rejected';
+        
+        if (action === 'reject' && reason) {
+          updateData['companySummary.rejectionReason'] = reason;
+        }
       }
 
       await updateDoc(accountRef, updateData);
 
       // Update local state
-      setPendingBios(prev => prev.filter(bio => bio.id !== companyId));
+      if (action === 'reject' || action === 'approve') {
+        setPendingBios(prev => prev.filter(bio => bio.id !== companyId));
+      } else if (action === 'edit') {
+        // For edit, update the bio in the list
+        setPendingBios(prev => prev.map(bio => 
+          bio.id === companyId 
+            ? { ...bio, bioText: editedBioText }
+            : bio
+        ));
+      }
       
-      // Close modal
+      // Close modal and reset state
       setSelectedBio(null);
       setReviewAction(null);
       setRejectionReason('');
+      setEditedBioText('');
+      setTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
 
     } catch (error) {
       console.error('Error reviewing bio:', error);
@@ -108,10 +146,23 @@ export default function BioReviewTab() {
     }
   };
 
-  const openReviewModal = (bio: CompanyWithBio, action: 'approve' | 'reject') => {
+  const openReviewModal = (bio: CompanyWithBio, action: 'approve' | 'reject' | 'edit') => {
     setSelectedBio(bio);
     setReviewAction(action);
     setRejectionReason('');
+    
+    if (action === 'edit') {
+      setEditedBioText(bio.bioText);
+      // Load existing translations if available
+      const existingTranslations = (bio as any).companySummary?.translations || {};
+      setTranslations({
+        fr: existingTranslations.fr || '',
+        de: existingTranslations.de || '',
+        es: existingTranslations.es || '',
+        it: existingTranslations.it || '',
+        nl: existingTranslations.nl || ''
+      });
+    }
   };
 
   const formatDate = (timestamp: any) => {
@@ -172,7 +223,7 @@ export default function BioReviewTab() {
                   </p>
                 </div>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Pending Review
+                  Submitted
                 </span>
               </div>
 
@@ -196,6 +247,14 @@ export default function BioReviewTab() {
                   Reject
                 </Button>
                 <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => openReviewModal(bio, 'edit')}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  Edit & Translate
+                </Button>
+                <Button
                   variant="primary"
                   size="small"
                   onClick={() => openReviewModal(bio, 'approve')}
@@ -217,16 +276,73 @@ export default function BioReviewTab() {
           setReviewAction(null);
           setRejectionReason('');
         }}
-        title={`${reviewAction === 'approve' ? 'Approve' : 'Reject'} Company Bio`}
+        title={`${reviewAction === 'approve' ? 'Approve' : reviewAction === 'reject' ? 'Reject' : 'Edit'} Company Bio`}
+        maxWidth={reviewAction === 'edit' ? 'xl' : 'lg'}
       >
         {selectedBio && reviewAction && (
           <div className="space-y-4">
             <div>
               <h4 className="font-medium text-gray-900 mb-2">{selectedBio.organizationName}</h4>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedBio.bioText}</p>
-              </div>
+              
+              {reviewAction === 'edit' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    English Bio Text *
+                  </label>
+                  <textarea
+                    value={editedBioText}
+                    onChange={(e) => setEditedBioText(e.target.value)}
+                    rows={4}
+                    maxLength={500}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="Edit the company bio text..."
+                    required
+                  />
+                  <div className="mt-1 text-xs text-gray-500 text-right">
+                    {editedBioText.length}/500 characters
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedBio.bioText}</p>
+                </div>
+              )}
             </div>
+
+            {reviewAction === 'edit' && (
+              <div className="space-y-4">
+                <h5 className="font-medium text-gray-900">Translations (Optional)</h5>
+                
+                {Object.entries(translations).map(([lang, text]) => {
+                  const langNames = {
+                    fr: 'French',
+                    de: 'German', 
+                    es: 'Spanish',
+                    it: 'Italian',
+                    nl: 'Dutch'
+                  };
+                  
+                  return (
+                    <div key={lang}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {langNames[lang as keyof typeof langNames]} Translation
+                      </label>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setTranslations(prev => ({ ...prev, [lang]: e.target.value }))}
+                        rows={3}
+                        maxLength={500}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
+                      />
+                      <div className="mt-1 text-xs text-gray-500 text-right">
+                        {text.length}/500 characters
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {reviewAction === 'reject' && (
               <div>
@@ -263,10 +379,10 @@ export default function BioReviewTab() {
                   reviewAction,
                   reviewAction === 'reject' ? rejectionReason : undefined
                 )}
-                disabled={processingReview || (reviewAction === 'reject' && !rejectionReason.trim())}
-                className={reviewAction === 'reject' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}
+                disabled={processingReview || (reviewAction === 'reject' && !rejectionReason.trim()) || (reviewAction === 'edit' && !editedBioText.trim())}
+                className={reviewAction === 'reject' ? 'bg-red-600 hover:bg-red-700 text-white' : reviewAction === 'edit' ? 'bg-blue-600 hover:bg-blue-700' : ''}
               >
-                {processingReview ? 'Processing...' : (reviewAction === 'approve' ? 'Approve Bio' : 'Reject Bio')}
+                {processingReview ? 'Processing...' : (reviewAction === 'approve' ? 'Approve Bio' : reviewAction === 'reject' ? 'Reject Bio' : 'Save Changes')}
               </Button>
             </div>
           </div>

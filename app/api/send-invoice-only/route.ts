@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
-import { AdminAuditLogger } from '../../../lib/admin-audit-logger';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -62,8 +61,8 @@ export async function POST(request: NextRequest) {
         country: requestData.country || 'Netherlands'
       },
       originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
-      discountAmount: requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0,
-      discountReason: requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : "",
+      discountAmount: requestData.discountAmount || (requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0),
+      discountReason: requestData.discountReason || (requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""),
       customLineItem: requestData.customLineItem || null
     };
     
@@ -230,107 +229,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ Invoice delivery email sent successfully:', result);
     
-    // Log email audit trail (only if not preview mode)
-    if (!isPreview) {
-      try {
-        const auditData = await AdminAuditLogger.logEmailSent({
-          adminUserId: 'admin_portal', // TODO: Pass actual admin user ID from request
-          action: 'email_sent_invoice_only',
-          success: true,
-          emailData: {
-            toEmail: invoiceData.email,
-            toName: invoiceData.greeting,
-            ccEmails: requestData.cc ? [requestData.cc] : undefined,
-            organizationName: invoiceData.organizationName,
-            subject: emailContent.subject,
-            emailType: 'invoice_only',
-            htmlContent: emailData.invoiceHTML,
-            emailLanguage: locale,
-            templateUsed: 'invoice_only',
-            customizedContent: !!requestData.customizedEmailContent,
-            attachments: pdfBase64 ? [{
-              filename: `FASE-Invoice-${invoiceData.invoiceNumber}.pdf`,
-              type: 'pdf' as const,
-              size: undefined
-            }] : [],
-            invoiceNumber: invoiceData.invoiceNumber,
-            emailServiceId: result.id,
-            invoiceAmount: invoiceData.totalAmount,
-            currency: invoiceData.generatedCurrency || 'EUR',
-            paymentInstructions: 'Bank transfer or PayPal'
-          }
-        });
-        
-        // Log comprehensive invoice data in a separate action for full reconstruction
-        await AdminAuditLogger.logAction({
-          adminUserId: 'admin_portal',
-          memberAccountId: invoiceData.email,
-          memberEmail: invoiceData.email,
-          organizationName: invoiceData.organizationName,
-          action: 'invoice_data_comprehensive',
-          category: 'invoice',
-          success: true,
-          details: {
-            // Link to email audit record
-            emailAuditId: auditData,
-            
-            // Complete financial summary
-            financialSummary: {
-              amount: invoiceData.totalAmount,
-              originalAmount: invoiceData.originalAmount,
-              discountAmount: invoiceData.discountAmount,
-              discountReason: invoiceData.discountReason,
-              hasOtherAssociations: hasOtherAssociations,
-              
-              // Currency details (original and converted)
-              currency: invoiceData.generatedCurrency || 'EUR',
-              convertedCurrency: invoiceData.convertedCurrency,
-              convertedAmount: invoiceData.convertedAmount,
-              exchangeRate: invoiceData.exchangeRate,
-              forceCurrency: requestData.forceCurrency,
-              paymentRequired: true
-            },
-            
-            // Complete recipient information
-            recipientDetails: {
-              name: invoiceData.fullName,
-              email: invoiceData.email,
-              gender: invoiceData.gender,
-              greeting: invoiceData.greeting,
-              address: invoiceData.address,
-              organizationName: invoiceData.organizationName
-            },
-            
-            // Invoice metadata
-            invoiceMetadata: {
-              invoiceNumber: invoiceData.invoiceNumber,
-              language: locale,
-              generationSource: 'customer_request',
-              hasAttachments: !!pdfBase64,
-              customLineItem: invoiceData.customLineItem
-            },
-            
-            // Bank payment details for full reconstruction
-            paymentDetails: {
-              bankDetails: invoiceData.bankDetails,
-              instructions: 'Bank transfer or PayPal'
-            },
-            
-            // Email context
-            emailContext: {
-              subject: emailContent.subject,
-              templateUsed: 'invoice_only',
-              customizedContent: !!requestData.customizedEmailContent,
-              ccEmails: requestData.cc ? [requestData.cc] : []
-            }
-          }
-        });
-        console.log('✅ Email audit logged successfully');
-      } catch (auditError) {
-        console.error('❌ Failed to log email audit:', auditError);
-        // Don't fail the request if audit logging fails
-      }
-    }
     
     // Send admin copy
     try {

@@ -3,9 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  updateProfile,
   updatePassword,
-  reload,
   User
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -14,7 +12,6 @@ import { getUnifiedMember } from './unified-member';
 export interface AuthUser {
   uid: string;
   email: string | null;
-  displayName: string | null;
   twoFactorEnabled?: boolean;
 }
 
@@ -60,7 +57,6 @@ export const signIn = async (email: string, password: string): Promise<AuthUser>
     return {
       uid: user.uid,
       email: user.email,
-      displayName: user.displayName,
       twoFactorEnabled: false
     };
   } catch (error: any) {
@@ -84,7 +80,6 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
       callback({
         uid: user.uid,
         email: user.email,
-        displayName: user.displayName,
         twoFactorEnabled: false
       });
     } else {

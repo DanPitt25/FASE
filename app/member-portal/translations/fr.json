@@ -70,24 +70,13 @@
     "no_messages_desc": "Vous n'avez pas encore de messages.",
     "mark_read": "Marquer comme Lu",
     "delete": "Supprimer",
-    "from": "De",
-    "priority": {
-      "high": "élevée",
-      "medium": "moyenne",
-      "low": "faible"
-    }
+    "from": "De"
   },
   "alerts": {
     "no_alerts": "Aucune Alerte",
     "no_alerts_desc": "Vous êtes à jour ! Revenez plus tard pour des mises à jour importantes.",
     "mark_read": "Marquer comme Lu",
     "dismiss": "Ignorer",
-    "priority": {
-      "urgent": "urgent",
-      "high": "élevée",
-      "medium": "moyenne",
-      "low": "faible"
-    },
     "types": {
       "error": "erreur",
       "warning": "avertissement",
