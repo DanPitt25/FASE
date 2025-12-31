@@ -21,6 +21,26 @@ export default {
         // Legacy font aliases for gradual migration
         'playfair': ['Noto Serif', 'serif'],
         'lato': ['DM Sans', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        modalSlideIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translate(-50%, -50%) scale(0.95)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translate(-50%, -50%) scale(1)'
+          },
+        }
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.3s ease-out',
+        modalSlideIn: 'modalSlideIn 0.3s ease-out',
       }
     }
   },

@@ -186,11 +186,11 @@ export default function SponsorsPage() {
           isOpen={modalOpen}
           onClose={handleCloseModal}
           title={selectedSponsor.name}
-          maxWidth="lg"
+          maxWidth="2xl"
         >
           <div className="space-y-6">
-            <div className="flex items-center justify-center">
-              <div className="relative w-32 h-32">
+            <div className="flex items-center justify-center mb-8">
+              <div className="relative w-80 h-80 transition-transform duration-300 hover:scale-105">
                 <Image
                   src={selectedSponsor.logoUrl}
                   alt={`${selectedSponsor.name} logo`}

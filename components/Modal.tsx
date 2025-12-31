@@ -8,7 +8,7 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: ModalProps) {
@@ -46,20 +46,21 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
     sm: 'max-w-sm',
     md: 'max-w-md', 
     lg: 'max-w-lg',
-    xl: 'max-w-xl'
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl'
   };
 
   const modalContent = (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Overlay */}
+      {/* Overlay with fade-in animation */}
       <div 
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        className="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity duration-300 ease-out animate-fadeIn"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal with scale and fade animation */}
       <div 
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${maxWidthClasses[maxWidth]} overflow-hidden text-left transition-all bg-white shadow-xl rounded-lg z-10 max-h-[90vh] overflow-y-auto`}
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${maxWidthClasses[maxWidth]} overflow-hidden text-left transition-all bg-white shadow-xl rounded-lg z-10 max-h-[90vh] overflow-y-auto animate-modalSlideIn`}
         style={{ maxWidth: 'calc(100vw - 2rem)' }}
       >
           {/* Header */}
