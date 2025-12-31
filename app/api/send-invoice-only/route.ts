@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
       dear: genderAwareDear || 'Dear',
       deliveredText: invoiceEmail.delivered_text?.replace('{organizationName}', invoiceData.organizationName) || `Your invoice for ${invoiceData.organizationName} has been delivered.`,
       instructionsText: invoiceEmail.instructions_text || 'Please follow the payment instructions included in the attached PDF.',
+      welcomeText: invoiceEmail.welcome_text || '',
       contactText: invoiceEmail.contact_text || 'If you have any questions, please contact us at admin@fasemga.com',
       regards: invoiceEmail.regards || 'Best regards,',
       signature: invoiceEmail.signature || 'The FASE Team'
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
         dear: customContent[`dear${genderSuffix}`] || customContent.dear || emailContent.dear,
         deliveredText: customContent.delivered_text?.replace('{organizationName}', invoiceData.organizationName) || emailContent.deliveredText,
         instructionsText: customContent.instructions_text || emailContent.instructionsText,
+        welcomeText: customContent.welcome_text || emailContent.welcomeText,
         contactText: customContent.contact_text || emailContent.contactText,
         regards: customContent.regards || emailContent.regards,
         signature: customContent.signature || emailContent.signature
@@ -177,6 +179,10 @@ export async function POST(request: NextRequest) {
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 25px 0;">
               ${emailContent.instructionsText}
             </p>
+            
+            ${emailContent.welcomeText ? `<p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+              ${emailContent.welcomeText}
+            </p>` : ''}
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
               ${emailContent.contactText}

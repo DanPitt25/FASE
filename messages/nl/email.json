@@ -226,7 +226,8 @@
     "dear_m": "Geachte heer/mevrouw",
     "dear_f": "Geachte heer/mevrouw",
     "delivered_text": "Hierbij ontvangt u de factuur voor {organizationName}.",
-    "instructions_text": "Volg alstublieft de betalingsinstructies in de bijgevoegde PDF.",
+    "instructions_text": "Betalingsinstructies vindt u in de bijgevoegde PDF.",
+    "welcome_text": "We kijken ernaar uit u als FASE-lid te verwelkomen.",
     "contact_text": "Als u vragen heeft, neem dan contact met ons op via admin@fasemga.com.",
     "regards": "Met vriendelijke groet,",
     "signature": "Het FASE team"

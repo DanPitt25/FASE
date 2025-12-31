@@ -226,7 +226,8 @@
     "dear_m": "Dear Sir or Madam",
     "dear_f": "Dear Sir or Madam",
     "delivered_text": "Please find attached the invoice for {organizationName}.",
-    "instructions_text": "Please follow the payment instructions included in the attached PDF.",
+    "instructions_text": "Payment instructions are included in the attached PDF.",
+    "welcome_text": "We look forward to welcoming you as a FASE member.",
     "contact_text": "If you have any questions, please contact us at admin@fasemga.com.",
     "regards": "Best regards,",
     "signature": "The FASE Team"

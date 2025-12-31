@@ -234,7 +234,8 @@
     "dear_m": "Sehr geehrte Damen und Herren",
     "dear_f": "Sehr geehrte Damen und Herren",
     "delivered_text": "Anbei erhalten Sie die Rechnung für {organizationName}.",
-    "instructions_text": "Bitte befolgen Sie die Zahlungsanweisungen in der beigefügten PDF-Datei.",
+    "instructions_text": "Zahlungsanweisungen finden Sie in der beigefügten PDF-Datei.",
+    "welcome_text": "Wir freuen uns darauf, Sie als FASE-Mitglied begrüßen zu dürfen.",
     "contact_text": "Bei Fragen kontaktieren Sie uns bitte unter admin@fasemga.com.",
     "regards": "Mit freundlichen Grüßen,",
     "signature": "Das FASE-Team"

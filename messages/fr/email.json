@@ -228,7 +228,8 @@
     "dear_m": "Madame, Monsieur",
     "dear_f": "Madame, Monsieur",
     "delivered_text": "Veuillez trouver ci-joint la facture pour {organizationName}.",
-    "instructions_text": "Veuillez suivre les instructions de paiement incluses dans le PDF joint.",
+    "instructions_text": "Les instructions de paiement se trouvent dans le PDF joint.",
+    "welcome_text": "Nous sommes impatients de vous accueillir en tant que membre de FASE.",
     "contact_text": "Si vous avez des questions, veuillez nous contacter à admin@fasemga.com.",
     "regards": "Cordialement,",
     "signature": "L'équipe FASE"

@@ -234,7 +234,8 @@
     "dear_m": "Gentile Signore/Signora",
     "dear_f": "Gentile Signore/Signora",
     "delivered_text": "Alleghiamo la fattura per {organizationName}.",
-    "instructions_text": "La preghiamo di seguire le istruzioni di pagamento incluse nel PDF allegato.",
+    "instructions_text": "Le istruzioni di pagamento sono incluse nel PDF allegato.",
+    "welcome_text": "Non vediamo l'ora di darLe il benvenuto come membro FASE.",
     "contact_text": "Se ha domande, La preghiamo di contattarci a admin@fasemga.com.",
     "regards": "Cordiali saluti,",
     "signature": "Il team FASE"
