@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
             </div>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-              ${emailContent.dear} ${invoiceData.greeting},
+              ${emailContent.dear},
             </p>
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
