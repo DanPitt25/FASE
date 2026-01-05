@@ -302,12 +302,96 @@ export function validateLogoFile(file: File): boolean {
   if (file.size > maxSize) {
     throw new Error('File size must be less than 5MB');
   }
-  
+
   // Check file type
   const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
   if (!allowedTypes.includes(file.type)) {
     throw new Error('File must be PNG, JPG, SVG, or WebP format');
   }
-  
+
   return true;
+}
+
+/**
+ * Upload an invoice PDF to Firebase Storage
+ * @param pdfBase64 - The PDF file as base64 string
+ * @param invoiceNumber - The invoice number for naming
+ * @param organizationName - The organization name for folder structure
+ * @returns Promise with download URL and file path
+ */
+export async function uploadInvoicePDF(
+  pdfBase64: string,
+  invoiceNumber: string,
+  organizationName: string
+): Promise<{ downloadURL: string; filePath: string }> {
+  // Sanitize organization name for folder path
+  const sanitizedOrgName = organizationName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  // Create file name and path
+  const fileName = `${invoiceNumber}.pdf`;
+  const filePath = `invoices/${sanitizedOrgName}/${fileName}`;
+  const fileRef = ref(storage, filePath);
+
+  try {
+    // Convert base64 to Uint8Array
+    const binaryString = atob(pdfBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Upload the file with PDF content type
+    const snapshot = await uploadBytes(fileRef, bytes, {
+      contentType: 'application/pdf'
+    });
+
+    // Get the download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    console.log(`✅ Invoice PDF uploaded: ${filePath}`);
+
+    return {
+      downloadURL,
+      filePath
+    };
+  } catch (error) {
+    console.error('Error uploading invoice PDF:', error);
+    throw new Error('Failed to upload invoice PDF.');
+  }
+}
+
+/**
+ * Get the download URL for an invoice PDF
+ * @param invoiceNumber - The invoice number
+ * @param organizationName - The organization name
+ * @returns Promise with download URL or null if not found
+ */
+export async function getInvoicePDFURL(
+  invoiceNumber: string,
+  organizationName: string
+): Promise<string | null> {
+  const sanitizedOrgName = organizationName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const fileName = `${invoiceNumber}.pdf`;
+  const filePath = `invoices/${sanitizedOrgName}/${fileName}`;
+
+  try {
+    const fileRef = ref(storage, filePath);
+    await getMetadata(fileRef);
+    return await getDownloadURL(fileRef);
+  } catch (error: any) {
+    if (error?.code === 'storage/object-not-found') {
+      return null;
+    }
+    console.error('Error getting invoice PDF URL:', error);
+    return null;
+  }
 }

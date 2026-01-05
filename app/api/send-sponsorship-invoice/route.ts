@@ -201,36 +201,7 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Sponsorship invoice email sent successfully:', result);
-    
-    
-    // Send admin copy
-    try {
-      const adminEmailData = {
-        email: 'admin@fasemga.com',
-        subject: `Admin Copy: ${emailData.subject}`,
-        invoiceHTML: emailData.invoiceHTML,
-        invoiceNumber: emailData.invoiceNumber,
-        organizationName: emailData.organizationName,
-        totalAmount: emailData.totalAmount,
-        pdfAttachment: emailData.pdfAttachment,
-        pdfFilename: `ADMIN-COPY-${invoiceData.invoiceNumber}.pdf`
-        // Deliberately omitting 'cc' field to prevent CC-ing original recipients
-      };
 
-      await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          data: adminEmailData
-        }),
-      });
-      console.log('✅ Admin copy sent for sponsorship invoice:', invoiceData.invoiceNumber);
-    } catch (adminError) {
-      console.error('❌ Failed to send admin copy:', adminError);
-    }
-    
     return NextResponse.json({
       success: true,
       message: 'Sponsorship invoice email sent successfully',

@@ -482,16 +482,12 @@ export const getMembersByStatus = async (status: UnifiedMember['status']): Promi
 // Get accounts by status (for admin portal - returns account-level data only)
 export const getAccountsByStatus = async (status: UnifiedMember['status']): Promise<UnifiedMember[]> => {
   try {
-    console.log(`🏢 getAccountsByStatus: Querying for accounts with status '${status}'...`);
     const allAccounts: UnifiedMember[] = [];
     const accountsRef = collection(db, 'accounts');
-    
+
     // Get all accounts (individual + corporate) with matching status
-    // Query without any field restrictions to ensure we get all document data
     const accountsQuery = query(accountsRef, where('status', '==', status));
     const accountsSnapshot = await getDocs(accountsQuery);
-    
-    console.log(`🏢 getAccountsByStatus: Found ${accountsSnapshot.docs.length} accounts with status '${status}'`);
     
     accountsSnapshot.docs.forEach(doc => {
       const data = doc.data();

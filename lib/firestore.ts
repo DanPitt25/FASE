@@ -574,14 +574,13 @@ export interface Invoice {
   organizationName: string;
   amount: number;
   currency: string;
-  type: 'regular' | 'lost_invoice' | 'reminder' | 'followup';
+  type: 'regular' | 'reminder' | 'standalone';
   status: 'sent' | 'paid' | 'overdue';
-  isLostInvoice?: boolean;
   createdAt: any;
   updatedAt: any;
   sentAt: any;
-  emailId?: string; // Resend email ID
   pdfGenerated: boolean;
+  pdfUrl?: string; // Firebase Storage URL for the PDF
 }
 
 

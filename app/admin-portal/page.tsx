@@ -4,63 +4,42 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/DashboardLayout';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
-import { 
-  getUserAlerts, 
-  markAlertAsRead, 
-  dismissAlert, 
-  createAlert 
-} from '../../lib/unified-messaging';
-import { 
-  searchMembersByOrganizationName, 
-  getUserIdsForMemberCriteria, 
-  UnifiedMember, 
-  getAccountsByStatus, 
-  updateMemberStatus 
+import {
+  UnifiedMember,
+  getAccountsByStatus,
+  updateMemberStatus
 } from '../../lib/unified-member';
-import type { Alert, UserAlert } from '../../lib/unified-messaging';
-import Button from '../../components/Button';
-import Modal from '../../components/Modal';
 
 // Import modular tab components
 import MembersTab from './components/MembersTab';
-import AlertsTab from './components/AlertsTab';
 import EmailsTab from './components/EmailsTab';
 import InvoicesTab from './components/InvoicesTab';
-import WebsiteUpdateTab from './components/WebsiteUpdateTab';
 import TempAccountTab from './components/TempAccountTab';
 import SponsorsTab from './components/SponsorsTab';
 import BioReviewTab from './components/BioReviewTab';
-import CreateAlertModal from './components/CreateAlertModal';
 
 
 export default function AdminPortalPage() {
-  const { user, member, loading: authLoading, isAdmin } = useUnifiedAuth();
+  const { user, loading: authLoading, isAdmin } = useUnifiedAuth();
   const router = useRouter();
 
-  // State for data - now loaded lazily per tab
+  // State for data - loaded lazily
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
-  const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
-  
-  // Track loading state per tab
+
+  // Track loading state
   const [loading, setLoading] = useState({
     members: false,
-    alerts: false,
   });
-  
+
   // Track which data has been loaded
   const [dataLoaded, setDataLoaded] = useState({
     members: false,
-    alerts: false,
   });
-  
+
   const [activeSection, setActiveSection] = useState<string>('members');
 
-  // Modal states
-  const [showCreateAlert, setShowCreateAlert] = useState(false);
+  // State for email prefill
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
-  
-
-
 
   // Check admin access
   useEffect(() => {
@@ -75,7 +54,6 @@ export default function AdminPortalPage() {
 
     try {
       setLoading(prev => ({ ...prev, members: true }));
-      // Load all member data only when Members tab is accessed
       const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts] = await Promise.all([
         getAccountsByStatus('pending'),
         getAccountsByStatus('pending_invoice'),
@@ -104,33 +82,12 @@ export default function AdminPortalPage() {
   }, [user?.uid, isAdmin, dataLoaded.members]);
 
 
-  const loadAlertsData = useCallback(async () => {
-    if (!user?.uid || !isAdmin || dataLoaded.alerts) return;
-
-    try {
-      setLoading(prev => ({ ...prev, alerts: true }));
-      const alertsData = await getUserAlerts(user.uid);
-      setAlerts(alertsData);
-      setDataLoaded(prev => ({ ...prev, alerts: true }));
-    } catch (error) {
-      console.error('Error loading alerts data:', error);
-    } finally {
-      setLoading(prev => ({ ...prev, alerts: false }));
-    }
-  }, [user?.uid, isAdmin, dataLoaded.alerts]);
-
-
   // Load data based on active section
   useEffect(() => {
-    switch (activeSection) {
-      case 'members':
-        loadMembersData();
-        break;
-      case 'alerts':
-        loadAlertsData();
-        break;
+    if (activeSection === 'members') {
+      loadMembersData();
     }
-  }, [activeSection, loadMembersData, loadAlertsData]);
+  }, [activeSection, loadMembersData]);
 
   // Load members data on initial load
   useEffect(() => {
@@ -142,7 +99,7 @@ export default function AdminPortalPage() {
   // Status badge for header
   const statusBadge = () => {
     const pendingCount = memberApplications.filter(m => m.status === 'pending').length;
-    
+
     if (pendingCount > 0) {
       return (
         <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-medium">
@@ -156,7 +113,7 @@ export default function AdminPortalPage() {
   // Handler functions
   const handleEmailFormOpen = (account: any) => {
     setSelectedAccount(account);
-    setActiveSection('emails'); // Switch to emails tab
+    setActiveSection('emails');
   };
 
   // Clear selected account when switching away from emails
@@ -167,184 +124,44 @@ export default function AdminPortalPage() {
     setActiveSection(section);
   };
 
-  const handleMemberStatusUpdate = async (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => {
+  const handleMemberStatusUpdate = async (memberId: string, newStatus: UnifiedMember['status']) => {
     try {
-      // Get current member data for audit logging
       const currentMember = memberApplications.find(m => m.id === memberId);
       if (!currentMember) {
         throw new Error('Member not found');
       }
 
-      // Optimistic update - update UI immediately
-      setMemberApplications(prev => 
-        prev.map(member => 
-          member.id === memberId 
+      // Optimistic update
+      setMemberApplications(prev =>
+        prev.map(member =>
+          member.id === memberId
             ? { ...member, status: newStatus, updatedAt: new Date() }
             : member
         )
       );
 
-      // Update member status
       await updateMemberStatus(memberId, newStatus);
-      
-      // No need to reload all data - the optimistic update already handled the UI
     } catch (error) {
       console.error('Error updating member status:', error);
-      
-      // On error, revert the optimistic update by reloading just this member's data
+
+      // On error, revert the optimistic update
       try {
         const { getUnifiedMember } = await import('../../lib/unified-member');
         const updatedMember = await getUnifiedMember(memberId);
         if (updatedMember) {
-          setMemberApplications(prev => 
-            prev.map(member => 
+          setMemberApplications(prev =>
+            prev.map(member =>
               member.id === memberId ? updatedMember : member
             )
           );
         }
       } catch (revertError) {
         console.error('Error reverting optimistic update:', revertError);
-        // As last resort, reload members data
         setDataLoaded(prev => ({ ...prev, members: false }));
         await loadMembersData();
       }
     }
   };
-
-  const handleCreateAlert = async (alertForm: any) => {
-    if (!user?.uid) return;
-
-    try {
-      let userIds: string[] = [];
-      let emailAddresses: string[] = [];
-
-      if (alertForm.targetAudience === 'specific_members') {
-        // Remove duplicates from selected organizations
-        userIds = Array.from(new Set(alertForm.selectedOrganizations));
-        // Get email addresses for selected organizations
-        emailAddresses = memberApplications
-          .filter(m => userIds.includes(m.id) && m.email)
-          .map(m => m.email);
-      } else if (alertForm.targetAudience === 'member_type') {
-        const memberIds = await getUserIdsForMemberCriteria({ 
-          organizationType: alertForm.organizationType || undefined 
-        });
-        // Remove duplicates from member criteria results
-        userIds = Array.from(new Set(memberIds));
-        // Get email addresses for member criteria
-        emailAddresses = memberApplications
-          .filter(m => userIds.includes(m.id) && m.email)
-          .map(m => m.email);
-      } else if (alertForm.targetAudience === 'all') {
-        // Get all user emails
-        emailAddresses = memberApplications
-          .filter(m => m.email && m.status === 'approved')
-          .map(m => m.email);
-      } else if (alertForm.targetAudience === 'members') {
-        // Get all non-admin member emails
-        emailAddresses = memberApplications
-          .filter(m => m.email && m.status === 'approved')
-          .map(m => m.email);
-      } else if (alertForm.targetAudience === 'admins') {
-        // Get admin emails
-        emailAddresses = memberApplications
-          .filter(m => m.email && m.status === 'admin')
-          .map(m => m.email);
-      }
-
-      // Map form values to Alert interface values
-      let mappedTargetAudience: 'all' | 'members' | 'admins' | 'specific';
-      if (alertForm.targetAudience === 'member_type') {
-        mappedTargetAudience = 'members';
-      } else if (alertForm.targetAudience === 'specific_members') {
-        mappedTargetAudience = 'specific';
-      } else {
-        mappedTargetAudience = alertForm.targetAudience as 'all' | 'members' | 'admins' | 'specific';
-      }
-
-      // Create alerts for each language that has content
-      for (const [locale, translation] of Object.entries(alertForm.translations)) {
-        if ((translation as any).title && (translation as any).message) {
-          const alertData: any = {
-            title: (translation as any).title,
-            message: (translation as any).message,
-            type: alertForm.type,
-            targetAudience: mappedTargetAudience,
-            actionRequired: alertForm.actionRequired,
-            createdBy: user.uid,
-            isActive: true,
-            locale: locale as 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'
-          };
-
-          // Only add optional fields if they have values
-          if (userIds.length > 0) {
-            alertData.targetUsers = userIds;
-          }
-          if (alertForm.organizationType) {
-            alertData.organizationType = alertForm.organizationType;
-          }
-          if (alertForm.actionUrl) {
-            alertData.actionUrl = alertForm.actionUrl;
-          }
-          if ((translation as any).actionText) {
-            alertData.actionText = (translation as any).actionText;
-          }
-          if (alertForm.expiresAt) {
-            alertData.expiresAt = new Date(alertForm.expiresAt);
-          }
-
-          // Add emailSent flag if emails will be sent
-          if (alertForm.sendEmail && emailAddresses.length > 0 && locale === 'en') {
-            alertData.emailSent = true;
-          }
-
-          await createAlert(alertData);
-
-          // Send email notifications if enabled
-          if (alertForm.sendEmail && emailAddresses.length > 0 && locale === 'en') {
-            try {
-              const emailResponse = await fetch('/api/send-alert-email', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  emails: emailAddresses,
-                  alertTitle: (translation as any).title,
-                  alertMessage: (translation as any).message,
-                  alertType: alertForm.type,
-                  actionUrl: alertForm.actionUrl,
-                  actionText: (translation as any).actionText,
-                  userLocale: locale
-                })
-              });
-
-              if (!emailResponse.ok) {
-                console.error('Failed to send alert emails');
-              }
-            } catch (emailError) {
-              console.error('Error sending alert emails:', emailError);
-            }
-          }
-        }
-      }
-
-
-      setShowCreateAlert(false);
-      
-      // Optimistic update - just reload alerts instead of all data
-      try {
-        const updatedAlerts = await getUserAlerts(user.uid);
-        setAlerts(updatedAlerts);
-      } catch (error) {
-        console.error('Error reloading alerts:', error);
-      }
-    } catch (error) {
-      console.error('Error creating alert:', error);
-    }
-  };
-
-
 
   // Show loading while checking auth
   if (authLoading) {
@@ -357,10 +174,10 @@ export default function AdminPortalPage() {
 
   // Redirect non-admins
   if (!isAdmin) {
-    return null; // useEffect will handle redirect
+    return null;
   }
 
-  // Dashboard sections using modular components
+  // Dashboard sections - streamlined to 6 essential tabs
   const dashboardSections = [
     {
       id: 'members',
@@ -380,63 +197,6 @@ export default function AdminPortalPage() {
       )
     },
     {
-      id: 'alerts',
-      title: 'Alerts',
-      icon: (
-        <div className="relative">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 19H9l4-4h-1a2 2 0 01-2-2V9a2 2 0 012-2h1l-4-4h4l4 4v4a2 2 0 01-2 2h-1l4 4z" />
-          </svg>
-          {/* Alert indicator */}
-          {alerts.filter(a => !a.isRead).length > 0 && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-              !
-            </span>
-          )}
-        </div>
-      ),
-      content: (
-        <AlertsTab
-          alerts={alerts}
-          pendingApplications={memberApplications.filter(m => m.status === 'pending')}
-          pendingJoinRequests={[]}
-          loading={loading.alerts}
-          onCreateAlert={() => setShowCreateAlert(true)}
-          onMarkAsRead={async (alertId) => {
-            // Optimistic update
-            setAlerts(prev => 
-              prev.map(alert => 
-                alert.id === alertId ? { ...alert, isRead: true } : alert
-              )
-            );
-            
-            try {
-              await markAlertAsRead(alertId);
-            } catch (error) {
-              console.error('Error marking alert as read:', error);
-              // Revert optimistic update
-              const updatedAlerts = await getUserAlerts(user?.uid || '');
-              setAlerts(updatedAlerts);
-            }
-          }}
-          onDismissAlert={async (alertId) => {
-            // Optimistic update
-            setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-            
-            try {
-              await dismissAlert(alertId);
-            } catch (error) {
-              console.error('Error dismissing alert:', error);
-              // Revert optimistic update
-              const updatedAlerts = await getUserAlerts(user?.uid || '');
-              setAlerts(updatedAlerts);
-            }
-          }}
-        />
-      )
-    },
-    {
       id: 'emails',
       title: 'Emails',
       icon: (
@@ -445,16 +205,6 @@ export default function AdminPortalPage() {
         </svg>
       ),
       content: <EmailsTab prefilledData={selectedAccount} />
-    },
-    {
-      id: 'bio-reviews',
-      title: 'Bio Reviews',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      content: <BioReviewTab />
     },
     {
       id: 'invoices',
@@ -467,22 +217,17 @@ export default function AdminPortalPage() {
       content: <InvoicesTab />
     },
     {
-      id: 'website-update',
-      title: 'Website Update',
+      id: 'bio-reviews',
+      title: 'Bio Reviews',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 0l-3-3m3 3l3-3" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
       ),
-      content: (
-        <WebsiteUpdateTab
-          memberApplications={memberApplications}
-          loading={loading.members}
-        />
-      )
+      content: <BioReviewTab />
     },
     {
-      id: 'temp-accounts',
+      id: 'directory-entries',
       title: 'Directory Entries',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -504,26 +249,16 @@ export default function AdminPortalPage() {
   ];
 
   return (
-    <>
-      <DashboardLayout
-        title="Admin Portal"
-        subtitle="Manage knowledge base content, moderate comments, and review member applications"
-        bannerImage="/conferenceWood.jpg"
-        bannerImageAlt="Corporate Management"
-        sections={dashboardSections}
-        currentPage="admin-portal"
-        statusBadge={statusBadge()}
-        activeSection={activeSection}
-        onActiveSectionChange={handleActiveSectionChange}
-        defaultActiveSection="members"
-      />
-
-      <CreateAlertModal 
-        isOpen={showCreateAlert}
-        onClose={() => setShowCreateAlert(false)}
-        onCreateAlert={handleCreateAlert}
-        memberApplications={memberApplications}
-      />
-    </>
+    <DashboardLayout
+      title="Admin Portal"
+      bannerImage="/conferenceWood.jpg"
+      bannerImageAlt="Corporate Management"
+      sections={dashboardSections}
+      currentPage="admin-portal"
+      statusBadge={statusBadge()}
+      activeSection={activeSection}
+      onActiveSectionChange={handleActiveSectionChange}
+      defaultActiveSection="members"
+    />
   );
 }

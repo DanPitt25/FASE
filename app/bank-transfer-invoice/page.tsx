@@ -115,7 +115,7 @@ function BankTransferInvoiceContent() {
       
       // Track invoice in database (client-side)
       try {
-        const invoiceData: any = {
+        await createInvoiceRecord({
           invoiceNumber,
           recipientEmail: email.trim(),
           recipientName: fullName || 'Client',
@@ -126,14 +126,7 @@ function BankTransferInvoiceContent() {
           status: 'sent',
           sentAt: new Date(),
           pdfGenerated: true
-        };
-        
-        // Only add emailId if it exists
-        if (result?.result?.id) {
-          invoiceData.emailId = result.result.id;
-        }
-        
-        await createInvoiceRecord(invoiceData);
+        });
         console.log('✅ Invoice tracked in database:', invoiceNumber);
       } catch (trackingError) {
         console.error('❌ Failed to track invoice:', trackingError);

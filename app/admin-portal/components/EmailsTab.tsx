@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import EmailEditorModal from './EmailEditorModal';
+import { createInvoiceRecord } from '../../../lib/firestore';
 
 interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'standalone_invoice' | 'lost_invoice' | 'member_portal_welcome' | 'reminder' | 'followup' | 'freeform';
+type EmailTemplate = 'invoice' | 'standalone_invoice' | 'member_portal_welcome' | 'reminder' | 'freeform';
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -22,7 +23,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     organizationType: prefilledData?.organizationType || 'MGA',
     hasOtherAssociations: prefilledData?.hasOtherAssociations || false,
     userLocale: 'en',
-    forceCurrency: '', // For overriding automatic currency detection
+    forceCurrency: '',
     address: {
       line1: prefilledData?.businessAddress?.line1 || prefilledData?.registeredAddress?.line1 || '',
       line2: prefilledData?.businessAddress?.line2 || prefilledData?.registeredAddress?.line2 || '',
@@ -38,16 +39,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     freeformSender: 'admin@fasemga.com',
     // Payment reminder fields
     reminderAttachment: null as File | null,
-    // Lost invoice fields
-    invoiceDate: new Date().toISOString().split('T')[0], // Default to today
-    lostInvoiceAttachment: null as File | null,
     // Custom line item fields
     customLineItem: {
       description: '',
       amount: 0,
       enabled: false
     },
-    // Test payment
     testPayment: false
   });
 
@@ -67,7 +64,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         email: prefilledData.email || '',
         fullName: prefilledData?.accountAdministrator?.name || prefilledData.personalName || prefilledData?.fullName || '',
         organizationName: prefilledData.organizationName || '',
-            organizationType: prefilledData.organizationType || 'MGA',
+        organizationType: prefilledData.organizationType || 'MGA',
         hasOtherAssociations: prefilledData.hasOtherAssociations || false,
         address: {
           line1: prefilledData.businessAddress?.line1 || prefilledData.registeredAddress?.line1 || '',
@@ -83,9 +80,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
 
   // Calculate pricing automatically
   const calculateOriginalAmount = () => {
-    // All memberships are corporate - no individual pricing
     if (formData.organizationType === 'MGA') {
-      // Use prefilledData GWP if available, otherwise default to lowest tier
       const gwp = prefilledData?.portfolio?.grossWrittenPremiums;
       switch (gwp) {
         case '<10m': return 900;
@@ -111,123 +106,118 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const emailTemplates = {
     invoice: {
       title: 'Invoice Email',
-      description: 'Send membership acceptance email with Stripe payment link and bank transfer option',
+      description: 'Membership acceptance with Stripe payment link and bank transfer option',
       apiEndpoint: '/api/send-membership-invoice-stripe',
-      previewEndpoint: '/api/send-membership-invoice-stripe',
       requiresPricing: true,
-      generatesPDF: false,
-      available: true
+      generatesPDF: false
     },
     standalone_invoice: {
-      title: 'Send Standalone Invoice',
-      description: 'Send clean invoice email with PDF attachment, currency conversion, and Wise bank details',
+      title: 'Standalone Invoice',
+      description: 'Clean invoice with PDF attachment and Wise bank details',
       apiEndpoint: '/api/send-invoice-only',
-      previewEndpoint: '/api/send-invoice-only',
       requiresPricing: true,
-      generatesPDF: true,
-      available: true
-    },
-    lost_invoice: {
-      title: 'Lost Invoice (Recoverable)',
-      description: 'Invoice for lost invoices with Lexicon Associates payment details - requires file upload',
-      apiEndpoint: '/api/send-membership-invoice',
-      previewEndpoint: '/api/send-membership-invoice',
-      requiresPricing: true,
-      generatesPDF: false,
-      requiresFileUpload: true,
-      available: true
+      generatesPDF: true
     },
     member_portal_welcome: {
       title: 'Member Portal Welcome',
       description: 'Welcome email with portal access for new members',
       apiEndpoint: '/api/send-member-portal-welcome',
-      previewEndpoint: '/api/send-member-portal-welcome',
       requiresPricing: false,
-      generatesPDF: false,
-      available: true
+      generatesPDF: false
     },
     reminder: {
       title: 'Payment Reminder',
       description: 'Remind about pending payment with PDF attachment',
       apiEndpoint: '/api/send-payment-reminder',
-      previewEndpoint: '/api/send-payment-reminder',
       requiresPricing: true,
-      generatesPDF: false,
-      available: true
-    },
-    followup: {
-      title: 'Follow Up Email (No PDF)',
-      description: 'Follow up on unpaid membership dues without attachment',
-      apiEndpoint: '/api/send-followup-email',
-      previewEndpoint: '/api/send-followup-email',
-      requiresPricing: false,
-      generatesPDF: false,
-      available: true
+      generatesPDF: false
     },
     freeform: {
       title: 'Freeform Email',
       description: 'Send custom email with attachments',
       apiEndpoint: '/api/send-freeform-email',
-      previewEndpoint: '/api/send-freeform-email',
       requiresPricing: false,
-      generatesPDF: false,
-      available: true
+      generatesPDF: false
     }
   };
 
-  const handlePreview = async () => {
-    setPreviewing(true);
-    setPreview(null);
+  // Build payload for API calls
+  const buildPayload = (isPreview: boolean) => {
+    const template = emailTemplates[selectedTemplate];
+    const payload: any = {
+      preview: isPreview,
+      ...formData,
+      greeting: formData.greeting || formData.fullName,
+      ...(customizedContent && { customizedEmailContent: customizedContent })
+    };
+
+    if (selectedTemplate === 'standalone_invoice') {
+      payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
+      payload.totalAmount = finalAmount;
+      payload.originalAmount = originalAmount;
+      payload.hasOtherAssociations = formData.hasOtherAssociations;
+      payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
+      payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+      payload.country = formData.address.country;
+      payload.address = formData.address;
+      payload.userLocale = formData.userLocale;
+      payload.forceCurrency = formData.forceCurrency;
+      payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
+    } else {
+      payload.template = selectedTemplate;
+      if (template.requiresPricing) {
+        payload.totalAmount = finalAmount;
+        payload.exactTotalAmount = finalAmount;
+        payload.originalAmount = originalAmount.toString();
+        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
+        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+        payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
+        payload.forceCurrency = formData.forceCurrency;
+        payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
+      }
+    }
+
+    return payload;
+  };
+
+  // Handle file attachment for reminder emails
+  const handleReminderAttachment = async (payload: any) => {
+    if (selectedTemplate !== 'reminder' || !formData.reminderAttachment) {
+      return payload;
+    }
+
+    const fileReader = new FileReader();
+    const pdfBase64 = await new Promise<string>((resolve, reject) => {
+      fileReader.onload = () => {
+        const result = fileReader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      fileReader.onerror = reject;
+      fileReader.readAsDataURL(formData.reminderAttachment!);
+    });
+
+    return {
+      ...payload,
+      pdfAttachment: pdfBase64,
+      pdfFilename: formData.reminderAttachment.name
+    };
+  };
+
+  // Unified send/preview function
+  const sendOrPreview = async (isPreview: boolean) => {
+    if (isPreview) {
+      setPreviewing(true);
+      setPreview(null);
+    } else {
+      setSending(true);
+      setResult(null);
+    }
 
     try {
       const template = emailTemplates[selectedTemplate];
-      const payload: any = {
-        template: selectedTemplate,
-        preview: true,
-        ...formData,
-        greeting: formData.greeting || formData.fullName,
-        // Include customized content if available
-        ...(customizedContent && { customizedEmailContent: customizedContent })
-      };
-
-      // Special handling for standalone invoice template (send-invoice-only API)
-      if (selectedTemplate === 'standalone_invoice') {
-        payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
-        payload.totalAmount = finalAmount;
-        payload.originalAmount = originalAmount;
-        payload.hasOtherAssociations = formData.hasOtherAssociations;
-        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-        payload.country = formData.address.country;
-        payload.address = formData.address;
-        payload.userLocale = formData.userLocale;
-        payload.forceCurrency = formData.forceCurrency;
-        // Add custom line item data if enabled
-        payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
-        // Remove template field for send-invoice-only API
-        delete payload.template;
-      } else {
-        // Add pricing data for other templates that need it
-        if (template.requiresPricing) {
-          payload.totalAmount = finalAmount;
-          payload.exactTotalAmount = finalAmount;
-          payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-          payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-          payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
-          payload.forceCurrency = formData.forceCurrency;
-          // Add custom line item data
-          payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
-        }
-
-        // Add lost invoice flag and date for lost invoice template
-        if (selectedTemplate === 'lost_invoice') {
-          payload.isLostInvoice = true;
-          payload.invoiceDate = formData.invoiceDate;
-        }
-      }
-
+      let payload = buildPayload(isPreview);
       let response;
+
       if (selectedTemplate === 'freeform') {
         const formDataObj = new FormData();
         Object.keys(payload).forEach(key => {
@@ -235,61 +225,24 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             formDataObj.append(key, payload[key]);
           }
         });
-        // Don't add files for preview
-        response = await fetch(template.previewEndpoint, {
+        if (!isPreview) {
+          formData.freeformAttachments.forEach((file) => {
+            formDataObj.append('attachments', file);
+          });
+        }
+        response = await fetch(template.apiEndpoint, {
           method: 'POST',
           body: formDataObj,
         });
       } else if (selectedTemplate === 'reminder' && formData.reminderAttachment) {
-        // Handle payment reminder preview with PDF attachment
-        const fileReader = new FileReader();
-        const pdfBase64 = await new Promise<string>((resolve, reject) => {
-          fileReader.onload = () => {
-            const result = fileReader.result as string;
-            const base64 = result.split(',')[1]; // Remove data:application/pdf;base64, prefix
-            resolve(base64);
-          };
-          fileReader.onerror = reject;
-          fileReader.readAsDataURL(formData.reminderAttachment!);
-        });
-        
-        const payloadWithPdf = {
-          ...payload,
-          pdfAttachment: pdfBase64,
-          pdfFilename: formData.reminderAttachment.name
-        };
-        
-        response = await fetch(template.previewEndpoint, {
+        payload = await handleReminderAttachment(payload);
+        response = await fetch(template.apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadWithPdf),
-        });
-      } else if (selectedTemplate === 'lost_invoice' && formData.lostInvoiceAttachment) {
-        // Handle lost invoice preview with uploaded file attachment
-        const fileReader = new FileReader();
-        const fileBase64 = await new Promise<string>((resolve, reject) => {
-          fileReader.onload = () => {
-            const result = fileReader.result as string;
-            const base64 = result.split(',')[1]; // Remove data:... prefix
-            resolve(base64);
-          };
-          fileReader.onerror = reject;
-          fileReader.readAsDataURL(formData.lostInvoiceAttachment!);
-        });
-        
-        const payloadWithFile = {
-          ...payload,
-          uploadedAttachment: fileBase64,
-          uploadedFilename: formData.lostInvoiceAttachment.name
-        };
-        
-        response = await fetch(template.previewEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadWithFile),
+          body: JSON.stringify(payload),
         });
       } else {
-        response = await fetch(template.previewEndpoint, {
+        response = await fetch(template.apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -297,40 +250,75 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       }
 
       const data = await response.json();
-      setPreview(data);
+
+      if (isPreview) {
+        setPreview(data);
+      } else {
+        setResult(data);
+
+        // Track invoice in Firestore (client-side) for invoice-related templates
+        if (data.success && (selectedTemplate === 'standalone_invoice' || selectedTemplate === 'invoice' || selectedTemplate === 'reminder')) {
+          try {
+            await createInvoiceRecord({
+              invoiceNumber: data.invoiceNumber || payload.invoiceNumber,
+              recipientEmail: formData.email,
+              recipientName: formData.fullName || formData.greeting || 'Client',
+              organizationName: formData.organizationName,
+              amount: parseFloat(payload.totalAmount) || 0,
+              currency: payload.forceCurrency || 'EUR',
+              type: selectedTemplate === 'reminder' ? 'reminder' : (selectedTemplate === 'standalone_invoice' ? 'standalone' : 'regular'),
+              status: 'sent',
+              sentAt: new Date(),
+              pdfUrl: data.pdfUrl,
+              pdfGenerated: !!data.pdfUrl
+            });
+            console.log('✅ Invoice tracked in database');
+          } catch (trackingError) {
+            console.error('❌ Failed to track invoice:', trackingError);
+          }
+        }
+      }
     } catch (error) {
-      setPreview({ error: 'Failed to generate preview' });
+      const errorResult = { error: isPreview ? 'Failed to generate preview' : 'Failed to send email' };
+      if (isPreview) {
+        setPreview(errorResult);
+      } else {
+        setResult(errorResult);
+      }
     } finally {
-      setPreviewing(false);
+      if (isPreview) {
+        setPreviewing(false);
+      } else {
+        setSending(false);
+      }
     }
+  };
+
+  const handlePreview = () => sendOrPreview(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendOrPreview(false);
   };
 
   const getTemplateKey = (emailTemplate: EmailTemplate): string => {
     const templateKeyMap: Record<EmailTemplate, string> = {
       'invoice': 'membership_acceptance_admin',
       'standalone_invoice': 'invoice_delivery',
-      'lost_invoice': 'lost_invoice',
       'member_portal_welcome': 'member_portal_welcome',
       'reminder': 'payment_reminder',
-      'followup': 'membership_followup',
-      'freeform': 'invoice_delivery' // Use generic template for freeform
+      'freeform': 'invoice_delivery'
     };
-    
     return templateKeyMap[emailTemplate] || 'invoice_delivery';
   };
 
   const handleCustomize = async () => {
-    // Load the default template for the selected email type
     try {
       const templateKey = getTemplateKey(selectedTemplate);
       const response = await fetch(`/api/get-email-template?templateKey=${templateKey}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to load template');
-      }
-      
+
+      if (!response.ok) throw new Error('Failed to load template');
+
       const data = await response.json();
-      
       if (data.success && data.template) {
         setDefaultTemplate(data.template);
         setShowEmailEditor(true);
@@ -341,145 +329,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   };
 
   const handleApplyCustomization = (customContent: any) => {
-    // Store the customized content and trigger a preview refresh
     setCustomizedContent(customContent);
-    // Auto-refresh the preview to show customized content
-    setTimeout(() => {
-      handlePreview();
-    }, 100);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSending(true);
-    setResult(null);
-
-    try {
-      const template = emailTemplates[selectedTemplate];
-      const payload: any = {
-        template: selectedTemplate,
-        ...formData,
-        greeting: formData.greeting || formData.fullName,
-        // Include customized content if available
-        ...(customizedContent && { customizedEmailContent: customizedContent })
-      };
-
-      // Special handling for standalone invoice template (send-invoice-only API)
-      if (selectedTemplate === 'standalone_invoice') {
-        payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
-        payload.totalAmount = finalAmount;
-        payload.originalAmount = originalAmount;
-        payload.hasOtherAssociations = formData.hasOtherAssociations;
-        payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-        payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-        payload.country = formData.address.country;
-        payload.address = formData.address;
-        payload.userLocale = formData.userLocale;
-        payload.forceCurrency = formData.forceCurrency;
-        // Add custom line item data if enabled
-        payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
-        // Remove template field for send-invoice-only API
-        delete payload.template;
-      } else {
-        // Add pricing data for other templates that need it
-        if (template.requiresPricing) {
-          payload.totalAmount = finalAmount;
-          payload.exactTotalAmount = finalAmount;
-          payload.originalAmount = originalAmount.toString();
-          payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-          payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-          payload.grossWrittenPremiums = prefilledData?.portfolio?.grossWrittenPremiums || '<10m';
-          payload.forceCurrency = formData.forceCurrency;
-          // Add custom line item data
-          payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
-        }
-
-        // Add lost invoice flag and date for lost invoice template
-        if (selectedTemplate === 'lost_invoice') {
-          payload.isLostInvoice = true;
-          payload.invoiceDate = formData.invoiceDate;
-        }
-      }
-
-      let response;
-      if (selectedTemplate === 'freeform') {
-        const formDataObj = new FormData();
-        Object.keys(payload).forEach(key => {
-          if (key !== 'freeformAttachments') {
-            formDataObj.append(key, payload[key]);
-          }
-        });
-        // Add files for actual sending
-        formData.freeformAttachments.forEach((file, index) => {
-          formDataObj.append(`attachments`, file);
-        });
-        response = await fetch(template.apiEndpoint, {
-          method: 'POST',
-          body: formDataObj,
-        });
-      } else if (selectedTemplate === 'reminder' && formData.reminderAttachment) {
-        // Handle payment reminder with PDF attachment
-        const fileReader = new FileReader();
-        const pdfBase64 = await new Promise<string>((resolve, reject) => {
-          fileReader.onload = () => {
-            const result = fileReader.result as string;
-            const base64 = result.split(',')[1]; // Remove data:application/pdf;base64, prefix
-            resolve(base64);
-          };
-          fileReader.onerror = reject;
-          fileReader.readAsDataURL(formData.reminderAttachment!);
-        });
-        
-        const payloadWithPdf = {
-          ...payload,
-          pdfAttachment: pdfBase64,
-          pdfFilename: formData.reminderAttachment.name
-        };
-        
-        response = await fetch(template.apiEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadWithPdf),
-        });
-      } else if (selectedTemplate === 'lost_invoice' && formData.lostInvoiceAttachment) {
-        // Handle lost invoice with uploaded file attachment
-        const fileReader = new FileReader();
-        const fileBase64 = await new Promise<string>((resolve, reject) => {
-          fileReader.onload = () => {
-            const result = fileReader.result as string;
-            const base64 = result.split(',')[1]; // Remove data:... prefix
-            resolve(base64);
-          };
-          fileReader.onerror = reject;
-          fileReader.readAsDataURL(formData.lostInvoiceAttachment!);
-        });
-        
-        const payloadWithFile = {
-          ...payload,
-          uploadedAttachment: fileBase64,
-          uploadedFilename: formData.lostInvoiceAttachment.name
-        };
-        
-        response = await fetch(template.apiEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadWithFile),
-        });
-      } else {
-        response = await fetch(template.apiEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      const data = await response.json();
-      setResult(data);
-    } catch (error) {
-      setResult({ error: 'Failed to send email' });
-    } finally {
-      setSending(false);
-    }
+    setTimeout(() => handlePreview(), 100);
   };
 
   return (
@@ -487,28 +338,18 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       {/* Email Template Selection */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Email Templates</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {Object.entries(emailTemplates).map(([key, template]) => (
             <button
               key={key}
               onClick={() => setSelectedTemplate(key as EmailTemplate)}
-              disabled={!template.available}
               className={`p-4 rounded-lg border-2 text-left transition-colors ${
                 selectedTemplate === key
                   ? 'border-fase-navy bg-fase-navy bg-opacity-5 text-fase-navy'
-                  : template.available
-                    ? 'border-gray-200 hover:border-fase-light-gold text-gray-700'
-                    : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
+                  : 'border-gray-200 hover:border-fase-light-gold text-gray-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="font-semibold text-sm">{template.title}</h4>
-                {!template.available && (
-                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                    Coming Soon
-                  </span>
-                )}
-              </div>
+              <h4 className="font-semibold text-sm mb-1">{template.title}</h4>
               <p className="text-xs opacity-75">{template.description}</p>
             </button>
           ))}
@@ -520,9 +361,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">
           {emailTemplates[selectedTemplate].title}
         </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
 
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Language Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -566,7 +406,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 />
               </div>
             </div>
-            {/* Sender Selection - For all templates */}
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Send From *</label>
               <select
@@ -586,114 +425,113 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
 
           {/* Contact Details - Only for non-freeform templates */}
           {selectedTemplate !== 'freeform' && (
-          <div>
-            <h4 className="text-md font-semibold mb-4 text-fase-navy">Contact Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Greeting</label>
-                <input
-                  type="text"
-                  value={formData.greeting}
-                  onChange={(e) => setFormData(prev => ({ ...prev, greeting: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  placeholder="Mr., Ms., Dr., etc."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                <select
-                  value={formData.gender}
-                  onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="m">Male</option>
-                  <option value="f">Female</option>
-                </select>
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Contact Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Greeting</label>
+                  <input
+                    type="text"
+                    value={formData.greeting}
+                    onChange={(e) => setFormData(prev => ({ ...prev, greeting: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="Mr., Ms., Dr., etc."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  >
+                    <option value="m">Male</option>
+                    <option value="f">Female</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
           )}
 
           {/* Organization Details - Only for non-freeform templates */}
           {selectedTemplate !== 'freeform' && (
-          <div>
-            <h4 className="text-md font-semibold mb-4 text-fase-navy">Organization Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Organization Name *</label>
-                <input
-                  type="text"
-                  value={formData.organizationName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type</label>
-                <select
-                  value={formData.organizationType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, organizationType: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="MGA">MGA</option>
-                  <option value="carrier">Carrier</option>
-                  <option value="provider">Provider</option>
-                </select>
-              </div>
-            </div>
-            {emailTemplates[selectedTemplate].requiresPricing && (
-              <div className="mt-4 space-y-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.hasOtherAssociations}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hasOtherAssociations: e.target.checked }))}
-                    className="mr-2"
-                  />
-                  <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
-                </label>
-                
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.testPayment}
-                    onChange={(e) => setFormData(prev => ({ ...prev, testPayment: e.target.checked }))}
-                    className="mr-2"
-                  />
-                  <span className="text-sm text-gray-700">Test payment (50 cents instead of full amount)</span>
-                </label>
-                
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Organization Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Currency Override</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Organization Name *</label>
+                  <input
+                    type="text"
+                    value={formData.organizationName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type</label>
                   <select
-                    value={formData.forceCurrency}
-                    onChange={(e) => setFormData(prev => ({ ...prev, forceCurrency: e.target.value }))}
+                    value={formData.organizationType}
+                    onChange={(e) => setFormData(prev => ({ ...prev, organizationType: e.target.value }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   >
-                    <option value="">Auto-detect from country</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="GBP">GBP - British Pound</option>
+                    <option value="MGA">MGA</option>
+                    <option value="carrier">Carrier</option>
+                    <option value="provider">Provider</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">Override automatic currency detection based on customer address</p>
                 </div>
               </div>
-            )}
-          </div>
+              {emailTemplates[selectedTemplate].requiresPricing && (
+                <div className="mt-4 space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.hasOtherAssociations}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hasOtherAssociations: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
+                  </label>
+
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.testPayment}
+                      onChange={(e) => setFormData(prev => ({ ...prev, testPayment: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Test payment (50 cents instead of full amount)</span>
+                  </label>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Currency Override</label>
+                    <select
+                      value={formData.forceCurrency}
+                      onChange={(e) => setFormData(prev => ({ ...prev, forceCurrency: e.target.value }))}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    >
+                      <option value="">Auto-detect from country</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="GBP">GBP - British Pound</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* MGA Pricing Tier - Only for MGA organization type and pricing templates */}
+          {/* MGA Pricing Tier */}
           {(emailTemplates[selectedTemplate].requiresPricing && formData.organizationType === 'MGA') && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">MGA Pricing Tier</h4>
@@ -702,11 +540,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 <select
                   value={prefilledData?.portfolio?.grossWrittenPremiums || '<10m'}
                   onChange={(e) => {
-                    // Update the prefilledData reference for pricing calculation
                     if (prefilledData?.portfolio) {
                       prefilledData.portfolio.grossWrittenPremiums = e.target.value as any;
                     }
-                    // Force re-render to update pricing
                     setFormData(prev => ({ ...prev }));
                   }}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
@@ -722,7 +558,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Custom Line Item - Only for pricing templates */}
+          {/* Custom Line Item */}
           {emailTemplates[selectedTemplate].requiresPricing && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Custom Line Item</h4>
@@ -732,12 +568,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     type="checkbox"
                     id="enableCustomLineItem"
                     checked={formData.customLineItem.enabled}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      customLineItem: { 
-                        ...prev.customLineItem, 
-                        enabled: e.target.checked 
-                      }
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      customLineItem: { ...prev.customLineItem, enabled: e.target.checked }
                     }))}
                     className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
                   />
@@ -745,7 +578,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     Add custom line item to invoice
                   </label>
                 </div>
-                
+
                 {formData.customLineItem.enabled && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
                     <div>
@@ -753,15 +586,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                       <input
                         type="text"
                         value={formData.customLineItem.description}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          customLineItem: { 
-                            ...prev.customLineItem, 
-                            description: e.target.value 
-                          }
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          customLineItem: { ...prev.customLineItem, description: e.target.value }
                         }))}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        placeholder="e.g., Additional Services, Late Payment Fee"
+                        placeholder="e.g., Additional Services"
                       />
                     </div>
                     <div>
@@ -769,39 +599,22 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                       <input
                         type="number"
                         value={formData.customLineItem.amount || ''}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          customLineItem: { 
-                            ...prev.customLineItem, 
-                            amount: parseFloat(e.target.value) || 0
-                          }
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          customLineItem: { ...prev.customLineItem, amount: parseFloat(e.target.value) || 0 }
                         }))}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        placeholder="0"
                         min="0"
                         step="0.01"
                       />
                     </div>
                   </div>
                 )}
-                
-                {formData.customLineItem.enabled && (
-                  <div className="ml-7 p-3 bg-blue-50 border border-blue-200 rounded">
-                    <p className="text-sm text-blue-800">
-                      <strong>New Total:</strong> €{finalAmount.toFixed(2)} 
-                      {formData.customLineItem.amount > 0 && (
-                        <span className="text-green-600 ml-2">
-                          (+€{formData.customLineItem.amount.toFixed(2)})
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
-          {/* Address - For invoice, standalone invoice, and reminder emails */}
+          {/* Address - For invoice, standalone invoice, and reminder */}
           {(selectedTemplate === 'invoice' || selectedTemplate === 'standalone_invoice' || selectedTemplate === 'reminder') && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Address</h4>
@@ -811,10 +624,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.line1}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, line1: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     required
                   />
@@ -824,10 +634,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.line2}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, line2: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   />
                 </div>
@@ -836,10 +643,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.city}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, city: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     required
                   />
@@ -849,10 +653,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.county}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, county: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, county: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   />
                 </div>
@@ -861,10 +662,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.postcode}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, postcode: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, postcode: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     required
                   />
@@ -874,10 +672,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <input
                     type="text"
                     value={formData.address.country}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address, country: e.target.value } 
-                    }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, country: e.target.value } }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     required
                   />
@@ -886,7 +681,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Pricing Display - Only for invoice and reminder emails */}
+          {/* Pricing Display */}
           {emailTemplates[selectedTemplate].requiresPricing && (
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-md font-semibold mb-2 text-fase-navy">Pricing Summary</h4>
@@ -903,46 +698,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Invoice Date - Only for lost invoice */}
-          {selectedTemplate === 'lost_invoice' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Invoice Date *</label>
-                <input
-                  type="date"
-                  value={formData.invoiceDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, invoiceDate: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">Date when the original invoice was issued</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload Recovered Invoice *</label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setFormData(prev => ({ ...prev, lostInvoiceAttachment: file }));
-                  }}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Upload the recovered invoice file (PDF, JPG, PNG). This will be attached to the email.
-                </p>
-                {formData.lostInvoiceAttachment && (
-                  <p className="text-sm text-green-600 mt-2">
-                    ✓ File selected: {formData.lostInvoiceAttachment.name} ({Math.round(formData.lostInvoiceAttachment.size / 1024)}KB)
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Freeform Email Fields - Only for freeform template */}
+          {/* Freeform Email Fields */}
           {selectedTemplate === 'freeform' && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Content</h4>
@@ -976,15 +732,10 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     multiple
                     onChange={(e) => {
                       const newFiles = Array.from(e.target.files || []);
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        freeformAttachments: [...prev.freeformAttachments, ...newFiles]
-                      }));
-                      // Clear the input so the same file can be selected again if needed
+                      setFormData(prev => ({ ...prev, freeformAttachments: [...prev.freeformAttachments, ...newFiles] }));
                       e.target.value = '';
                     }}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.csv,.zip"
                   />
                   {formData.freeformAttachments.length > 0 && (
                     <div className="mt-2">
@@ -1004,12 +755,10 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                             <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                             <button
                               type="button"
-                              onClick={() => {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  freeformAttachments: prev.freeformAttachments.filter((_, i) => i !== index)
-                                }));
-                              }}
+                              onClick={() => setFormData(prev => ({
+                                ...prev,
+                                freeformAttachments: prev.freeformAttachments.filter((_, i) => i !== index)
+                              }))}
                               className="text-red-500 hover:text-red-700 ml-2"
                             >
                               ×
@@ -1024,7 +773,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Payment Reminder PDF Upload - Only for reminder template */}
+          {/* Payment Reminder PDF Upload */}
           {selectedTemplate === 'reminder' && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">PDF Attachment</h4>
@@ -1040,17 +789,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                 />
                 {formData.reminderAttachment && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded px-2 py-1">
-                      <span>{formData.reminderAttachment.name} ({(formData.reminderAttachment.size / 1024 / 1024).toFixed(2)} MB)</span>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, reminderAttachment: null }))}
-                        className="text-red-500 hover:text-red-700 ml-2"
-                      >
-                        ×
-                      </button>
-                    </div>
+                  <div className="mt-2 flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded px-2 py-1">
+                    <span>{formData.reminderAttachment.name} ({(formData.reminderAttachment.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, reminderAttachment: null }))}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      ×
+                    </button>
                   </div>
                 )}
               </div>
@@ -1074,18 +821,13 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
               disabled={sending || previewing}
               className="w-full"
             >
-              {sending ? 'Sending...' : 
-                selectedTemplate === 'standalone_invoice' ? 'Send Standalone Invoice' :
-                selectedTemplate === 'freeform' ? 'Send Email' :
-                `Send ${emailTemplates[selectedTemplate].title}`}
+              {sending ? 'Sending...' : `Send ${emailTemplates[selectedTemplate].title}`}
             </Button>
           </div>
 
           {/* Result Display */}
           {result && (
-            <div className={`p-4 rounded-lg ${
-              result.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'
-            }`}>
+            <div className={`p-4 rounded-lg ${result.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
               {result.error ? `Error: ${result.error}` : 'Email sent successfully!'}
             </div>
           )}
@@ -1099,11 +841,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
               Email Preview: {emailTemplates[selectedTemplate].title}
             </h3>
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setPreview(null)}
-            >
+            <Button variant="secondary" size="small" onClick={() => setPreview(null)}>
               Close Preview
             </Button>
           </div>
@@ -1114,10 +852,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Email Content Preview */}
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Email Details */}
                   <div className="lg:col-span-1 space-y-4">
                     <div>
                       <h4 className="text-sm font-semibold text-gray-700 mb-2">Email Details</h4>
@@ -1126,92 +862,59 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                         {preview.cc && <div><span className="font-medium">CC:</span> {preview.cc}</div>}
                         <div><span className="font-medium">Subject:</span> {preview.subject}</div>
                         <div><span className="font-medium">Language:</span> {formData.userLocale.toUpperCase()}</div>
-                        {(emailTemplates[selectedTemplate].generatesPDF || (selectedTemplate === 'reminder' && preview.pdfUrl)) && (
-                          <div><span className="font-medium">Attachments:</span> {selectedTemplate === 'reminder' ? 'Payment Reminder PDF' : 'Invoice PDF'}</div>
-                        )}
                       </div>
                     </div>
 
-                    {/* PDF Preview Link */}
-                    {preview.pdfUrl && (emailTemplates[selectedTemplate].generatesPDF || selectedTemplate === 'reminder') && (
+                    {preview.pdfUrl && (
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-2">{selectedTemplate === 'reminder' ? 'PDF Attachment' : 'PDF Invoice'}</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">PDF Attachment</h4>
                         <a
                           href={preview.pdfUrl}
-                          download={`${selectedTemplate === 'reminder' ? 'payment-reminder' : 'invoice'}-preview.pdf`}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy"
+                          download="invoice-preview.pdf"
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                         >
                           <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                           </svg>
-                          Download PDF Preview
+                          Download PDF
                         </a>
                       </div>
                     )}
                   </div>
 
-                  {/* Email HTML Content */}
                   <div className="lg:col-span-2">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Email Content</h4>
                     <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-96 overflow-auto">
                       {preview.htmlContent ? (
-                        <div 
-                          dangerouslySetInnerHTML={{ __html: preview.htmlContent }}
-                          className="prose prose-sm max-w-none"
-                        />
+                        <div dangerouslySetInnerHTML={{ __html: preview.htmlContent }} className="prose prose-sm max-w-none" />
                       ) : (
-                        <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                          {preview.textContent || 'No content available'}
-                        </pre>
+                        <pre className="text-sm text-gray-700 whitespace-pre-wrap">{preview.textContent || 'No content available'}</pre>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Preview Actions */}
               <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                 <div className="text-sm text-gray-600">
                   This is a preview - no email has been sent yet.
-                  {emailTemplates[selectedTemplate].generatesPDF && (
-                    <span className="block mt-1">PDF invoice will be generated and attached when sent.</span>
-                  )}
-                  {selectedTemplate === 'reminder' && formData.reminderAttachment && (
-                    <span className="block mt-1">Uploaded PDF will be attached when sent.</span>
-                  )}
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={handlePreview}
-                    disabled={previewing}
-                  >
+                  <Button variant="secondary" size="small" onClick={handlePreview} disabled={previewing}>
                     {previewing ? 'Refreshing...' : 'Refresh Preview'}
                   </Button>
                   {selectedTemplate !== 'freeform' && (
                     <>
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={handleCustomize}
-                        disabled={sending || previewing}
-                      >
+                      <Button variant="secondary" size="small" onClick={handleCustomize} disabled={sending || previewing}>
                         Customize
                       </Button>
                       {customizedContent && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-green-600 font-medium">
-                            ✓ Customized
-                          </span>
+                          <span className="text-xs text-green-600 font-medium">✓ Customized</span>
                           <button
                             type="button"
-                            onClick={() => {
-                              setCustomizedContent(null);
-                              setTimeout(() => handlePreview(), 100);
-                            }}
+                            onClick={() => { setCustomizedContent(null); setTimeout(() => handlePreview(), 100); }}
                             className="text-xs text-gray-500 hover:text-gray-700 underline"
-                            disabled={sending || previewing}
                           >
                             Reset
                           </button>
@@ -1222,13 +925,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                   <Button
                     variant="primary"
                     size="small"
-                    onClick={() => {
-                      const form = document.querySelector('form');
-                      if (form) {
-                        const syntheticEvent = new Event('submit', { bubbles: true, cancelable: true }) as any;
-                        handleSubmit(syntheticEvent);
-                      }
-                    }}
+                    onClick={() => sendOrPreview(false)}
                     disabled={sending}
                   >
                     {sending ? 'Sending...' : 'Send Email'}

@@ -5,8 +5,8 @@ import * as path from 'path';
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
-import { createInvoiceRecord } from '../../../lib/firestore';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';
+import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -515,35 +515,30 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Membership acceptance email sent successfully:', result);
-    
-    
-    // Log invoice to database after successful sending
+
+    // Store PDF and create invoice record
+    // Store PDF in Firebase Storage (invoice record created client-side)
+    let pdfUrl: string | undefined;
     try {
-      const invoiceType = template === 'followup' ? 'followup' : (isLostInvoice ? 'lost_invoice' : 'regular');
-      await createInvoiceRecord({
-        invoiceNumber,
-        recipientEmail: invoiceData.email,
-        recipientName: invoiceData.fullName,
-        organizationName: invoiceData.organizationName,
-        amount: invoiceData.totalAmount,
-        currency: currencyConversion.convertedCurrency,
-        type: invoiceType,
-        status: 'sent',
-        isLostInvoice,
-        sentAt: new Date(),
-        emailId: result.id || undefined,
-        pdfGenerated: !!pdfAttachment
-      });
-      console.log('✅ Invoice logged to database:', invoiceNumber);
-    } catch (dbError) {
-      console.error('❌ Failed to log invoice to database:', dbError);
-      // Don't fail the request if database logging fails
+      if (pdfAttachment) {
+        const uploadResult = await uploadInvoicePDF(
+          pdfAttachment,
+          invoiceNumber,
+          invoiceData.organizationName
+        );
+        pdfUrl = uploadResult.downloadURL;
+        console.log('✅ Invoice PDF stored:', pdfUrl);
+      }
+    } catch (storageError) {
+      console.error('❌ Failed to store PDF:', storageError);
     }
-    
+
     return NextResponse.json({
       success: true,
       message: 'Membership invoice email sent successfully',
-      result: result
+      result: result,
+      pdfUrl,
+      invoiceNumber
     });
 
   } catch (error: any) {

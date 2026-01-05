@@ -5,7 +5,7 @@ import * as path from 'path';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
-import { createInvoiceRecord } from '../../../lib/firestore';
+import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -328,36 +328,31 @@ export async function POST(request: NextRequest) {
 
       const result = await response.json();
       console.log(`✅ Payment reminder email sent to ${emailData.email} via Resend:`, result.id);
-      
-      // Log payment reminder to database after successful sending
+
+      // Store PDF in Firebase Storage (invoice record created client-side)
+      const reminderNumber = "REMINDER-" + Math.floor(10000 + Math.random() * 90000);
+      let pdfUrl: string | undefined;
       try {
-        // Generate a reminder number for tracking
-        const reminderNumber = "REMINDER-" + Math.floor(10000 + Math.random() * 90000);
-        await createInvoiceRecord({
-          invoiceNumber: reminderNumber,
-          recipientEmail: testData.email,
-          recipientName: testData.fullName,
-          organizationName: testData.organizationName,
-          amount: testData.totalAmount,
-          currency: 'EUR', // Payment reminders use EUR
-          type: 'reminder',
-          status: 'sent',
-          sentAt: new Date(),
-          emailId: result.id,
-          pdfGenerated: !!pdfAttachment
-        });
-        console.log('✅ Payment reminder logged to database:', reminderNumber);
-      } catch (dbError) {
-        console.error('❌ Failed to log payment reminder to database:', dbError);
-        // Don't fail the request if database logging fails
+        if (pdfAttachment) {
+          const uploadResult = await uploadInvoicePDF(
+            pdfAttachment,
+            reminderNumber,
+            testData.organizationName
+          );
+          pdfUrl = uploadResult.downloadURL;
+          console.log('✅ Reminder PDF stored:', pdfUrl);
+        }
+      } catch (storageError) {
+        console.error('❌ Failed to store PDF:', storageError);
       }
-      
-      
+
       return NextResponse.json({
         success: true,
         message: 'Payment reminder email sent successfully',
         emailId: result.id,
-        totalAmount: testData.totalAmount
+        totalAmount: testData.totalAmount,
+        pdfUrl,
+        invoiceNumber: reminderNumber
       });
     } catch (emailError: any) {
       console.error('Failed to send payment reminder email via Resend:', emailError);

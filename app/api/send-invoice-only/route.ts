@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -234,40 +235,27 @@ export async function POST(request: NextRequest) {
 
     const result = await response.json();
     console.log('✅ Invoice delivery email sent successfully:', result);
-    
-    
-    // Send admin copy
-    try {
-      const adminEmailData = {
-        email: 'admin@fasemga.com',
-        subject: `Admin Copy: ${emailData.subject}`,
-        invoiceHTML: emailData.invoiceHTML,
-        invoiceNumber: emailData.invoiceNumber,
-        organizationName: emailData.organizationName,
-        totalAmount: emailData.totalAmount,
-        pdfAttachment: emailData.pdfAttachment,
-        pdfFilename: `ADMIN-COPY-${invoiceData.invoiceNumber}.pdf`
-        // Deliberately omitting 'cc' field to prevent CC-ing original recipients
-      };
 
-      await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          data: adminEmailData
-        }),
-      });
-      console.log('✅ Admin copy sent for invoice:', invoiceData.invoiceNumber);
-    } catch (adminError) {
-      console.error('❌ Failed to send admin copy:', adminError);
+    // Store PDF in Firebase Storage (invoice record created client-side)
+    let pdfUrl: string | undefined;
+    try {
+      const uploadResult = await uploadInvoicePDF(
+        pdfBase64,
+        invoiceData.invoiceNumber,
+        invoiceData.organizationName
+      );
+      pdfUrl = uploadResult.downloadURL;
+      console.log('✅ Invoice PDF stored:', pdfUrl);
+    } catch (storageError) {
+      console.error('❌ Failed to store PDF:', storageError);
     }
-    
+
     return NextResponse.json({
       success: true,
       message: 'Invoice delivery email sent successfully',
-      result: result
+      result: result,
+      pdfUrl,
+      invoiceNumber: invoiceData.invoiceNumber
     });
 
   } catch (error: any) {
