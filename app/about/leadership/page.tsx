@@ -90,6 +90,13 @@ export default function LeadershipPage() {
           company: t('members.nicola_larizza.company'),
           bio: t('members.nicola_larizza.bio'),
           image: '/cropped_Nicola_Larizza_b&w.jpg'
+        },
+        {
+          name: 'Arjan Nollen',
+          role: t('members.arjan_nollen.role'),
+          company: t('members.arjan_nollen.company'),
+          bio: t('members.arjan_nollen.bio'),
+          image: '/arjan_nollen.jpg'
         }
       ]
     }
