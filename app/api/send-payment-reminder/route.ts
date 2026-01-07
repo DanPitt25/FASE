@@ -1,11 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
+import Stripe from 'stripe';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
+import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { getCurrencySymbol } from '../../../lib/currency-conversion';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
+
+// Initialize Stripe
+let stripe: Stripe | null = null;
+
+const initializeStripe = () => {
+  if (!stripe) {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!stripeKey) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+
+    stripe = new Stripe(stripeKey, {
+      apiVersion: '2025-08-27.basil',
+    });
+  }
+  return stripe;
+};
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -29,7 +49,7 @@ export async function POST(request: NextRequest) {
     const requestData = await request.json();
     const testData = {
       email: requestData.email || "danielhpitt@gmail.com",
-      fullName: requestData.fullName || "Daniel Pitt", 
+      fullName: requestData.fullName || "Daniel Pitt",
       organizationName: requestData.organizationName || "Test Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
       userId: requestData.userId || "test-user-123",
@@ -41,15 +61,16 @@ export async function POST(request: NextRequest) {
       originalAmount: requestData.originalAmount || requestData.totalAmount,
       discountAmount: requestData.discountAmount || 0,
       discountReason: requestData.discountReason || "",
-      address: requestData.address
+      address: requestData.address,
+      applicationDate: requestData.applicationDate || requestData.createdAt || null
     };
 
     // Validate required basic fields
     const requiredBasicFields = ['email', 'fullName', 'organizationName'];
     const missingBasicFields = [];
-    
+
     for (const field of requiredBasicFields) {
-      if (!testData[field as keyof typeof testData] || testData[field as keyof typeof testData].trim() === '') {
+      if (!testData[field as keyof typeof testData] || (testData[field as keyof typeof testData] as string).trim() === '') {
         missingBasicFields.push(field);
       }
     }
@@ -71,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     const requiredAddressFields = ['line1', 'city', 'postcode', 'country'];
     const missingAddressFields = [];
-    
+
     for (const field of requiredAddressFields) {
       if (!testData.address[field] || testData.address[field].trim() === '') {
         missingAddressFields.push(`address.${field}`);
@@ -87,36 +108,125 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
-    
+
     if (isPreview) {
       console.log(`Generating payment reminder preview for ${testData.email}...`);
     } else {
       console.log(`Sending payment reminder email to ${testData.email}...`, testData);
     }
-    
-    // Create payment link with amount and PayPal email
-    const paypalEmail = requestData.paypalEmail || testData.email;
-    const paypalParams = new URLSearchParams({
-      amount: testData.totalAmount.toString(),
-      email: paypalEmail,
-      organization: testData.organizationName
+
+    // Generate reminder invoice number
+    const reminderNumber = "FASE-REM-" + Math.floor(10000 + Math.random() * 90000);
+
+    // Initialize Stripe and create payment link
+    const stripeInstance = initializeStripe();
+
+    // Get base URL for redirect
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const host = request.headers.get('host') || 'fasemga.com';
+    const baseUrl = `${protocol}://${host}`;
+
+    // Create product for Payment Link
+    const product = await stripeInstance.products.create({
+      name: `FASE Annual Membership`,
+      description: `Annual membership for ${testData.organizationName}`,
+      metadata: {
+        invoice_number: reminderNumber,
+        organization_name: testData.organizationName,
+        organization_type: testData.organizationType || 'MGA',
+      }
     });
-    const paypalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/payment?${paypalParams.toString()}`;
-    
-    console.log('✅ Payment link generated:', paypalLink);
-    
-    // Handle uploaded PDF attachment if provided
-    let pdfAttachment: string | null = null;
-    if (requestData.pdfAttachment) {
-      pdfAttachment = requestData.pdfAttachment;
-      console.log('Using uploaded PDF attachment');
-    }
-    
+
+    // Create price for the product (annual subscription)
+    const price = await stripeInstance.prices.create({
+      currency: 'eur',
+      product: product.id,
+      unit_amount: testData.totalAmount * 100, // Convert euros to cents
+      recurring: {
+        interval: 'year',
+      }
+    });
+
+    // Create Payment Link
+    const stripePaymentLink = await stripeInstance.paymentLinks.create({
+      line_items: [
+        {
+          price: price.id,
+          quantity: 1,
+        }
+      ],
+      metadata: {
+        invoice_number: reminderNumber,
+        organization_name: testData.organizationName,
+        organization_type: testData.organizationType || 'MGA',
+        user_id: testData.userId || '',
+        user_email: testData.email,
+      },
+      after_completion: {
+        type: 'redirect',
+        redirect: {
+          url: `${baseUrl}/payment-succeeded?payment_link_id={PAYMENT_LINK_ID}&invoice=${reminderNumber}`,
+        }
+      },
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto'
+    });
+
+    const paymentLink = stripePaymentLink.url;
+    console.log('✅ Stripe payment link generated:', paymentLink);
+
     // Detect language for email translations
     const userLocale = requestData.userLocale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
-    
+
+    // Currency conversion for email content
+    const { convertCurrency } = await import('../../../lib/currency-conversion');
+    const currencyConversion = await convertCurrency(testData.totalAmount, testData.address.country, requestData.forceCurrency);
+
+    // Generate PDF invoice using the shared generator
+    let pdfAttachment: string | null = null;
+    try {
+      console.log('🧾 Generating payment reminder invoice PDF...');
+
+      const invoiceGenerationData: InvoiceGenerationData = {
+        invoiceNumber: reminderNumber,
+        invoiceType: 'reminder',
+        isLostInvoice: false,
+
+        email: testData.email,
+        fullName: testData.fullName,
+        organizationName: testData.organizationName,
+        greeting: testData.greeting,
+        gender: testData.gender,
+        address: testData.address,
+
+        totalAmount: testData.totalAmount,
+        originalAmount: testData.originalAmount,
+        discountAmount: testData.discountAmount,
+        discountReason: testData.discountReason,
+        hasOtherAssociations: testData.hasOtherAssociations,
+
+        organizationType: testData.organizationType,
+        grossWrittenPremiums: testData.grossWrittenPremiums,
+        userId: testData.userId,
+
+        forceCurrency: requestData.forceCurrency,
+        userLocale: locale,
+
+        generationSource: 'admin_portal',
+        isPreview: isPreview
+      };
+
+      const result = await generateInvoicePDF(invoiceGenerationData);
+      pdfAttachment = result.pdfBase64;
+
+    } catch (pdfError: any) {
+      console.error('Failed to generate reminder PDF:', pdfError);
+      console.error('PDF Error stack:', pdfError.stack);
+      // Continue without PDF - will send HTML email instead
+    }
+
     // Load email content translations from JSON files
     const emailTranslations = loadEmailTranslations(locale);
     const reminderEmail = emailTranslations.payment_reminder || {};
@@ -138,28 +248,58 @@ export async function POST(request: NextRequest) {
       name: 'Aline Sullivan',
       title: 'Chief Operating Officer, FASE'
     };
-    
+
     // Apply template variable replacements with gender-aware content
     const genderSuffix = testData.gender === 'f' ? '_f' : '_m';
     const genderAwareDear = reminderEmail[`dear${genderSuffix}`] || reminderEmail.dear || "Dear";
-    const genderAwareSubject = reminderEmail[`subject${genderSuffix}`] || reminderEmail.subject || "Payment Reminder - FASE Membership";
-    const genderAwareGreeting = reminderEmail[`greeting${genderSuffix}`] || reminderEmail.greeting || "Payment Reminder";
-    const genderAwareReminderText = reminderEmail[`reminder_text${genderSuffix}`] || reminderEmail.reminder_text || "We hope this message finds you well. This is a friendly reminder regarding the outstanding payment for your FASE membership application for {organizationName}.";
-    
+    const genderAwareSubject = reminderEmail[`subject${genderSuffix}`] || reminderEmail.subject || "FASE Membership - Invoice Reminder";
+    const genderAwareGreeting = reminderEmail[`greeting${genderSuffix}`] || reminderEmail.greeting || "FASE Membership - Invoice Reminder";
+    const genderAwareReminderText = reminderEmail[`reminder_text${genderSuffix}`] || reminderEmail.reminder_text || "Following your membership application for {organizationName} on {applicationDate}, please find attached your updated invoice.";
+
+    // Format application date for display
+    // Handle Firestore timestamps (objects with _seconds) or ISO strings
+    let formattedApplicationDate = '';
+    if (testData.applicationDate) {
+      let appDate: Date;
+      if (typeof testData.applicationDate === 'object' && testData.applicationDate._seconds) {
+        // Firestore Timestamp object
+        appDate = new Date(testData.applicationDate._seconds * 1000);
+      } else if (typeof testData.applicationDate === 'object' && testData.applicationDate.seconds) {
+        // Firestore Timestamp (without underscore)
+        appDate = new Date(testData.applicationDate.seconds * 1000);
+      } else {
+        // ISO string or other date format
+        appDate = new Date(testData.applicationDate);
+      }
+      if (!isNaN(appDate.getTime())) {
+        formattedApplicationDate = appDate.toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+    }
+
+    // Build payment text with converted currency
+    let paymentAmountText;
+    if (currencyConversion.convertedCurrency === 'EUR') {
+      paymentAmountText = `€${testData.totalAmount}`;
+    } else {
+      const convertedSymbol = getCurrencySymbol(currencyConversion.convertedCurrency);
+      paymentAmountText = `${convertedSymbol}${currencyConversion.roundedAmount}`;
+    }
+
     let emailContent = {
       subject: genderAwareSubject,
       greeting: genderAwareGreeting,
       dear: genderAwareDear,
-      reminderText: genderAwareReminderText.replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
-      paymentText: (reminderEmail.payment_text || "The outstanding amount of €{totalAmount} can be paid using one of the following methods:").replace('{totalAmount}', testData.totalAmount.toString()),
-      paymentOptions: reminderEmail.payment_options || "Payment Options:",
-      paypalOption: reminderEmail.paypal_option || "PayPal:",
-      payOnline: reminderEmail.pay_online || "Pay Online", 
-      bankTransfer: reminderEmail.bank_transfer || "Bank Transfer:",
-      invoiceAttached: reminderEmail.invoice_attached || "Full payment details are included in the attached invoice",
-      benefitsText: reminderEmail.benefits_text || "Once activated, your membership includes access to our logo for your marketing materials, the ability to showcase your company in our member directory (please send your logo and brief business summary to admin@fasemga.com), and access to our full range of networking and business development resources.",
-      accessText: reminderEmail.access_text || "We're eager to provide you with access to the FASE member portal where you can explore all these benefits and begin connecting with fellow members across Europe.",
-      contactText: reminderEmail.contact_text || "If you have any questions about your membership or need assistance, please don't hesitate to contact me.",
+      reminderText: genderAwareReminderText
+        .replace('{organizationName}', testData.organizationName)
+        .replace('{applicationDate}', formattedApplicationDate),
+      paymentText: (reminderEmail.payment_text || "The membership fee of €{totalAmount} is payable by bank transfer. Full payment details are provided in the attached invoice.").replace('€{totalAmount}', paymentAmountText).replace('{totalAmount}', testData.totalAmount.toString()),
+      bankDetailsNote: reminderEmail.bank_details_note ?? "Please note, our bank account details have recently changed. The current details are set out in the attached invoice.",
+      accessText: reminderEmail.access_text || "Once payment is received, you'll receive access to the FASE member portal and our logo for your marketing materials. We'll also provide instructions for adding your company to our member directory. We look forward to welcoming you to FASE.",
+      contactText: reminderEmail.contact_text || "If you have any questions, please don't hesitate to contact me.",
       regards: signature.regards,
       signature: signature.name,
       title: signature.title
@@ -168,20 +308,16 @@ export async function POST(request: NextRequest) {
     // Apply customizations if provided
     if (requestData.customizedEmailContent) {
       const customContent = requestData.customizedEmailContent;
-      const genderSuffix = testData.gender === 'f' ? '_f' : '_m';
-      
+
       emailContent = {
         subject: customContent[`subject${genderSuffix}`] || customContent.subject || emailContent.subject,
         greeting: customContent[`greeting${genderSuffix}`] || customContent.greeting || emailContent.greeting,
         dear: customContent[`dear${genderSuffix}`] || customContent.dear || emailContent.dear,
-        reminderText: (customContent[`reminder_text${genderSuffix}`] || customContent.reminder_text || reminderEmail.reminder_text || emailContent.reminderText).replace('{organizationName}', `<strong>${testData.organizationName}</strong>`),
-        paymentText: (customContent.payment_text || reminderEmail.payment_text || emailContent.paymentText).replace('{totalAmount}', testData.totalAmount.toString()),
-        paymentOptions: customContent.payment_options || emailContent.paymentOptions,
-        paypalOption: customContent.paypal_option || emailContent.paypalOption,
-        payOnline: customContent.pay_online || emailContent.payOnline,
-        bankTransfer: customContent.bank_transfer || emailContent.bankTransfer,
-        invoiceAttached: customContent.invoice_attached || emailContent.invoiceAttached,
-        benefitsText: customContent.benefits_text || emailContent.benefitsText,
+        reminderText: (customContent[`reminder_text${genderSuffix}`] || customContent.reminder_text || reminderEmail.reminder_text || emailContent.reminderText)
+          .replace('{organizationName}', testData.organizationName)
+          .replace('{applicationDate}', formattedApplicationDate),
+        paymentText: (customContent.payment_text || reminderEmail.payment_text || emailContent.paymentText).replace('{totalAmount}', paymentAmountText).replace('€{totalAmount}', paymentAmountText),
+        bankDetailsNote: customContent.bank_details_note ?? emailContent.bankDetailsNote,
         accessText: customContent.access_text || emailContent.accessText,
         contactText: customContent.contact_text || emailContent.contactText,
         regards: customContent.regards || emailContent.regards,
@@ -201,39 +337,33 @@ export async function POST(request: NextRequest) {
               <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
             </div>
             <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${emailContent.greeting}</h2>
-            
+
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
               ${emailContent.dear} ${testData.greeting},
             </p>
-            
+
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
               ${emailContent.reminderText}
             </p>
-            
-            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 25px 0;">
+
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
               ${emailContent.paymentText}
             </p>
-            
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
-              <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${emailContent.paymentOptions}</h3>
-              
-              <p style="margin: 0 0 10px 0; font-size: 15px;">
-                <strong>1. ${emailContent.paypalOption}</strong> <a href="${paypalLink}" style="color: #2D5574; text-decoration: none;">${emailContent.payOnline}</a>
-              </p>
-              
-              <p style="margin: 0; font-size: 15px;">
-                <strong>2. ${emailContent.bankTransfer}</strong> ${emailContent.invoiceAttached}
-              </p>
+
+            ${emailContent.bankDetailsNote ? `<p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">${emailContent.bankDetailsNote}</p>` : ''}
+
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${paymentLink}" style="display: inline-block; background-color: #2D5574; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: 500;">Pay Online</a>
             </div>
-            
-            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
+
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
               ${emailContent.accessText}
             </p>
-            
-            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
+
+            <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
               ${emailContent.contactText}
             </p>
-            
+
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
               <strong>${emailContent.signature}</strong><br>
@@ -245,18 +375,17 @@ export async function POST(request: NextRequest) {
       `,
       organizationName: testData.organizationName,
       totalAmount: testData.totalAmount.toString(),
-      // Add PDF attachment if provided
+      // Add PDF attachment if generated successfully
       ...(pdfAttachment && {
         pdfAttachment: pdfAttachment,
-        pdfFilename: requestData.pdfFilename || 'FASE-Payment-Reminder.pdf'
+        pdfFilename: `FASE-Invoice-${reminderNumber}.pdf`
       })
     };
 
     // For preview mode, return preview data instead of sending email
     if (isPreview) {
-      // Create a temporary PDF file URL for preview if attachment provided
       const pdfPreviewUrl = pdfAttachment ? `data:application/pdf;base64,${pdfAttachment}` : null;
-      
+
       return NextResponse.json({
         success: true,
         preview: true,
@@ -266,32 +395,32 @@ export async function POST(request: NextRequest) {
         htmlContent: emailData.invoiceHTML,
         textContent: null,
         pdfUrl: pdfPreviewUrl,
-        attachments: pdfAttachment ? ['Attached PDF'] : [],
-        totalAmount: testData.totalAmount
+        attachments: pdfAttachment ? ['Generated Invoice PDF'] : [],
+        totalAmount: testData.totalAmount,
+        invoiceNumber: reminderNumber
       });
     }
 
     // Send email using Resend API
     const resendApiKey = process.env.RESEND_API_KEY;
-    
+
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY environment variable is not configured');
     }
 
     try {
       console.log('Sending payment reminder email via Resend...');
-      
+
       // Prepare PDF attachment for Resend if available
       const resendAttachments = [];
       if (pdfAttachment) {
         resendAttachments.push({
-          filename: requestData.pdfFilename || 'FASE-Payment-Reminder.pdf',
+          filename: `FASE-Invoice-${reminderNumber}.pdf`,
           content: Array.from(Buffer.from(pdfAttachment, 'base64'))
         });
       }
 
-        // Map sender email to proper from address (defaults to Aline Sullivan for payment reminders)
-      const senderEmail = requestData.freeformSender || 'aline.sullivan@fasemga.com';
+      // Map sender email to proper from address
       const senderMap: Record<string, string> = {
         'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
         'aline.sullivan@fasemga.com': 'Aline Sullivan <aline.sullivan@fasemga.com>',
@@ -329,8 +458,7 @@ export async function POST(request: NextRequest) {
       const result = await response.json();
       console.log(`✅ Payment reminder email sent to ${emailData.email} via Resend:`, result.id);
 
-      // Store PDF in Firebase Storage (invoice record created client-side)
-      const reminderNumber = "REMINDER-" + Math.floor(10000 + Math.random() * 90000);
+      // Store PDF in Firebase Storage
       let pdfUrl: string | undefined;
       try {
         if (pdfAttachment) {
@@ -361,7 +489,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Payment reminder function call failed:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: error.message,
