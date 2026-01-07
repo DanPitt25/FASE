@@ -25,12 +25,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     userLocale: 'en',
     forceCurrency: '',
     address: {
-      line1: prefilledData?.businessAddress?.line1 || prefilledData?.registeredAddress?.line1 || '',
-      line2: prefilledData?.businessAddress?.line2 || prefilledData?.registeredAddress?.line2 || '',
-      city: prefilledData?.businessAddress?.city || prefilledData?.registeredAddress?.city || '',
-      county: prefilledData?.businessAddress?.county || prefilledData?.registeredAddress?.county || '',
-      postcode: prefilledData?.businessAddress?.postcode || prefilledData?.registeredAddress?.postcode || '',
-      country: prefilledData?.businessAddress?.country || prefilledData?.registeredAddress?.country || ''
+      line1: prefilledData?.invoicingAddress?.line1 || prefilledData?.registeredAddress?.line1 || '',
+      line2: prefilledData?.invoicingAddress?.line2 || prefilledData?.registeredAddress?.line2 || '',
+      city: prefilledData?.invoicingAddress?.city || prefilledData?.registeredAddress?.city || '',
+      county: prefilledData?.invoicingAddress?.county || prefilledData?.registeredAddress?.county || '',
+      postcode: prefilledData?.invoicingAddress?.postcode || prefilledData?.registeredAddress?.postcode || '',
+      country: prefilledData?.invoicingAddress?.country || prefilledData?.registeredAddress?.country || ''
     },
     // Freeform email fields
     freeformSubject: '',
@@ -67,12 +67,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         organizationType: prefilledData.organizationType || 'MGA',
         hasOtherAssociations: prefilledData.hasOtherAssociations || false,
         address: {
-          line1: prefilledData.businessAddress?.line1 || prefilledData.registeredAddress?.line1 || '',
-          line2: prefilledData.businessAddress?.line2 || prefilledData.registeredAddress?.line2 || '',
-          city: prefilledData.businessAddress?.city || prefilledData.registeredAddress?.city || '',
-          county: prefilledData.businessAddress?.county || prefilledData.registeredAddress?.county || '',
-          postcode: prefilledData.businessAddress?.postcode || prefilledData.registeredAddress?.postcode || '',
-          country: prefilledData.businessAddress?.country || prefilledData.registeredAddress?.country || ''
+          line1: prefilledData.invoicingAddress?.line1 || prefilledData.registeredAddress?.line1 || '',
+          line2: prefilledData.invoicingAddress?.line2 || prefilledData.registeredAddress?.line2 || '',
+          city: prefilledData.invoicingAddress?.city || prefilledData.registeredAddress?.city || '',
+          county: prefilledData.invoicingAddress?.county || prefilledData.registeredAddress?.county || '',
+          postcode: prefilledData.invoicingAddress?.postcode || prefilledData.registeredAddress?.postcode || '',
+          country: prefilledData.invoicingAddress?.country || prefilledData.registeredAddress?.country || ''
         }
       }));
     }
