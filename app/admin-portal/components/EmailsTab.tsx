@@ -175,9 +175,14 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         payload.forceCurrency = formData.forceCurrency;
         payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
       }
-      // Pass application date for payment reminders
-      if (selectedTemplate === 'reminder' && prefilledData?.createdAt) {
-        payload.applicationDate = prefilledData.createdAt;
+      // Pass application date and address for payment reminders
+      if (selectedTemplate === 'reminder') {
+        if (prefilledData?.createdAt) {
+          payload.applicationDate = prefilledData.createdAt;
+        }
+        payload.address = formData.address;
+        payload.country = formData.address.country;
+        payload.userLocale = formData.userLocale;
       }
     }
 

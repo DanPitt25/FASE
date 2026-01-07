@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const requiredAddressFields = ['line1', 'city', 'postcode', 'country'];
+    const requiredAddressFields = ['line1', 'city', 'country'];
     const missingAddressFields = [];
 
     for (const field of requiredAddressFields) {
