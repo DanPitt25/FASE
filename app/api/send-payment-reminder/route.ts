@@ -51,15 +51,15 @@ export async function POST(request: NextRequest) {
       email: requestData.email || "danielhpitt@gmail.com",
       fullName: requestData.fullName || "Daniel Pitt",
       organizationName: requestData.organizationName || "Test Organization Ltd",
-      totalAmount: requestData.totalAmount || 1500,
+      totalAmount: parseFloat(requestData.totalAmount) || 1500,
       userId: requestData.userId || "test-user-123",
       organizationType: requestData.organizationType || "MGA",
       grossWrittenPremiums: requestData.grossWrittenPremiums || "10-20m",
       hasOtherAssociations: requestData.hasOtherAssociations || false,
       greeting: requestData.greeting || requestData.fullName || "Daniel Pitt",
       gender: requestData.gender || "m", // "m" for masculine, "f" for feminine
-      originalAmount: requestData.originalAmount || requestData.totalAmount,
-      discountAmount: requestData.discountAmount || 0,
+      originalAmount: parseFloat(requestData.originalAmount) || parseFloat(requestData.totalAmount) || 1500,
+      discountAmount: parseFloat(requestData.discountAmount) || 0,
       discountReason: requestData.discountReason || "",
       address: requestData.address,
       applicationDate: requestData.applicationDate || requestData.createdAt || null
