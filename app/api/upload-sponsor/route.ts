@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
 
     const { storage } = await initializeAdmin();
 
-    // Create file path
+    // Create file path - use graphics/logos for consistency with existing sponsors
     const fileName = `${Date.now()}_${file.name}`;
-    const filePath = `sponsors/${fileName}`;
+    const filePath = `graphics/logos/${fileName}`;
 
     // Convert File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
