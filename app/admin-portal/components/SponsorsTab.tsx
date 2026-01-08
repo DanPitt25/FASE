@@ -2,9 +2,9 @@
 
 import React, { useState, useRef } from 'react';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
-import { db, storage } from '../../../lib/firebase';
+import { db } from '../../../lib/firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { auth } from '../../../lib/firebase';
 import Image from 'next/image';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
@@ -93,11 +93,32 @@ export default function SponsorsTab() {
     }
   };
 
-  // Upload logo to Firebase Storage
-  const uploadLogo = async (file: File): Promise<string> => {
-    const storageRef = ref(storage, `sponsors/${Date.now()}_${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
+  // Upload logo via API route (uses Firebase Admin SDK)
+  const uploadLogo = async (file: File, sponsorName: string): Promise<string> => {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('sponsorName', sponsorName);
+
+    const response = await fetch('/api/upload-sponsor', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to upload logo');
+    }
+
+    const result = await response.json();
+    return result.downloadURL;
   };
 
   // Create or update sponsor
@@ -113,7 +134,7 @@ export default function SponsorsTab() {
       
       // Upload new logo if provided
       if (formData.logoFile) {
-        logoUrl = await uploadLogo(formData.logoFile);
+        logoUrl = await uploadLogo(formData.logoFile, formData.name);
       }
 
       const sponsorData = {
@@ -173,21 +194,10 @@ export default function SponsorsTab() {
   // Delete sponsor
   const handleDeleteSponsor = async (sponsor: Sponsor) => {
     if (!confirm(`Are you sure you want to delete ${sponsor.name}?`)) return;
-    
+
     try {
       // Delete from Firestore
       await deleteDoc(doc(db, 'sponsors', sponsor.id));
-      
-      // Delete logo from Storage
-      if (sponsor.logoUrl) {
-        try {
-          const logoRef = ref(storage, sponsor.logoUrl);
-          await deleteObject(logoRef);
-        } catch (storageError) {
-          console.warn('Error deleting logo file:', storageError);
-        }
-      }
-      
       setSponsors(prev => prev.filter(s => s.id !== sponsor.id));
     } catch (error) {
       console.error('Error deleting sponsor:', error);

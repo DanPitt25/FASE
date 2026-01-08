@@ -1,59 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
-import { DatabaseMonitor } from '../../../lib/monitoring';
 
-// Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
 
-// Initialize Firebase Admin using service account key
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
       : undefined;
 
     admin.initializeApp({
-      credential: serviceAccount 
+      credential: serviceAccount
         ? admin.credential.cert(serviceAccount)
         : admin.credential.applicationDefault(),
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     });
   }
-  
+
   return {
-    auth: admin.auth(),
     storage: admin.storage()
   };
 };
 
-
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
-  
+
   try {
-    // Verify authentication first
     const authResult = await verifyAuthToken(request);
     const userUid = authResult.uid;
-    
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const identifier = formData.get('identifier') as string;
+    const sponsorName = formData.get('sponsorName') as string;
 
-    // Validate inputs and ensure user can only upload for themselves
     if (!file) {
       return NextResponse.json(
         { error: 'File is required' },
         { status: 400 }
       );
     }
-    
-    // Use authenticated user's UID as identifier for security
-    const safeIdentifier = userUid;
 
-    // Validate file
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: 'File size must be less than 5MB' },
@@ -61,6 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
@@ -71,10 +62,9 @@ export async function POST(request: NextRequest) {
 
     const { storage } = await initializeAdmin();
 
-    // Create file path using authenticated user ID
-    const fileExtension = file.name.split('.').pop() || 'png';
-    const fileName = `${safeIdentifier}-logo.${fileExtension}`;
-    const filePath = `graphics/logos/${fileName}`;
+    // Create file path
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = `sponsors/${fileName}`;
 
     // Convert File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -91,22 +81,15 @@ export async function POST(request: NextRequest) {
 
     // Make the file publicly readable
     await fileRef.makePublic();
-    
+
     // Log successful upload
     await logSecurityEvent({
       type: 'auth_success',
       userId: userUid,
       email: authResult.email,
-      details: { action: 'logo_uploaded', fileName, fileSize: file.size },
+      details: { action: 'sponsor_logo_uploaded', fileName, sponsorName, fileSize: file.size },
       severity: 'low',
       ...clientInfo
-    });
-    
-    await DatabaseMonitor.logDatabaseOperation({
-      type: 'write',
-      collection: 'storage',
-      documentId: filePath,
-      userId: userUid
     });
 
     // Get the download URL
@@ -119,24 +102,24 @@ export async function POST(request: NextRequest) {
       fileName,
     });
   } catch (error) {
-    console.error('Logo upload error:', error);
-    
+    console.error('Sponsor logo upload error:', error);
+
     if (error instanceof AuthError) {
       await logSecurityEvent({
         type: 'auth_failure',
-        details: { error: error.message, action: 'logo_upload' },
+        details: { error: error.message, action: 'sponsor_logo_upload' },
         severity: 'medium',
         ...clientInfo
       });
-      
+
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: error.statusCode }
       );
     }
-    
+
     return NextResponse.json(
-      { error: 'Failed to upload logo' },
+      { error: 'Failed to upload sponsor logo' },
       { status: 500 }
     );
   }
