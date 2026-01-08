@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
     await fileRef.save(buffer, {
       metadata: {
         contentType: file.type,
+        metadata: {
+          firebaseStorageDownloadTokens: crypto.randomUUID(),
+        },
       },
     });
 
@@ -92,8 +95,13 @@ export async function POST(request: NextRequest) {
       ...clientInfo
     });
 
-    // Get the download URL
-    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    // Get metadata to retrieve the download token
+    const [metadata] = await fileRef.getMetadata();
+    const token = metadata.metadata?.firebaseStorageDownloadTokens;
+
+    // Generate Firebase Storage download URL
+    const encodedPath = encodeURIComponent(filePath);
+    const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
 
     return NextResponse.json({
       success: true,
