@@ -387,9 +387,15 @@ export default function IntegratedRegisterForm() {
           return;
         }
       }
-      
+
       setError("");
       setStep(4);
+      window.scrollTo(0, 0);
+      setAttemptedNext(false);
+    } else if (step === 4) {
+      // No validation needed for rendezvous step - it's optional
+      setError("");
+      setStep(5);
       window.scrollTo(0, 0);
       setAttemptedNext(false);
     }
@@ -473,7 +479,7 @@ export default function IntegratedRegisterForm() {
 
   return (
     <div className="space-y-6">
-      {/* Progress indicator - Updated to show 4 steps */}
+      {/* Progress indicator - 5 steps */}
       <div className="flex items-center justify-center mb-8">
         <div className="flex items-center space-x-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -481,23 +487,29 @@ export default function IntegratedRegisterForm() {
           }`}>
             1
           </div>
-          <div className={`w-8 h-1 ${step >= 1 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-6 h-1 ${step >= 1 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             step >= 1 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             2
           </div>
-          <div className={`w-8 h-1 ${step >= 2 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-6 h-1 ${step >= 2 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             step >= 2 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             3
           </div>
-          <div className={`w-8 h-1 ${step >= 3 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-6 h-1 ${step >= 3 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             step >= 3 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
           }`}>
             4
+          </div>
+          <div className={`w-6 h-1 ${step >= 4 ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+            step >= 4 ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
+            5
           </div>
         </div>
       </div>
@@ -744,92 +756,29 @@ export default function IntegratedRegisterForm() {
       </div>
       )}
 
-      {/* Step 4: Final Review & Submit Application */}
+      {/* Step 4: MGA Rendezvous Pass Reservation */}
       {step === 4 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.submit_application.title')}</h3>
-            <p className="text-fase-black text-sm">{t('steps.submit_application.subtitle')}</p>
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.rendezvous.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.rendezvous.subtitle')}</p>
           </div>
 
-          {/* Code of Conduct Consent */}
-          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
-            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('code_of_conduct.review_header')}</h4>
-            
-            <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm mb-4">
-              <div className="text-base text-fase-black">
-                <div className="prose prose-base max-w-none">
-                  <h4 className="font-semibold text-fase-navy text-lg mb-4">{t('code_of_conduct.intro.title')}</h4>
-                  
-                  <p className="mb-3">
-                    {t('code_of_conduct.intro.content.paragraph1')}
-                  </p>
-                  
-                  <p className="mb-3">
-                    {t('code_of_conduct.intro.content.paragraph2')}
-                  </p>
-                  
-                  <p className="mb-4">
-                    {t('code_of_conduct.intro.content.paragraph3')}
-                  </p>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.legal.title')}</h5>
-                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.legal.content')}
-                  </div>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.financial.title')}</h5>
-                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.financial.content')}
-                  </div>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.inter_org.title')}</h5>
-                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.inter_org.content')}
-                  </div>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.community.title')}</h5>
-                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.community.content')}
-                  </div>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.insurers.title')}</h5>
-                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.insurers.content')}
-                  </div>
-                  
-                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.brokers.title')}</h5>
-                  <div className="mb-6" style={{whiteSpace: 'pre-line'}}>
-                    {t('code_of_conduct.sections.brokers.content')}
-                  </div>
-                  
-                  <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
-                    {t('code_of_conduct.reporting.content.paragraph1')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-fase-light-gold rounded-lg p-4">
-              <label className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  checked={codeOfConductConsent}
-                  onChange={(e) => setCodeOfConductConsent(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
-                />
-                <span className="text-sm text-fase-black">
-                  {t('code_of_conduct.consent_text')}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {/* MGA Rendezvous Pass Reservation */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('rendezvous.title')}</h4>
             <p className="text-fase-black mb-4">
               {t('rendezvous.description')}
+            </p>
+
+            <p className="text-fase-black mb-6">
+              <a
+                href="https://mgarendezvous.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-fase-navy hover:text-fase-gold underline transition-colors"
+              >
+                {t('rendezvous.visit_website')}
+              </a>
             </p>
 
             <div className="flex items-center space-x-3 mb-4">
@@ -871,6 +820,89 @@ export default function IntegratedRegisterForm() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 5: Final Review & Submit Application */}
+      {step === 5 && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.submit_application.title')}</h3>
+            <p className="text-fase-black text-sm">{t('steps.submit_application.subtitle')}</p>
+          </div>
+
+          {/* Code of Conduct Consent */}
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('code_of_conduct.review_header')}</h4>
+
+            <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm mb-4">
+              <div className="text-base text-fase-black">
+                <div className="prose prose-base max-w-none">
+                  <h4 className="font-semibold text-fase-navy text-lg mb-4">{t('code_of_conduct.intro.title')}</h4>
+
+                  <p className="mb-3">
+                    {t('code_of_conduct.intro.content.paragraph1')}
+                  </p>
+
+                  <p className="mb-3">
+                    {t('code_of_conduct.intro.content.paragraph2')}
+                  </p>
+
+                  <p className="mb-4">
+                    {t('code_of_conduct.intro.content.paragraph3')}
+                  </p>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.legal.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.legal.content')}
+                  </div>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.financial.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.financial.content')}
+                  </div>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.inter_org.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.inter_org.content')}
+                  </div>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.community.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.community.content')}
+                  </div>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.insurers.title')}</h5>
+                  <div className="mb-4" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.insurers.content')}
+                  </div>
+
+                  <h5 className="font-semibold text-fase-navy mt-6 mb-3">{t('code_of_conduct.sections.brokers.title')}</h5>
+                  <div className="mb-6" style={{whiteSpace: 'pre-line'}}>
+                    {t('code_of_conduct.sections.brokers.content')}
+                  </div>
+
+                  <p className="mt-6 pt-4 border-t border-gray-200 font-medium">
+                    {t('code_of_conduct.reporting.content.paragraph1')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-fase-light-gold rounded-lg p-4">
+              <label className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  checked={codeOfConductConsent}
+                  onChange={(e) => setCodeOfConductConsent(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                />
+                <span className="text-sm text-fase-black">
+                  {t('code_of_conduct.consent_text')}
+                </span>
+              </label>
+            </div>
           </div>
 
           {/* Application Summary */}
@@ -1150,14 +1182,14 @@ export default function IntegratedRegisterForm() {
         </p>
       </div>
 
-      {/* Navigation Buttons - Updated for 4-step flow */}
-      {step < 3 && (
+      {/* Navigation Buttons - 5-step flow */}
+      {step < 4 && (
         <div className="pt-6">
           <div className="flex justify-between">
             {step > (typeFromUrl ? 0 : -1) ? (
-              <Button 
+              <Button
                 type="button"
-                variant="secondary" 
+                variant="secondary"
                 onClick={handleBack}
               >
                 {t('buttons.back')}
@@ -1165,10 +1197,10 @@ export default function IntegratedRegisterForm() {
             ) : (
               <div></div>
             )}
-            
-            <Button 
+
+            <Button
               type="button"
-              variant="primary" 
+              variant="primary"
               onClick={handleNext}
             >
               {t('buttons.next')}
@@ -1176,21 +1208,21 @@ export default function IntegratedRegisterForm() {
           </div>
         </div>
       )}
-      
-      {/* Navigation for step 3 - final next button */}
-      {step === 3 && (
+
+      {/* Navigation for step 4 (Rendezvous) - next goes to Review */}
+      {step === 4 && (
         <div className="pt-6">
           <div className="flex justify-between">
-            <Button 
+            <Button
               type="button"
-              variant="secondary" 
+              variant="secondary"
               onClick={handleBack}
             >
               {t('buttons.back')}
             </Button>
-            <Button 
+            <Button
               type="button"
-              variant="primary" 
+              variant="primary"
               onClick={handleNext}
             >
               {t('buttons.review_submit')}
@@ -1198,14 +1230,14 @@ export default function IntegratedRegisterForm() {
           </div>
         </div>
       )}
-      
-      {/* Navigation for final step (4) - only back button since submit is inline */}
-      {step === 4 && (
+
+      {/* Navigation for final step (5) - only back button since submit is inline */}
+      {step === 5 && (
         <div className="pt-6">
           <div className="flex justify-between">
-            <Button 
+            <Button
               type="button"
-              variant="secondary" 
+              variant="secondary"
               onClick={handleBack}
             >
               {t('buttons.back')}
