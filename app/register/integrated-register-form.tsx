@@ -800,14 +800,15 @@ export default function IntegratedRegisterForm() {
                   <label className="block text-sm font-medium text-fase-navy mb-2">
                     {t('rendezvous.number_of_passes')}
                   </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
+                  <select
                     value={rendezvousPassCount}
-                    onChange={(e) => setRendezvousPassCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  />
+                    onChange={(e) => setRendezvousPassCount(parseInt(e.target.value))}
+                    className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent bg-white"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="bg-fase-cream rounded p-3 border border-fase-light-gold">
