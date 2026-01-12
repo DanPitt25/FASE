@@ -101,7 +101,11 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
 
   const originalAmount = calculateOriginalAmount();
   const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
-  const finalAmount = formData.customLineItem.enabled ? baseAmount + formData.customLineItem.amount : baseAmount;
+
+  // Add rendezvous passes to final amount if present
+  const rendezvousTotal = prefilledData?.rendezvousPassReservation?.passTotal || 0;
+  const customLineItemTotal = formData.customLineItem.enabled ? formData.customLineItem.amount : 0;
+  const finalAmount = baseAmount + rendezvousTotal + customLineItemTotal;
 
   const emailTemplates = {
     invoice: {
@@ -148,7 +152,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       preview: isPreview,
       ...formData,
       greeting: formData.greeting || formData.fullName,
-      ...(customizedContent && { customizedEmailContent: customizedContent })
+      ...(customizedContent && { customizedEmailContent: customizedContent }),
+      // Include rendezvous pass reservation from account data if present
+      ...(prefilledData?.rendezvousPassReservation && { rendezvousPassReservation: prefilledData.rendezvousPassReservation })
     };
 
     if (selectedTemplate === 'standalone_invoice') {

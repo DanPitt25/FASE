@@ -157,7 +157,11 @@ export default function IntegratedRegisterForm() {
   // Consent states
   const [dataNoticeConsent, setDataNoticeConsent] = useState(false);
   const [codeOfConductConsent, setCodeOfConductConsent] = useState(false);
-  
+
+  // MGA Rendezvous pass reservation
+  const [reserveRendezvousPasses, setReserveRendezvousPasses] = useState(false);
+  const [rendezvousPassCount, setRendezvousPassCount] = useState(1);
+
   // Application submission state
   const [submittingApplication, setSubmittingApplication] = useState(false);
 
@@ -414,6 +418,21 @@ export default function IntegratedRegisterForm() {
   const getCurrentDiscountedFee = () => {
     const actualTotal = getActualGWPTotal();
     return getDiscountedFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
+  };
+
+  const getRendezvousPassPrice = () => {
+    // Member pricing (already 50% discounted) - based on application organization type
+    const pricing = {
+      MGA: 400,
+      carrier: 550,
+      provider: 700
+    };
+    return pricing[organizationType as 'MGA' | 'carrier' | 'provider'];
+  };
+
+  const getRendezvousPassTotal = () => {
+    if (!reserveRendezvousPasses) return 0;
+    return getRendezvousPassPrice() * rendezvousPassCount;
   };
 
 
@@ -806,6 +825,54 @@ export default function IntegratedRegisterForm() {
             </div>
           </div>
 
+          {/* MGA Rendezvous Pass Reservation */}
+          <div className="bg-white rounded-lg border border-fase-light-gold p-6">
+            <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('rendezvous.title')}</h4>
+            <p className="text-fase-black mb-4">
+              {t('rendezvous.description')}
+            </p>
+
+            <div className="flex items-center space-x-3 mb-4">
+              <input
+                type="checkbox"
+                checked={reserveRendezvousPasses}
+                onChange={(e) => setReserveRendezvousPasses(e.target.checked)}
+                className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                id="reserve-passes"
+              />
+              <label htmlFor="reserve-passes" className="text-sm font-medium text-fase-black cursor-pointer">
+                {t('rendezvous.checkbox_label')}
+              </label>
+            </div>
+
+            {reserveRendezvousPasses && (
+              <div className="mt-4 space-y-4 pl-7">
+                <div>
+                  <label className="block text-sm font-medium text-fase-navy mb-2">
+                    {t('rendezvous.number_of_passes')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={rendezvousPassCount}
+                    onChange={(e) => setRendezvousPassCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                    className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  />
+                </div>
+
+                <div className="bg-fase-cream rounded p-3 border border-fase-light-gold">
+                  <p className="text-sm font-medium text-fase-navy mb-1">
+                    {t('rendezvous.pass_total')}: €{getRendezvousPassTotal().toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Application Summary */}
           <div className="bg-white rounded-lg border border-fase-light-gold p-6 space-y-4">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('application_summary.title')}</h4>
@@ -861,19 +928,31 @@ export default function IntegratedRegisterForm() {
                 <span className="text-fase-black font-medium">{t('pricing.membership_fee')}</span>
                 <span className="text-fase-navy font-semibold">€{getCurrentMembershipFee().toLocaleString()}</span>
               </div>
-              
+
               {hasOtherAssociations && (
                 <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
                   <span className="text-green-600 font-medium">{t('pricing.discount')}</span>
                   <span className="text-green-600 font-semibold">-€{(getCurrentMembershipFee() - getCurrentDiscountedFee()).toLocaleString()}</span>
                 </div>
               )}
-              
+
+              {reserveRendezvousPasses && (
+                <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
+                  <div>
+                    <span className="text-fase-black font-medium">MGA Rendezvous Passes</span>
+                    <p className="text-xs text-gray-600">
+                      {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} (member rate)
+                    </p>
+                  </div>
+                  <span className="text-fase-navy font-semibold">€{getRendezvousPassTotal().toLocaleString()}</span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center py-3 border-t-2 border-fase-navy">
                 <span className="text-fase-navy text-lg font-bold">{t('pricing.total_annual')}</span>
-                <span className="text-fase-navy text-xl font-bold">€{getCurrentDiscountedFee().toLocaleString()}</span>
+                <span className="text-fase-navy text-xl font-bold">€{(getCurrentDiscountedFee() + getRendezvousPassTotal()).toLocaleString()}</span>
               </div>
-              
+
               {hasOtherAssociations && (
                 <p className="text-sm text-green-600 italic">{t('pricing.discount_note')}</p>
               )}
@@ -928,7 +1007,10 @@ export default function IntegratedRegisterForm() {
                     frontingOptions,
                     considerStartupMGAs,
                     amBestRating,
-                    otherRating
+                    otherRating,
+                    reserveRendezvousPasses,
+                    rendezvousPassCount,
+                    rendezvousPassTotal: getRendezvousPassTotal()
                   });
 
                   // Generate application number and send email
@@ -945,7 +1027,7 @@ export default function IntegratedRegisterForm() {
                     headers: {
                       'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                       applicationNumber,
                       membershipFee,
                       email,
@@ -964,7 +1046,10 @@ export default function IntegratedRegisterForm() {
                       gwpCurrency,
                       selectedLinesOfBusiness,
                       selectedMarkets,
-                      members
+                      members,
+                      reserveRendezvousPasses,
+                      rendezvousPassCount,
+                      rendezvousPassTotal: getRendezvousPassTotal()
                     }),
                   });
                   

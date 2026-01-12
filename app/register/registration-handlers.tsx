@@ -83,6 +83,10 @@ export const createAccountAndMembership = async (
     considerStartupMGAs?: string;
     amBestRating?: string;
     otherRating?: string;
+    // MGA Rendezvous fields (optional)
+    reserveRendezvousPasses?: boolean;
+    rendezvousPassCount?: number;
+    rendezvousPassTotal?: number;
   }
 ) => {
   try {

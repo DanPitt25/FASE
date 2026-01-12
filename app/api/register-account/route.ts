@@ -143,6 +143,16 @@ export async function POST(request: NextRequest) {
         ...(formData.organizationType === 'provider' && {
           servicesProvided: formData.servicesProvided
         }),
+        // MGA Rendezvous pass reservation
+        ...(formData.reserveRendezvousPasses && {
+          rendezvousPassReservation: {
+            reserved: true,
+            passCount: formData.rendezvousPassCount || 1,
+            organizationType: formData.organizationType, // Use application org type
+            passTotal: formData.rendezvousPassTotal || 0,
+            reservedAt: admin.firestore.FieldValue.serverTimestamp()
+          }
+        }),
         logoUrl: null,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()

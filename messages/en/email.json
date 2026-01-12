@@ -68,6 +68,7 @@
     "dear_f": "Dear",
     "welcome_text": "Your application for {organizationName} has been approved.",
     "payment_text": "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.",
+    "payment_text_with_rendezvous": "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. This includes your MGA Rendezvous 2026 pass reservation. Your annual membership will then incept with immediate effect.",
     "payment_button": "Pay membership dues",
     "bank_transfer_text": "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
     "payment_options": "Payment Options:",
@@ -79,7 +80,7 @@
     "regards": "Best Regards,",
     "signature": "Aline",
     "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE", 
+    "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
   },
   "membership_followup": {

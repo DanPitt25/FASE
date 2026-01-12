@@ -68,6 +68,7 @@
     "dear_f": "Madame",
     "welcome_text": "Bienvenue à FASE. Votre candidature pour {organizationName} a été approuvée.",
     "payment_text": "Pour compléter votre adhésion et accéder à notre portail des membres, veuillez régler votre cotisation d'adhésion de €{totalAmount}. Votre adhésion annuelle prendra alors effet immédiatement.",
+    "payment_text_with_rendezvous": "Pour compléter votre adhésion et accéder à notre portail des membres, veuillez régler votre cotisation d'adhésion de €{totalAmount}. Ce montant inclut votre réservation de pass MGA Rendezvous 2026. Votre adhésion annuelle prendra alors effet immédiatement.",
     "payment_button": "Payer la cotisation d'adhésion",
     "bank_transfer_text": "Si vous préférez payer par virement bancaire, veuillez suivre {LINK}ce lien{/LINK}",
     "payment_options": "Options de paiement :",

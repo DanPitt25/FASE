@@ -28,9 +28,16 @@ export async function POST(request: NextRequest) {
   try {
     // Read data from request body instead of hardcoded values
     const requestData = await request.json();
+
+    // Check for MGA Rendezvous pass reservation from account data
+    let rendezvousPassData = null;
+    if (requestData.rendezvousPassReservation) {
+      rendezvousPassData = requestData.rendezvousPassReservation;
+    }
+
     const invoiceData = {
       email: requestData.email || "danielhpitt@gmail.com",
-      fullName: requestData.fullName || "Daniel Pitt", 
+      fullName: requestData.fullName || "Daniel Pitt",
       organizationName: requestData.organizationName || "Sample Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
       userId: requestData.userId || "user-123",
@@ -138,32 +145,47 @@ export async function POST(request: NextRequest) {
     try {
       console.log('🧾 Generating membership invoice PDF using shared generator...');
       
+      // Build custom line item for rendezvous passes if present
+      let customLineItem = null;
+      if (rendezvousPassData && rendezvousPassData.reserved) {
+        const passLabel = rendezvousPassData.organizationType === 'MGA' ? 'MGA' :
+                         rendezvousPassData.organizationType === 'carrier' ? 'Carrier/Broker' :
+                         'Service Provider';
+        customLineItem = {
+          enabled: true,
+          description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x)`,
+          amount: rendezvousPassData.passTotal || 0
+        };
+      }
+
       const invoiceGenerationData: InvoiceGenerationData = {
         invoiceNumber: invoiceNumber,
-        invoiceType: template === 'followup' ? 'followup' : 
+        invoiceType: template === 'followup' ? 'followup' :
                      isLostInvoice ? 'lost_invoice' : 'regular',
         isLostInvoice: isLostInvoice,
-        
+
         email: invoiceData.email,
         fullName: invoiceData.fullName,
         organizationName: invoiceData.organizationName,
         greeting: invoiceData.greeting,
         gender: invoiceData.gender,
         address: invoiceData.address,
-        
+
         totalAmount: invoiceData.totalAmount,
         originalAmount: invoiceData.originalAmount,
         discountAmount: invoiceData.discountAmount,
         discountReason: invoiceData.discountReason,
         hasOtherAssociations: invoiceData.hasOtherAssociations,
-        
+
         organizationType: invoiceData.organizationType,
         grossWrittenPremiums: invoiceData.grossWrittenPremiums,
         userId: invoiceData.userId,
-        
+
         forceCurrency: requestData.forceCurrency,
         userLocale: locale,
-        
+
+        customLineItem: customLineItem,
+
         generationSource: 'admin_portal',
         isPreview: isPreview
       };
@@ -267,9 +289,12 @@ export async function POST(request: NextRequest) {
       const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome || "Welcome to FASE";
       const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text || "Welcome to FASE. Your application for {organizationName} has been approved.";
     
-      // Create payment text with currency conversion
-      let paymentText = adminEmail.payment_text || "To complete your membership, please remit payment of {totalAmount} using one of the following methods:";
-      
+      // Use appropriate payment text based on whether rendezvous passes are included
+      const hasRendezvousPasses = rendezvousPassData && rendezvousPassData.reserved;
+      let paymentText = hasRendezvousPasses
+        ? (adminEmail.payment_text_with_rendezvous || "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. This includes your MGA Rendezvous 2026 passes. Your annual membership will then incept with immediate effect.")
+        : (adminEmail.payment_text || "To complete your membership, please remit payment of {totalAmount} using one of the following methods:");
+
       // Replace the currency amount - handle both €{totalAmount} pattern and {totalAmount} pattern
       if (currencyConversion.convertedCurrency === 'EUR') {
         const eurAmount = `€${invoiceData.totalAmount}`;

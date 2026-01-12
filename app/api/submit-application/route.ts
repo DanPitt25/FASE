@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
       gwpCurrency,
       selectedLinesOfBusiness,
       selectedMarkets,
-      members
+      members,
+      reserveRendezvousPasses,
+      rendezvousPassCount,
+      rendezvousPassTotal
     } = data;
     
     // Generate application email HTML
@@ -91,6 +94,25 @@ export async function POST(request: NextRequest) {
 
     if (hasOtherAssociations !== undefined) {
       applicationDetails += `<p><strong>Member of other European associations:</strong> ${hasOtherAssociations ? 'Yes' : 'No'}</p>`;
+    }
+
+    // MGA Rendezvous pass reservation
+    if (reserveRendezvousPasses) {
+      const orgTypeLabel = organizationType === 'MGA' ? 'MGA' : organizationType === 'carrier' ? 'Carrier/Broker' : 'Service Provider';
+      const passPrice = organizationType === 'MGA' ? 400 : organizationType === 'carrier' ? 550 : 700;
+
+      applicationDetails += `
+        <h3 style="color: #C89A3C;">MGA Rendezvous 2026 Pass Purchase</h3>
+        <div style="background-color: #FFF9E6; padding: 15px; border-radius: 5px; border-left: 4px solid #C89A3C;">
+          <p><strong>Pass Category:</strong> ${orgTypeLabel}</p>
+          <p><strong>Number of Passes:</strong> ${rendezvousPassCount || 1}</p>
+          <p><strong>Price per Pass:</strong> €${passPrice.toLocaleString()} (member rate - 50% discount)</p>
+          <p><strong>Total Pass Cost:</strong> €${(rendezvousPassTotal || 0).toLocaleString()} (excl. VAT)</p>
+          <p style="margin-top: 10px; font-style: italic; color: #666;">
+            This amount will be included in the membership invoice/payment.
+          </p>
+        </div>
+      `;
     }
 
     applicationDetails += `

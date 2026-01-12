@@ -62,7 +62,7 @@
   },
   "membership_acceptance_admin": {
     "subject": "Bienvenido a FASE - Membresía Aprobada",
-    "subject_m": "Bienvenido a FASE - Membresía Aprobada", 
+    "subject_m": "Bienvenido a FASE - Membresía Aprobada",
     "subject_f": "Bienvenida a FASE - Membresía Aprobada",
     "welcome": "Bienvenido a FASE",
     "welcome_m": "Bienvenido a FASE",
@@ -74,6 +74,7 @@
     "welcome_text_m": "Bienvenido a FASE. Su solicitud para {organizationName} ha sido aprobada.",
     "welcome_text_f": "Bienvenida a FASE. Su solicitud para {organizationName} ha sido aprobada.",
     "payment_text": "Para completar su membresía y acceder a nuestro portal de miembros, por favor remita su cuota de membresía de €{totalAmount}. Su membresía anual entrará en vigor con efecto inmediato.",
+    "payment_text_with_rendezvous": "Para completar su membresía y acceder a nuestro portal de miembros, por favor remita su cuota de membresía de €{totalAmount}. Este importe incluye su reserva de pases MGA Rendezvous 2026. Su membresía anual entrará en vigor con efecto inmediato.",
     "payment_button": "Pagar cuota de membresía",
     "bank_transfer_text": "Si prefiere pagar mediante transferencia bancaria, por favor siga {LINK}este enlace{/LINK}",
     "payment_options": "Opciones de pago:",

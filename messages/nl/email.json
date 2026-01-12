@@ -68,6 +68,7 @@
     "dear_f": "Geachte",
     "welcome_text": "Welkom bij FASE. Uw aanvraag voor {organizationName} is goedgekeurd.",
     "payment_text": "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount} met een van de volgende methoden:",
+    "payment_text_with_rendezvous": "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount}. Dit omvat uw MGA Rendezvous 2026-pasreservering. Uw jaarlijks lidmaatschap treedt vervolgens onmiddellijk in werking.",
     "payment_button": "Betaal lidmaatschapscontributie",
     "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, volgt u alstublieft {LINK}deze link{/LINK}",
     "payment_options": "Betalingsopties:",
