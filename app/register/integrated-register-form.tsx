@@ -161,6 +161,35 @@ export default function IntegratedRegisterForm() {
   // MGA Rendezvous pass reservation
   const [reserveRendezvousPasses, setReserveRendezvousPasses] = useState(false);
   const [rendezvousPassCount, setRendezvousPassCount] = useState(1);
+  const [rendezvousAttendees, setRendezvousAttendees] = useState<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    jobTitle: string;
+  }[]>([{ id: '1', firstName: '', lastName: '', email: '', jobTitle: '' }]);
+
+  // Sync rendezvous attendees array with pass count
+  useEffect(() => {
+    if (rendezvousPassCount > rendezvousAttendees.length) {
+      // Add more attendees
+      const newAttendees = [...rendezvousAttendees];
+      for (let i = rendezvousAttendees.length; i < rendezvousPassCount; i++) {
+        newAttendees.push({ id: Date.now().toString() + i, firstName: '', lastName: '', email: '', jobTitle: '' });
+      }
+      setRendezvousAttendees(newAttendees);
+    } else if (rendezvousPassCount < rendezvousAttendees.length) {
+      // Remove excess attendees
+      setRendezvousAttendees(rendezvousAttendees.slice(0, rendezvousPassCount));
+    }
+  }, [rendezvousPassCount]);
+
+  // Update a rendezvous attendee field
+  const updateRendezvousAttendee = (id: string, field: 'firstName' | 'lastName' | 'email' | 'jobTitle', value: string) => {
+    setRendezvousAttendees(attendees =>
+      attendees.map(a => a.id === id ? { ...a, [field]: value } : a)
+    );
+  };
 
   // Application submission state
   const [submittingApplication, setSubmittingApplication] = useState(false);
@@ -393,7 +422,22 @@ export default function IntegratedRegisterForm() {
       window.scrollTo(0, 0);
       setAttemptedNext(false);
     } else if (step === 4) {
-      // No validation needed for rendezvous step - it's optional
+      // Validate rendezvous attendees if passes are reserved
+      if (reserveRendezvousPasses) {
+        const incompleteAttendee = rendezvousAttendees.find(
+          a => !a.firstName.trim() || !a.lastName.trim() || !a.email.trim() || !a.jobTitle.trim()
+        );
+        if (incompleteAttendee) {
+          setError(t('errors.rendezvous_attendee_required'));
+          return;
+        }
+        // Validate email format for all attendees
+        const invalidEmail = rendezvousAttendees.find(a => !validateEmail(a.email));
+        if (invalidEmail) {
+          setError(t('errors.rendezvous_invalid_email'));
+          return;
+        }
+      }
       setError("");
       setStep(5);
       window.scrollTo(0, 0);
@@ -795,7 +839,7 @@ export default function IntegratedRegisterForm() {
             </div>
 
             {reserveRendezvousPasses && (
-              <div className="mt-4 space-y-4 pl-7">
+              <div className="mt-4 space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-2">
                     {t('rendezvous.number_of_passes')}
@@ -809,6 +853,68 @@ export default function IntegratedRegisterForm() {
                       <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Attendee Details */}
+                <div className="space-y-4">
+                  <h5 className="text-md font-medium text-fase-navy">{t('rendezvous.attendee_details')}</h5>
+                  {rendezvousAttendees.map((attendee, index) => (
+                    <div key={attendee.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <p className="text-sm font-medium text-fase-navy mb-3">
+                        {t('rendezvous.attendee_number', { number: index + 1 })}
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            {t('rendezvous.first_name')} *
+                          </label>
+                          <input
+                            type="text"
+                            value={attendee.firstName}
+                            onChange={(e) => updateRendezvousAttendee(attendee.id, 'firstName', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            {t('rendezvous.last_name')} *
+                          </label>
+                          <input
+                            type="text"
+                            value={attendee.lastName}
+                            onChange={(e) => updateRendezvousAttendee(attendee.id, 'lastName', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            {t('rendezvous.email')} *
+                          </label>
+                          <input
+                            type="email"
+                            value={attendee.email}
+                            onChange={(e) => updateRendezvousAttendee(attendee.id, 'email', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            {t('rendezvous.job_title')} *
+                          </label>
+                          <input
+                            type="text"
+                            value={attendee.jobTitle}
+                            onChange={(e) => updateRendezvousAttendee(attendee.id, 'jobTitle', e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="bg-fase-cream rounded p-3 border border-fase-light-gold">
@@ -1043,7 +1149,8 @@ export default function IntegratedRegisterForm() {
                     otherRating,
                     reserveRendezvousPasses,
                     rendezvousPassCount,
-                    rendezvousPassTotal: getRendezvousPassTotal()
+                    rendezvousPassTotal: getRendezvousPassTotal(),
+                    rendezvousAttendees
                   });
 
                   // Generate application number and send email
@@ -1082,10 +1189,11 @@ export default function IntegratedRegisterForm() {
                       members,
                       reserveRendezvousPasses,
                       rendezvousPassCount,
-                      rendezvousPassTotal: getRendezvousPassTotal()
+                      rendezvousPassTotal: getRendezvousPassTotal(),
+                      rendezvousAttendees
                     }),
                   });
-                  
+
                   clearTimeout(timeout);
 
                   if (!response.ok) {

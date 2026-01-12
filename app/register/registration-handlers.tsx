@@ -87,6 +87,7 @@ export const createAccountAndMembership = async (
     reserveRendezvousPasses?: boolean;
     rendezvousPassCount?: number;
     rendezvousPassTotal?: number;
+    rendezvousAttendees?: { id: string; firstName: string; lastName: string; email: string; jobTitle: string; }[];
   }
 ) => {
   try {

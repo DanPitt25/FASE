@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
       members,
       reserveRendezvousPasses,
       rendezvousPassCount,
-      rendezvousPassTotal
+      rendezvousPassTotal,
+      rendezvousAttendees
     } = data;
     
     // Generate application email HTML
@@ -101,6 +102,22 @@ export async function POST(request: NextRequest) {
       const orgTypeLabel = organizationType === 'MGA' ? 'MGA' : organizationType === 'carrier' ? 'Carrier/Broker' : 'Service Provider';
       const passPrice = organizationType === 'MGA' ? 400 : organizationType === 'carrier' ? 550 : 700;
 
+      let attendeesHtml = '';
+      if (rendezvousAttendees && rendezvousAttendees.length > 0) {
+        attendeesHtml = `
+          <h4 style="color: #C89A3C; margin-top: 15px;">Attendees</h4>
+        `;
+        rendezvousAttendees.forEach((attendee: any, index: number) => {
+          attendeesHtml += `
+            <div style="margin-bottom: 10px; padding: 10px; background-color: #fff; border-radius: 5px;">
+              <p><strong>Attendee ${index + 1}:</strong> ${attendee.firstName} ${attendee.lastName}</p>
+              <p>Email: ${attendee.email}</p>
+              <p>Job Title: ${attendee.jobTitle}</p>
+            </div>
+          `;
+        });
+      }
+
       applicationDetails += `
         <h3 style="color: #C89A3C;">MGA Rendezvous 2026 Pass Purchase</h3>
         <div style="background-color: #FFF9E6; padding: 15px; border-radius: 5px; border-left: 4px solid #C89A3C;">
@@ -108,6 +125,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Number of Passes:</strong> ${rendezvousPassCount || 1}</p>
           <p><strong>Price per Pass:</strong> €${passPrice.toLocaleString()} (member rate - 50% discount)</p>
           <p><strong>Total Pass Cost:</strong> €${(rendezvousPassTotal || 0).toLocaleString()} (excl. VAT)</p>
+          ${attendeesHtml}
           <p style="margin-top: 10px; font-style: italic; color: #666;">
             This amount will be included in the membership invoice/payment.
           </p>

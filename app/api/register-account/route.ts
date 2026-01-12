@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
             passCount: formData.rendezvousPassCount || 1,
             organizationType: formData.organizationType, // Use application org type
             passTotal: formData.rendezvousPassTotal || 0,
+            attendees: formData.rendezvousAttendees || [],
             reservedAt: admin.firestore.FieldValue.serverTimestamp()
           }
         }),
