@@ -371,6 +371,78 @@ export default function MemberContent() {
       )
     },
     {
+      id: 'rendezvous',
+      title: 'MGA Rendezvous 2026',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      content: (
+        <div className="space-y-6">
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">Reserve Your MGA Rendezvous Passes</h2>
+            <p className="text-fase-black mb-6">
+              As a FASE member, you receive a 50% discount on MGA Rendezvous passes. Reserve your passes now at member rates for the premier European MGA conference in Barcelona, May 11-12, 2026.
+            </p>
+
+            <div className="bg-fase-cream rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-fase-navy mb-4">Member Pricing (50% discount)</h3>
+              <ul className="space-y-2 text-fase-black">
+                <li>• MGAs: €800 → €400</li>
+                <li>• Carriers & brokers: €1,100 → €550</li>
+                <li>• Service providers: €1,400 → €700</li>
+              </ul>
+              <p className="text-sm text-gray-600 mt-4 italic">
+                All prices exclude 21% Dutch VAT
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-semibold text-fase-navy mb-4">Event Details</h3>
+              <div className="space-y-3 text-fase-black">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-fase-navy mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <p className="font-medium">May 11-12, 2026</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-fase-navy mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <div>
+                    <p className="font-medium">Hotel Arts Barcelona</p>
+                    <p className="text-sm text-gray-600">Barcelona, Spain</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <a
+                href={`https://mgarendezvous.com/register?email=${encodeURIComponent(user?.email || '')}&member=true`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 bg-fase-navy text-white font-semibold rounded-lg hover:bg-fase-orange transition-colors"
+              >
+                Purchase Passes at Member Rates
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+              <p className="text-sm text-gray-600 mt-3">
+                You'll be taken to the MGA Rendezvous registration page where you can verify your FASE membership and complete your purchase.
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
       id: 'alerts',
       title: t('sections.alerts'),
       icon: (
