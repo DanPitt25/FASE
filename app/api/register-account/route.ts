@@ -143,17 +143,6 @@ export async function POST(request: NextRequest) {
         ...(formData.organizationType === 'provider' && {
           servicesProvided: formData.servicesProvided
         }),
-        // MGA Rendezvous pass reservation
-        ...(formData.reserveRendezvousPasses && {
-          rendezvousPassReservation: {
-            reserved: true,
-            passCount: formData.rendezvousPassCount || 1,
-            organizationType: formData.organizationType, // Use application org type
-            passTotal: formData.rendezvousPassTotal || 0,
-            attendees: formData.rendezvousAttendees || [],
-            reservedAt: admin.firestore.FieldValue.serverTimestamp()
-          }
-        }),
         logoUrl: null,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -181,7 +170,26 @@ export async function POST(request: NextRequest) {
         
         batch.set(memberRef, memberRecord);
       }
-      
+
+      // Create MGA Rendezvous pass reservation in separate collection
+      if (formData.reserveRendezvousPasses) {
+        const reservationRef = db.collection('rendezvous_pass_reservations').doc();
+        const reservationRecord = {
+          id: reservationRef.id,
+          accountId: companyId,
+          organizationName: formData.organizationName,
+          organizationType: formData.organizationType,
+          passCount: formData.rendezvousPassCount || 1,
+          passTotal: formData.rendezvousPassTotal || 0,
+          attendees: formData.rendezvousAttendees || [],
+          status: 'pending', // pending, paid, cancelled
+          source: 'fase_registration',
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+        batch.set(reservationRef, reservationRecord);
+      }
+
     // All memberships are corporate - no individual membership handling needed
 
     // Commit all writes atomically
