@@ -171,18 +171,34 @@ export async function POST(request: NextRequest) {
         batch.set(memberRef, memberRecord);
       }
 
-      // Create MGA Rendezvous pass reservation in separate collection
+      // Create MGA Rendezvous registration (unified collection for all sources)
       if (formData.reserveRendezvousPasses) {
-        const reservationRef = db.collection('rendezvous_pass_reservations').doc();
+        const registrationId = `mga_reg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const reservationRef = db.collection('rendezvous-registrations').doc(registrationId);
         const reservationRecord = {
-          id: reservationRef.id,
+          registrationId,
           accountId: companyId,
-          organizationName: formData.organizationName,
-          organizationType: formData.organizationType,
-          passCount: formData.rendezvousPassCount || 1,
-          passTotal: formData.rendezvousPassTotal || 0,
-          attendees: formData.rendezvousAttendees || [],
-          status: 'pending', // pending, paid, cancelled
+          billingInfo: {
+            company: formData.organizationName,
+            billingEmail: formData.email,
+            country: formData.country || '',
+            organizationType: formData.organizationType
+          },
+          attendees: (formData.rendezvousAttendees || []).map((a: any, i: number) => ({
+            id: `att_${i}`,
+            firstName: a.firstName || '',
+            lastName: a.lastName || '',
+            email: a.email || '',
+            jobTitle: a.jobTitle || ''
+          })),
+          numberOfAttendees: formData.rendezvousPassCount || 1,
+          totalPrice: formData.rendezvousPassTotal || 0,
+          companyIsFaseMember: true,
+          membershipType: 'fase',
+          discount: 50,
+          paymentMethod: 'bundled_with_membership',
+          paymentStatus: 'pending',
+          status: 'pending_payment',
           source: 'fase_registration',
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
