@@ -15,20 +15,30 @@ interface SponsorCardProps {
 }
 
 function SponsorCard({ sponsor, locale, onViewDetails }: SponsorCardProps) {
+  const scale = sponsor.logoScale || 1;
+
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer w-80 h-80"
       onClick={() => onViewDetails(sponsor)}
     >
       <div className="p-8 h-full flex flex-col justify-center">
         <div className="text-center">
-          <div className="relative w-64 h-64 mx-auto mb-4">
-            <Image
-              src={sponsor.logoUrl}
-              alt={`${sponsor.name} logo`}
-              fill
-              className="object-contain"
-            />
+          <div className="relative w-64 h-64 mx-auto mb-4 flex items-center justify-center">
+            <div
+              className="relative"
+              style={{
+                width: `${scale * 100}%`,
+                height: `${scale * 100}%`
+              }}
+            >
+              <Image
+                src={sponsor.logoUrl}
+                alt={`${sponsor.name} logo`}
+                fill
+                className="object-contain"
+              />
+            </div>
           </div>
           <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{sponsor.name}</h3>
         </div>
@@ -190,13 +200,21 @@ export default function SponsorsPage() {
         >
           <div className="space-y-6">
             <div className="flex items-center justify-center mb-8">
-              <div className="relative w-80 h-80 transition-transform duration-300 hover:scale-105">
-                <Image
-                  src={selectedSponsor.logoUrl}
-                  alt={`${selectedSponsor.name} logo`}
-                  fill
-                  className="object-contain"
-                />
+              <div className="relative w-80 h-80 transition-transform duration-300 hover:scale-105 flex items-center justify-center">
+                <div
+                  className="relative"
+                  style={{
+                    width: `${(selectedSponsor.logoScale || 1) * 100}%`,
+                    height: `${(selectedSponsor.logoScale || 1) * 100}%`
+                  }}
+                >
+                  <Image
+                    src={selectedSponsor.logoUrl}
+                    alt={`${selectedSponsor.name} logo`}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
             </div>
             

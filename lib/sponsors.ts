@@ -19,6 +19,7 @@ export interface Sponsor {
   bio: SponsorBio;
   order: number;
   isActive: boolean;
+  logoScale?: number; // Optional scale factor (0.0-1.0) for logos without whitespace
   createdAt: any;
   updatedAt: any;
 }
