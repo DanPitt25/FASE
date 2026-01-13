@@ -43,6 +43,17 @@ function BankTransferInvoiceContent() {
     console.error('Error parsing custom line item:', error);
   }
 
+  // Parse rendezvous pass data if provided
+  const rendezvousPassParam = searchParams?.get('rendezvousPass');
+  let rendezvousPass = null;
+  try {
+    if (rendezvousPassParam) {
+      rendezvousPass = JSON.parse(decodeURIComponent(rendezvousPassParam));
+    }
+  } catch (error) {
+    console.error('Error parsing rendezvous pass:', error);
+  }
+
 
 
   const generateInvoice = async () => {
@@ -103,7 +114,8 @@ function BankTransferInvoiceContent() {
           country: addressData.country,
           forceCurrency: currency,
           hasOtherAssociations: hasOtherAssociations,
-          customLineItem: customLineItem
+          customLineItem: customLineItem,
+          rendezvousPassReservation: rendezvousPass
         }),
       });
 
@@ -217,6 +229,9 @@ function BankTransferInvoiceContent() {
                   </div>
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
+                    {rendezvousPass && rendezvousPass.reserved && (
+                      <p className="mb-4 text-amber-700"><strong>Includes:</strong> MGA Rendezvous 2026 ({rendezvousPass.passCount} pass{rendezvousPass.passCount > 1 ? 'es' : ''})</p>
+                    )}
                     <p className="mb-4 text-fase-black"><strong>{t('payment_method')}:</strong> Bank Transfer</p>
                     <p className="mb-4 text-fase-black"><strong>{t('currency')}:</strong> {currency}</p>
                   </div>

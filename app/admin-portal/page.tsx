@@ -112,7 +112,34 @@ export default function AdminPortalPage() {
   };
 
   // Handler functions
-  const handleEmailFormOpen = (account: any) => {
+  const handleEmailFormOpen = async (account: any) => {
+    // Fetch rendezvous registration for this account if it exists
+    try {
+      const response = await fetch('/api/admin/rendezvous-registrations');
+      if (response.ok) {
+        const data = await response.json();
+        const accountRegistration = data.registrations?.find(
+          (reg: any) => reg.accountId === account.id
+        );
+
+        if (accountRegistration) {
+          // Map to the format expected by the invoice email
+          account.rendezvousPassReservation = {
+            reserved: true,
+            passCount: accountRegistration.numberOfAttendees || 1,
+            organizationType: accountRegistration.billingInfo?.organizationType || account.organizationType,
+            passTotal: accountRegistration.totalPrice || 0,
+            subtotal: accountRegistration.subtotal || 0,
+            vatAmount: accountRegistration.vatAmount || 0,
+            isAsaseMember: accountRegistration.isAsaseMember || false,
+            attendees: accountRegistration.attendees || []
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching rendezvous registration:', error);
+    }
+
     setSelectedAccount(account);
     setActiveSection('emails');
   };

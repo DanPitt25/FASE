@@ -9,7 +9,19 @@ interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'standalone_invoice' | 'member_portal_welcome' | 'reminder' | 'freeform';
+type EmailTemplate = 'invoice' | 'standalone_invoice' | 'member_portal_welcome' | 'reminder' | 'freeform' | 'rendezvous_confirmation';
+
+// Types for mass email
+type OrganizationType = 'MGA' | 'carrier' | 'provider';
+type AccountStatus = 'pending' | 'pending_invoice' | 'invoice_sent' | 'approved' | 'flagged' | 'admin' | 'guest';
+
+interface MassEmailRecipient {
+  id: string;
+  email: string;
+  organizationName: string;
+  organizationType: OrganizationType;
+  status: AccountStatus;
+}
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate>('invoice');
@@ -45,7 +57,17 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       amount: 0,
       enabled: false
     },
-    testPayment: false
+    testPayment: false,
+    // Rendezvous confirmation fields
+    rendezvous: {
+      registrationId: '',
+      numberOfAttendees: 1,
+      totalAmount: 0,
+      attendeeNames: '',
+      isFaseMember: true,
+      isComplimentary: false,
+      specialRequests: ''
+    }
   });
 
   const [sending, setSending] = useState(false);
@@ -55,6 +77,24 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [showEmailEditor, setShowEmailEditor] = useState(false);
   const [defaultTemplate, setDefaultTemplate] = useState<any>(null);
   const [customizedContent, setCustomizedContent] = useState<any>(null);
+
+  // Mass email state
+  const [showMassEmail, setShowMassEmail] = useState(false);
+  const [massEmailFilters, setMassEmailFilters] = useState({
+    organizationTypes: [] as OrganizationType[],
+    accountStatuses: [] as AccountStatus[]
+  });
+  const [massEmailContent, setMassEmailContent] = useState({
+    subject: '',
+    body: '',
+    sender: 'admin@fasemga.com'
+  });
+  const [massEmailRecipients, setMassEmailRecipients] = useState<MassEmailRecipient[]>([]);
+  const [manualRecipients, setManualRecipients] = useState<string>('');
+  const [loadingRecipients, setLoadingRecipients] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [sendingMassEmail, setSendingMassEmail] = useState(false);
+  const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; error?: string } | null>(null);
 
   // Update form data when prefilledData changes
   useEffect(() => {
@@ -142,6 +182,13 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       apiEndpoint: '/api/send-freeform-email',
       requiresPricing: false,
       generatesPDF: false
+    },
+    rendezvous_confirmation: {
+      title: 'Rendezvous Confirmation',
+      description: 'Manual entry - use Rendezvous tab for auto-fill',
+      apiEndpoint: '/api/send-rendezvous-confirmation',
+      requiresPricing: false,
+      generatesPDF: false
     }
   };
 
@@ -156,6 +203,25 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       // Include rendezvous pass reservation from account data if present
       ...(prefilledData?.rendezvousPassReservation && { rendezvousPassReservation: prefilledData.rendezvousPassReservation })
     };
+
+    // Handle Rendezvous confirmation template
+    if (selectedTemplate === 'rendezvous_confirmation') {
+      return {
+        preview: isPreview,
+        email: formData.email,
+        cc: formData.cc,
+        companyName: formData.organizationName,
+        organizationType: formData.organizationType,
+        userLocale: formData.userLocale,
+        registrationId: formData.rendezvous.registrationId,
+        numberOfAttendees: formData.rendezvous.numberOfAttendees,
+        totalAmount: formData.rendezvous.totalAmount,
+        attendeeNames: formData.rendezvous.attendeeNames,
+        isFaseMember: formData.rendezvous.isFaseMember,
+        isComplimentary: formData.rendezvous.isComplimentary,
+        specialRequests: formData.rendezvous.specialRequests
+      };
+    }
 
     if (selectedTemplate === 'standalone_invoice') {
       payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -321,7 +387,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       'standalone_invoice': 'invoice_delivery',
       'member_portal_welcome': 'member_portal_welcome',
       'reminder': 'payment_reminder',
-      'freeform': 'invoice_delivery'
+      'freeform': 'invoice_delivery',
+      'rendezvous_confirmation': 'ticket_confirmation'
     };
     return templateKeyMap[emailTemplate] || 'invoice_delivery';
   };
@@ -348,18 +415,141 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     setTimeout(() => handlePreview(), 100);
   };
 
+  // Mass email functions
+  const fetchRecipients = async () => {
+    if (massEmailFilters.organizationTypes.length === 0 && massEmailFilters.accountStatuses.length === 0) {
+      setMassEmailRecipients([]);
+      return;
+    }
+
+    setLoadingRecipients(true);
+    try {
+      const response = await fetch('/api/admin/get-filtered-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationTypes: massEmailFilters.organizationTypes,
+          accountStatuses: massEmailFilters.accountStatuses
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch recipients');
+
+      const data = await response.json();
+      setMassEmailRecipients(data.accounts || []);
+    } catch (error) {
+      console.error('Error fetching recipients:', error);
+      setMassEmailRecipients([]);
+    } finally {
+      setLoadingRecipients(false);
+    }
+  };
+
+  // Fetch recipients when filters change
+  useEffect(() => {
+    if (showMassEmail) {
+      fetchRecipients();
+    }
+  }, [massEmailFilters, showMassEmail]);
+
+  const handleSendMassEmail = async () => {
+    setSendingMassEmail(true);
+    setMassEmailResult(null);
+
+    const allRecipients = getAllRecipients();
+
+    try {
+      const response = await fetch('/api/admin/send-mass-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName })),
+          subject: massEmailContent.subject,
+          body: massEmailContent.body,
+          sender: massEmailContent.sender
+        })
+      });
+
+      const data = await response.json();
+      setMassEmailResult(data);
+
+      if (data.success) {
+        setShowConfirmModal(false);
+      }
+    } catch (error) {
+      setMassEmailResult({ error: 'Failed to send mass email' });
+    } finally {
+      setSendingMassEmail(false);
+    }
+  };
+
+  const toggleOrganizationType = (type: OrganizationType) => {
+    setMassEmailFilters(prev => ({
+      ...prev,
+      organizationTypes: prev.organizationTypes.includes(type)
+        ? prev.organizationTypes.filter(t => t !== type)
+        : [...prev.organizationTypes, type]
+    }));
+  };
+
+  const toggleAccountStatus = (status: AccountStatus) => {
+    setMassEmailFilters(prev => ({
+      ...prev,
+      accountStatuses: prev.accountStatuses.includes(status)
+        ? prev.accountStatuses.filter(s => s !== status)
+        : [...prev.accountStatuses, status]
+    }));
+  };
+
+  const formatStatusLabel = (status: AccountStatus) => {
+    return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  // Parse manual recipients and combine with filtered recipients
+  const parseManualRecipients = (): MassEmailRecipient[] => {
+    if (!manualRecipients.trim()) return [];
+
+    // Split by comma, semicolon, or newline
+    const emails = manualRecipients
+      .split(/[,;\n]+/)
+      .map(e => e.trim())
+      .filter(e => e && e.includes('@'));
+
+    return emails.map(email => ({
+      id: `manual-${email}`,
+      email,
+      organizationName: 'Manual Entry',
+      organizationType: 'MGA' as OrganizationType,
+      status: 'approved' as AccountStatus
+    }));
+  };
+
+  // Get all recipients (filtered + manual)
+  const getAllRecipients = (): MassEmailRecipient[] => {
+    const manual = parseManualRecipients();
+    const combined = [...massEmailRecipients, ...manual];
+
+    // Remove duplicates by email
+    const seen = new Set<string>();
+    return combined.filter(r => {
+      if (seen.has(r.email.toLowerCase())) return false;
+      seen.add(r.email.toLowerCase());
+      return true;
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Email Template Selection */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Email Templates</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {Object.entries(emailTemplates).map(([key, template]) => (
             <button
               key={key}
-              onClick={() => setSelectedTemplate(key as EmailTemplate)}
+              onClick={() => { setSelectedTemplate(key as EmailTemplate); setShowMassEmail(false); }}
               className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                selectedTemplate === key
+                selectedTemplate === key && !showMassEmail
                   ? 'border-fase-navy bg-fase-navy bg-opacity-5 text-fase-navy'
                   : 'border-gray-200 hover:border-fase-light-gold text-gray-700'
               }`}
@@ -369,9 +559,227 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </button>
           ))}
         </div>
+
+        {/* Send Mass Email Button */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <button
+            onClick={() => setShowMassEmail(!showMassEmail)}
+            className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+              showMassEmail
+                ? 'border-fase-gold bg-fase-gold bg-opacity-10 text-fase-navy'
+                : 'border-gray-200 hover:border-fase-gold text-gray-700'
+            }`}
+          >
+            <h4 className="font-semibold text-sm mb-1">Send Mass Email</h4>
+            <p className="text-xs opacity-75">Send a freeform email to multiple recipients filtered by organization type and account status</p>
+          </button>
+        </div>
       </div>
 
+      {/* Mass Email Section */}
+      {showMassEmail && (
+        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">Send Mass Email</h3>
+
+          <div className="space-y-6">
+            {/* Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Organization Type Filter */}
+              <div>
+                <h4 className="text-md font-semibold mb-3 text-fase-navy">Organization Type</h4>
+                <div className="space-y-2">
+                  {(['MGA', 'carrier', 'provider'] as OrganizationType[]).map(type => (
+                    <label key={type} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={massEmailFilters.organizationTypes.includes(type)}
+                        onChange={() => toggleOrganizationType(type)}
+                        className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{type === 'provider' ? 'Service Provider' : type === 'carrier' ? 'Carrier/Broker' : type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Account Status Filter */}
+              <div>
+                <h4 className="text-md font-semibold mb-3 text-fase-navy">Account Status</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['pending', 'pending_invoice', 'invoice_sent', 'approved', 'flagged', 'admin', 'guest'] as AccountStatus[]).map(status => (
+                    <label key={status} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={massEmailFilters.accountStatuses.includes(status)}
+                        onChange={() => toggleAccountStatus(status)}
+                        className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{formatStatusLabel(status)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Manual Recipients */}
+            <div>
+              <h4 className="text-md font-semibold mb-3 text-fase-navy">Additional Recipients</h4>
+              <textarea
+                value={manualRecipients}
+                onChange={(e) => setManualRecipients(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                rows={3}
+                placeholder="Enter additional email addresses (comma, semicolon, or newline separated)"
+              />
+              {parseManualRecipients().length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {parseManualRecipients().length} manual recipient{parseManualRecipients().length !== 1 ? 's' : ''} added
+                </p>
+              )}
+            </div>
+
+            {/* Recipients Count */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">
+                  {loadingRecipients ? 'Loading recipients...' : `${getAllRecipients().length} total recipient${getAllRecipients().length !== 1 ? 's' : ''}`}
+                </span>
+                {getAllRecipients().length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmModal(true)}
+                    className="text-sm text-fase-navy hover:text-fase-gold underline"
+                  >
+                    View all recipients
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Email Content */}
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Content</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Send From *</label>
+                  <select
+                    value={massEmailContent.sender}
+                    onChange={(e) => setMassEmailContent(prev => ({ ...prev, sender: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  >
+                    <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
+                    <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
+                    <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
+                    <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
+                    <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                  <input
+                    type="text"
+                    value={massEmailContent.subject}
+                    onChange={(e) => setMassEmailContent(prev => ({ ...prev, subject: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="Enter email subject"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Message Body *</label>
+                  <textarea
+                    value={massEmailContent.body}
+                    onChange={(e) => setMassEmailContent(prev => ({ ...prev, body: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    rows={8}
+                    placeholder="Enter your email message..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Send Button */}
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowMassEmail(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={getAllRecipients().length === 0 || !massEmailContent.subject || !massEmailContent.body}
+                onClick={() => setShowConfirmModal(true)}
+              >
+                Review & Send ({getAllRecipients().length})
+              </Button>
+            </div>
+
+            {/* Result Display */}
+            {massEmailResult && (
+              <div className={`p-4 rounded-lg ${massEmailResult.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
+                {massEmailResult.error
+                  ? `Error: ${massEmailResult.error}`
+                  : `Successfully sent ${massEmailResult.sent} email${massEmailResult.sent !== 1 ? 's' : ''}${massEmailResult.failed ? `, ${massEmailResult.failed} failed` : ''}`}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Confirm Mass Email</h3>
+              <p className="text-sm text-gray-600 mt-1">Review the recipients before sending</p>
+            </div>
+
+            <div className="p-6 max-h-[50vh] overflow-y-auto">
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-700">Subject: <span className="font-normal">{massEmailContent.subject}</span></p>
+                <p className="text-sm font-medium text-gray-700 mt-2">From: <span className="font-normal">{massEmailContent.sender}</span></p>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-3">Recipients ({getAllRecipients().length}):</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {getAllRecipients().map((recipient, index) => (
+                    <div key={recipient.id || index} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-2">
+                      <span className="font-medium">{recipient.email}</span>
+                      <span className="text-gray-500 text-xs">{recipient.organizationName} ({recipient.organizationType})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={sendingMassEmail}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleSendMassEmail}
+                disabled={sendingMassEmail}
+              >
+                {sendingMassEmail ? 'Sending...' : `Send to ${getAllRecipients().length} recipient${getAllRecipients().length !== 1 ? 's' : ''}`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Email Form */}
+      {!showMassEmail && (
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">
           {emailTemplates[selectedTemplate].title}
@@ -705,10 +1113,15 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 {formData.hasOtherAssociations && (
                   <div>Multi-Association Discount (20%): -€{originalAmount - baseAmount}</div>
                 )}
+                {rendezvousTotal > 0 && (
+                  <div className="text-amber-700">
+                    MGA Rendezvous 2026 ({prefilledData?.rendezvousPassReservation?.passCount || 1} pass{(prefilledData?.rendezvousPassReservation?.passCount || 1) > 1 ? 'es' : ''} incl. VAT): €{rendezvousTotal.toLocaleString()}
+                  </div>
+                )}
                 {formData.customLineItem.enabled && formData.customLineItem.amount > 0 && (
                   <div>{formData.customLineItem.description || 'Custom Item'}: €{formData.customLineItem.amount}</div>
                 )}
-                <div className="font-semibold pt-2 border-t border-gray-300">Total: €{finalAmount}</div>
+                <div className="font-semibold pt-2 border-t border-gray-300">Total: €{finalAmount.toLocaleString()}</div>
               </div>
             </div>
           )}
@@ -819,6 +1232,125 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
+          {/* Rendezvous Confirmation Fields */}
+          {selectedTemplate === 'rendezvous_confirmation' && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">MGA Rendezvous Ticket Details</h4>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Registration ID *</label>
+                    <input
+                      type="text"
+                      value={formData.rendezvous.registrationId}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        rendezvous: { ...prev.rendezvous, registrationId: e.target.value }
+                      }))}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      required
+                      placeholder="e.g., mga_reg_1234567890_abc123"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Number of Attendees *</label>
+                    <input
+                      type="number"
+                      value={formData.rendezvous.numberOfAttendees}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        rendezvous: { ...prev.rendezvous, numberOfAttendees: parseInt(e.target.value) || 1 }
+                      }))}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Attendee Names * (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={formData.rendezvous.attendeeNames}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      rendezvous: { ...prev.rendezvous, attendeeNames: e.target.value }
+                    }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    required
+                    placeholder="e.g., John Smith, Jane Doe"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Total Amount (EUR)</label>
+                    <input
+                      type="number"
+                      value={formData.rendezvous.totalAmount}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        rendezvous: { ...prev.rendezvous, totalAmount: parseFloat(e.target.value) || 0 }
+                      }))}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      min="0"
+                      step="0.01"
+                      disabled={formData.rendezvous.isComplimentary}
+                    />
+                  </div>
+                  <div className="flex flex-col justify-end">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.rendezvous.isComplimentary}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          rendezvous: {
+                            ...prev.rendezvous,
+                            isComplimentary: e.target.checked,
+                            totalAmount: e.target.checked ? 0 : prev.rendezvous.totalAmount
+                          }
+                        }))}
+                        className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Complimentary (ASASE Member)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.rendezvous.isFaseMember}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        rendezvous: { ...prev.rendezvous, isFaseMember: e.target.checked }
+                      }))}
+                      className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy mr-2"
+                    />
+                    <span className="text-sm text-gray-700">FASE Member</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Special Requests (optional)</label>
+                  <textarea
+                    value={formData.rendezvous.specialRequests}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      rendezvous: { ...prev.rendezvous, specialRequests: e.target.value }
+                    }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    rows={3}
+                    placeholder="Any dietary requirements or special requests..."
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
@@ -848,6 +1380,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           )}
         </form>
       </div>
+      )}
 
       {/* Email Preview */}
       {preview && (

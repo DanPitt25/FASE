@@ -192,13 +192,18 @@ export async function POST(request: NextRequest) {
             jobTitle: a.jobTitle || ''
           })),
           numberOfAttendees: formData.rendezvousPassCount || 1,
+          // VAT breakdown (21%)
+          subtotal: formData.rendezvousPassSubtotal || 0,
+          vatAmount: formData.rendezvousPassVat || 0,
+          vatRate: 21,
           totalPrice: formData.rendezvousPassTotal || 0,
           companyIsFaseMember: true,
-          membershipType: 'fase',
-          discount: 50,
-          paymentMethod: 'bundled_with_membership',
-          paymentStatus: 'pending',
-          status: 'pending_payment',
+          isAsaseMember: formData.rendezvousIsAsaseMember || false,
+          membershipType: formData.rendezvousIsAsaseMember ? 'asase' : 'fase',
+          discount: formData.rendezvousIsAsaseMember ? 100 : 50,
+          paymentMethod: formData.rendezvousIsAsaseMember ? 'asase_member_benefit' : 'bundled_with_membership',
+          paymentStatus: formData.rendezvousIsAsaseMember ? 'complimentary' : 'pending',
+          status: formData.rendezvousIsAsaseMember ? 'confirmed' : 'pending_payment',
           source: 'fase_registration',
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()

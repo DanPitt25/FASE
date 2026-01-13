@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
       members,
       reserveRendezvousPasses,
       rendezvousPassCount,
+      rendezvousPassSubtotal,
+      rendezvousPassVat,
       rendezvousPassTotal,
       rendezvousAttendees
     } = data;
@@ -124,7 +126,9 @@ export async function POST(request: NextRequest) {
           <p><strong>Pass Category:</strong> ${orgTypeLabel}</p>
           <p><strong>Number of Passes:</strong> ${rendezvousPassCount || 1}</p>
           <p><strong>Price per Pass:</strong> €${passPrice.toLocaleString()} (member rate - 50% discount)</p>
-          <p><strong>Total Pass Cost:</strong> €${(rendezvousPassTotal || 0).toLocaleString()} (excl. VAT)</p>
+          <p><strong>Subtotal:</strong> €${(rendezvousPassSubtotal || 0).toLocaleString()}</p>
+          <p><strong>VAT (21%):</strong> €${(rendezvousPassVat || 0).toLocaleString()}</p>
+          <p><strong>Total Pass Cost:</strong> €${(rendezvousPassTotal || 0).toLocaleString()} (incl. VAT)</p>
           ${attendeesHtml}
           <p style="margin-top: 10px; font-style: italic; color: #666;">
             This amount will be included in the membership invoice/payment.

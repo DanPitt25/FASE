@@ -86,7 +86,10 @@ export const createAccountAndMembership = async (
     // MGA Rendezvous fields (optional)
     reserveRendezvousPasses?: boolean;
     rendezvousPassCount?: number;
+    rendezvousPassSubtotal?: number;
+    rendezvousPassVat?: number;
     rendezvousPassTotal?: number;
+    rendezvousIsAsaseMember?: boolean;
     rendezvousAttendees?: { id: string; firstName: string; lastName: string; email: string; jobTitle: string; }[];
   }
 ) => {

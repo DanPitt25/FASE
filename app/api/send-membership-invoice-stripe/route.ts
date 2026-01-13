@@ -54,9 +54,13 @@ export async function POST(request: NextRequest) {
   try {
     // Read data from request body instead of hardcoded values
     const requestData = await request.json();
+
+    // Check for MGA Rendezvous pass reservation
+    const rendezvousPassData = requestData.rendezvousPassReservation || null;
+
     const invoiceData = {
       email: requestData.email || "danielhpitt@gmail.com",
-      fullName: requestData.fullName || "Daniel Pitt", 
+      fullName: requestData.fullName || "Daniel Pitt",
       organizationName: requestData.organizationName || "Sample Organization Ltd",
       totalAmount: requestData.totalAmount || 1500,
       userId: requestData.userId || "user-123",
@@ -69,7 +73,8 @@ export async function POST(request: NextRequest) {
       discountAmount: requestData.discountAmount || 0,
       discountReason: requestData.discountReason || "",
       address: requestData.address,
-      customLineItem: requestData.customLineItem || null
+      customLineItem: requestData.customLineItem || null,
+      rendezvousPassReservation: rendezvousPassData
     };
 
     // Validate required basic fields
@@ -204,15 +209,22 @@ export async function POST(request: NextRequest) {
     const genderAwareWelcome = adminEmail[`welcome${genderSuffix}`] || adminEmail.welcome;
     const genderAwareWelcomeText = adminEmail[`welcome_text${genderSuffix}`] || adminEmail.welcome_text;
     
+    // Use appropriate payment text based on whether rendezvous passes are included
+    const hasRendezvousPasses = rendezvousPassData && rendezvousPassData.reserved;
+    let paymentText = hasRendezvousPasses
+      ? (adminEmail.payment_text_with_rendezvous || "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. This includes your MGA Rendezvous 2026 pass reservation. Your annual membership will then incept with immediate effect.")
+      : (adminEmail.payment_text || "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.");
+    paymentText = paymentText.replace('{totalAmount}', invoiceData.totalAmount.toString());
+
     let emailContent = {
       subject: genderAwareSubject || "FASE - Membership Approved",
       welcome: genderAwareWelcome || "Membership Approved",
       dear: genderAwareDear || "Dear",
       welcomeText: genderAwareWelcomeText?.replace('{organizationName}', `<strong>${invoiceData.organizationName}</strong>`) || `Your application for <strong>${invoiceData.organizationName}</strong> has been approved.`,
-      paymentText: adminEmail.payment_text?.replace('{totalAmount}', invoiceData.totalAmount.toString()) || `To complete your membership and access our members' portal, please remit your membership dues of €${invoiceData.totalAmount}. Your annual membership will then incept with immediate effect.`,
+      paymentText,
       paymentButton: adminEmail.payment_button || "Pay membership dues",
       bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
-      bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice", 
+      bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice",
       engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
       regards: adminEmail.regards || "Best regards,",
       signature: adminEmail.signature || "Aline",
@@ -285,7 +297,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${invoiceData.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&addressLine1=${encodeURIComponent(invoiceData.address?.line1 || '')}&addressLine2=${encodeURIComponent(invoiceData.address?.line2 || '')}&city=${encodeURIComponent(invoiceData.address?.city || '')}&county=${encodeURIComponent(invoiceData.address?.county || '')}&postcode=${encodeURIComponent(invoiceData.address?.postcode || '')}&country=${encodeURIComponent(invoiceData.address?.country || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}${invoiceData.customLineItem && invoiceData.customLineItem.enabled ? `&customLineItem=${encodeURIComponent(JSON.stringify(invoiceData.customLineItem))}` : ''}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${invoiceData.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&addressLine1=${encodeURIComponent(invoiceData.address?.line1 || '')}&addressLine2=${encodeURIComponent(invoiceData.address?.line2 || '')}&city=${encodeURIComponent(invoiceData.address?.city || '')}&county=${encodeURIComponent(invoiceData.address?.county || '')}&postcode=${encodeURIComponent(invoiceData.address?.postcode || '')}&country=${encodeURIComponent(invoiceData.address?.country || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}${invoiceData.customLineItem && invoiceData.customLineItem.enabled ? `&customLineItem=${encodeURIComponent(JSON.stringify(invoiceData.customLineItem))}` : ''}${hasRendezvousPasses ? `&rendezvousPass=${encodeURIComponent(JSON.stringify(rendezvousPassData))}` : ''}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function AnnouncementBanner() {
+  const t = useTranslations('announcement_banner');
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -27,7 +29,7 @@ export default function AnnouncementBanner() {
       <div className="bg-white rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden">
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-fase-navy to-fase-navy/90 px-4 py-3 flex items-center justify-between">
-          <span className="text-white font-medium text-sm">New Event</span>
+          <span className="text-white font-medium text-sm">{t('badge')}</span>
           <button
             onClick={handleDismiss}
             className="text-white/80 hover:text-white transition-colors"
@@ -42,10 +44,10 @@ export default function AnnouncementBanner() {
         {/* Content */}
         <div className="p-5">
           <h3 className="text-lg font-noto-serif font-medium text-fase-navy mb-2">
-            MGA Rendezvous 2026
+            {t('title')}
           </h3>
           <p className="text-fase-black text-sm mb-4 leading-relaxed">
-            Registration is now open for the pan-European MGA networking event in Barcelona, 11-12 May 2026.
+            {t('description')}
           </p>
           <div className="flex gap-3">
             <a
@@ -54,13 +56,13 @@ export default function AnnouncementBanner() {
               rel="noopener noreferrer"
               className="flex-1 bg-fase-navy text-white text-center py-2 px-4 text-sm font-medium hover:bg-fase-gold transition-colors rounded"
             >
-              Learn More
+              {t('learn_more')}
             </a>
             <button
               onClick={handleDismiss}
               className="text-fase-black/60 hover:text-fase-black text-sm transition-colors"
             >
-              Maybe Later
+              {t('maybe_later')}
             </button>
           </div>
         </div>

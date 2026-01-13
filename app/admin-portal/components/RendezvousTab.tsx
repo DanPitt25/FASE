@@ -50,7 +50,10 @@ export default function RendezvousTab() {
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
 
   useEffect(() => {
     loadRegistrations();
@@ -67,6 +70,48 @@ export default function RendezvousTab() {
       console.error('Error loading registrations:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendConfirmationEmail = async (registration: RendezvousRegistration) => {
+    try {
+      setSendingEmail(true);
+      setEmailResult(null);
+
+      // Build attendee names from the attendees array
+      const attendeeNames = registration.attendees
+        ?.map(a => `${a.firstName} ${a.lastName}`.trim())
+        .join(', ') || '';
+
+      const response = await fetch('/api/send-rendezvous-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: registration.billingInfo?.billingEmail,
+          registrationId: registration.registrationId,
+          companyName: registration.billingInfo?.company,
+          organizationType: registration.billingInfo?.organizationType,
+          numberOfAttendees: registration.attendees?.length || 1,
+          totalAmount: registration.totalPrice || 0,
+          attendeeNames,
+          isFaseMember: registration.companyIsFaseMember,
+          isComplimentary: registration.isAsaseMember,
+          userLocale: 'en'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to send email');
+      }
+
+      setEmailResult({ success: true });
+    } catch (error: any) {
+      console.error('Error sending confirmation email:', error);
+      setEmailResult({ error: error.message || 'Failed to send email' });
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -450,6 +495,15 @@ export default function RendezvousTab() {
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setShowEmailModal(true);
+                }}
+              >
+                Send Confirmation Email
+              </Button>
               {selectedRegistration.paymentStatus === 'pending_bank_transfer' && (
                 <Button
                   variant="primary"
@@ -515,6 +569,83 @@ export default function RendezvousTab() {
               >
                 {updating ? 'Updating...' : 'Confirm Payment'}
               </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Email Confirmation Modal */}
+      <Modal
+        isOpen={showEmailModal}
+        onClose={() => {
+          setShowEmailModal(false);
+          setSelectedRegistration(null);
+          setEmailResult(null);
+        }}
+        title="Send Confirmation Email"
+        maxWidth="md"
+      >
+        {selectedRegistration && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <p className="text-blue-800 font-medium mb-2">
+                Send MGA Rendezvous ticket confirmation to:
+              </p>
+              <div className="text-sm space-y-1">
+                <p><span className="text-blue-600">Company:</span> {selectedRegistration.billingInfo?.company}</p>
+                <p><span className="text-blue-600">Email:</span> {selectedRegistration.billingInfo?.billingEmail}</p>
+                <p><span className="text-blue-600">Attendees:</span> {selectedRegistration.attendees?.length || 0}</p>
+                <p>
+                  <span className="text-blue-600">Amount:</span>{' '}
+                  {selectedRegistration.isAsaseMember
+                    ? <span className="text-green-600 font-medium">Complimentary (ASASE Member)</span>
+                    : `€${(selectedRegistration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-700 mb-2">Attendee List:</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                {selectedRegistration.attendees?.map((attendee, index) => (
+                  <li key={attendee.id || index}>
+                    {attendee.firstName} {attendee.lastName} ({attendee.email})
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {emailResult && (
+              <div className={`p-4 rounded-lg ${emailResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                {emailResult.success
+                  ? 'Confirmation email sent successfully!'
+                  : `Error: ${emailResult.error}`
+                }
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setSelectedRegistration(null);
+                  setEmailResult(null);
+                }}
+                disabled={sendingEmail}
+              >
+                {emailResult?.success ? 'Close' : 'Cancel'}
+              </Button>
+              {!emailResult?.success && (
+                <Button
+                  variant="primary"
+                  onClick={() => handleSendConfirmationEmail(selectedRegistration)}
+                  disabled={sendingEmail}
+                >
+                  {sendingEmail ? 'Sending...' : 'Send Email'}
+                </Button>
+              )}
             </div>
           </div>
         )}

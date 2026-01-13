@@ -184,6 +184,13 @@ export default function IntegratedRegisterForm() {
     }
   }, [rendezvousPassCount]);
 
+  // Clamp pass count to 3 when ASASE membership is selected
+  useEffect(() => {
+    if (otherAssociations.includes('ASASE') && rendezvousPassCount > 3) {
+      setRendezvousPassCount(3);
+    }
+  }, [otherAssociations, rendezvousPassCount]);
+
   // Update a rendezvous attendee field
   const updateRendezvousAttendee = (id: string, field: 'firstName' | 'lastName' | 'email' | 'jobTitle', value: string) => {
     setRendezvousAttendees(attendees =>
@@ -470,7 +477,15 @@ export default function IntegratedRegisterForm() {
     return getDiscountedFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
   };
 
+  // Check if user is an ASASE member (complimentary Rendezvous tickets)
+  const isAsaseMember = () => {
+    return otherAssociations.includes('ASASE');
+  };
+
   const getRendezvousPassPrice = () => {
+    // ASASE members get complimentary tickets
+    if (isAsaseMember()) return 0;
+
     // Member pricing (already 50% discounted) - based on application organization type
     const pricing = {
       MGA: 400,
@@ -480,9 +495,19 @@ export default function IntegratedRegisterForm() {
     return pricing[organizationType as 'MGA' | 'carrier' | 'provider'];
   };
 
-  const getRendezvousPassTotal = () => {
+  const getRendezvousPassSubtotal = () => {
     if (!reserveRendezvousPasses) return 0;
     return getRendezvousPassPrice() * rendezvousPassCount;
+  };
+
+  const getRendezvousVatAmount = () => {
+    // 21% VAT
+    return Math.round(getRendezvousPassSubtotal() * 0.21 * 100) / 100;
+  };
+
+  const getRendezvousPassTotal = () => {
+    if (!reserveRendezvousPasses) return 0;
+    return getRendezvousPassSubtotal() + getRendezvousVatAmount();
   };
 
 
@@ -849,10 +874,13 @@ export default function IntegratedRegisterForm() {
                     onChange={(e) => setRendezvousPassCount(parseInt(e.target.value))}
                     className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent bg-white"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                    {(isAsaseMember() ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((num) => (
                       <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
+                  {isAsaseMember() && (
+                    <p className="text-xs text-green-600 mt-1">{t('rendezvous.asase_limit')}</p>
+                  )}
                 </div>
 
                 {/* Attendee Details */}
@@ -918,12 +946,33 @@ export default function IntegratedRegisterForm() {
                 </div>
 
                 <div className="bg-fase-cream rounded p-3 border border-fase-light-gold">
-                  <p className="text-sm font-medium text-fase-navy mb-1">
-                    {t('rendezvous.pass_total')}: €{getRendezvousPassTotal().toLocaleString()}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}
-                  </p>
+                  {isAsaseMember() ? (
+                    <>
+                      <p className="text-sm font-medium text-green-700 mb-1">
+                        {t('rendezvous.pass_total')}: {t('rendezvous.complimentary')}
+                      </p>
+                      <p className="text-xs text-green-600">
+                        {t('rendezvous.asase_benefit', { count: rendezvousPassCount })}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-600">
+                          {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {t('rendezvous.subtotal')}: €{getRendezvousPassSubtotal().toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {t('rendezvous.vat')}: €{getRendezvousVatAmount().toLocaleString()}
+                        </p>
+                        <p className="text-sm font-medium text-fase-navy pt-1 border-t border-fase-light-gold">
+                          {t('rendezvous.pass_total')}: €{getRendezvousPassTotal().toLocaleString()}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -1076,14 +1125,28 @@ export default function IntegratedRegisterForm() {
               )}
 
               {reserveRendezvousPasses && (
-                <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
-                  <div>
-                    <span className="text-fase-black font-medium">MGA Rendezvous Passes</span>
-                    <p className="text-xs text-gray-600">
-                      {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} (member rate)
-                    </p>
+                <div className="py-2 border-b border-fase-light-gold">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-fase-black font-medium">{t('rendezvous.passes_label')}</span>
+                      {isAsaseMember() ? (
+                        <p className="text-xs text-green-600">
+                          {t('rendezvous.asase_benefit', { count: rendezvousPassCount })}
+                        </p>
+                      ) : (
+                        <div className="text-xs text-gray-600 space-y-0.5">
+                          <p>{rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}</p>
+                          <p>{t('rendezvous.subtotal')}: €{getRendezvousPassSubtotal().toLocaleString()}</p>
+                          <p>{t('rendezvous.vat')}: €{getRendezvousVatAmount().toLocaleString()}</p>
+                        </div>
+                      )}
+                    </div>
+                    {isAsaseMember() ? (
+                      <span className="text-green-600 font-semibold">{t('rendezvous.complimentary')}</span>
+                    ) : (
+                      <span className="text-fase-navy font-semibold">€{getRendezvousPassTotal().toLocaleString()}</span>
+                    )}
                   </div>
-                  <span className="text-fase-navy font-semibold">€{getRendezvousPassTotal().toLocaleString()}</span>
                 </div>
               )}
 
@@ -1149,7 +1212,10 @@ export default function IntegratedRegisterForm() {
                     otherRating,
                     reserveRendezvousPasses,
                     rendezvousPassCount,
+                    rendezvousPassSubtotal: getRendezvousPassSubtotal(),
+                    rendezvousPassVat: getRendezvousVatAmount(),
                     rendezvousPassTotal: getRendezvousPassTotal(),
+                    rendezvousIsAsaseMember: isAsaseMember(),
                     rendezvousAttendees
                   });
 
@@ -1189,6 +1255,8 @@ export default function IntegratedRegisterForm() {
                       members,
                       reserveRendezvousPasses,
                       rendezvousPassCount,
+                      rendezvousPassSubtotal: getRendezvousPassSubtotal(),
+                      rendezvousPassVat: getRendezvousVatAmount(),
                       rendezvousPassTotal: getRendezvousPassTotal(),
                       rendezvousAttendees
                     }),

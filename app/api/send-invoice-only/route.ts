@@ -46,6 +46,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build custom line item for rendezvous passes if present
+    const rendezvousPassData = requestData.rendezvousPassReservation;
+    let customLineItem = requestData.customLineItem || null;
+
+    if (rendezvousPassData && rendezvousPassData.reserved) {
+      const passLabel = rendezvousPassData.organizationType === 'MGA' ? 'MGA' :
+                       rendezvousPassData.organizationType === 'carrier' ? 'Carrier/Broker' :
+                       'Service Provider';
+      customLineItem = {
+        enabled: true,
+        description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x, incl. VAT)`,
+        amount: rendezvousPassData.passTotal || 0
+      };
+    }
+
     const invoiceData: any = {
       email: requestData.email,
       organizationName: requestData.organizationName,
@@ -64,7 +79,7 @@ export async function POST(request: NextRequest) {
       originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
       discountAmount: requestData.discountAmount || (requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0),
       discountReason: requestData.discountReason || (requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""),
-      customLineItem: requestData.customLineItem || null
+      customLineItem: customLineItem
     };
     
     console.log('🔍 DEBUG: Custom line item data:', JSON.stringify(invoiceData.customLineItem, null, 2));
