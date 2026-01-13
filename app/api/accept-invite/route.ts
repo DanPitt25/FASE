@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
       // For existing users, get their user record
       try {
         userRecord = await auth.getUserByEmail(email);
-        console.log('Found existing Firebase Auth user:', userRecord.uid);
       } catch (error) {
         return NextResponse.json(
           { error: 'No existing account found with this email address' },
@@ -58,8 +57,6 @@ export async function POST(request: NextRequest) {
         password: password,
         emailVerified: true // Since they came from an invite
       });
-
-      console.log('Created Firebase Auth user:', userRecord.uid);
     }
 
     // Update the existing member document with Firebase Auth UID
@@ -88,8 +85,6 @@ export async function POST(request: NextRequest) {
       inviteAcceptedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
-
-    console.log('Successfully moved member from', inviteData.memberId, 'to', userRecord.uid);
 
     return NextResponse.json({ 
       success: true, 

@@ -1,28 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
+import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { loadEmailTranslations, FIREBASE_FUNCTIONS_URL } from '../../../lib/email-utils';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
-import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
-
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const parsed = JSON.parse(fileContent);
-    return parsed;
-  } catch (error) {
-    console.log('Error loading translation file:', error);
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    // Return empty object if even English fails
-    return {};
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -185,7 +166,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email via Firebase Function
-    const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+    const response = await fetch(`${FIREBASE_FUNCTIONS_URL}/sendInvoiceEmail`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

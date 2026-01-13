@@ -1,25 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
+import { loadEmailTranslations } from '../../../lib/email-utils';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
-
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    // Return empty object if even English fails
-    return {};
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,13 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
-    
-    if (isPreview) {
-      console.log(`Generating member portal welcome email preview for ${testData.email}...`, testData);
-    } else {
-      console.log(`Sending member portal welcome email to ${testData.email}...`, testData);
-    }
-    
+
     // Detect language
     const userLocale = requestData.userLocale || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];

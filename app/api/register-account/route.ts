@@ -31,15 +31,7 @@ export async function POST(request: NextRequest) {
   let createdUserId: string | null = null;
 
   try {
-    console.log('Register account API called');
-    console.log('Environment variable check:', {
-      hasKey: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-      keyLength: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.length || 0,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    });
-    
     const formData = await request.json();
-    console.log('Form data received:', { email: formData.email, organizationType: formData.organizationType });
     
     if (!formData.email || !formData.password) {
       return NextResponse.json(
@@ -48,9 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Initializing Firebase Admin...');
     const { auth, db } = await initializeAdmin();
-    console.log('Firebase Admin initialized');
 
     // Step 1: Create Firebase Auth account
     const fullName = `${formData.firstName} ${formData.surname}`.trim();
@@ -59,14 +49,12 @@ export async function POST(request: NextRequest) {
       ? `${fullName} (${orgForAuth})`
       : fullName;
 
-    console.log('Creating Firebase Auth user...');
     const userRecord = await auth.createUser({
       email: formData.email,
       password: formData.password,
       displayName: displayName,
       emailVerified: false
     });
-    console.log('Auth user created:', userRecord.uid);
 
     createdUserId = userRecord.uid;
 
@@ -228,12 +216,10 @@ export async function POST(request: NextRequest) {
     // Cleanup if user was created but Firestore failed
     if (createdUserId) {
       try {
-        console.log('Cleaning up created user:', createdUserId);
         const { auth, db } = await initializeAdmin();
         await auth.deleteUser(createdUserId);
         // Also try to delete any partial Firestore data
         await db.collection('accounts').doc(createdUserId).delete();
-        console.log('Cleanup completed');
       } catch (cleanupError) {
         console.error('Cleanup error:', cleanupError);
       }

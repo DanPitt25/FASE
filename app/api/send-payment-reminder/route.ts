@@ -1,47 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
-import Stripe from 'stripe';
-
-// Force Node.js runtime to enable file system access
-export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
+import { loadEmailTranslations } from '../../../lib/email-utils';
+import { getStripe } from '../../../lib/stripe-utils';
 
-// Initialize Stripe
-let stripe: Stripe | null = null;
-
-const initializeStripe = () => {
-  if (!stripe) {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-
-    if (!stripeKey) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
-    }
-
-    stripe = new Stripe(stripeKey, {
-      apiVersion: '2025-08-27.basil',
-    });
-  }
-  return stripe;
-};
-
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    // Return empty object if even English fails
-    return {};
-  }
-}
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -109,17 +74,11 @@ export async function POST(request: NextRequest) {
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
 
-    if (isPreview) {
-      console.log(`Generating payment reminder preview for ${testData.email}...`);
-    } else {
-      console.log(`Sending payment reminder email to ${testData.email}...`, testData);
-    }
-
     // Generate reminder invoice number
     const reminderNumber = "FASE-REM-" + Math.floor(10000 + Math.random() * 90000);
 
     // Initialize Stripe and create payment link
-    const stripeInstance = initializeStripe();
+    const stripeInstance = getStripe();
 
     // Get base URL for redirect
     const protocol = request.headers.get('x-forwarded-proto') || 'https';

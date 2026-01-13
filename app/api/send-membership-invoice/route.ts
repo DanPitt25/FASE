@@ -1,28 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
-
-// Force Node.js runtime to enable file system access
-export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
+import { loadEmailTranslations, FIREBASE_FUNCTIONS_URL } from '../../../lib/email-utils';
 
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    // Fallback to English if file not found
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    // Return empty object if even English fails
-    return {};
-  }
-}
+// Force Node.js runtime to enable file system access
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,13 +78,7 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
-    
-    if (isPreview) {
-      console.log(`Generating email preview for ${invoiceData.email}...`, invoiceData);
-    } else {
-      console.log(`Sending membership acceptance email to ${invoiceData.email}...`, invoiceData);
-    }
-    
+
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
@@ -524,7 +501,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Firebase Function directly via HTTP (server-side) for actual sending
-    const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+    const response = await fetch(`${FIREBASE_FUNCTIONS_URL}/sendInvoiceEmail`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

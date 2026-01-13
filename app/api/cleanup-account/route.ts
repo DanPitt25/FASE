@@ -33,22 +33,22 @@ export async function POST(request: NextRequest) {
     // Delete user from Firebase Auth
     try {
       await auth.deleteUser(userId);
-    } catch (authError) {
-      console.log('User auth record may not exist:', authError);
+    } catch {
+      // User auth record may not exist
     }
 
     // Delete account document from Firestore
     try {
       await db.collection('accounts').doc(userId).delete();
-    } catch (accountError) {
-      console.log('Account document may not exist:', accountError);
+    } catch {
+      // Account document may not exist
     }
 
     // Delete draft application if it exists
     try {
       await db.collection('draft_applications').doc(userId).delete();
-    } catch (draftError) {
-      console.log('Draft application may not exist:', draftError);
+    } catch {
+      // Draft application may not exist
     }
 
     return NextResponse.json({

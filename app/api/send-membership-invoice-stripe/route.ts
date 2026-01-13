@@ -1,44 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import Stripe from 'stripe';
-import * as fs from 'fs';
-import * as path from 'path';
-import { convertCurrency, detectCurrency } from '../../../lib/currency-conversion';
+import { convertCurrency } from '../../../lib/currency-conversion';
+import { loadEmailTranslations, FIREBASE_FUNCTIONS_URL } from '../../../lib/email-utils';
+import { getStripe } from '../../../lib/stripe-utils';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
-
-// Initialize Stripe
-let stripe: Stripe | null = null;
-
-const initializeStripe = () => {
-  if (!stripe) {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    
-    if (!stripeKey) {
-      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
-    }
-    
-    stripe = new Stripe(stripeKey, {
-      apiVersion: '2025-08-27.basil',
-    });
-  }
-  return stripe;
-};
-
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    return {};
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,18 +71,12 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
-    
-    if (isPreview) {
-      console.log(`Generating email preview for ${invoiceData.email}...`, invoiceData);
-    } else {
-      console.log(`Sending membership acceptance email to ${invoiceData.email}...`, invoiceData);
-    }
-    
+
     // Generate 5-digit invoice number
     const invoiceNumber = "FASE-" + Math.floor(10000 + Math.random() * 90000);
     
     // Create Stripe checkout session for payment
-    const stripeInstance = initializeStripe();
+    const stripeInstance = getStripe();
     const protocol = request.headers.get('x-forwarded-proto') || 'http';
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
@@ -128,7 +88,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         invoice_number: invoiceNumber,
         organization_name: invoiceData.organizationName,
-        organization_type: invoiceData.organizationType || 'individual',
+        organization_type: invoiceData.organizationType || 'MGA',
       }
     });
 
@@ -153,7 +113,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         invoice_number: invoiceNumber,
         organization_name: invoiceData.organizationName,
-        organization_type: invoiceData.organizationType || 'individual',
+        organization_type: invoiceData.organizationType || 'MGA',
         user_id: invoiceData.userId || '',
         user_email: invoiceData.email,
       },
@@ -313,7 +273,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Firebase Function directly via HTTP (server-side) for actual sending
-    const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
+    const response = await fetch(`${FIREBASE_FUNCTIONS_URL}/sendInvoiceEmail`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

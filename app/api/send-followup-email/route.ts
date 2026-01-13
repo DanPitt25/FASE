@@ -60,12 +60,6 @@ export async function POST(request: NextRequest) {
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;
-    
-    if (isPreview) {
-      console.log(`Generating follow-up email preview for ${emailData.email}...`);
-    } else {
-      console.log(`Sending follow-up email to ${emailData.email}...`, emailData);
-    }
 
     // Email content based on your specifications
     let emailContent = {

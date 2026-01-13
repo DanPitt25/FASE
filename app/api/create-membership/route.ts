@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     const userUid = authResult.uid;
     
     const membershipData = await request.json();
-    console.log('Membership data received:', JSON.stringify(membershipData, null, 2));
     
     const { auth, db } = await initializeAdmin();
 

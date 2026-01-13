@@ -27,9 +27,7 @@ const initializeAdmin = async () => {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Logging registration error...');
     const errorDetails = await request.json();
-    console.log('Error details received:', errorDetails);
     
     // Add server-side information
     const enrichedError = {

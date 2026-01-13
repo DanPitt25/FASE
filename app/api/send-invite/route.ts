@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+import { FIREBASE_FUNCTIONS_URL } from '../../../lib/email-utils';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
 
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
+// Load invite translations from JSON files (uses invite.json, not email.json)
+function loadInviteTranslations(language: string): any {
   try {
     const filePath = path.join(process.cwd(), 'messages', language, 'invite.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -14,7 +15,7 @@ function loadEmailTranslations(language: string): any {
   } catch (error) {
     // Fallback to English if file not found
     if (language !== 'en') {
-      return loadEmailTranslations('en');
+      return loadInviteTranslations('en');
     }
     // Return empty object if even English fails
     return {};
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Load email translations
-    const translations = await loadEmailTranslations(locale);
+    // Load invite translations
+    const translations = await loadInviteTranslations(locale);
 
     // Get email translations
     const emailTexts = translations.email || {};
@@ -62,9 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Send invitation via dedicated Firebase Function
     try {
-      console.log('Sending invitation email via Firebase Function...');
-      
-      const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInviteEmail`, {
+      const response = await fetch(`${FIREBASE_FUNCTIONS_URL}/sendInviteEmail`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,9 +85,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Firebase Function error: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json();
-      console.log('Invitation email sent successfully:', result);
-
+      await response.json();
 
       return NextResponse.json({ 
         success: true, 
@@ -96,21 +93,10 @@ export async function POST(request: NextRequest) {
       });
     } catch (emailError) {
       console.error('Firebase Function email error:', emailError);
-      
-      // Fallback: Log to console for development/testing
-      console.log('===========================================');
-      console.log('INVITATION EMAIL (DEVELOPMENT MODE)');
-      console.log('===========================================');
-      console.log(`To: ${email}`);
-      const subject = (emailTexts.subject || 'You\'re invited to join {{companyName}} on FASE').replace('{{companyName}}', companyName);
-      console.log(`Subject: ${subject}`);
-      console.log(`Inviter: ${inviterName}`);
-      console.log(`Invite URL: ${inviteUrl}`);
-      console.log('===========================================');
 
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Invitation logged (email delivery failed - check Firebase Function configuration)' 
+      return NextResponse.json({
+        success: true,
+        message: 'Invitation logged (email delivery failed - check Firebase Function configuration)'
       });
     }
 
