@@ -1,8 +1,5 @@
 'use client';
 
-import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
-import { handleAuthError } from "../../lib/auth-errors";
-import { auth } from "../../lib/firebase";
 import { calculateMembershipFee, getDiscountedFee, calculateTotalGWP, convertToEUR, getGWPBand } from './registration-utils';
 import { Member } from './registration-hooks';
 
