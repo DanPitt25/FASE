@@ -138,20 +138,6 @@ export default function InvitePage({ params }: PageProps) {
       // Sign in with the custom token
       await signInWithCustomToken(auth, customToken);
 
-      // Create welcome message for new user (async, don't wait for completion)
-      try {
-        const { createWelcomeMessage } = await import('../../../lib/unified-messaging');
-        // Use the user data from the response since we have the user ID from the custom token
-        const userFromCustomToken = auth.currentUser;
-        if (userFromCustomToken) {
-          createWelcomeMessage(userFromCustomToken.uid).catch(error => {
-            console.error('Failed to create welcome message:', error);
-          });
-        }
-      } catch (error) {
-        console.error('Failed to import welcome message function:', error);
-      }
-
       setStep('complete');
       
       // Redirect to member portal after a short delay

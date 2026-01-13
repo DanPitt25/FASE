@@ -6,9 +6,9 @@ import Image from 'next/image';
 import ContentPageLayout from '../../components/ContentPageLayout';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
-import { getVideos, getVideoComments, createComment, incrementVideoViews, createVideo, updateComment, deleteComment } from '../../lib/knowledge-base';
+import { getVideos, incrementVideoViews, createVideo } from '../../lib/knowledge-base';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
-import type { Video, Comment } from '../../lib/knowledge-base';
+import type { Video } from '../../lib/knowledge-base';
 import { useTranslations } from 'next-intl';
 
 const categories = ['All', 'Regulatory', 'Technology', 'Market Analysis', 'Webinars', 'Training'];
@@ -23,16 +23,12 @@ export default function KnowledgeBaseWebinarsPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-  const [videoComments, setVideoComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [memberApplications, setMemberApplications] = useState<any[]>([]);
   const [showAddVideo, setShowAddVideo] = useState(false);
-  const [editingComment, setEditingComment] = useState<string | null>(null);
-  const [editText, setEditText] = useState('');
   const [videoForm, setVideoForm] = useState({
     title: '',
     description: '',
@@ -240,96 +236,29 @@ export default function KnowledgeBaseWebinarsPage() {
             </div>
 
             {/* Video Info */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              <div className="lg:col-span-2">
-                <div className="flex items-center space-x-4 mb-4">
-                  <span className="bg-fase-navy text-white text-sm px-3 py-1 rounded-full">{selectedVideo.category}</span>
-                  <span className="text-fase-black text-sm">{selectedVideo.views} views</span>
-                  <span className="text-fase-black text-sm">By {selectedVideo.author}</span>
-                </div>
-                
-                <p className="text-fase-black leading-relaxed mb-6">{selectedVideo.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {selectedVideo.tags.map(tag => (
-                    <span key={tag} className="bg-fase-cream text-fase-navy text-sm px-3 py-1 rounded-full">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-
-                <Button 
-                  variant="secondary" 
-                  onClick={() => setSelectedVideo(null)}
-                >
-                  ← Back to Videos
-                </Button>
+            <div className="mb-8">
+              <div className="flex items-center space-x-4 mb-4">
+                <span className="bg-fase-navy text-white text-sm px-3 py-1 rounded-full">{selectedVideo.category}</span>
+                <span className="text-fase-black text-sm">{selectedVideo.views} views</span>
+                <span className="text-fase-black text-sm">By {selectedVideo.author}</span>
               </div>
 
-              {/* Comments Section */}
-              <div className="bg-fase-cream rounded-lg p-6">
-                <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">
-                  Discussion ({videoComments.length})
-                </h3>
+              <p className="text-fase-black leading-relaxed mb-6">{selectedVideo.description}</p>
 
-                {/* Add Comment Form */}
-                <div className="mb-6">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Share your thoughts..."
-                    className="w-full p-3 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                    rows={3}
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <Button 
-                      variant="primary" 
-                      size="small"
-                      onClick={async () => {
-                        if (!user || !newComment.trim() || !selectedVideo) return;
-
-                        try {
-                          await createComment(
-                            selectedVideo.id,
-                            user.uid,
-                            member?.personalName || user.email?.split('@')[0] || 'Anonymous',
-                            newComment.trim()
-                          );
-                          setNewComment('');
-                          
-                          const comments = await getVideoComments(selectedVideo.id);
-                          setVideoComments(comments);
-                        } catch (error) {
-                          console.error('Error posting comment:', error);
-                        }
-                      }}
-                    >
-                      Post Comment
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Comments List */}
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {videoComments.map(comment => (
-                    <div key={comment.id} className="bg-white p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-fase-navy text-sm">{comment.authorName}</span>
-                        <span className="text-xs text-fase-black">
-                          {comment.createdAt?.seconds ? 
-                            new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 
-                            'Recent'
-                          }
-                        </span>
-                      </div>
-                      <p className="text-fase-black text-sm">{comment.text}</p>
-                    </div>
-                  ))}
-                  {videoComments.length === 0 && (
-                    <p className="text-fase-black text-center py-6 text-sm">No comments yet. Be the first to comment!</p>
-                  )}
-                </div>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {selectedVideo.tags.map(tag => (
+                  <span key={tag} className="bg-fase-cream text-fase-navy text-sm px-3 py-1 rounded-full">
+                    #{tag}
+                  </span>
+                ))}
               </div>
+
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedVideo(null)}
+              >
+                ← Back to Videos
+              </Button>
             </div>
           </div>
         )
@@ -421,18 +350,14 @@ export default function KnowledgeBaseWebinarsPage() {
                     className="relative cursor-pointer h-48"
                     onClick={async () => {
                       setSelectedVideo(video);
-                      
+
                       try {
                         await incrementVideoViews(video.id);
-                        setVideos(prev => prev.map(v => 
+                        setVideos(prev => prev.map(v =>
                           v.id === video.id ? { ...v, views: v.views + 1 } : v
                         ));
-                        
-                        const comments = await getVideoComments(video.id);
-                        setVideoComments(comments);
                       } catch (error) {
                         console.error('Error loading video:', error);
-                        setVideoComments([]);
                       }
                     }}
                   >

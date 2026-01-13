@@ -66,9 +66,7 @@ export async function POST(request: NextRequest) {
       discountReason: requestData.discountReason || (requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""),
       customLineItem: requestData.customLineItem || null
     };
-    
-    console.log('🔍 DEBUG: Custom line item data:', JSON.stringify(invoiceData.customLineItem, null, 2));
-    
+
     const hasOtherAssociations = requestData.hasOtherAssociations || false;
 
     // Check if this is a preview request

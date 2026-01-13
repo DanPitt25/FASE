@@ -2,40 +2,20 @@
 
 import { useUnifiedAuth } from "../../contexts/UnifiedAuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
 import MemberMap from "../../components/MemberMap";
 import MembershipDirectory from "../../components/MembershipDirectory";
 import ContactButton from "../../components/ContactButton";
-import { getUserAlerts, markAlertAsRead, dismissAlert, Alert, UserAlert } from "../../lib/unified-messaging";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 import Image from "next/image";
-
-// Simple markdown renderer for alert content
-function renderMarkdown(text: string): string {
-  if (!text) return '';
-  
-  return text
-    // Bold **text**
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic *text*
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Code `text`
-    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
-    // Links [text](url)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">$1</a>')
-    // Line breaks
-    .replace(/\n/g, '<br>');
-}
 
 export default function MemberContent() {
   const { user, member, loading, hasMemberAccess } = useUnifiedAuth();
   const { t, loading: translationsLoading, translations, locale } = usePortalTranslations();
-  const [alerts, setAlerts] = useState<(Alert & UserAlert)[]>([]);
-  const [loadingAlerts, setLoadingAlerts] = useState(true);
-  
+
   const router = useRouter();
 
   // Logo download function
@@ -53,54 +33,6 @@ export default function MemberContent() {
       router.push("/login");
     }
   }, [user, loading, router]);
-
-  // Load alerts and messages
-  useEffect(() => {
-    const loadData = async () => {
-      if (!user || !member) {
-        return;
-      }
-      
-      
-      try {
-        setLoadingAlerts(true);
-        
-        const userAlerts = await getUserAlerts(member.id); // Use Firestore account ID
-        
-        // Filter alerts by current locale
-        const localeFilteredAlerts = userAlerts.filter(alert => 
-          alert.locale === locale || !alert.locale // Show alerts with no locale (legacy) or matching locale
-        );
-        
-        setAlerts(localeFilteredAlerts);
-      } catch (error) {
-      } finally {
-        setLoadingAlerts(false);
-      }
-    };
-
-    loadData();
-  }, [user, member, locale]);
-
-
-  // Alert handlers
-  const handleMarkAlertAsRead = async (alertId: string) => {
-    try {
-      await markAlertAsRead(alertId);
-      setAlerts(prev => prev.map(alert => 
-        alert.id === alertId ? { ...alert, isRead: true } : alert
-      ));
-    } catch (error) {
-    }
-  };
-
-  const handleDismissAlert = async (alertId: string) => {
-    try {
-      await dismissAlert(alertId);
-      setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-    } catch (error) {
-    }
-  };
 
 
 
@@ -121,10 +53,7 @@ export default function MemberContent() {
   }
 
   // Clean status display - no bubbles
-  const statusBadge = null; // Remove entirely
-
-  // Get active alert count
-  const unreadAlerts = alerts.filter(alert => !alert.isRead);
+  const statusBadge = null;
 
   // Dashboard sections
   const dashboardSections = [
@@ -372,126 +301,6 @@ export default function MemberContent() {
             </div>
           </div>
 
-        </div>
-      )
-    },
-    {
-      id: 'alerts',
-      title: t('sections.alerts'),
-      icon: (
-        <div className="relative">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 19c-5 0-8-2.5-8-6 0-5 4-9 9-9s9 4 9 9c0 .5-.1 1-.2 1.5" />
-          </svg>
-          {unreadAlerts.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-              !
-            </span>
-          )}
-        </div>
-      ),
-      content: (
-        <div className="space-y-6">
-          {loadingAlerts ? (
-            <div className="space-y-4">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-6 bg-gray-200 rounded w-16"></div>
-                  </div>
-                  <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              ))}
-            </div>
-          ) : alerts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('alerts.no_alerts')}</h3>
-              <p className="text-fase-black">{t('alerts.no_alerts_desc')}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {alerts.map((alert) => (
-                <article 
-                  key={alert.id} 
-                  className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${
-                    !alert.isRead ? 'border-fase-navy/20 bg-gray-50/30' : ''
-                  }`}
-                >
-                  {/* Header */}
-                  <div className="px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy leading-tight">
-                          {alert.title}
-                        </h3>
-                        {!alert.isRead && (
-                          <span className="inline-block mt-1 text-xs font-medium text-fase-navy/70">
-                            Unread
-                          </span>
-                        )}
-                      </div>
-                      
-                      <span className="text-xs text-gray-500 ml-4">
-                        {alert.createdAt?.toDate?.()?.toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="px-6 py-4">
-                    <div 
-                      className="prose prose-sm prose-gray max-w-none leading-relaxed text-fase-black"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
-                    />
-                  </div>
-                  
-                  {/* Action button */}
-                  {alert.actionUrl && alert.actionText && (
-                    <div className="px-6 pb-4">
-                      <a
-                        href={alert.actionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-fase-navy hover:bg-gray-800 rounded transition-colors duration-200"
-                      >
-                        {alert.actionText}
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </div>
-                  )}
-                  
-                  {/* Footer Actions */}
-                  <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100">
-                    <div className="flex justify-end space-x-4">
-                      {!alert.isRead && (
-                        <button
-                          onClick={() => handleMarkAlertAsRead(alert.id)}
-                          className="text-xs font-medium text-gray-600 hover:text-fase-navy transition-colors duration-200"
-                        >
-                          {t('alerts.mark_read')}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDismissAlert(alert.id)}
-                        className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                      >
-                        {t('alerts.dismiss')}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
         </div>
       )
     },

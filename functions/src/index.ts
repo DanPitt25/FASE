@@ -1,15 +1,12 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateVerificationCodeEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail } from "./email-translations";
+import { detectUserLanguage as detectLang, generatePasswordResetEmail, generateJoinRequestApprovedEmail, generateJoinRequestUpdateEmail } from "./email-translations";
 
 // Initialize Firebase Admin with default credentials
 if (admin.apps.length === 0) {
   admin.initializeApp();
 }
-
-// Start writing Firebase Functions
-// https://firebase.google.com/docs/functions/typescript
 
 // Rate limiting storage
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -22,23 +19,22 @@ setInterval(() => {
       rateLimitStore.delete(key);
     }
   }
-}, 60000); // Clean up every minute
+}, 60000);
 
 function checkRateLimit(email: string): boolean {
   const now = Date.now();
   const key = email.toLowerCase();
   const limit = rateLimitStore.get(key);
-  
+
   if (!limit || now > limit.resetTime) {
-    // Reset or create new limit
-    rateLimitStore.set(key, { count: 1, resetTime: now + 60000 }); // 1 minute window
+    rateLimitStore.set(key, { count: 1, resetTime: now + 60000 });
     return true;
   }
-  
-  if (limit.count >= 3) { // Max 3 codes per minute per email
+
+  if (limit.count >= 3) {
     return false;
   }
-  
+
   limit.count++;
   return true;
 }
@@ -47,101 +43,6 @@ function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
-
-export const sendVerificationCode = functions.https.onCall({
-  enforceAppCheck: false, // Allow unauthenticated calls
-}, async (request) => {
-  try {
-    const { email, code, locale } = request.data;
-    logger.info('sendVerificationCode called with email:', email);
-
-    if (!email || !code) {
-      throw new functions.https.HttpsError('invalid-argument', 'Email and code are required');
-    }
-
-    // Validate email format
-    if (!isValidEmail(email)) {
-      throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
-    }
-
-    // Check rate limit
-    if (!checkRateLimit(email)) {
-      logger.warn(`Rate limit exceeded for email: ${email}`);
-      throw new functions.https.HttpsError('resource-exhausted', 'Too many verification attempts. Please wait before trying again.');
-    }
-
-    // Store verification code in Firestore using admin SDK (bypasses security rules)
-    const db = admin.firestore();
-    await db.collection('verification_codes').doc(email).set({
-      code: code,
-      email: email,
-      expiresAt: new Date(Date.now() + 20 * 60 * 1000), // 20 minutes
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      used: false
-    });
-
-    // Check for Resend API key using environment variables
-    const resendApiKey = process.env.RESEND_API_KEY;
-    logger.info('Resend API key configured:', !!resendApiKey);
-
-    if (resendApiKey) {
-      try {
-        // Detect user's preferred language using provided locale or headers
-        const userLanguage = detectLang(email, undefined, request.rawRequest?.headers?.['accept-language'], locale);
-        logger.info(`Detected language for verification code ${email}: ${userLanguage} (locale: ${locale})`);
-        
-        // Generate localized email content
-        const { subject, html: emailHtml } = generateVerificationCodeEmail(code, userLanguage);
-
-        logger.info('Sending email via Resend...');
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'FASE <aline.sullivan@fasemga.com>',
-            to: email,
-            subject: subject,
-            html: emailHtml,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Resend API error: ${response.status}`);
-        }
-
-        logger.info(`Verification email sent to ${email} via Resend`);
-        return { success: true };
-      } catch (emailError) {
-        logger.error('Resend email error:', emailError);
-        logger.error('API Key available:', !!resendApiKey);
-        logger.error('API Key length:', resendApiKey?.length);
-      }
-    }
-
-    // Fallback: Log to console for development/testing
-    logger.info(`Verification code for ${email}: ${code}`);
-    logger.info(`
-    ===========================================
-    VERIFICATION EMAIL (DEVELOPMENT MODE)
-    ===========================================
-    To: ${email}
-    Subject: Verify your FASE account
-    
-    Your verification code is: ${code}
-    
-    This code will expire in 20 minutes.
-    ===========================================
-    `);
-
-    return { success: true };
-  } catch (error) {
-    logger.error('Error sending verification code:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to send verification code');
-  }
-});
 
 export const setAdminClaim = functions.https.onCall({
   enforceAppCheck: false,

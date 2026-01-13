@@ -30,22 +30,12 @@ const initializeStripe = () => {
 function loadEmailTranslations(language: string): any {
   try {
     const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    console.log('🔍 DEBUG: Attempting to load file from:', filePath);
-    console.log('🔍 DEBUG: process.cwd():', process.cwd());
-    console.log('🔍 DEBUG: File exists?', fs.existsSync(filePath));
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    const parsed = JSON.parse(fileContent);
-    console.log('🔍 DEBUG: Successfully parsed file, keys:', Object.keys(parsed));
-    return parsed;
+    return JSON.parse(fileContent);
   } catch (error) {
-    console.log('🔍 DEBUG: Error loading file:', error);
-    // Fallback to English if file not found
     if (language !== 'en') {
-      console.log('🔍 DEBUG: Falling back to English');
       return loadEmailTranslations('en');
     }
-    // Return empty object if even English fails
-    console.log('🔍 DEBUG: Returning empty object as final fallback');
     return {};
   }
 }
@@ -188,14 +178,10 @@ export async function POST(request: NextRequest) {
     const userLocale = requestData.userLocale || requestData.locale || requestData.language || 'en';
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
-    console.log('🔍 DEBUG: Detected locale:', locale, 'from userLocale:', userLocale);
-    
+
     // Load email content translations from JSON files
-    console.log('🔍 DEBUG: Loading translations for locale:', locale);
     const emailTranslations = loadEmailTranslations(locale);
-    console.log('🔍 DEBUG: Loaded translations object:', JSON.stringify(emailTranslations, null, 2));
     const adminEmail = emailTranslations.membership_acceptance_admin || {};
-    console.log('🔍 DEBUG: Admin email section:', JSON.stringify(adminEmail, null, 2));
     
     // Apply template variable replacements with gender-aware content
     const genderSuffix = invoiceData.gender === 'f' ? '_f' : '_m';

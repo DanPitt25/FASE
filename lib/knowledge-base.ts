@@ -42,19 +42,6 @@ export interface Video {
   currentViewers?: number;
 }
 
-export interface Comment {
-  id: string;
-  videoId: string;
-  authorUid: string;
-  authorName: string;
-  text: string;
-  createdAt: any;
-  updatedAt?: any;
-  status: 'approved' | 'pending' | 'rejected';
-  moderatedBy?: string; // uid of admin who moderated
-  moderatedAt?: any;
-}
-
 export interface WebinarRegistration {
   id: string;
   videoId: string;
@@ -231,18 +218,8 @@ export const updateVideo = async (
 
 // Delete video (admin only)
 export const deleteVideo = async (uid: string, videoId: string): Promise<void> => {
-  // Note: Admin check should be done by caller
-  
   const videoRef = doc(db, 'videos', videoId);
   await deleteDoc(videoRef);
-  
-  // Also delete all comments for this video
-  const commentsRef = collection(db, 'comments');
-  const q = query(commentsRef, where('videoId', '==', videoId));
-  const commentSnapshot = await getDocs(q);
-  
-  const deletePromises = commentSnapshot.docs.map(doc => deleteDoc(doc.ref));
-  await Promise.all(deletePromises);
 };
 
 // Increment view count
@@ -292,134 +269,6 @@ export const updateLiveViewerCount = async (videoId: string, increment: boolean 
       updatedAt: serverTimestamp()
     });
   }
-};
-
-// ============== COMMENT FUNCTIONS ==============
-
-// Create comment
-export const createComment = async (
-  videoId: string,
-  authorUid: string,
-  authorName: string,
-  text: string
-): Promise<string> => {
-  const commentId = doc(collection(db, 'comments')).id;
-  const commentRef = doc(db, 'comments', commentId);
-  
-  const comment: Comment = {
-    id: commentId,
-    videoId,
-    authorUid,
-    authorName,
-    text,
-    status: 'approved', // Comments are instantly approved for members
-    createdAt: serverTimestamp()
-  };
-  
-  await setDoc(commentRef, comment);
-  return commentId;
-};
-
-// Get comments for video
-export const getVideoComments = async (
-  videoId: string,
-  status: Comment['status'] = 'approved'
-): Promise<Comment[]> => {
-  try {
-    const commentsRef = collection(db, 'comments');
-    const q = query(
-      commentsRef, 
-      where('videoId', '==', videoId),
-      where('status', '==', status),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data() as Comment);
-  } catch (error) {
-    console.error('Error getting comments:', error);
-    return [];
-  }
-};
-
-// Get pending comments (admin only)
-export const getPendingComments = async (uid: string): Promise<Comment[]> => {
-  // Note: Admin check should be done by caller since this runs client-side
-  try {
-    const commentsRef = collection(db, 'comments');
-    const q = query(
-      commentsRef,
-      where('status', '==', 'pending'),
-      orderBy('createdAt', 'asc')
-    );
-    
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data() as Comment);
-  } catch (error) {
-    console.error('Error getting pending comments:', error);
-    return [];
-  }
-};
-
-// Moderate comment (admin only)
-export const moderateComment = async (
-  uid: string,
-  commentId: string,
-  status: 'approved' | 'rejected'
-): Promise<void> => {
-  // Note: Admin check should be done by caller
-  
-  const commentRef = doc(db, 'comments', commentId);
-  await updateDoc(commentRef, {
-    status,
-    moderatedBy: uid,
-    moderatedAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
-};
-
-// Update comment (author only)
-export const updateComment = async (
-  uid: string,
-  commentId: string,
-  newText: string
-): Promise<void> => {
-  const commentRef = doc(db, 'comments', commentId);
-  const commentSnap = await getDoc(commentRef);
-  
-  if (!commentSnap.exists()) {
-    throw new Error('Comment not found');
-  }
-  
-  const comment = commentSnap.data() as Comment;
-  if (comment.authorUid !== uid) {
-    throw new Error('Only the author can edit this comment');
-  }
-  
-  await updateDoc(commentRef, {
-    text: newText,
-    updatedAt: serverTimestamp()
-  });
-};
-
-// Delete comment (author or admin)
-export const deleteComment = async (uid: string, commentId: string): Promise<void> => {
-  const commentRef = doc(db, 'comments', commentId);
-  const commentSnap = await getDoc(commentRef);
-  
-  if (!commentSnap.exists()) {
-    throw new Error('Comment not found');
-  }
-  
-  const comment = commentSnap.data() as Comment;
-  const isAuthor = comment.authorUid === uid;
-  const adminStatus = await isAdmin();
-  
-  if (!isAuthor && !adminStatus) {
-    throw new Error('Only the author or an admin can delete this comment');
-  }
-  
-  await deleteDoc(commentRef);
 };
 
 // ============== SEARCH FUNCTIONS ==============

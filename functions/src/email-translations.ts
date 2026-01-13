@@ -101,34 +101,6 @@ export function generatePasswordResetEmail(resetUrl: string, language: Language 
   };
 }
 
-// Generate verification code email HTML
-export function generateVerificationCodeEmail(code: string, language: Language = 'en'): { subject: string; html: string } {
-  const t = getEmailTranslations(language).verification_code;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #2D5574;">${t.title}</h2>
-      <p>${t.intro}</p>
-      
-      <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-        <p>${t.code_instruction}</p>
-        <div style="font-size: 24px; font-weight: bold; color: #2D5574; margin: 20px 0; padding: 15px; background: white; border-radius: 5px; letter-spacing: 2px;">
-          ${code}
-        </div>
-      </div>
-      
-      <p style="color: #6b7280; font-size: 14px;">${t.expiry}</p>
-      <p style="color: #6b7280; font-size: 14px;">${t.ignore}</p>
-      <p style="color: #6b7280; font-size: 14px;">${t.help}</p>
-    </div>
-  `;
-
-  return {
-    subject: t.subject,
-    html
-  };
-}
-
 // Generate invoice email HTML
 export function generateInvoiceEmail(invoiceNumber: string, organizationName: string, totalAmount: string, language: Language = 'en'): { subject: string; html: string } {
   const t = getEmailTranslations(language).invoice;

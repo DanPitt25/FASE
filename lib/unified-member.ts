@@ -241,17 +241,7 @@ export const createUnifiedMember = async (
   };
   
   await setDoc(memberRef, memberData);
-  
-  // Create welcome message for new user (async, don't wait for completion)
-  try {
-    const { createWelcomeMessage } = await import('./unified-messaging');
-    createWelcomeMessage(uid).catch(error => {
-      console.error('Failed to create welcome message:', error);
-    });
-  } catch (error) {
-    console.error('Failed to import welcome message function:', error);
-  }
-  
+
   return memberData;
 };
 

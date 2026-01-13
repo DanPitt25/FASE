@@ -1,12 +1,12 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
+import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 import { signOut } from '../../lib/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function ProtectedPage() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useUnifiedAuth();
   const router = useRouter();
 
   useEffect(() => {
