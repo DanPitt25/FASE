@@ -9,6 +9,7 @@ import RibbonSeparator from '../components/RibbonSeparator';
 import QuoteSection from '../components/QuoteSection';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useTranslations } from 'next-intl';
+import AnnouncementBanner from '../components/AnnouncementBanner';
 
 export default function Page() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -377,6 +378,7 @@ export default function Page() {
       </section>
 
       <Footer />
+      <AnnouncementBanner />
       </div>
     </div>
   );
