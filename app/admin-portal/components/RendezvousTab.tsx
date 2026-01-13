@@ -50,7 +50,9 @@ export default function RendezvousTab() {
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadRegistrations();
@@ -97,6 +99,30 @@ export default function RendezvousTab() {
       alert('Failed to update status');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleDelete = async (registrationId: string) => {
+    try {
+      setDeleting(true);
+      const response = await fetch('/api/admin/delete-rendezvous-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registrationId })
+      });
+
+      if (!response.ok) throw new Error('Failed to delete registration');
+
+      // Remove from local state
+      setRegistrations(prev => prev.filter(reg => reg.registrationId !== registrationId));
+
+      setShowDeleteModal(false);
+      setSelectedRegistration(null);
+    } catch (error) {
+      console.error('Error deleting registration:', error);
+      alert('Failed to delete registration');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -326,6 +352,15 @@ export default function RendezvousTab() {
                           Confirm
                         </Button>
                       )}
+                      <button
+                        className="text-red-600 hover:text-red-800 text-xs font-medium"
+                        onClick={() => {
+                          setSelectedRegistration(registration);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -515,6 +550,57 @@ export default function RendezvousTab() {
               >
                 {updating ? 'Updating...' : 'Confirm Payment'}
               </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedRegistration(null);
+        }}
+        title="Delete Registration"
+        maxWidth="md"
+      >
+        {selectedRegistration && (
+          <div className="space-y-6">
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <p className="text-red-800 font-medium">
+                Are you sure you want to delete this registration?
+              </p>
+              <div className="mt-3 text-red-900">
+                <div className="font-medium">{selectedRegistration.billingInfo?.company}</div>
+                <div className="text-sm">Invoice: {selectedRegistration.invoiceNumber}</div>
+                <div className="text-sm">{selectedRegistration.attendees?.length || 0} attendee(s)</div>
+                <div className="text-sm">€{(selectedRegistration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+              </div>
+            </div>
+
+            <p className="text-gray-600 text-sm">
+              This action cannot be undone. The registration and all associated data will be permanently deleted.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedRegistration(null);
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <button
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium"
+                onClick={() => handleDelete(selectedRegistration.registrationId)}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete Registration'}
+              </button>
             </div>
           </div>
         )}
