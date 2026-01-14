@@ -525,7 +525,10 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
         linesOfBusiness: data.linesOfBusiness,
         accountAdministrator: data.accountAdministrator,
         website: data.website,
-        carrierInfo: data.carrierInfo
+        carrierInfo: data.carrierInfo,
+        // Include logo and company summary for directory display
+        logoURL: data.logoURL,
+        companySummary: data.companySummary
       } as UnifiedMember & { businessAddress?: any; markets?: string[]; website?: string; carrierInfo?: any });
     });
     
