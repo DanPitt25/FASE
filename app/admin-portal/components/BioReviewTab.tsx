@@ -61,7 +61,7 @@ export default function BioReviewTab() {
         const hasPendingBio = data.companySummary?.status === 'pending_review';
         const hasPendingLogo = data.logoStatus?.status === 'pending_review';
         // Also show logos that exist but have never been reviewed (no logoStatus or no status set)
-        const hasUnreviewedLogo = data.logoURL && (!data.logoStatus || !data.logoStatus.status);
+        const hasUnreviewedLogo = !!(data.logoURL && (!data.logoStatus || !data.logoStatus.status));
 
         // Include if either bio or logo is pending, or has an unreviewed logo
         if (hasPendingBio || hasPendingLogo || hasUnreviewedLogo) {
