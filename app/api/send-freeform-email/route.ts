@@ -121,7 +121,6 @@ export async function POST(request: NextRequest) {
 
     <div style="font-size: 16px; line-height: 1.5; color: #333;">
       <p style="margin: 0 0 5px 0;">${signature.regards}</p>
-      <p style="margin: 0 0 20px 0;">Aline</p>
       <p style="margin: 0 0 3px 0;"><strong>${signature.name}</strong></p>
       ${signature.title ? `<p style="margin: 0; color: #666; font-style: italic;">${signature.title}</p>` : ''}
     </div>
