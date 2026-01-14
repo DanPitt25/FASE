@@ -184,7 +184,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       }`}>{tNav('code_of_conduct')}</a>
                       <a href="/about/leadership" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'leadership' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>{tNav('leadership')}</a>
+                      }`}>{tNav('advisory_board')}</a>
                       <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
                       }`}>{tNav('management')}</a>
@@ -325,7 +325,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               }`}>{tNav('code_of_conduct')}</a>
               <a href="/about/leadership" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'leadership' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>Leadership</a>
+              }`}>{tNav('advisory_board')}</a>
               <a href="/about/people" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'people' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Management</a>

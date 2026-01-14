@@ -97,6 +97,13 @@ export default function LeadershipPage() {
           company: t('members.arjan_nollen.company'),
           bio: t('members.arjan_nollen.bio'),
           image: '/arjan_nollen.jpg'
+        },
+        {
+          name: 'Paul Jewell',
+          role: t('members.paul_jewell.role'),
+          company: t('members.paul_jewell.company'),
+          bio: t('members.paul_jewell.bio'),
+          image: '/paul_jewell.png'
         }
       ]
     }
