@@ -2,26 +2,30 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { uploadOrganizationLogo, validateLogoFile } from '../lib/storage';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { validateLogoFile } from '../lib/storage';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 
 interface OrganizationLogoProps {
   organizationName: string;
   onLogoChange?: (logoURL: string | null) => void;
   logoURL?: string; // Direct logo URL (read-only mode)
+  pendingLogoURL?: string; // Pending logo URL awaiting review
+  logoStatus?: 'pending_review' | 'approved' | 'rejected';
   readOnly?: boolean; // Whether to disable editing
 }
 
-export default function OrganizationLogo({ 
-  organizationName, 
+export default function OrganizationLogo({
+  organizationName,
   onLogoChange,
   logoURL: propLogoURL,
+  pendingLogoURL: propPendingLogoURL,
+  logoStatus: propLogoStatus,
   readOnly = false
 }: OrganizationLogoProps) {
   const { member } = useUnifiedAuth();
-  const [logoURL, setLogoURL] = useState<string | null>(propLogoURL || null);
+  // Show pending logo if it exists (user can see their own pending upload), otherwise approved logo
+  const [logoURL, setLogoURL] = useState<string | null>(propPendingLogoURL || propLogoURL || null);
+  const [isPending, setIsPending] = useState(propLogoStatus === 'pending_review');
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(!propLogoURL);
   const [error, setError] = useState<string | null>(null);
@@ -31,48 +35,73 @@ export default function OrganizationLogo({
 
   // Use prop logo URL if provided (read-only mode)
   useEffect(() => {
-    if (propLogoURL) {
-      setLogoURL(propLogoURL);
+    // Prioritize pending logo for non-read-only (user's own profile)
+    const urlToUse = !readOnly && propPendingLogoURL ? propPendingLogoURL : propLogoURL;
+
+    if (urlToUse) {
+      setLogoURL(urlToUse);
       setImageError(false);
       setIsLoading(false);
+      setIsPending(propLogoStatus === 'pending_review');
       return;
     }
-    
+
     // For non-read-only mode without prop URL, start with no logo
     if (!readOnly) {
       setIsLoading(false);
     }
-  }, [propLogoURL, readOnly]);
+  }, [propLogoURL, propPendingLogoURL, propLogoStatus, readOnly]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !member?.organizationId) return;
 
+    // Clear error only when user attempts a new upload
     setError(null);
     setIsUploading(true);
 
     try {
       // Validate file using the storage utility
       validateLogoFile(file);
-      
-      // Upload to Firebase Storage
-      const result = await uploadOrganizationLogo(file, organizationName);
-      
-      // Update the organization's logoURL in Firestore
-      const accountRef = doc(db, 'accounts', member.organizationId);
-      await updateDoc(accountRef, {
-        logoURL: result.downloadURL,
-        updatedAt: serverTimestamp()
+
+      // Get auth token for API request
+      const { auth } = await import('../lib/firebase');
+      const token = await auth.currentUser?.getIdToken();
+
+      if (!token) {
+        throw new Error('Not authenticated. Please log in again.');
+      }
+
+      // Upload via API route using FormData (Admin SDK on server)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('identifier', member.organizationId);
+      formData.append('organizationName', organizationName);
+
+      const response = await fetch('/api/upload-logo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
       });
-      
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
       // Update local state
       setLogoURL(result.downloadURL);
       setImageError(false);
-      
+      setIsPending(true); // New uploads are pending review
+
       // Notify parent component
       onLogoChange?.(result.downloadURL);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Upload failed');
+      // Error persists until user tries again or navigates away
+      setError(error instanceof Error ? error.message : 'Upload failed. Please try again.');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -116,6 +145,12 @@ export default function OrganizationLogo({
             className="object-contain"
             onError={() => setImageError(true)}
           />
+          {/* Pending review indicator */}
+          {isPending && !readOnly && (
+            <div className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded font-medium z-10">
+              Pending
+            </div>
+          )}
           {!readOnly && (
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <span className="text-white text-xs font-medium">Change</span>

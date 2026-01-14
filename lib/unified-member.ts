@@ -52,7 +52,18 @@ export interface CompanySummary {
   text: string;
   status: 'draft' | 'pending_review' | 'approved' | 'rejected';
   submittedAt?: any; // Firestore timestamp
-  reviewedAt?: any; 
+  reviewedAt?: any;
+  reviewedBy?: string; // Admin user ID
+  rejectionReason?: string;
+  translations?: Record<string, string>; // Language code -> translated text
+}
+
+// Logo status interface for logo review workflow
+export interface LogoStatus {
+  status: 'pending_review' | 'approved' | 'rejected';
+  pendingURL?: string; // URL of logo awaiting review
+  submittedAt?: any; // Firestore timestamp
+  reviewedAt?: any;
   reviewedBy?: string; // Admin user ID
   rejectionReason?: string;
 }
@@ -136,7 +147,8 @@ export interface OrganizationAccount {
     ownership?: string;
   };
   
-  logoURL?: string;
+  logoURL?: string; // Approved logo URL (shown publicly)
+  logoStatus?: LogoStatus; // Logo review workflow status
   hasOtherAssociations?: boolean;
   otherAssociations?: string[];
   linesOfBusiness?: string[];

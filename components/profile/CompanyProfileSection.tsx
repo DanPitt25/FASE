@@ -13,6 +13,11 @@ interface CompanyInfo {
   organizationType: string;
   status: string;
   logoURL?: string;
+  logoStatus?: {
+    status: 'pending_review' | 'approved' | 'rejected';
+    pendingURL?: string;
+    rejectionReason?: string;
+  };
 }
 
 interface CompanyProfileSectionProps {
@@ -116,11 +121,19 @@ export default function CompanyProfileSection({
         <div className="flex gap-4 p-4 border border-gray-200 rounded-lg">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <OrganizationLogo 
+            <OrganizationLogo
               organizationName={company.organizationName}
               logoURL={company.logoURL}
+              pendingLogoURL={company.logoStatus?.pendingURL}
+              logoStatus={company.logoStatus?.status}
               onLogoChange={onLogoChange}
             />
+            {/* Logo rejection message */}
+            {company.logoStatus?.status === 'rejected' && company.logoStatus.rejectionReason && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 max-w-[80px]">
+                {company.logoStatus.rejectionReason}
+              </div>
+            )}
           </div>
           
           {/* Bio */}

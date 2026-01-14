@@ -15,6 +15,11 @@ interface CompanyInfo {
   organizationType: string;
   status: string;
   logoURL?: string;
+  logoStatus?: {
+    status: 'pending_review' | 'approved' | 'rejected';
+    pendingURL?: string;
+    rejectionReason?: string;
+  };
 }
 
 interface Member {
@@ -107,7 +112,8 @@ export default function ManageProfile() {
           organizationName: userAccountData.organizationName || 'Unknown Company',
           organizationType: userAccountData.organizationType || 'Unknown',
           status: userAccountData.status,
-          logoURL: userAccountData.logoURL
+          logoURL: userAccountData.logoURL,
+          logoStatus: userAccountData.logoStatus
         };
         setCompany(companyInfo);
         
@@ -140,9 +146,15 @@ export default function ManageProfile() {
     fetchData();
   }, [user?.uid, member?.id, member?.organizationId]);
 
-  // Handle logo change callback
+  // Handle logo change callback - new uploads go to pending status
   const handleLogoChange = (logoURL: string | null) => {
-    setCompany(prev => prev ? { ...prev, logoURL: logoURL || undefined } : null);
+    setCompany(prev => prev ? {
+      ...prev,
+      logoStatus: logoURL ? {
+        status: 'pending_review',
+        pendingURL: logoURL
+      } : prev.logoStatus
+    } : null);
   };
 
 

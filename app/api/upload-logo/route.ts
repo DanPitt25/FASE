@@ -31,15 +31,16 @@ const initializeAdmin = async () => {
 
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
-  
+
   try {
     // Verify authentication first
     const authResult = await verifyAuthToken(request);
     const userUid = authResult.uid;
-    
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const identifier = formData.get('identifier') as string;
+    const organizationName = formData.get('organizationName') as string;
 
     // Validate inputs and ensure user can only upload for themselves
     if (!file) {
@@ -48,9 +49,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
-    // Use authenticated user's UID as identifier for security
-    const safeIdentifier = userUid;
+
+    // Use the organization identifier if provided, otherwise use user UID
+    const safeIdentifier = identifier || userUid;
 
     // Validate file
     const maxSize = 5 * 1024 * 1024; // 5MB
@@ -70,10 +71,22 @@ export async function POST(request: NextRequest) {
     }
 
     const { storage } = await initializeAdmin();
+    const db = admin.firestore();
 
-    // Create file path using authenticated user ID
-    const fileExtension = file.name.split('.').pop() || 'png';
-    const fileName = `${safeIdentifier}-logo.${fileExtension}`;
+    // Create file path - use sanitized organization name if provided, otherwise identifier
+    let fileName: string;
+    if (organizationName) {
+      const sanitizedOrgName = organizationName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      const fileExtension = file.name.split('.').pop() || 'png';
+      fileName = `${sanitizedOrgName}-logo.${fileExtension}`;
+    } else {
+      const fileExtension = file.name.split('.').pop() || 'png';
+      fileName = `${safeIdentifier}-logo.${fileExtension}`;
+    }
     const filePath = `graphics/logos/${fileName}`;
 
     // Convert File to Buffer
@@ -91,7 +104,30 @@ export async function POST(request: NextRequest) {
 
     // Make the file publicly readable
     await fileRef.makePublic();
-    
+
+    // Get the download URL
+    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+
+    // Update the organization's logo status in Firestore if identifier provided
+    // Logo goes to pending review - not immediately visible in directories
+    if (identifier) {
+      try {
+        await db.collection('accounts').doc(identifier).update({
+          'logoStatus.status': 'pending_review',
+          'logoStatus.pendingURL': downloadURL,
+          'logoStatus.submittedAt': admin.firestore.FieldValue.serverTimestamp(),
+          'logoStatus.reviewedAt': null,
+          'logoStatus.reviewedBy': null,
+          'logoStatus.rejectionReason': null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`✅ Logo submitted for review - account ${identifier}`);
+      } catch (firestoreError) {
+        console.error('Failed to update Firestore with logo status:', firestoreError);
+        // Don't fail the request, logo was still uploaded successfully
+      }
+    }
+
     // Log successful upload
     await logSecurityEvent({
       type: 'auth_success',
@@ -101,16 +137,13 @@ export async function POST(request: NextRequest) {
       severity: 'low',
       ...clientInfo
     });
-    
+
     await DatabaseMonitor.logDatabaseOperation({
       type: 'write',
       collection: 'storage',
       documentId: filePath,
       userId: userUid
     });
-
-    // Get the download URL
-    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
 
     return NextResponse.json({
       success: true,
@@ -120,7 +153,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Logo upload error:', error);
-    
+
     if (error instanceof AuthError) {
       await logSecurityEvent({
         type: 'auth_failure',
@@ -128,13 +161,13 @@ export async function POST(request: NextRequest) {
         severity: 'medium',
         ...clientInfo
       });
-      
+
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: error.statusCode }
       );
     }
-    
+
     return NextResponse.json(
       { error: 'Failed to upload logo' },
       { status: 500 }
