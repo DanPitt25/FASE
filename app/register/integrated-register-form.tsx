@@ -836,7 +836,7 @@ export default function IntegratedRegisterForm() {
           <div className="bg-white rounded-lg border border-fase-light-gold p-6">
             <h4 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">{t('rendezvous.title')}</h4>
             <p className="text-fase-black mb-4">
-              {t('rendezvous.description')}
+              {isAsaseMember() ? t('rendezvous.description_asase') : t('rendezvous.description')}
             </p>
 
             <p className="text-fase-black mb-6">
@@ -878,9 +878,6 @@ export default function IntegratedRegisterForm() {
                       <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
-                  {isAsaseMember() && (
-                    <p className="text-xs text-green-600 mt-1">{t('rendezvous.asase_limit')}</p>
-                  )}
                 </div>
 
                 {/* Attendee Details */}
