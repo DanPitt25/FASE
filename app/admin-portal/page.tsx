@@ -221,6 +221,9 @@ export default function AdminPortalPage() {
           loading={loading.members}
           onEmailFormOpen={handleEmailFormOpen}
           onStatusUpdate={handleMemberStatusUpdate}
+          onMemberDeleted={(memberId) => {
+            setMemberApplications(prev => prev.filter(m => m.id !== memberId));
+          }}
         />
       )
     },

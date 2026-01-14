@@ -11,19 +11,28 @@ interface MembersTabProps {
   loading: boolean;
   onEmailFormOpen: (account: any) => void;
   onStatusUpdate: (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => void;
+  onMemberDeleted?: (memberId: string) => void;
 }
 
-export default function MembersTab({ 
-  memberApplications, 
-  loading, 
+export default function MembersTab({
+  memberApplications,
+  loading,
   onEmailFormOpen,
-  onStatusUpdate 
+  onStatusUpdate,
+  onMemberDeleted
 }: MembersTabProps) {
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<UnifiedMember | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string } | null>(null);
+
+  // Delete confirmation state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<UnifiedMember | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -76,6 +85,56 @@ export default function MembersTab({
   const handleViewMembers = (member: UnifiedMember) => {
     setSelectedCompany({ id: member.id, name: member.organizationName || 'Unknown Organization' });
     setShowMembersModal(true);
+  };
+
+  const handleDeleteClick = (member: UnifiedMember) => {
+    setMemberToDelete(member);
+    setDeleteConfirmation('');
+    setDeleteError(null);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!memberToDelete || deleteConfirmation !== 'DELETE') {
+      setDeleteError('Please type DELETE to confirm');
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const response = await fetch('/api/admin/delete-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountId: memberToDelete.id,
+          confirmationPhrase: deleteConfirmation
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete member');
+      }
+
+      // Close modal and notify parent
+      setShowDeleteModal(false);
+      setMemberToDelete(null);
+      setDeleteConfirmation('');
+
+      if (onMemberDeleted) {
+        onMemberDeleted(memberToDelete.id);
+      }
+
+      alert(`Successfully deleted ${result.details?.organizationName || 'member'}. ${result.details?.membersDeleted || 0} member documents and ${result.details?.authUsersDeleted || 0} auth accounts removed.`);
+
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete member');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const getAvailableStatuses = (currentStatus: UnifiedMember['status']): { status: UnifiedMember['status'], label: string, description: string }[] => {
@@ -250,7 +309,18 @@ export default function MembersTab({
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-gray-200">
+            <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowStatusModal(false);
+                  setSelectedMember(null);
+                  handleDeleteClick(selectedMember);
+                }}
+                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+              >
+                Delete Account
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -275,6 +345,87 @@ export default function MembersTab({
         companyId={selectedCompany?.id || ''}
         companyName={selectedCompany?.name || ''}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setMemberToDelete(null);
+          setDeleteConfirmation('');
+          setDeleteError(null);
+        }}
+        title="Delete Member Account"
+        maxWidth="md"
+      >
+        {memberToDelete && (
+          <div className="space-y-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div>
+                  <h4 className="text-red-800 font-semibold">Warning: This action cannot be undone</h4>
+                  <p className="text-red-700 text-sm mt-1">
+                    This will permanently delete the account, all team members, and their Firebase Auth credentials.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">Account to delete:</div>
+              <div className="font-semibold text-gray-900">{memberToDelete.organizationName}</div>
+              <div className="text-sm text-gray-600">{memberToDelete.email}</div>
+              <div className="text-xs text-gray-500 mt-1">ID: {memberToDelete.id}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type <span className="font-mono bg-gray-100 px-1">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Type DELETE here"
+                disabled={deleting}
+              />
+            </div>
+
+            {deleteError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{deleteError}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setMemberToDelete(null);
+                  setDeleteConfirmation('');
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleDeleteConfirm}
+                disabled={deleting || deleteConfirmation !== 'DELETE'}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleting ? 'Deleting...' : 'Delete Account'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

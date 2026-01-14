@@ -89,8 +89,9 @@ export default function TeamManagementSection({
   });
 
   // Helper function to check if member needs an invite
+  // A member needs an invite if they haven't confirmed their account yet
   const memberNeedsInvite = (memberItem: Member) => {
-    return memberItem.id.startsWith('member_') && !memberItem.accountConfirmed;
+    return !memberItem.accountConfirmed;
   };
 
   const showConfirmation = (title: string, message: string, onConfirm: () => void) => {
@@ -161,8 +162,12 @@ export default function TeamManagementSection({
   };
 
   const handleRemoveMember = async (memberToRemove: Member) => {
-    if (!member?.organizationId) return;
-    
+    if (!member?.organizationId) {
+      showError('Unable to remove member: organization not found');
+      hideConfirmation();
+      return;
+    }
+
     try {
       const memberRef = doc(db, 'accounts', member.organizationId, 'members', memberToRemove.id);
       await deleteDoc(memberRef);
@@ -171,6 +176,8 @@ export default function TeamManagementSection({
       showSuccess(`${memberToRemove.personalName} has been removed from your team`);
     } catch (err) {
       showError(err instanceof Error ? err.message : 'Failed to remove member');
+    } finally {
+      hideConfirmation();
     }
   };
 
