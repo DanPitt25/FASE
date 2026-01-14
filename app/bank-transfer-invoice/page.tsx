@@ -137,7 +137,8 @@ function BankTransferInvoiceContent() {
           type: 'regular',
           status: 'sent',
           sentAt: new Date(),
-          pdfGenerated: true
+          pdfGenerated: true,
+          pdfUrl: result.pdfUrl
         });
         console.log('✅ Invoice tracked in database:', invoiceNumber);
       } catch (trackingError) {
