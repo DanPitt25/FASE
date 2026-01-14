@@ -382,7 +382,7 @@ export default function DirectoryPage() {
 
                         {/* Company Info */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-noto-serif font-bold text-fase-navy mb-1 truncate">
+                          <h3 className="text-lg font-noto-serif font-bold text-fase-navy mb-1 break-words">
                             {member.organizationName}
                           </h3>
                           <div className="flex items-center gap-2">

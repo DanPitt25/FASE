@@ -100,7 +100,7 @@ function OrganizationCard({
 
             {/* Organization Info */}
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-fase-navy text-lg truncate mb-2">
+              <h4 className="font-semibold text-fase-navy text-lg mb-2 break-words">
                 {organization.organizationName || organization.personalName}
               </h4>
               <div className="text-sm text-gray-600 mb-2">
