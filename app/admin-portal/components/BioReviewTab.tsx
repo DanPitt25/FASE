@@ -60,18 +60,21 @@ export default function BioReviewTab() {
 
         const hasPendingBio = data.companySummary?.status === 'pending_review';
         const hasPendingLogo = data.logoStatus?.status === 'pending_review';
+        // Also show logos that exist but have never been reviewed (no logoStatus or no status set)
+        const hasUnreviewedLogo = data.logoURL && (!data.logoStatus || !data.logoStatus.status);
 
-        // Include if either bio or logo is pending
-        if (hasPendingBio || hasPendingLogo) {
+        // Include if either bio or logo is pending, or has an unreviewed logo
+        if (hasPendingBio || hasPendingLogo || hasUnreviewedLogo) {
           companiesWithPendingContent.push({
             ...data,
             id: docSnap.id,
             hasPendingBio,
-            hasPendingLogo,
+            hasPendingLogo: hasPendingLogo || hasUnreviewedLogo,
             bioStatus: data.companySummary?.status,
             bioText: data.companySummary?.text,
             bioSubmittedAt: data.companySummary?.submittedAt,
-            pendingLogoURL: data.logoStatus?.pendingURL,
+            // Use pendingURL if available, otherwise fall back to existing logoURL for unreviewed logos
+            pendingLogoURL: data.logoStatus?.pendingURL || (hasUnreviewedLogo ? data.logoURL : undefined),
             logoSubmittedAt: data.logoStatus?.submittedAt
           });
         }
