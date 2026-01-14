@@ -70,7 +70,8 @@ export default function DirectoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedOrganizationType, setSelectedOrganizationType] = useState('');
-  
+  const [expandedBio, setExpandedBio] = useState<string | null>(null);
+
   // Show coming soon overlay
   const [showComingSoon] = useState(false);
   
@@ -399,9 +400,24 @@ export default function DirectoryPage() {
                       {/* Company Bio */}
                       {member.companySummary?.status === 'approved' && member.companySummary.text && (
                         <div className="mb-4">
-                          <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                          <p
+                            className={`text-sm text-gray-700 leading-relaxed ${expandedBio === member.id ? '' : 'line-clamp-3'} ${member.companySummary.text.length > 200 ? 'cursor-pointer' : ''}`}
+                            onClick={() => {
+                              if (member.companySummary!.text!.length > 200) {
+                                setExpandedBio(expandedBio === member.id ? null : member.id);
+                              }
+                            }}
+                          >
                             {member.companySummary.text}
                           </p>
+                          {member.companySummary.text.length > 200 && (
+                            <button
+                              onClick={() => setExpandedBio(expandedBio === member.id ? null : member.id)}
+                              className="text-xs text-fase-blue hover:text-fase-navy mt-1"
+                            >
+                              {expandedBio === member.id ? 'Show less' : 'Read more'}
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
