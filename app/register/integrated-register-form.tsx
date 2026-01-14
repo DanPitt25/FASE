@@ -859,7 +859,7 @@ export default function IntegratedRegisterForm() {
                 id="reserve-passes"
               />
               <label htmlFor="reserve-passes" className="text-sm font-medium text-fase-black cursor-pointer">
-                {t('rendezvous.checkbox_label')}
+                {isAsaseMember() ? t('rendezvous.checkbox_label_asase') : t('rendezvous.checkbox_label')}
               </label>
             </div>
 
