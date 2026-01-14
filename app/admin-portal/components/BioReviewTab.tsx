@@ -140,7 +140,8 @@ export default function BioReviewTab() {
       // Update local state - remove bio from pending, keep if logo still pending
       setPendingItems(prev => prev.map(item => {
         if (item.id !== companyId) return item;
-        return { ...item, hasPendingBio: false, bioStatus: action === 'approve' || action === 'edit' ? 'approved' : 'rejected' };
+        const newStatus: CompanySummary['status'] = action === 'approve' || action === 'edit' ? 'approved' : 'rejected';
+        return { ...item, hasPendingBio: false, bioStatus: newStatus };
       }).filter(item => item.hasPendingBio || item.hasPendingLogo));
 
       // Close modal and reset state
