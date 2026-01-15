@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { getApprovedMembersWithSubcollections } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
+import { getLineOfBusinessDisplay } from '../lib/lines-of-business';
 
 // Helper function to get display organization type (matches external directory exactly)
 const getDisplayOrganizationType = (member: UnifiedMember): string => {
@@ -161,7 +162,7 @@ function OrganizationCard({
                   <div className="text-sm text-gray-900">
                     {organization.linesOfBusiness.map((line: string, index: number) => (
                       <span key={index}>
-                        {line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {getLineOfBusinessDisplay(line, translations.locale || 'en')}
                         {index < organization.linesOfBusiness!.length - 1 && ', '}
                       </span>
                     ))}

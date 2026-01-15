@@ -222,17 +222,17 @@ export const MGAPortfolioSection = ({
               <label key={lineKey} className="flex items-center space-x-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={selectedLinesOfBusiness.includes(t(`lines_of_business.${lineKey}`))}
-                  onChange={() => toggleLineOfBusiness(t(`lines_of_business.${lineKey}`))}
+                  checked={selectedLinesOfBusiness.includes(lineKey)}
+                  onChange={() => toggleLineOfBusiness(lineKey)}
                   className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
                 />
                 <span className="text-fase-black">{t(`lines_of_business.${lineKey}`)}</span>
               </label>
             ))}
           </div>
-          
+
           {/* Other fields */}
-          {selectedLinesOfBusiness.includes(t('lines_of_business.other')) && (
+          {selectedLinesOfBusiness.includes('other') && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
                 {t('specify_other')}
@@ -246,8 +246,8 @@ export const MGAPortfolioSection = ({
               />
             </div>
           )}
-          
-          {selectedLinesOfBusiness.includes(t('lines_of_business.other_2')) && (
+
+          {selectedLinesOfBusiness.includes('other_2') && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
                 {t('specify_other_2')}
@@ -261,8 +261,8 @@ export const MGAPortfolioSection = ({
               />
             </div>
           )}
-          
-          {selectedLinesOfBusiness.includes(t('lines_of_business.other_3')) && (
+
+          {selectedLinesOfBusiness.includes('other_3') && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-fase-navy mb-1">
                 {t('specify_other_3')}

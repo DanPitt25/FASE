@@ -9,6 +9,7 @@ import { feature } from 'topojson-client';
 import countries from 'i18n-iso-countries';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { updateUserProfile, getUserProfile } from '../lib/firestore';
+import { getLineOfBusinessDisplay } from '../lib/lines-of-business';
 
 // Register multiple locales for country names
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
@@ -101,12 +102,15 @@ function CompanyDetails({
         <div className="mb-4">
           <div className="text-sm font-medium text-gray-700 mb-1">{translations.details?.lines_of_business || 'Lines of Business'}</div>
           <div className="text-gray-900">
-            {company.linesOfBusiness.map((line: string, index: number) => (
-              <span key={index}>
-                {line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                {index < company.linesOfBusiness!.length - 1 && ', '}
-              </span>
-            ))}
+            {company.linesOfBusiness.map((line: string, index: number) => {
+              const locale = translations.locale || 'en';
+              return (
+                <span key={index}>
+                  {getLineOfBusinessDisplay(line, locale)}
+                  {index < company.linesOfBusiness!.length - 1 && ', '}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -180,7 +184,7 @@ function CompanyCountryDetails({
             {linesOfBusiness.map((line, index) => (
               <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
                 <div className="w-2 h-2 bg-fase-navy rounded-full mr-3"></div>
-                <span className="text-sm text-gray-900">{line}</span>
+                <span className="text-sm text-gray-900">{getLineOfBusinessDisplay(line, locale)}</span>
               </div>
             ))}
           </div>
@@ -707,7 +711,7 @@ function MyCompanyView({
                           <option value="">Select a line of business...</option>
                           {LINES_OF_BUSINESS.map(line => (
                             <option key={line} value={line}>
-                              {line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              {getLineOfBusinessDisplay(line, locale)}
                             </option>
                           ))}
                         </select>
@@ -731,8 +735,8 @@ function MyCompanyView({
                 <div>
                   {marketLinesOfBusiness[countryCode] && marketLinesOfBusiness[countryCode].filter(line => line !== '').length > 0 ? (
                     <div className="text-sm text-gray-600">
-                      {marketLinesOfBusiness[countryCode].filter(line => line !== '').map(line => 
-                        line.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                      {marketLinesOfBusiness[countryCode].filter(line => line !== '').map(line =>
+                        getLineOfBusinessDisplay(line, locale)
                       ).join(', ')}
                     </div>
                   ) : (
