@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
           email: data.email || data.accountAdministrator?.email || '',
           organizationName: data.organizationName || data.displayName || '',
           organizationType: normalizeOrgType(data.organizationType),
-          status: data.status || 'pending'
+          status: data.status || 'pending',
+          contactName: data.accountAdministrator?.name || data.personalName || data.fullName || ''
         };
       })
       .filter(account => {

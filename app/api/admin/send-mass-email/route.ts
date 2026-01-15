@@ -96,12 +96,27 @@ export async function POST(request: NextRequest) {
     // Send emails to each recipient
     for (const recipient of recipients) {
       try {
+        // Personalize content with recipient name if available
+        const recipientName = recipient.contactName || recipient.fullName || '';
+        let personalizedBody = body;
+        let personalizedHtml = htmlContent;
+
+        if (recipientName) {
+          // Replace {{name}} with actual name
+          personalizedBody = body.replace(/\{\{name\}\}/g, recipientName);
+          personalizedHtml = htmlContent.replace(/\{\{name\}\}/g, recipientName);
+        } else {
+          // Remove {{name}} placeholder and clean up "Dear ," if no name
+          personalizedBody = body.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
+          personalizedHtml = htmlContent.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
+        }
+
         const emailPayload = {
           from: fromAddress,
           to: recipient.email,
           subject: subject,
-          html: htmlContent,
-          text: body
+          html: personalizedHtml,
+          text: personalizedBody
         };
 
         const response = await fetch('https://api.resend.com/emails', {

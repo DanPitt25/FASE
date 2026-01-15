@@ -248,5 +248,29 @@
     "signature": "Aline Sullivan",
     "title": "Betriebsleiterin, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "rendezvous_2026_paid": {
+    "subject": "Anmeldung für das MGA Rendezvous 2026 jetzt geöffnet",
+    "dear": "Sehr geehrte/r",
+    "dear_m": "Sehr geehrter Herr",
+    "dear_f": "Sehr geehrte Frau",
+    "register_button": "Jetzt anmelden",
+    "intro": "Wir freuen uns, Ihnen mitteilen zu können, dass die Anmeldung für das MGA Rendezvous, das am 11.-12. Mai 2026 im {hotelLink}Hotel Arts{/hotelLink} in Barcelona stattfindet, jetzt geöffnet ist.",
+    "description": "Die Jahreskonferenz der FASE, das MGA Rendezvous, bietet ein wahrhaft paneuropäisches Forum, das MGAs, Kapazitätsanbieter und ausgewählte Servicepartner zusammenbringt. Die Konferenz umfasst bedeutende Möglichkeiten für strukturiertes Networking und Beziehungsaufbau sowie ein erstklassiges Rednerprogramm.",
+    "member_benefit": "Rendezvous-Pässe sind für FASE-Mitglieder zum halben Preis erhältlich. Wir haben außerdem ein begrenztes Kontingent an Zimmern zu ermäßigten Preisen im Hotel Arts, die wir Ihnen nach Ihrer Anmeldung mitteilen können.",
+    "cta": "Für weitere Informationen und zur Anmeldung für die Konferenz besuchen Sie bitte {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": "Wir hoffen, Sie in Barcelona zu sehen."
+  },
+  "rendezvous_2026_unpaid": {
+    "subject": "Anmeldung für das MGA Rendezvous 2026 jetzt geöffnet",
+    "dear": "Sehr geehrte/r",
+    "dear_m": "Sehr geehrter Herr",
+    "dear_f": "Sehr geehrte Frau",
+    "register_button": "Jetzt anmelden",
+    "intro": "Wir freuen uns, Ihnen mitteilen zu können, dass die Anmeldung für das MGA Rendezvous, das am 11.-12. Mai 2026 im {hotelLink}Hotel Arts{/hotelLink} in Barcelona stattfindet, jetzt geöffnet ist.",
+    "description": "Die Jahreskonferenz der FASE, das MGA Rendezvous, bietet ein wahrhaft paneuropäisches Forum, das MGAs, Kapazitätsanbieter und ausgewählte Servicepartner zusammenbringt. Die Konferenz umfasst bedeutende Möglichkeiten für strukturiertes Networking und Beziehungsaufbau sowie ein erstklassiges Rednerprogramm.",
+    "member_benefit": "Rendezvous-Pässe sind für FASE-Mitglieder zum halben Preis erhältlich. <strong>Um die Mitgliederpreise nutzen zu können, stellen Sie bitte sicher, dass Ihre Mitgliedsbeiträge beglichen sind.</strong> Bei Fragen oder wenn Sie Hilfe benötigen, kontaktieren Sie uns unter admin@fasemga.com.",
+    "cta": "Für weitere Informationen zur Konferenz und zur Buchung Ihrer Tickets besuchen Sie bitte {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": ""
   }
 }

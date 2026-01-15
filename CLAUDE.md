@@ -26,6 +26,14 @@ This project uses the Firebase Admin SDK (server-side) with the `FIREBASE_SERVIC
 - **Client components** call API routes via `fetch('/api/...')` to interact with Firestore
 - **Environment variable**: `FIREBASE_SERVICE_ACCOUNT_KEY` must be set in Vercel with the JSON service account credentials
 
+## MGA Rendezvous Subsite
+- Located at `mga-rendezvous/` - a separate git repo within this project
+- Deployed to mgarendezvous.com
+- Has its own i18n system with 6 languages (en, de, fr, es, it, nl)
+- Uses IP-based geolocation for automatic language detection (`hooks/useGeolocation.ts`)
+- Falls back to browser language if geolocation fails
+- User preference stored in localStorage as `mga-rendezvous-locale`
+
 ## UI/UX Guidelines
 - **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, hero sections, or any UI components. This includes any secondary text under titles/headings that describes or elaborates on the title. Just use the title alone.
 - **ALWAYS USE NEXT.JS LINK COMPONENT** - Never use `<a>` tags for internal navigation. Always use `<Link>` from `next/link` for internal routes. Only use `<a>` tags for external URLs.

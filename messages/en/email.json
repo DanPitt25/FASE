@@ -240,5 +240,29 @@
     "signature": "Aline Sullivan",
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "rendezvous_2026_paid": {
+    "subject": "Registration now open for 2026 MGA Rendezvous",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "register_button": "Register Now",
+    "intro": "We are pleased to announce that registration is now open for the MGA Rendezvous, taking place on 11-12 May 2026 at the {hotelLink}Hotel Arts{/hotelLink} in Barcelona.",
+    "description": "FASE's annual conference, the MGA Rendezvous, provides a truly pan-European forum bringing together MGAs, capacity providers, and selected service partners. The conference will include significant opportunities for structured networking and relationship-building as well as a world-class speaker programme.",
+    "member_benefit": "Rendezvous passes are half price for FASE members. We also have a limited block of rooms at a discounted rate at the Hotel Arts, which we can share with you as soon as you have registered.",
+    "cta": "For further information and to register for the conference, please visit {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": "We hope to see you in Barcelona."
+  },
+  "rendezvous_2026_unpaid": {
+    "subject": "Registration now open for 2026 MGA Rendezvous",
+    "dear": "Dear",
+    "dear_m": "Dear",
+    "dear_f": "Dear",
+    "register_button": "Register Now",
+    "intro": "We are pleased to announce that registration is now open for the MGA Rendezvous, taking place on 11-12 May 2026 at the {hotelLink}Hotel Arts{/hotelLink} in Barcelona.",
+    "description": "FASE's annual conference, the MGA Rendezvous, provides a truly pan-European forum bringing together MGAs, capacity providers, and selected service partners. The conference will include significant opportunities for structured networking and relationship-building as well as a world-class speaker programme.",
+    "member_benefit": "Rendezvous passes are half price for FASE members. <strong>To take advantage of member pricing, please ensure your membership dues have been settled.</strong> If you have any questions or need assistance, contact us at admin@fasemga.com.",
+    "cta": "For further information on the conference and to register your tickets, please visit {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": ""
   }
 }

@@ -240,5 +240,29 @@
     "signature": "Aline Sullivan",
     "title": "Chief Operating Officer, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "rendezvous_2026_paid": {
+    "subject": "Registratie geopend voor MGA Rendezvous 2026",
+    "dear": "Geachte",
+    "dear_m": "Geachte heer",
+    "dear_f": "Geachte mevrouw",
+    "register_button": "Nu registreren",
+    "intro": "Met genoegen kondigen wij aan dat de registratie nu geopend is voor het MGA Rendezvous, dat plaatsvindt op 11-12 mei 2026 in het {hotelLink}Hotel Arts{/hotelLink} in Barcelona.",
+    "description": "De jaarlijkse conferentie van FASE, het MGA Rendezvous, biedt een echt pan-Europees forum dat GA's, capaciteitsverleners en geselecteerde servicepartners samenbrengt. De conferentie omvat belangrijke mogelijkheden voor gestructureerde networking en relatievorming, evenals een programma met sprekers van wereldklasse.",
+    "member_benefit": "Rendezvous-passen zijn voor de helft van de prijs voor FASE-leden. We hebben ook een beperkt aantal kamers tegen een gereduceerd tarief in het Hotel Arts, die we met u kunnen delen zodra u zich heeft geregistreerd.",
+    "cta": "Voor meer informatie en om u te registreren voor de conferentie, bezoek {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": "We hopen u in Barcelona te zien."
+  },
+  "rendezvous_2026_unpaid": {
+    "subject": "Registratie geopend voor MGA Rendezvous 2026",
+    "dear": "Geachte",
+    "dear_m": "Geachte heer",
+    "dear_f": "Geachte mevrouw",
+    "register_button": "Nu registreren",
+    "intro": "Met genoegen kondigen wij aan dat de registratie nu geopend is voor het MGA Rendezvous, dat plaatsvindt op 11-12 mei 2026 in het {hotelLink}Hotel Arts{/hotelLink} in Barcelona.",
+    "description": "De jaarlijkse conferentie van FASE, het MGA Rendezvous, biedt een echt pan-Europees forum dat GA's, capaciteitsverleners en geselecteerde servicepartners samenbrengt. De conferentie omvat belangrijke mogelijkheden voor gestructureerde networking en relatievorming, evenals een programma met sprekers van wereldklasse.",
+    "member_benefit": "Rendezvous-passen zijn voor de helft van de prijs voor FASE-leden. <strong>Om te profiteren van ledenprijzen, dient u ervoor te zorgen dat uw lidmaatschapscontributies zijn betaald.</strong> Als u vragen heeft of hulp nodig heeft, neem dan contact met ons op via admin@fasemga.com.",
+    "cta": "Voor meer informatie over de conferentie en om uw tickets te reserveren, bezoek {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": ""
   }
 }

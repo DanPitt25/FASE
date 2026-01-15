@@ -14,6 +14,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        port: '',
+        pathname: '/fase-site.firebasestorage.app/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'img.youtube.com',
         port: '',
         pathname: '/vi/**',

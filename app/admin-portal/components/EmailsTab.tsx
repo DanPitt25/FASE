@@ -21,6 +21,7 @@ interface MassEmailRecipient {
   organizationName: string;
   organizationType: OrganizationType;
   status: AccountStatus;
+  contactName?: string;
 }
 
 export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
@@ -463,7 +464,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName })),
+          recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName, contactName: (r as any).contactName || '' })),
           subject: massEmailContent.subject,
           body: massEmailContent.body,
           sender: massEmailContent.sender
@@ -538,46 +539,321 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     });
   };
 
+  // Rendezvous announcement state
+  const [rendezvousVariant, setRendezvousVariant] = useState<'paid' | 'unpaid' | null>(null);
+  const [rendezvousGender, setRendezvousGender] = useState<'m' | 'f' | null>(null);
+  const [sendingRendezvous, setSendingRendezvous] = useState(false);
+  const [previewingRendezvous, setPreviewingRendezvous] = useState(false);
+  const [rendezvousPreview, setRendezvousPreview] = useState<any>(null);
+  const [rendezvousResult, setRendezvousResult] = useState<any>(null);
+
+  // Send or preview Rendezvous announcement
+  const handleRendezvousEmail = async (isPreview: boolean) => {
+    if (!rendezvousVariant) return;
+
+    if (isPreview) {
+      setPreviewingRendezvous(true);
+      setRendezvousPreview(null);
+    } else {
+      setSendingRendezvous(true);
+      setRendezvousResult(null);
+    }
+
+    try {
+      const response = await fetch('/api/send-rendezvous-announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          cc: formData.cc,
+          fullName: formData.fullName || formData.greeting,
+          variant: rendezvousVariant,
+          gender: rendezvousGender,
+          userLocale: formData.userLocale,
+          preview: isPreview
+        })
+      });
+
+      const data = await response.json();
+
+      if (isPreview) {
+        setRendezvousPreview(data);
+      } else {
+        setRendezvousResult(data);
+      }
+    } catch (error) {
+      const errorResult = { error: isPreview ? 'Failed to generate preview' : 'Failed to send email' };
+      if (isPreview) {
+        setRendezvousPreview(errorResult);
+      } else {
+        setRendezvousResult(errorResult);
+      }
+    } finally {
+      if (isPreview) {
+        setPreviewingRendezvous(false);
+      } else {
+        setSendingRendezvous(false);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Email Template Selection */}
-      <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
-        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Email Templates</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {Object.entries(emailTemplates).map(([key, template]) => (
-            <button
-              key={key}
-              onClick={() => { setSelectedTemplate(key as EmailTemplate); setShowMassEmail(false); }}
-              className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                selectedTemplate === key && !showMassEmail
-                  ? 'border-fase-navy bg-fase-navy bg-opacity-5 text-fase-navy'
-                  : 'border-gray-200 hover:border-fase-light-gold text-gray-700'
-              }`}
-            >
-              <h4 className="font-semibold text-sm mb-1">{template.title}</h4>
-              <p className="text-xs opacity-75">{template.description}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* Send Mass Email Button */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
+      {/* Rendezvous 2026 Quick Templates */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-amber-900 mb-3">Rendezvous 2026 Announcement</h3>
+        <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => setShowMassEmail(!showMassEmail)}
-            className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
-              showMassEmail
-                ? 'border-fase-gold bg-fase-gold bg-opacity-10 text-fase-navy'
-                : 'border-gray-200 hover:border-fase-gold text-gray-700'
+            type="button"
+            onClick={() => { setRendezvousVariant('paid'); setShowMassEmail(false); }}
+            className={`px-4 py-2 border rounded-lg transition-colors text-sm font-medium ${
+              rendezvousVariant === 'paid'
+                ? 'bg-amber-200 border-amber-400 text-amber-900'
+                : 'bg-white border-amber-300 hover:bg-amber-100 text-amber-900'
             }`}
           >
-            <h4 className="font-semibold text-sm mb-1">Send Mass Email</h4>
-            <p className="text-xs opacity-75">Send a freeform email to multiple recipients filtered by organization type and account status</p>
+            Paid Member
           </button>
+          <button
+            type="button"
+            onClick={() => { setRendezvousVariant('unpaid'); setShowMassEmail(false); }}
+            className={`px-4 py-2 border rounded-lg transition-colors text-sm font-medium ${
+              rendezvousVariant === 'unpaid'
+                ? 'bg-amber-200 border-amber-400 text-amber-900'
+                : 'bg-white border-amber-300 hover:bg-amber-100 text-amber-900'
+            }`}
+          >
+            Unpaid Member
+          </button>
+          {rendezvousVariant && (
+            <button
+              type="button"
+              onClick={() => { setRendezvousVariant(null); setRendezvousGender(null); setRendezvousPreview(null); setRendezvousResult(null); }}
+              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Clear
+            </button>
+          )}
         </div>
+        <p className="text-xs text-amber-700 mt-2">
+          Includes hero image, links to mgarendezvous.com and Hotel Arts, translated in 6 languages
+        </p>
       </div>
 
+      {/* Rendezvous Email Form */}
+      {rendezvousVariant && (
+        <div className="bg-white rounded-lg shadow-lg border border-amber-300 p-6">
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">
+            Rendezvous 2026 - {rendezvousVariant === 'paid' ? 'Paid Member' : 'Unpaid Member'}
+          </h3>
+
+          <div className="space-y-6">
+            {/* Language Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+              <select
+                value={formData.userLocale}
+                onChange={(e) => setFormData(prev => ({ ...prev, userLocale: e.target.value }))}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+                <option value="it">Italiano</option>
+                <option value="nl">Nederlands</option>
+              </select>
+            </div>
+
+            {/* Recipient */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Email *</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">CC Email</label>
+                <input
+                  type="email"
+                  value={formData.cc}
+                  onChange={(e) => setFormData(prev => ({ ...prev, cc: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Recipient Name and Gender */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Name</label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder="For personalized greeting"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Salutation Gender</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRendezvousGender(null)}
+                    className={`flex-1 px-3 py-2 border rounded text-sm ${
+                      rendezvousGender === null
+                        ? 'bg-fase-navy text-white border-fase-navy'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    Neutral
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRendezvousGender('m')}
+                    className={`flex-1 px-3 py-2 border rounded text-sm ${
+                      rendezvousGender === 'm'
+                        ? 'bg-fase-navy text-white border-fase-navy'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRendezvousGender('f')}
+                    className={`flex-1 px-3 py-2 border rounded text-sm ${
+                      rendezvousGender === 'f'
+                        ? 'bg-fase-navy text-white border-fase-navy'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={previewingRendezvous || sendingRendezvous || !formData.email}
+                onClick={() => handleRendezvousEmail(true)}
+                className="w-full"
+              >
+                {previewingRendezvous ? 'Generating Preview...' : 'Preview Email'}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={sendingRendezvous || previewingRendezvous || !formData.email}
+                onClick={() => handleRendezvousEmail(false)}
+                className="w-full"
+              >
+                {sendingRendezvous ? 'Sending...' : 'Send Email'}
+              </Button>
+            </div>
+
+            {/* Result Display */}
+            {rendezvousResult && (
+              <div className={`p-4 rounded-lg ${rendezvousResult.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
+                {rendezvousResult.error ? `Error: ${rendezvousResult.error}` : 'Email sent successfully!'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Rendezvous Preview */}
+      {rendezvousPreview && (
+        <div className="bg-white rounded-lg shadow-lg border border-amber-300 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Email Preview</h3>
+            <Button variant="secondary" size="small" onClick={() => setRendezvousPreview(null)}>
+              Close Preview
+            </Button>
+          </div>
+
+          {rendezvousPreview.error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">Error: {rendezvousPreview.error}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-sm space-y-1">
+                <div><span className="font-medium">To:</span> {rendezvousPreview.to}</div>
+                {rendezvousPreview.cc && <div><span className="font-medium">CC:</span> {rendezvousPreview.cc}</div>}
+                <div><span className="font-medium">Subject:</span> {rendezvousPreview.subject}</div>
+              </div>
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div
+                  dangerouslySetInnerHTML={{ __html: rendezvousPreview.htmlContent }}
+                  style={{ maxHeight: '600px', overflowY: 'auto' }}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={() => handleRendezvousEmail(false)}
+                  disabled={sendingRendezvous}
+                >
+                  {sendingRendezvous ? 'Sending...' : 'Send Email'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Email Template Selection - Hidden when Rendezvous template is active */}
+      {!rendezvousVariant && (
+        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-4">Email Templates</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            {Object.entries(emailTemplates).map(([key, template]) => (
+              <button
+                key={key}
+                onClick={() => { setSelectedTemplate(key as EmailTemplate); setShowMassEmail(false); }}
+                className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                  selectedTemplate === key && !showMassEmail
+                    ? 'border-fase-navy bg-fase-navy bg-opacity-5 text-fase-navy'
+                    : 'border-gray-200 hover:border-fase-light-gold text-gray-700'
+                }`}
+              >
+                <h4 className="font-semibold text-sm mb-1">{template.title}</h4>
+                <p className="text-xs opacity-75">{template.description}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* Send Mass Email Button */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setShowMassEmail(!showMassEmail)}
+              className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                showMassEmail
+                  ? 'border-fase-gold bg-fase-gold bg-opacity-10 text-fase-navy'
+                  : 'border-gray-200 hover:border-fase-gold text-gray-700'
+              }`}
+            >
+              <h4 className="font-semibold text-sm mb-1">Send Mass Email</h4>
+              <p className="text-xs opacity-75">Send a freeform email to multiple recipients filtered by organization type and account status</p>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mass Email Section */}
-      {showMassEmail && (
+      {showMassEmail && !rendezvousVariant && (
         <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
           <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">Send Mass Email</h3>
 
@@ -690,8 +966,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     value={massEmailContent.body}
                     onChange={(e) => setMassEmailContent(prev => ({ ...prev, body: e.target.value }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    rows={8}
-                    placeholder="Enter your email message..."
+                    rows={12}
+                    placeholder="Enter your email message... Use {{name}} for personalization"
                   />
                 </div>
               </div>
@@ -779,7 +1055,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       )}
 
       {/* Email Form */}
-      {!showMassEmail && (
+      {!showMassEmail && !rendezvousVariant && (
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-6">
         <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-6">
           {emailTemplates[selectedTemplate].title}
@@ -1148,7 +1424,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                     value={formData.freeformBody}
                     onChange={(e) => setFormData(prev => ({ ...prev, freeformBody: e.target.value }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    rows={8}
+                    rows={12}
                     required
                     placeholder="Enter your email message..."
                   />

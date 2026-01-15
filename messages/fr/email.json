@@ -242,5 +242,29 @@
     "signature": "Aline Sullivan",
     "title": "Directrice des Opérations, FASE",
     "email": "aline.sullivan@fasemga.com"
+  },
+  "rendezvous_2026_paid": {
+    "subject": "Inscriptions ouvertes pour le MGA Rendezvous 2026",
+    "dear": "Cher/Chère",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "register_button": "S'inscrire",
+    "intro": "Nous avons le plaisir de vous annoncer que les inscriptions sont désormais ouvertes pour le MGA Rendezvous, qui se tiendra les 11 et 12 mai 2026 à l'{hotelLink}Hotel Arts{/hotelLink} de Barcelone.",
+    "description": "La conférence annuelle de FASE, le MGA Rendezvous, offre un véritable forum paneuropéen réunissant agences de souscription, fournisseurs de capacité et partenaires de services sélectionnés. La conférence comprendra d'importantes opportunités de networking structuré et de développement de relations, ainsi qu'un programme de conférenciers de classe mondiale.",
+    "member_benefit": "Les passes Rendezvous sont à moitié prix pour les membres FASE. Nous disposons également d'un nombre limité de chambres à tarif réduit à l'Hotel Arts, que nous pourrons partager avec vous dès votre inscription.",
+    "cta": "Pour plus d'informations et pour vous inscrire à la conférence, veuillez visiter {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": "Nous espérons vous voir à Barcelone."
+  },
+  "rendezvous_2026_unpaid": {
+    "subject": "Inscriptions ouvertes pour le MGA Rendezvous 2026",
+    "dear": "Cher/Chère",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "register_button": "S'inscrire",
+    "intro": "Nous avons le plaisir de vous annoncer que les inscriptions sont désormais ouvertes pour le MGA Rendezvous, qui se tiendra les 11 et 12 mai 2026 à l'{hotelLink}Hotel Arts{/hotelLink} de Barcelone.",
+    "description": "La conférence annuelle de FASE, le MGA Rendezvous, offre un véritable forum paneuropéen réunissant agences de souscription, fournisseurs de capacité et partenaires de services sélectionnés. La conférence comprendra d'importantes opportunités de networking structuré et de développement de relations, ainsi qu'un programme de conférenciers de classe mondiale.",
+    "member_benefit": "Les passes Rendezvous sont à moitié prix pour les membres FASE. <strong>Pour bénéficier des tarifs membres, veuillez vous assurer que vos cotisations sont réglées.</strong> Si vous avez des questions ou besoin d'assistance, contactez-nous à admin@fasemga.com.",
+    "cta": "Pour plus d'informations sur la conférence et pour réserver vos billets, veuillez visiter {rendezvousLink}mgarendezvous.com{/rendezvousLink}.",
+    "closing": ""
   }
 }

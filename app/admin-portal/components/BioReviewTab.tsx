@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { doc, updateDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../../../lib/firebase';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
-import { OrganizationAccount, CompanySummary, LogoStatus } from '../../../lib/unified-member';
+import { OrganizationAccount, CompanySummary } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import Image from 'next/image';
@@ -39,6 +39,41 @@ export default function BioReviewTab() {
     it: '',
     nl: ''
   });
+
+  // Write New Bio state
+  const [showWriteNewModal, setShowWriteNewModal] = useState(false);
+  const [allAccounts, setAllAccounts] = useState<OrganizationAccount[]>([]);
+  const [accountSearchQuery, setAccountSearchQuery] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState<OrganizationAccount | null>(null);
+  const [newBioText, setNewBioText] = useState('');
+  const [newBioTranslations, setNewBioTranslations] = useState({
+    fr: '',
+    de: '',
+    es: '',
+    it: '',
+    nl: ''
+  });
+  const [savingNewBio, setSavingNewBio] = useState(false);
+  const [newLogoFile, setNewLogoFile] = useState<File | null>(null);
+  const [newLogoPreview, setNewLogoPreview] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // Edit Existing state
+  const [showEditExistingModal, setShowEditExistingModal] = useState(false);
+  const [editSearchQuery, setEditSearchQuery] = useState('');
+  const [editSelectedAccount, setEditSelectedAccount] = useState<OrganizationAccount | null>(null);
+  const [editBioText, setEditBioText] = useState('');
+  const [editBioTranslations, setEditBioTranslations] = useState({
+    fr: '',
+    de: '',
+    es: '',
+    it: '',
+    nl: ''
+  });
+  const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
+  const [editLogoPreview, setEditLogoPreview] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [uploadingEditLogo, setUploadingEditLogo] = useState(false);
 
   // Load pending submissions (both bios and logos)
   useEffect(() => {
@@ -236,6 +271,309 @@ export default function BioReviewTab() {
     setTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
   };
 
+  // Write New Bio functions
+  const openWriteNewModal = async () => {
+    setShowWriteNewModal(true);
+    setSelectedAccount(null);
+    setNewBioText('');
+    setNewBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+    setAccountSearchQuery('');
+
+    // Load all accounts if not already loaded
+    if (allAccounts.length === 0) {
+      try {
+        const accountsRef = collection(db, 'accounts');
+        const accountsSnapshot = await getDocs(accountsRef);
+        const accounts: OrganizationAccount[] = [];
+        accountsSnapshot.docs.forEach(docSnap => {
+          const data = docSnap.data() as OrganizationAccount;
+          accounts.push({ ...data, id: docSnap.id });
+        });
+        // Sort alphabetically by organization name
+        accounts.sort((a, b) => (a.organizationName || '').localeCompare(b.organizationName || ''));
+        setAllAccounts(accounts);
+      } catch (error) {
+        console.error('Error loading accounts:', error);
+      }
+    }
+  };
+
+  const closeWriteNewModal = () => {
+    setShowWriteNewModal(false);
+    setSelectedAccount(null);
+    setNewBioText('');
+    setNewBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+    setAccountSearchQuery('');
+    setNewLogoFile(null);
+    setNewLogoPreview(null);
+  };
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearLogoSelection = () => {
+    setNewLogoFile(null);
+    setNewLogoPreview(null);
+  };
+
+  const handleSaveNewBio = async () => {
+    if (!user?.uid || !selectedAccount) return;
+    // Need either bio text or logo
+    if (!newBioText.trim() && !newLogoFile) return;
+
+    try {
+      setSavingNewBio(true);
+
+      const accountRef = doc(db, 'accounts', selectedAccount.id);
+      const updateData: any = {
+        updatedAt: serverTimestamp()
+      };
+
+      // Handle bio if provided
+      if (newBioText.trim()) {
+        const bioTranslations: any = {};
+        Object.entries(newBioTranslations).forEach(([lang, text]) => {
+          if (text.trim()) {
+            bioTranslations[lang] = text;
+          }
+        });
+
+        updateData['companySummary.text'] = newBioText.trim();
+        updateData['companySummary.status'] = 'approved';
+        updateData['companySummary.reviewedAt'] = serverTimestamp();
+        updateData['companySummary.reviewedBy'] = user.uid;
+        updateData['companySummary.submittedAt'] = serverTimestamp();
+
+        if (Object.keys(bioTranslations).length > 0) {
+          updateData['companySummary.translations'] = bioTranslations;
+        }
+      }
+
+      // Handle logo upload if provided
+      if (newLogoFile) {
+        setUploadingLogo(true);
+
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) {
+          console.error('Not authenticated');
+          setUploadingLogo(false);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', newLogoFile);
+        formData.append('identifier', selectedAccount.id);
+        formData.append('organizationName', selectedAccount.organizationName || '');
+
+        const response = await fetch('/api/upload-logo', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Directly approve the logo (skip pending review)
+          updateData['logoURL'] = result.downloadURL;
+          updateData['logoStatus.status'] = 'approved';
+          updateData['logoStatus.pendingURL'] = null;
+          updateData['logoStatus.reviewedAt'] = serverTimestamp();
+          updateData['logoStatus.reviewedBy'] = user.uid;
+          updateData['logoStatus.submittedAt'] = serverTimestamp();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Logo upload failed:', errorData);
+        }
+
+        setUploadingLogo(false);
+      }
+
+      await updateDoc(accountRef, updateData);
+      closeWriteNewModal();
+    } catch (error) {
+      console.error('Error saving new bio:', error);
+    } finally {
+      setSavingNewBio(false);
+      setUploadingLogo(false);
+    }
+  };
+
+  // Edit Existing functions
+  const loadAccountsIfNeeded = async () => {
+    if (allAccounts.length === 0) {
+      try {
+        const accountsRef = collection(db, 'accounts');
+        const accountsSnapshot = await getDocs(accountsRef);
+        const accounts: OrganizationAccount[] = [];
+        accountsSnapshot.docs.forEach(docSnap => {
+          const data = docSnap.data() as OrganizationAccount;
+          accounts.push({ ...data, id: docSnap.id });
+        });
+        accounts.sort((a, b) => (a.organizationName || '').localeCompare(b.organizationName || ''));
+        setAllAccounts(accounts);
+      } catch (error) {
+        console.error('Error loading accounts:', error);
+      }
+    }
+  };
+
+  const openEditExistingModal = async () => {
+    setShowEditExistingModal(true);
+    setEditSelectedAccount(null);
+    setEditBioText('');
+    setEditBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+    setEditSearchQuery('');
+    setEditLogoFile(null);
+    setEditLogoPreview(null);
+    await loadAccountsIfNeeded();
+  };
+
+  const closeEditExistingModal = () => {
+    setShowEditExistingModal(false);
+    setEditSelectedAccount(null);
+    setEditBioText('');
+    setEditBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+    setEditSearchQuery('');
+    setEditLogoFile(null);
+    setEditLogoPreview(null);
+  };
+
+  const handleEditLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearEditLogoSelection = () => {
+    setEditLogoFile(null);
+    setEditLogoPreview(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!user?.uid || !editSelectedAccount) return;
+
+    try {
+      setSavingEdit(true);
+
+      const accountRef = doc(db, 'accounts', editSelectedAccount.id);
+      const updateData: any = {
+        updatedAt: serverTimestamp()
+      };
+
+      // Always update bio (even if empty, to allow clearing)
+      const bioTranslations: any = {};
+      Object.entries(editBioTranslations).forEach(([lang, text]) => {
+        if (text.trim()) {
+          bioTranslations[lang] = text;
+        }
+      });
+
+      if (editBioText.trim()) {
+        updateData['companySummary.text'] = editBioText.trim();
+        updateData['companySummary.status'] = 'approved';
+        updateData['companySummary.reviewedAt'] = serverTimestamp();
+        updateData['companySummary.reviewedBy'] = user.uid;
+
+        if (Object.keys(bioTranslations).length > 0) {
+          updateData['companySummary.translations'] = bioTranslations;
+        }
+      }
+
+      // Handle logo upload if provided
+      if (editLogoFile) {
+        setUploadingEditLogo(true);
+
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) {
+          console.error('Not authenticated');
+          setUploadingEditLogo(false);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', editLogoFile);
+        formData.append('identifier', editSelectedAccount.id);
+        formData.append('organizationName', editSelectedAccount.organizationName || '');
+
+        const response = await fetch('/api/upload-logo', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          updateData['logoURL'] = result.downloadURL;
+          updateData['logoStatus.status'] = 'approved';
+          updateData['logoStatus.pendingURL'] = null;
+          updateData['logoStatus.reviewedAt'] = serverTimestamp();
+          updateData['logoStatus.reviewedBy'] = user.uid;
+          updateData['logoStatus.submittedAt'] = serverTimestamp();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Logo upload failed:', errorData);
+        }
+
+        setUploadingEditLogo(false);
+      }
+
+      await updateDoc(accountRef, updateData);
+
+      // Update local allAccounts state to reflect changes
+      setAllAccounts(prev => prev.map(acc => {
+        if (acc.id !== editSelectedAccount.id) return acc;
+        return {
+          ...acc,
+          companySummary: editBioText.trim() ? {
+            ...acc.companySummary,
+            text: editBioText.trim(),
+            status: 'approved' as const,
+            translations: Object.keys(bioTranslations).length > 0 ? bioTranslations : acc.companySummary?.translations
+          } : acc.companySummary,
+          logoURL: editLogoFile ? updateData['logoURL'] : acc.logoURL
+        };
+      }));
+
+      closeEditExistingModal();
+    } catch (error) {
+      console.error('Error saving edit:', error);
+    } finally {
+      setSavingEdit(false);
+      setUploadingEditLogo(false);
+    }
+  };
+
+  // Filter accounts based on search query
+  const filteredAccounts = allAccounts.filter(account =>
+    account.organizationName?.toLowerCase().includes(accountSearchQuery.toLowerCase())
+  );
+
+  // Filter accounts with approved content for edit modal
+  const filteredEditAccounts = allAccounts.filter(account => {
+    const matchesSearch = account.organizationName?.toLowerCase().includes(editSearchQuery.toLowerCase());
+    const hasApprovedContent = account.companySummary?.status === 'approved' || account.logoURL;
+    return matchesSearch && hasApprovedContent;
+  });
+
   const formatDate = (timestamp: any) => {
     if (!timestamp?.toDate) return 'Unknown';
     return timestamp.toDate().toLocaleString('en-GB', {
@@ -268,8 +606,24 @@ export default function BioReviewTab() {
             Review and approve company logos and bios for the directory
           </p>
         </div>
-        <div className="text-sm text-gray-500">
-          {totalPending} pending review{totalPending !== 1 ? 's' : ''}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-500">
+            {totalPending} pending review{totalPending !== 1 ? 's' : ''}
+          </div>
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={openEditExistingModal}
+          >
+            Edit Existing
+          </Button>
+          <Button
+            variant="primary"
+            size="small"
+            onClick={openWriteNewModal}
+          >
+            Add New
+          </Button>
         </div>
       </div>
 
@@ -571,6 +925,449 @@ export default function BioReviewTab() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Write New Bio Modal */}
+      <Modal
+        isOpen={showWriteNewModal}
+        onClose={closeWriteNewModal}
+        title="Add Bio & Logo"
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          {/* Company Selection */}
+          {!selectedAccount ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Company
+              </label>
+              <input
+                type="text"
+                value={accountSearchQuery}
+                onChange={(e) => setAccountSearchQuery(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                placeholder="Search for a company..."
+              />
+              <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
+                {filteredAccounts.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    {allAccounts.length === 0 ? 'Loading companies...' : 'No companies found'}
+                  </div>
+                ) : (
+                  filteredAccounts.map(account => (
+                    <button
+                      key={account.id}
+                      onClick={() => {
+                        setSelectedAccount(account);
+                        // Pre-populate with existing bio if available
+                        if (account.companySummary?.text) {
+                          setNewBioText(account.companySummary.text);
+                          const existingTranslations = account.companySummary.translations || {};
+                          setNewBioTranslations({
+                            fr: existingTranslations.fr || '',
+                            de: existingTranslations.de || '',
+                            es: existingTranslations.es || '',
+                            it: existingTranslations.it || '',
+                            nl: existingTranslations.nl || ''
+                          });
+                        }
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="font-medium text-gray-900">{account.organizationName}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span>{account.organizationType || 'Unknown type'}</span>
+                        {account.companySummary?.status && (
+                          <span className={`inline-flex px-1.5 py-0.5 rounded text-xs ${
+                            account.companySummary.status === 'approved' ? 'bg-green-100 text-green-700' :
+                            account.companySummary.status === 'pending_review' ? 'bg-yellow-100 text-yellow-700' :
+                            account.companySummary.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            Bio: {account.companySummary.status}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Selected Company Header */}
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <div>
+                  <h4 className="font-medium text-gray-900">{selectedAccount.organizationName}</h4>
+                  <p className="text-xs text-gray-500">{selectedAccount.organizationType || 'Unknown type'}</p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    setSelectedAccount(null);
+                    setNewBioText('');
+                    setNewBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+                    setNewLogoFile(null);
+                    setNewLogoPreview(null);
+                  }}
+                >
+                  Change
+                </Button>
+              </div>
+
+              {/* Logo Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Logo
+                </label>
+                <div className="flex items-start gap-4">
+                  {/* Current/Preview Logo */}
+                  <div className="relative w-24 h-24 bg-gray-100 rounded-lg border flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {newLogoPreview ? (
+                      <Image
+                        src={newLogoPreview}
+                        alt="New logo preview"
+                        fill
+                        className="object-contain p-2"
+                      />
+                    ) : selectedAccount.logoURL ? (
+                      <Image
+                        src={selectedAccount.logoURL}
+                        alt="Current logo"
+                        fill
+                        className="object-contain p-2"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-400 text-center px-2">No logo</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                      onChange={handleLogoFileChange}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-fase-navy file:text-white hover:file:bg-fase-navy/90 file:cursor-pointer"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">PNG, JPG, SVG, or WebP. Max 5MB.</p>
+                    {newLogoPreview && (
+                      <button
+                        type="button"
+                        onClick={clearLogoSelection}
+                        className="mt-2 text-xs text-red-600 hover:text-red-800"
+                      >
+                        Remove new logo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* English Bio */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  English Bio Text
+                </label>
+                <textarea
+                  value={newBioText}
+                  onChange={(e) => setNewBioText(e.target.value)}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder="Write the company bio in English..."
+                />
+                <div className={`mt-1 text-xs text-right ${newBioText.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
+                  {newBioText.length}/500 characters
+                </div>
+              </div>
+
+              {/* Translations */}
+              <div className="space-y-4">
+                <h5 className="font-medium text-gray-900">Translations (Optional)</h5>
+
+                {Object.entries(newBioTranslations).map(([lang, text]) => {
+                  const langNames = {
+                    fr: 'French',
+                    de: 'German',
+                    es: 'Spanish',
+                    it: 'Italian',
+                    nl: 'Dutch'
+                  };
+
+                  return (
+                    <div key={lang}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {langNames[lang as keyof typeof langNames]} Translation
+                      </label>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setNewBioTranslations(prev => ({ ...prev, [lang]: e.target.value }))}
+                        rows={3}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
+                      />
+                      <div className={`mt-1 text-xs text-right ${text.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
+                        {text.length}/500 characters
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <Button
+                  variant="secondary"
+                  onClick={closeWriteNewModal}
+                  disabled={savingNewBio || uploadingLogo}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSaveNewBio}
+                  disabled={savingNewBio || uploadingLogo || (!newBioText.trim() && !newLogoFile)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {uploadingLogo ? 'Uploading logo...' : savingNewBio ? 'Saving...' : 'Save & Approve'}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Edit Existing Modal */}
+      <Modal
+        isOpen={showEditExistingModal}
+        onClose={closeEditExistingModal}
+        title="Edit Existing Bio & Logo"
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          {/* Company Selection */}
+          {!editSelectedAccount ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search for a company with approved content
+              </label>
+              <input
+                type="text"
+                value={editSearchQuery}
+                onChange={(e) => setEditSearchQuery(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                placeholder="Search for a company..."
+              />
+              <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-lg">
+                {filteredEditAccounts.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    {allAccounts.length === 0 ? 'Loading companies...' : 'No companies with approved content found'}
+                  </div>
+                ) : (
+                  filteredEditAccounts.map(account => (
+                    <button
+                      key={account.id}
+                      onClick={() => {
+                        setEditSelectedAccount(account);
+                        setEditBioText(account.companySummary?.text || '');
+                        const existingTranslations = account.companySummary?.translations || {};
+                        setEditBioTranslations({
+                          fr: existingTranslations.fr || '',
+                          de: existingTranslations.de || '',
+                          es: existingTranslations.es || '',
+                          it: existingTranslations.it || '',
+                          nl: existingTranslations.nl || ''
+                        });
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        {account.logoURL && (
+                          <div className="relative w-10 h-10 bg-gray-100 rounded border flex-shrink-0">
+                            <Image
+                              src={account.logoURL}
+                              alt={account.organizationName || ''}
+                              fill
+                              className="object-contain p-1"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900">{account.organizationName}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-2">
+                            <span>{account.organizationType || 'Unknown type'}</span>
+                            {account.companySummary?.status === 'approved' && (
+                              <span className="inline-flex px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700">
+                                Bio
+                              </span>
+                            )}
+                            {account.logoURL && (
+                              <span className="inline-flex px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-700">
+                                Logo
+                              </span>
+                            )}
+                          </div>
+                          {account.companySummary?.text && (
+                            <p className="text-xs text-gray-400 truncate mt-1">{account.companySummary.text}</p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Selected Company Header */}
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  {editSelectedAccount.logoURL && (
+                    <div className="relative w-12 h-12 bg-white rounded border flex-shrink-0">
+                      <Image
+                        src={editSelectedAccount.logoURL}
+                        alt={editSelectedAccount.organizationName || ''}
+                        fill
+                        className="object-contain p-1"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-medium text-gray-900">{editSelectedAccount.organizationName}</h4>
+                    <p className="text-xs text-gray-500">{editSelectedAccount.organizationType || 'Unknown type'}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    setEditSelectedAccount(null);
+                    setEditBioText('');
+                    setEditBioTranslations({ fr: '', de: '', es: '', it: '', nl: '' });
+                    setEditLogoFile(null);
+                    setEditLogoPreview(null);
+                  }}
+                >
+                  Change
+                </Button>
+              </div>
+
+              {/* Logo Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Logo
+                </label>
+                <div className="flex items-start gap-4">
+                  <div className="relative w-24 h-24 bg-gray-100 rounded-lg border flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {editLogoPreview ? (
+                      <Image
+                        src={editLogoPreview}
+                        alt="New logo preview"
+                        fill
+                        className="object-contain p-2"
+                      />
+                    ) : editSelectedAccount.logoURL ? (
+                      <Image
+                        src={editSelectedAccount.logoURL}
+                        alt="Current logo"
+                        fill
+                        className="object-contain p-2"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-400 text-center px-2">No logo</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                      onChange={handleEditLogoFileChange}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-fase-navy file:text-white hover:file:bg-fase-navy/90 file:cursor-pointer"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">PNG, JPG, SVG, or WebP. Max 5MB.</p>
+                    {editLogoPreview && (
+                      <button
+                        type="button"
+                        onClick={clearEditLogoSelection}
+                        className="mt-2 text-xs text-red-600 hover:text-red-800"
+                      >
+                        Remove new logo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* English Bio */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  English Bio Text
+                </label>
+                <textarea
+                  value={editBioText}
+                  onChange={(e) => setEditBioText(e.target.value)}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder="Write the company bio in English..."
+                />
+                <div className={`mt-1 text-xs text-right ${editBioText.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
+                  {editBioText.length}/500 characters
+                </div>
+              </div>
+
+              {/* Translations */}
+              <div className="space-y-4">
+                <h5 className="font-medium text-gray-900">Translations (Optional)</h5>
+
+                {Object.entries(editBioTranslations).map(([lang, text]) => {
+                  const langNames = {
+                    fr: 'French',
+                    de: 'German',
+                    es: 'Spanish',
+                    it: 'Italian',
+                    nl: 'Dutch'
+                  };
+
+                  return (
+                    <div key={lang}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {langNames[lang as keyof typeof langNames]} Translation
+                      </label>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setEditBioTranslations(prev => ({ ...prev, [lang]: e.target.value }))}
+                        rows={3}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
+                      />
+                      <div className={`mt-1 text-xs text-right ${text.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
+                        {text.length}/500 characters
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <Button
+                  variant="secondary"
+                  onClick={closeEditExistingModal}
+                  disabled={savingEdit || uploadingEditLogo}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit || uploadingEditLogo}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {uploadingEditLogo ? 'Uploading logo...' : savingEdit ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </Modal>
     </div>
   );
