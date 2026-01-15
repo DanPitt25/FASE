@@ -114,8 +114,8 @@ function OrganizationCard({
                 </div>
               )}
 
-              {/* Company Bio Preview */}
-              {organization.companySummary?.status === 'approved' && organization.companySummary.text && (
+              {/* Company Bio Preview - only show when collapsed */}
+              {!isExpanded && organization.companySummary?.status === 'approved' && organization.companySummary.text && (
                 <div className="text-sm text-gray-700 mb-2 line-clamp-2 leading-relaxed">
                   {organization.companySummary.text}
                 </div>
