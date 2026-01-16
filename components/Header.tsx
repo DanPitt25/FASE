@@ -67,12 +67,12 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
             <div className="flex items-center py-2">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/" className="relative">
-                  <Image 
-                    src="/FASE-Logo-Lockup-RGB.png" 
-                    alt="FASE Logo" 
+                  <Image
+                    src="/FASE-Logo-Lockup-RGB.png"
+                    alt="FASE Logo"
                     width={280}
                     height={60}
-                    className="h-15 w-auto object-contain"
+                    className="h-10 sm:h-12 md:h-15 w-auto object-contain"
                     priority
                     onLoad={handleImageLoad}
                   />

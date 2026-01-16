@@ -113,6 +113,35 @@ export default function Page() {
       <div className="flex-1 relative">
         <Header currentPage="home" />
       <section id="hero" className="relative min-h-[calc(100vh-5.5rem)] flex items-center overflow-hidden">
+        {/* Mobile background image */}
+        <div className="md:hidden absolute inset-0">
+          {cities.map((city, index) => (
+            <div
+              key={city.name}
+              className={`absolute inset-0 transition-opacity duration-[6000ms] ease-in-out ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <Image
+                src={city.image}
+                alt={city.name}
+                fill
+                className={`object-cover ${
+                  city.name === 'Motorcycle' || city.name === 'Early Morning'
+                    ? 'object-[25%_center]'
+                    : ''
+                }`}
+                style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
+                priority={index === 0}
+                sizes="100vw"
+              />
+            </div>
+          ))}
+          <div
+            className="absolute inset-0 bg-white/70"
+          />
+        </div>
+        {/* Desktop background image */}
         <div className="hidden md:block absolute top-0 right-0 w-3/5 xl:w-2/3 2xl:w-3/4 h-full">
           {cities.map((city, index) => (
             <div
@@ -126,8 +155,8 @@ export default function Page() {
                 alt={city.name}
                 fill
                 className={`object-cover ${
-                  city.name === 'Motorcycle' || city.name === 'Early Morning' 
-                    ? 'object-[25%_center]' 
+                  city.name === 'Motorcycle' || city.name === 'Early Morning'
+                    ? 'object-[25%_center]'
                     : ''
                 }`}
                 style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
@@ -136,8 +165,8 @@ export default function Page() {
               />
             </div>
           ))}
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0"
             style={{
               background: `linear-gradient(to left, transparent 0%, transparent 60%, rgba(255,255,255,0.8) 80%, #ffffff 95%)`
             }}
