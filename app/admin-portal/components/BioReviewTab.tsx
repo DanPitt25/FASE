@@ -713,7 +713,7 @@ export default function BioReviewTab() {
                     <p className="text-sm text-gray-900 whitespace-pre-wrap">{item.bioText}</p>
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
-                    Character count: {item.bioText.length}/500
+                    Character count: {item.bioText.length}
                   </div>
                   <div className="flex justify-end space-x-3 mt-3">
                     <Button
@@ -769,13 +769,12 @@ export default function BioReviewTab() {
                     value={editedBioText}
                     onChange={(e) => setEditedBioText(e.target.value)}
                     rows={4}
-                    maxLength={500}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                     placeholder="Edit the company bio text..."
                     required
                   />
                   <div className="mt-1 text-xs text-gray-500 text-right">
-                    {editedBioText.length}/500 characters
+                    {editedBioText.length} characters
                   </div>
                 </div>
               ) : (
@@ -807,12 +806,11 @@ export default function BioReviewTab() {
                         value={text}
                         onChange={(e) => setTranslations(prev => ({ ...prev, [lang]: e.target.value }))}
                         rows={3}
-                        maxLength={500}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                         placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
                       />
                       <div className="mt-1 text-xs text-gray-500 text-right">
-                        {text.length}/500 characters
+                        {text.length} characters
                       </div>
                     </div>
                   );
@@ -1075,8 +1073,8 @@ export default function BioReviewTab() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   placeholder="Write the company bio in English..."
                 />
-                <div className={`mt-1 text-xs text-right ${newBioText.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
-                  {newBioText.length}/500 characters
+                <div className="mt-1 text-xs text-right text-gray-500">
+                  {newBioText.length} characters
                 </div>
               </div>
 
@@ -1105,8 +1103,8 @@ export default function BioReviewTab() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                         placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
                       />
-                      <div className={`mt-1 text-xs text-right ${text.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
-                        {text.length}/500 characters
+                      <div className="mt-1 text-xs text-right text-gray-500">
+                        {text.length} characters
                       </div>
                     </div>
                   );
@@ -1309,8 +1307,8 @@ export default function BioReviewTab() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                   placeholder="Write the company bio in English..."
                 />
-                <div className={`mt-1 text-xs text-right ${editBioText.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
-                  {editBioText.length}/500 characters
+                <div className="mt-1 text-xs text-right text-gray-500">
+                  {editBioText.length} characters
                 </div>
               </div>
 
@@ -1339,8 +1337,8 @@ export default function BioReviewTab() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                         placeholder={`Enter ${langNames[lang as keyof typeof langNames]} translation...`}
                       />
-                      <div className={`mt-1 text-xs text-right ${text.length > 500 ? 'text-orange-500' : 'text-gray-500'}`}>
-                        {text.length}/500 characters
+                      <div className="mt-1 text-xs text-right text-gray-500">
+                        {text.length} characters
                       </div>
                     </div>
                   );

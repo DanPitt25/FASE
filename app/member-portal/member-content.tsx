@@ -211,7 +211,7 @@ export default function MemberContent() {
                     <div className="border-t border-gray-200 pt-6">
                       <h5 className="text-base font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h5>
                       <p className="text-fase-black leading-relaxed mb-4">
-                        {t('logo_access.directory_description')} <ContactButton email="admin@fasemga.com" className="text-fase-navy hover:text-fase-navy underline font-medium">admin@fasemga.com</ContactButton>:
+                        {t('logo_access.directory_description')}
                       </p>
                       <ul className="space-y-2 text-fase-black">
                         <li className="flex items-start">
@@ -221,6 +221,10 @@ export default function MemberContent() {
                         <li className="flex items-start">
                           <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
                           {t('logo_access.directory_requirements.summary')}
+                        </li>
+                        <li className="flex items-start">
+                          <span className="w-2 h-2 bg-fase-navy rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                          {t('logo_access.directory_requirements.website')}
                         </li>
                       </ul>
                     </div>

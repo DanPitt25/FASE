@@ -14,6 +14,10 @@ interface CompanyMembersModalProps {
   companyName: string;
 }
 
+interface CompanyData {
+  website?: string;
+}
+
 interface MemberFormData {
   email: string;
   personalName: string;
@@ -32,6 +36,9 @@ export default function CompanyMembersModal({
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMember, setEditingMember] = useState<CompanyMember | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyData>({ website: '' });
+  const [editingCompany, setEditingCompany] = useState(false);
+  const [companyFormData, setCompanyFormData] = useState<CompanyData>({ website: '' });
   const [formData, setFormData] = useState<MemberFormData>({
     email: '',
     personalName: '',
@@ -73,12 +80,21 @@ export default function CompanyMembersModal({
 
   const loadMembers = useCallback(async () => {
     if (!companyId) return;
-    
+
     setLoading(true);
     try {
       const membersData = await getCompanyMembers(companyId);
       setMembers(membersData);
-      
+
+      // Load company data (website)
+      const accountRef = doc(db, 'accounts', companyId);
+      const accountSnap = await getDoc(accountRef);
+      if (accountSnap.exists()) {
+        const data = accountSnap.data();
+        setCompanyData({ website: data.website || '' });
+        setCompanyFormData({ website: data.website || '' });
+      }
+
       // Update account-level info when members are loaded
       if (membersData.length > 0) {
         await updateAccountLevelInfo(membersData);
@@ -206,6 +222,31 @@ export default function CompanyMembersModal({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSaveCompanyData = async () => {
+    setLoading(true);
+    try {
+      // Auto-prepend https:// if missing
+      let url = (companyFormData.website || '').trim();
+      if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+
+      const accountRef = doc(db, 'accounts', companyId);
+      await updateDoc(accountRef, {
+        website: url || null,
+        updatedAt: serverTimestamp()
+      });
+      setCompanyData({ website: url });
+      setCompanyFormData({ website: url });
+      setEditingCompany(false);
+    } catch (error) {
+      console.error('Error saving company data:', error);
+      alert('Error saving company data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -217,6 +258,79 @@ export default function CompanyMembersModal({
       maxWidth="xl"
     >
       <div className="space-y-6">
+        {/* Company Details Section */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-md font-medium text-fase-navy">Company Details</h4>
+            {!editingCompany && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => setEditingCompany(true)}
+                disabled={loading}
+              >
+                Edit
+              </Button>
+            )}
+          </div>
+
+          {editingCompany ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Website URL
+                </label>
+                <input
+                  type="url"
+                  value={companyFormData.website || ''}
+                  onChange={(e) => setCompanyFormData({ ...companyFormData, website: e.target.value })}
+                  placeholder="www.example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    setCompanyFormData({ website: companyData.website || '' });
+                    setEditingCompany(false);
+                  }}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={handleSaveCompanyData}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm">
+              <div className="flex items-center">
+                <span className="text-gray-500 w-20">Website:</span>
+                {companyData.website ? (
+                  <a
+                    href={companyData.website.startsWith('http') ? companyData.website : `https://${companyData.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-fase-navy hover:underline"
+                  >
+                    {companyData.website}
+                  </a>
+                ) : (
+                  <span className="text-gray-400 italic">Not set</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Header with Add Button */}
         <div className="flex justify-between items-center">
           <h4 className="text-lg font-medium text-fase-navy">

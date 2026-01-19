@@ -26,7 +26,7 @@
     "brand": {
       "title": "Respaldo de marca",
       "description_1": "Los miembros de FASE tienen derecho a mostrar el logo de FASE en sus sitios web y materiales de marketing, reflejando su compromiso con los más altos estándares profesionales como se refleja en el Código de Conducta de FASE.",
-      "description_2": "Por favor, envíe una copia de su logo a admin@fasemga.com, junto con un resumen breve (máx. 500 caracteres) de su negocio y lo añadiremos a nuestro directorio de miembros."
+      "description_2": "Puede subir el logo de su empresa, su bio y la URL de su sitio web a través de la pestaña Gestionar Perfil para aparecer en nuestro directorio de miembros."
     },
     "matching": {
       "title": "Emparejamiento de capacidad y distribución",
@@ -215,10 +215,11 @@
     "vertical_logo": "Logo vertical",
     "download": "Descargar",
     "directory_title": "Listado en el directorio de miembros",
-    "directory_description": "Para aparecer en nuestro directorio de miembros, envíe lo siguiente a",
+    "directory_description": "Para aparecer en nuestro directorio de miembros, vaya a la pestaña Gestionar Perfil donde puede subir:",
     "directory_requirements": {
-      "logo": "Una copia del logotipo de su empresa",
-      "summary": "Un breve resumen empresarial (máximo 500 caracteres)"
+      "logo": "El logotipo de su empresa",
+      "summary": "Un breve resumen empresarial (máximo 500 caracteres)",
+      "website": "La URL del sitio web de su empresa"
     }
   },
   "map": {

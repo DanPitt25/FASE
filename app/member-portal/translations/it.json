@@ -26,7 +26,7 @@
     "brand": {
       "title": "Approvazione del marchio",
       "description_1": "I membri FASE hanno il diritto di mostrare il logo FASE sui loro siti web e materiali di marketing, riflettendo il loro impegno verso i più alti standard professionali come riflesso nel Codice di Condotta FASE.",
-      "description_2": "La preghiamo di inviare una copia del Suo logo a admin@fasemga.com, insieme a un breve riassunto (max 500 caratteri) della Sua attività e lo aggiungeremo alla nostra directory dei membri."
+      "description_2": "Può caricare il logo della Sua azienda, la Sua bio e l'URL del Suo sito web tramite la scheda Gestisci Profilo per comparire nella nostra directory dei membri."
     },
     "matching": {
       "title": "Abbinamento di capacità e distribuzione",
@@ -215,10 +215,11 @@
     "vertical_logo": "Logo verticale",
     "download": "Scarica",
     "directory_title": "Inserimento nella directory dei membri",
-    "directory_description": "Per essere inseriti nella nostra directory dei membri, invii quanto segue a",
+    "directory_description": "Per essere inseriti nella nostra directory dei membri, acceda alla scheda Gestisci Profilo dove può caricare:",
     "directory_requirements": {
-      "logo": "Una copia del logo della Sua azienda",
-      "summary": "Un breve riassunto aziendale (massimo 500 caratteri)"
+      "logo": "Il logo della Sua azienda",
+      "summary": "Un breve riassunto aziendale (massimo 500 caratteri)",
+      "website": "L'URL del sito web della Sua azienda"
     }
   },
   "map": {

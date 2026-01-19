@@ -26,7 +26,7 @@
     "brand": {
       "title": "Endossement de marque",
       "description_1": "Les membres FASE sont autorisés à afficher le logo FASE sur leurs sites Web et supports marketing, reflétant votre engagement envers les plus hauts standards professionnels comme reflétés dans le Code de Conduite FASE.",
-      "description_2": "Veuillez envoyer une copie de votre logo à admin@fasemga.com, accompagnée d'un résumé bref (max 500 caractères) de votre entreprise et nous l'ajouterons à notre répertoire de membres."
+      "description_2": "Vous pouvez télécharger le logo de votre entreprise, votre bio et l'URL de votre site Web via l'onglet Gérer le profil pour figurer dans notre répertoire de membres."
     },
     "matching": {
       "title": "Correspondance de capacité et de distribution",
@@ -215,10 +215,11 @@
     "vertical_logo": "Logo vertical",
     "download": "Télécharger",
     "directory_title": "Inscription au répertoire des membres",
-    "directory_description": "Pour figurer dans notre répertoire de membres, veuillez envoyer les éléments suivants à",
+    "directory_description": "Pour figurer dans notre répertoire de membres, accédez à l'onglet Gérer le profil où vous pouvez télécharger :",
     "directory_requirements": {
-      "logo": "Une copie de votre logo d'entreprise",
-      "summary": "Un bref résumé de votre activité (maximum 500 caractères)"
+      "logo": "Le logo de votre entreprise",
+      "summary": "Un bref résumé de votre activité (maximum 500 caractères)",
+      "website": "L'URL du site Web de votre entreprise"
     }
   },
   "map": {

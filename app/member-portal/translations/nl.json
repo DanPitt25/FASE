@@ -26,7 +26,7 @@
     "brand": {
       "title": "Merkendorsement",
       "description_1": "FASE-leden mogen het FASE-logo op hun websites en marketingmateriaal weergeven, wat uw toewijding aan de hoogste professionele standaarden weergeeft zoals vastgelegd in de FASE Gedragscode.",
-      "description_2": "Stuur een kopie van uw logo naar admin@fasemga.com, samen met een korte samenvatting (max 500 tekens) van uw bedrijf en we voegen dit toe aan onze ledengids."
+      "description_2": "U kunt uw bedrijfslogo, bio en website-URL uploaden via het tabblad Profiel Beheren om in onze ledengids te verschijnen."
     },
     "matching": {
       "title": "Capaciteits- en distributiematching",
@@ -226,10 +226,11 @@
     "vertical_logo": "Verticaal logo",
     "download": "Downloaden",
     "directory_title": "Ledenregister vermelding",
-    "directory_description": "Om opgenomen te worden in ons ledenregister, stuurt u het volgende naar",
+    "directory_description": "Om opgenomen te worden in ons ledenregister, ga naar het tabblad Profiel Beheren waar u kunt uploaden:",
     "directory_requirements": {
-      "logo": "Een kopie van uw bedrijfslogo",
-      "summary": "Een korte bedrijfssamenvatting (maximaal 500 tekens)"
+      "logo": "Uw bedrijfslogo",
+      "summary": "Een korte bedrijfssamenvatting (maximaal 500 tekens)",
+      "website": "De URL van uw bedrijfswebsite"
     }
   },
   "map": {

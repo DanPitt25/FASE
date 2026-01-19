@@ -25,7 +25,7 @@
     "brand": {
       "title": "Brand endorsement",
       "description_1": "FASE members are entitled to display the FASE logo on their websites and marketing materials, reflecting your commitment to the highest professional standards as reflected in the FASE Code of Conduct.",
-      "description_2": "Please send a copy of your logo to admin@fasemga.com, together with a brief (max 500 character) summary of your business and we will add this to our member directory."
+      "description_2": "You can upload your company logo, bio, and website URL via the Manage Profile tab to be featured in our member directory."
     },
     "matching": {
       "title": "Capacity and distribution matching",
@@ -214,13 +214,14 @@
     "title": "FASE Logo",
     "description": "As a FASE member, you are entitled to display the FASE logo on your website and marketing materials, reflecting your commitment to the highest professional standards.",
     "horizontal_logo": "Horizontal Logo",
-    "vertical_logo": "Vertical Logo", 
+    "vertical_logo": "Vertical Logo",
     "download": "Download",
     "directory_title": "Member Directory Listing",
-    "directory_description": "To be featured in our member directory, please send the following to",
+    "directory_description": "To be featured in our member directory, go to the Manage Profile tab where you can upload:",
     "directory_requirements": {
-      "logo": "A copy of your company logo",
-      "summary": "A brief business summary (maximum 500 characters)"
+      "logo": "Your company logo",
+      "summary": "A brief business summary (maximum 500 characters)",
+      "website": "Your company website URL"
     }
   },
   "map": {

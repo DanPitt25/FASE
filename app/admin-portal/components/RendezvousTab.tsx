@@ -54,6 +54,10 @@ export default function RendezvousTab() {
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     loadRegistrations();
@@ -142,6 +146,45 @@ export default function RendezvousTab() {
       alert('Failed to update status');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleDeleteRegistration = async () => {
+    if (!selectedRegistration || deleteConfirmation !== 'DELETE') return;
+
+    try {
+      setDeleting(true);
+      setDeleteError(null);
+
+      const response = await fetch('/api/admin/delete-rendezvous-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationId: selectedRegistration.registrationId,
+          confirmationPhrase: deleteConfirmation,
+          invoiceNumber: selectedRegistration.invoiceNumber
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete registration');
+      }
+
+      // Remove from local state
+      setRegistrations(prev =>
+        prev.filter(reg => reg.registrationId !== selectedRegistration.registrationId)
+      );
+
+      setShowDeleteModal(false);
+      setSelectedRegistration(null);
+      setDeleteConfirmation('');
+    } catch (error: any) {
+      console.error('Error deleting registration:', error);
+      setDeleteError(error.message || 'Failed to delete registration');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -494,30 +537,42 @@ export default function RendezvousTab() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
+            <div className="flex justify-between pt-4 border-t">
               <Button
                 variant="secondary"
                 onClick={() => {
                   setShowDetailModal(false);
-                  setShowEmailModal(true);
+                  setShowDeleteModal(true);
                 }}
+                className="!bg-red-50 !text-red-700 !border-red-200 hover:!bg-red-100"
               >
-                Send Confirmation Email
+                Delete Registration
               </Button>
-              {selectedRegistration.paymentStatus === 'pending_bank_transfer' && (
+              <div className="flex gap-2">
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   onClick={() => {
                     setShowDetailModal(false);
-                    setShowStatusModal(true);
+                    setShowEmailModal(true);
                   }}
                 >
-                  Confirm Payment
+                  Send Confirmation Email
                 </Button>
-              )}
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
-                Close
-              </Button>
+                {selectedRegistration.paymentStatus === 'pending_bank_transfer' && (
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setShowStatusModal(true);
+                    }}
+                  >
+                    Confirm Payment
+                  </Button>
+                )}
+                <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -646,6 +701,113 @@ export default function RendezvousTab() {
                   {sendingEmail ? 'Sending...' : 'Send Email'}
                 </Button>
               )}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedRegistration(null);
+          setDeleteConfirmation('');
+          setDeleteError(null);
+        }}
+        title="Delete Registration"
+        maxWidth="md"
+      >
+        {selectedRegistration && (
+          <div className="space-y-6">
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <p className="text-red-800 font-semibold">
+                    Warning: This action cannot be undone!
+                  </p>
+                  <p className="text-red-700 text-sm mt-1">
+                    You are about to permanently delete this registration and all associated data.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-3">Registration to be deleted:</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Company:</span>
+                  <span className="font-medium">{selectedRegistration.billingInfo?.company}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Invoice:</span>
+                  <span className="font-mono">{selectedRegistration.invoiceNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Attendees:</span>
+                  <span>{selectedRegistration.attendees?.length || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Amount:</span>
+                  <span className="font-medium">€{(selectedRegistration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Status:</span>
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(selectedRegistration.paymentStatus)}`}>
+                    {formatStatus(selectedRegistration.paymentStatus)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type <span className="font-mono font-bold text-red-600">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value.toUpperCase())}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Type DELETE here"
+                disabled={deleting}
+              />
+            </div>
+
+            {deleteError && (
+              <div className="bg-red-50 text-red-800 p-3 rounded-lg text-sm">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedRegistration(null);
+                  setDeleteConfirmation('');
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <button
+                onClick={handleDeleteRegistration}
+                disabled={deleting || deleteConfirmation !== 'DELETE'}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  deleteConfirmation === 'DELETE' && !deleting
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {deleting ? 'Deleting...' : 'Delete Registration'}
+              </button>
             </div>
           </div>
         )}
