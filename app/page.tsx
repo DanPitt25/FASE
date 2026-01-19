@@ -113,33 +113,18 @@ export default function Page() {
       <div className="flex-1 relative">
         <Header currentPage="home" />
       <section id="hero" className="relative min-h-[calc(100vh-5.5rem)] flex items-center overflow-hidden">
-        {/* Mobile background image */}
+        {/* Mobile background image - static motorcycle */}
         <div className="md:hidden absolute inset-0">
-          {cities.map((city, index) => (
-            <div
-              key={city.name}
-              className={`absolute inset-0 transition-opacity duration-[6000ms] ease-in-out ${
-                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <Image
-                src={city.image}
-                alt={city.name}
-                fill
-                className={`object-cover ${
-                  city.name === 'Motorcycle' || city.name === 'Early Morning'
-                    ? 'object-[25%_center]'
-                    : ''
-                }`}
-                style={{ filter: 'brightness(0.8) contrast(1.1) saturate(1.1)' }}
-                priority={index === 0}
-                sizes="100vw"
-              />
-            </div>
-          ))}
-          <div
-            className="absolute inset-0 bg-white/70"
+          <Image
+            src="/motorcycle.jpeg"
+            alt="Motorcycle"
+            fill
+            className="object-cover object-[25%_center]"
+            style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
+            priority
+            sizes="100vw"
           />
+          <div className="absolute inset-0 bg-gradient-to-b from-fase-navy/60 via-fase-navy/40 to-fase-navy/60" />
         </div>
         {/* Desktop background image */}
         <div className="hidden md:block absolute top-0 right-0 w-3/5 xl:w-2/3 2xl:w-3/4 h-full">
@@ -174,10 +159,10 @@ export default function Page() {
         </div>
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 relative z-10">
           <div className="max-w-lg xl:max-w-xl 2xl:max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-gold mb-4 lg:mb-6 leading-relaxed">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-fase-light-gold md:text-fase-gold mb-4 lg:mb-6 leading-relaxed">
               {tHomepage('hero.title')}
             </h1>
-            <p className="text-lg sm:text-xl text-fase-black mb-8 font-lato leading-relaxed">
+            <p className="text-lg sm:text-xl text-white md:text-fase-black mb-8 font-lato leading-relaxed">
               {tHomepage('hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
