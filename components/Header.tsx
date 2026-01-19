@@ -70,9 +70,9 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   <Image
                     src="/FASE-Logo-Lockup-RGB.png"
                     alt="FASE Logo"
-                    width={280}
+                    width={270}
                     height={60}
-                    className="h-10 sm:h-12 md:h-15 w-auto object-contain"
+                    className="h-[60px] w-auto"
                     priority
                     onLoad={handleImageLoad}
                   />
