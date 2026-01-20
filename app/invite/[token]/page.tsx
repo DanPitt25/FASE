@@ -56,12 +56,6 @@ export default function InvitePage({ params }: PageProps) {
         decodedData.companyName = 'the Team';
       }
 
-      // Check if token is not too old (24 hours)
-      const tokenAge = Date.now() - decodedData.timestamp;
-      if (tokenAge > 24 * 60 * 60 * 1000) {
-        throw new Error('Invitation link has expired. Please request a new invitation.');
-      }
-
       setInviteData(decodedData);
       setStep('check-existing');
     } catch (err) {

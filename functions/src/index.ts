@@ -330,7 +330,7 @@ export const sendJoinRequestNotification = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <aline.sullivan@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -436,7 +436,7 @@ export const sendPasswordReset = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <aline.sullivan@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -638,7 +638,7 @@ export const sendInviteEmail = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <aline.sullivan@fasemga.com>',
+            from: 'FASE <admin@fasemga.com>',
             to: email,
             subject: `Invitation to join ${companyName} on FASE`,
             html: emailHtml,
