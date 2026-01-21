@@ -500,14 +500,10 @@ export default function IntegratedRegisterForm() {
     return getRendezvousPassPrice() * rendezvousPassCount;
   };
 
-  const getRendezvousVatAmount = () => {
-    // 21% VAT
-    return Math.round(getRendezvousPassSubtotal() * 0.21 * 100) / 100;
-  };
-
+  // VAT is billed separately - not calculated here
   const getRendezvousPassTotal = () => {
     if (!reserveRendezvousPasses) return 0;
-    return getRendezvousPassSubtotal() + getRendezvousVatAmount();
+    return getRendezvousPassSubtotal(); // No VAT included - billed separately
   };
 
 
@@ -958,14 +954,11 @@ export default function IntegratedRegisterForm() {
                         <p className="text-xs text-gray-600">
                           {rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}
                         </p>
-                        <p className="text-xs text-gray-600">
-                          {t('rendezvous.subtotal')}: €{getRendezvousPassSubtotal().toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          {t('rendezvous.vat')}: €{getRendezvousVatAmount().toLocaleString()}
-                        </p>
                         <p className="text-sm font-medium text-fase-navy pt-1 border-t border-fase-light-gold">
-                          {t('rendezvous.pass_total')}: €{getRendezvousPassTotal().toLocaleString()}
+                          {t('rendezvous.pass_total')}: €{getRendezvousPassSubtotal().toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500 italic">
+                          VAT will be billed separately
                         </p>
                       </div>
                     </>
@@ -1133,15 +1126,14 @@ export default function IntegratedRegisterForm() {
                       ) : (
                         <div className="text-xs text-gray-600 space-y-0.5">
                           <p>{rendezvousPassCount} × €{getRendezvousPassPrice().toLocaleString()} {t('rendezvous.member_rate')}</p>
-                          <p>{t('rendezvous.subtotal')}: €{getRendezvousPassSubtotal().toLocaleString()}</p>
-                          <p>{t('rendezvous.vat')}: €{getRendezvousVatAmount().toLocaleString()}</p>
+                          <p className="text-gray-500 italic">VAT will be billed separately</p>
                         </div>
                       )}
                     </div>
                     {isAsaseMember() ? (
                       <span className="text-green-600 font-semibold">{t('rendezvous.complimentary')}</span>
                     ) : (
-                      <span className="text-fase-navy font-semibold">€{getRendezvousPassTotal().toLocaleString()}</span>
+                      <span className="text-fase-navy font-semibold">€{getRendezvousPassSubtotal().toLocaleString()}</span>
                     )}
                   </div>
                 </div>
@@ -1210,7 +1202,6 @@ export default function IntegratedRegisterForm() {
                     reserveRendezvousPasses,
                     rendezvousPassCount,
                     rendezvousPassSubtotal: getRendezvousPassSubtotal(),
-                    rendezvousPassVat: getRendezvousVatAmount(),
                     rendezvousPassTotal: getRendezvousPassTotal(),
                     rendezvousIsAsaseMember: isAsaseMember(),
                     rendezvousAttendees
@@ -1253,7 +1244,6 @@ export default function IntegratedRegisterForm() {
                       reserveRendezvousPasses,
                       rendezvousPassCount,
                       rendezvousPassSubtotal: getRendezvousPassSubtotal(),
-                      rendezvousPassVat: getRendezvousVatAmount(),
                       rendezvousPassTotal: getRendezvousPassTotal(),
                       rendezvousAttendees
                     }),

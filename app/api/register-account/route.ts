@@ -192,11 +192,11 @@ export async function POST(request: NextRequest) {
             jobTitle: a.jobTitle || ''
           })),
           numberOfAttendees: formData.rendezvousPassCount || 1,
-          // VAT breakdown (21%)
+          // VAT is billed separately - not included in registration payment
           subtotal: formData.rendezvousPassSubtotal || 0,
-          vatAmount: formData.rendezvousPassVat || 0,
+          vatAmount: 0, // VAT billed separately
           vatRate: 21,
-          totalPrice: formData.rendezvousPassTotal || 0,
+          totalPrice: formData.rendezvousPassTotal || 0, // Excludes VAT
           companyIsFaseMember: true,
           isAsaseMember: formData.rendezvousIsAsaseMember || false,
           membershipType: formData.rendezvousIsAsaseMember ? 'asase' : 'fase',
