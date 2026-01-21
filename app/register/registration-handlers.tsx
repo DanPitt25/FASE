@@ -83,11 +83,10 @@ export const createAccountAndMembership = async (
     considerStartupMGAs?: string;
     amBestRating?: string;
     otherRating?: string;
-    // MGA Rendezvous fields (optional)
+    // MGA Rendezvous fields (optional) - VAT is billed separately
     reserveRendezvousPasses?: boolean;
     rendezvousPassCount?: number;
     rendezvousPassSubtotal?: number;
-    rendezvousPassVat?: number;
     rendezvousPassTotal?: number;
     rendezvousIsAsaseMember?: boolean;
     rendezvousAttendees?: { id: string; firstName: string; lastName: string; email: string; jobTitle: string; }[];

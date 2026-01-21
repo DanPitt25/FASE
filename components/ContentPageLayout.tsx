@@ -543,31 +543,31 @@ export default function ContentPageLayout({
                   {section.people.map((person, personIndex) => (
                     <div
                       key={personIndex}
-                      className={`flex flex-col md:flex-row gap-8 p-8 lg:p-12 border-b border-gray-200 last:border-0 transition-all duration-700 ${
-                        animation.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                      className={`flex flex-col md:flex-row gap-8 p-4 sm:p-8 lg:p-12 border-b border-gray-200 last:border-0 transition-all duration-700 ${
+                        animation.isVisible ? 'opacity-100 translate-y-0' : 'md:opacity-0 md:translate-y-8'
                       }`}
-                      style={{ 
+                      style={{
                         transitionDelay: animation.isVisible ? `${personIndex * 200}ms` : '0ms'
                       }}
                     >
                       <div className="w-full md:w-2/5 lg:w-1/3 flex-shrink-0">
-                        <div className="w-72 h-80 mx-auto rounded-lg overflow-hidden relative">
-                          <Image 
-                            src={person.image} 
+                        <div className="w-full max-w-[288px] h-80 mx-auto rounded-lg overflow-hidden relative">
+                          <Image
+                            src={person.image}
                             alt={person.name}
                             fill
                             className="object-cover object-top"
                           />
                         </div>
                       </div>
-                      <div className="flex-1 flex flex-col justify-center">
-                        <h3 className="text-2xl font-noto-serif font-medium text-fase-navy mb-2">{person.name}</h3>
-                        <p className="text-fase-gold font-semibold text-lg mb-2">{person.role}</p>
+                      <div className="flex-1 flex flex-col justify-center text-center md:text-left">
+                        <h3 className="text-xl sm:text-2xl font-noto-serif font-medium text-fase-navy mb-2">{person.name}</h3>
+                        <p className="text-fase-gold font-semibold text-base sm:text-lg mb-2">{person.role}</p>
                         {person.company && (
                           <p className="text-fase-black mb-4">{person.company}</p>
                         )}
-                        <div 
-                          className="text-fase-black leading-relaxed text-lg space-y-4"
+                        <div
+                          className="text-fase-black leading-relaxed text-base sm:text-lg space-y-4"
                           dangerouslySetInnerHTML={{ __html: person.bio.split('\n\n').map(p => `<p>${p}</p>`).join('') }}
                         />
                       </div>
