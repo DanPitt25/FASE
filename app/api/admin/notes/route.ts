@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
         ...data,
         createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
         updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+        isPinned: data.isPinned || false,
       };
     });
 
