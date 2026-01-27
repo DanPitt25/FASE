@@ -35,7 +35,7 @@ const salutations: Record<string, { m: (name: string) => string; f: (name: strin
 // Bulletin templates in all supported languages
 const bulletinTemplates: Record<string, { subject: string; body: (salutation: string, deadline: string) => string }> = {
   en: {
-    subject: 'Call for Content: The Entrepreneurial Underwriter',
+    subject: 'Contribute to The Entrepreneurial Underwriter – January Edition',
     body: (salutation: string, deadline: string) => `${salutation},
 
 We'll shortly be issuing the first edition of The Entrepreneurial Underwriter, FASE's monthly member bulletin, and we'd like to include any items that may be relevant to our members from your organization.
@@ -53,7 +53,7 @@ Please send details to admin@fasemga.com by ${deadline} for inclusion in next we
 The Entrepreneurial Underwriter will be distributed to all FASE members and posted on our member portal.`
   },
   fr: {
-    subject: 'Appel à contributions : The Entrepreneurial Underwriter',
+    subject: 'Contribuez à The Entrepreneurial Underwriter – Édition de janvier',
     body: (salutation: string, deadline: string) => `${salutation},
 
 Nous publierons prochainement la première édition de The Entrepreneurial Underwriter, le bulletin mensuel des membres de FASE, et nous aimerions y inclure toute information pertinente pour nos membres provenant de votre organisation.
@@ -71,7 +71,7 @@ Veuillez envoyer les détails à admin@fasemga.com avant le ${deadline} pour inc
 The Entrepreneurial Underwriter sera distribué à tous les membres de FASE et publié sur notre portail membres.`
   },
   de: {
-    subject: 'Aufruf zur Einreichung: The Entrepreneurial Underwriter',
+    subject: 'Beitrag zu The Entrepreneurial Underwriter – Januar-Ausgabe',
     body: (salutation: string, deadline: string) => `${salutation},
 
 Wir werden in Kürze die erste Ausgabe von The Entrepreneurial Underwriter, dem monatlichen Mitglieder-Newsletter von FASE, veröffentlichen und möchten gerne relevante Beiträge Ihrer Organisation für unsere Mitglieder aufnehmen.
@@ -89,7 +89,7 @@ Bitte senden Sie die Details bis ${deadline} an admin@fasemga.com, damit sie in 
 The Entrepreneurial Underwriter wird an alle FASE-Mitglieder verteilt und auf unserem Mitgliederportal veröffentlicht.`
   },
   es: {
-    subject: 'Convocatoria de contenidos: The Entrepreneurial Underwriter',
+    subject: 'Contribuya a The Entrepreneurial Underwriter – Edición de enero',
     body: (salutation: string, deadline: string) => `${salutation},
 
 Próximamente publicaremos la primera edición de The Entrepreneurial Underwriter, el boletín mensual para miembros de FASE, y nos gustaría incluir cualquier información relevante para nuestros miembros procedente de su organización.
@@ -107,7 +107,7 @@ Por favor, envíe los detalles a admin@fasemga.com antes del ${deadline} para su
 The Entrepreneurial Underwriter se distribuirá a todos los miembros de FASE y se publicará en nuestro portal de miembros.`
   },
   it: {
-    subject: 'Invito a contribuire: The Entrepreneurial Underwriter',
+    subject: 'Contribuisci a The Entrepreneurial Underwriter – Edizione di gennaio',
     body: (salutation: string, deadline: string) => `${salutation},
 
 A breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e vorremmo includere eventuali contenuti rilevanti per i nostri membri provenienti dalla vostra organizzazione.
@@ -125,7 +125,7 @@ Vi preghiamo di inviare i dettagli a admin@fasemga.com entro ${deadline} per l'i
 The Entrepreneurial Underwriter sarà distribuito a tutti i membri FASE e pubblicato sul nostro portale membri.`
   },
   nl: {
-    subject: 'Oproep voor bijdragen: The Entrepreneurial Underwriter',
+    subject: 'Draag bij aan The Entrepreneurial Underwriter – Januari-editie',
     body: (salutation: string, deadline: string) => `${salutation},
 
 Binnenkort brengen we de eerste editie uit van The Entrepreneurial Underwriter, de maandelijkse nieuwsbrief voor FASE-leden, en we willen graag relevante items van uw organisatie opnemen voor onze leden.
