@@ -120,7 +120,7 @@ The Entrepreneurial Underwriter se distribuirá a todos los miembros de FASE y s
     subject: 'Invito a contribuire a The Entrepreneurial Underwriter – Edizione di gennaio',
     body: (salutation: string, deadline: string) => `${salutation},
 
-a breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e saremmo lieti di includere eventuali contenuti rilevanti per i nostri membri provenienti dalla Sua organizzazione.
+A breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e saremmo lieti di includere eventuali contenuti rilevanti per i nostri membri provenienti dalla Sua organizzazione.
 
 Questo bollettino metterà in evidenza notizie, traguardi e sviluppi significativi della nostra comunità di membri. Qualora desiderasse condividere uno dei seguenti elementi, La preghiamo di farceli pervenire:
 
