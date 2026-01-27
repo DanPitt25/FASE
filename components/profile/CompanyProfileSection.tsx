@@ -24,6 +24,7 @@ interface CompanyProfileSectionProps {
   company: CompanyInfo;
   organizationAccount: OrganizationAccount;
   onLogoChange: (logoURL: string | null) => void;
+  onBioStatusChange?: (status: 'pending_review' | 'draft') => void;
   showSuccess: (message: string) => void;
   showError: (message: string) => void;
   showInfo: (message: string) => void;
@@ -33,6 +34,7 @@ export default function CompanyProfileSection({
   company,
   organizationAccount,
   onLogoChange,
+  onBioStatusChange,
   showSuccess,
   showError,
   showInfo
@@ -82,6 +84,7 @@ export default function CompanyProfileSection({
       });
 
       setEditingBio(false);
+      onBioStatusChange?.('pending_review');
       showSuccess('Profile submitted for review. You will be notified once approved.');
     } catch (error) {
       showError('Failed to submit profile. Please try again.');
@@ -100,7 +103,8 @@ export default function CompanyProfileSection({
         'companySummary.status': 'draft',
         updatedAt: serverTimestamp()
       });
-      
+
+      onBioStatusChange?.('draft');
       showInfo('Draft saved successfully.');
     } catch (error) {
       showError('Failed to save draft. Please try again.');

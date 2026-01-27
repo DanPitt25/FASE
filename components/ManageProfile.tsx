@@ -157,6 +157,18 @@ export default function ManageProfile() {
     } : null);
   };
 
+  // Handle bio status change callback
+  const handleBioStatusChange = (status: 'pending_review' | 'draft') => {
+    setOrganizationAccount(prev => prev ? {
+      ...prev,
+      companySummary: {
+        ...prev.companySummary,
+        status,
+        text: prev.companySummary?.text || ''
+      }
+    } : null);
+  };
+
 
   if (loading) {
     return (
@@ -221,10 +233,11 @@ export default function ManageProfile() {
         />
 
         {/* Company Profile Section */}
-        <CompanyProfileSection 
-          company={company} 
+        <CompanyProfileSection
+          company={company}
           organizationAccount={organizationAccount}
           onLogoChange={handleLogoChange}
+          onBioStatusChange={handleBioStatusChange}
           showSuccess={(message) => showSuccess(message)}
           showError={(message) => showError(message)}
           showInfo={(message) => showInfo(message)}
