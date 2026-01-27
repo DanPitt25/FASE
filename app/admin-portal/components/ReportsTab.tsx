@@ -544,8 +544,7 @@ export default function ReportsTab() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 15;
-      let yPos = margin;
+      const margin = 20;
 
       // Helper to parse hex color to RGB
       const hexToRgb = (hex: string): [number, number, number] => {
@@ -553,344 +552,319 @@ export default function ReportsTab() {
         return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
       };
 
-      const checkNewPage = (requiredSpace: number) => {
-        if (yPos + requiredSpace > pageHeight - margin) {
-          doc.addPage();
-          yPos = margin;
-          return true;
-        }
-        return false;
-      };
-
-      // Draw a pie/donut chart
-      const drawPieChart = (
+      // Draw a donut chart - returns the Y position after the chart
+      const drawDonutChart = (
         data: Record<string, number>,
         total: number,
         centerX: number,
         centerY: number,
-        radius: number,
-        title: string
+        radius: number
       ) => {
         if (total === 0) return;
-        const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-        // Title
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(50, 50, 50);
-        doc.text(title, centerX, centerY - radius - 8, { align: 'center' });
+        const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
         let startAngle = -Math.PI / 2;
         sorted.forEach(([, count], index) => {
           const sliceAngle = (count / total) * 2 * Math.PI;
-          const endAngle = startAngle + sliceAngle;
           const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-
-          // Draw pie slice using lines (approximate arc with line segments)
           doc.setFillColor(...color);
+
+          // Draw pie slice using triangle fan
           const segments = Math.max(Math.ceil(sliceAngle * 20), 3);
-          const points: [number, number][] = [[centerX, centerY]];
-
-          for (let i = 0; i <= segments; i++) {
-            const angle = startAngle + (sliceAngle * i) / segments;
-            points.push([centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle)]);
-          }
-          points.push([centerX, centerY]);
-
-          // Draw filled polygon
-          doc.setDrawColor(...color);
-          doc.setLineWidth(0.1);
-          const firstPoint = points[0];
-          let pathStr = `${firstPoint[0]} ${firstPoint[1]} m `;
-          for (let i = 1; i < points.length; i++) {
-            pathStr += `${points[i][0]} ${points[i][1]} l `;
-          }
-
-          // Use triangle fan approach for filling
-          for (let i = 1; i < points.length - 1; i++) {
+          for (let i = 0; i < segments; i++) {
+            const angle1 = startAngle + (sliceAngle * i) / segments;
+            const angle2 = startAngle + (sliceAngle * (i + 1)) / segments;
             doc.triangle(
               centerX, centerY,
-              points[i][0], points[i][1],
-              points[i + 1][0], points[i + 1][1],
+              centerX + radius * Math.cos(angle1), centerY + radius * Math.sin(angle1),
+              centerX + radius * Math.cos(angle2), centerY + radius * Math.sin(angle2),
               'F'
             );
           }
-
-          startAngle = endAngle;
+          startAngle += sliceAngle;
         });
 
-        // Draw center circle (donut hole) - white
+        // Donut hole
         doc.setFillColor(255, 255, 255);
-        doc.circle(centerX, centerY, radius * 0.5, 'F');
+        doc.circle(centerX, centerY, radius * 0.55, 'F');
 
         // Center text
-        doc.setFontSize(14);
+        doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(50, 50, 50);
-        doc.text(String(total), centerX, centerY + 2, { align: 'center' });
-
-        // Legend below
-        let legendY = centerY + radius + 8;
-        sorted.slice(0, 5).forEach(([label, count], index) => {
-          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-          const pct = ((count / total) * 100).toFixed(0);
-
-          doc.setFillColor(...color);
-          doc.rect(centerX - 35, legendY - 3, 4, 4, 'F');
-
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(80, 80, 80);
-          const displayLabel = label.length > 18 ? label.substring(0, 16) + '...' : label;
-          doc.text(displayLabel, centerX - 29, legendY);
-          doc.text(`${pct}%`, centerX + 30, legendY, { align: 'right' });
-
-          legendY += 5;
-        });
+        doc.setTextColor(45, 85, 116);
+        doc.text(String(total), centerX, centerY + 3, { align: 'center' });
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(120, 120, 120);
+        doc.text('total', centerX, centerY + 10, { align: 'center' });
       };
 
-      // Draw colored bar chart
-      const drawBarChart = (
+      // Draw a complete section page with title, pie chart, and full list
+      const drawSectionPage = (
+        title: string,
         data: Record<string, number>,
         total: number,
-        startX: number,
-        startY: number,
-        width: number,
-        title: string,
-        maxItems: number = 8
-      ): number => {
-        const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
-        if (sorted.length === 0) return startY;
+        headerColor: [number, number, number],
+        subtitle?: string
+      ) => {
+        doc.addPage();
 
-        // Title
-        doc.setFontSize(11);
+        // Header bar
+        doc.setFillColor(...headerColor);
+        doc.rect(0, 0, pageWidth, 30, 'F');
+
+        doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(50, 50, 50);
-        doc.text(title, startX, startY);
+        doc.setTextColor(255, 255, 255);
+        doc.text(title, pageWidth / 2, 18, { align: 'center' });
 
-        let currentY = startY + 6;
-        const barHeight = 5;
-        const maxBarWidth = width - 50;
-        const maxValue = sorted[0][1];
-
-        sorted.forEach(([label, count], index) => {
-          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-          const barWidth = maxValue > 0 ? (count / maxValue) * maxBarWidth : 0;
-          const pct = total > 0 ? ((count / total) * 100).toFixed(0) : '0';
-
-          // Label
-          doc.setFontSize(7);
+        if (subtitle) {
+          doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(80, 80, 80);
-          const displayLabel = label.length > 22 ? label.substring(0, 20) + '...' : label;
-          doc.text(displayLabel, startX, currentY + 3);
+          doc.setTextColor(220, 220, 220);
+          doc.text(subtitle, pageWidth / 2, 26, { align: 'center' });
+        }
 
-          // Bar
+        const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
+        if (sorted.length === 0 || total === 0) {
+          doc.setFontSize(12);
+          doc.setTextColor(150, 150, 150);
+          doc.text('No data available', pageWidth / 2, 80, { align: 'center' });
+          return;
+        }
+
+        // Pie chart on the left
+        const chartCenterX = 55;
+        const chartCenterY = 75;
+        const chartRadius = 30;
+        drawDonutChart(data, total, chartCenterX, chartCenterY, chartRadius);
+
+        // Legend next to pie chart
+        let legendY = 48;
+        const legendX = 95;
+        sorted.slice(0, 8).forEach(([label, count], index) => {
+          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
+          const pct = ((count / total) * 100).toFixed(1);
+
           doc.setFillColor(...color);
-          doc.roundedRect(startX + 42, currentY, Math.max(barWidth, 2), barHeight, 1, 1, 'F');
+          doc.rect(legendX, legendY - 2.5, 4, 4, 'F');
 
-          // Value
-          doc.setFontSize(7);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(60, 60, 60);
+          const displayLabel = label.length > 25 ? label.substring(0, 23) + '...' : label;
+          doc.text(displayLabel, legendX + 7, legendY + 1);
+
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(...color);
-          doc.text(`${count} (${pct}%)`, startX + width - 2, currentY + 3, { align: 'right' });
+          doc.text(`${count} (${pct}%)`, pageWidth - margin, legendY + 1, { align: 'right' });
 
-          currentY += barHeight + 2;
+          legendY += 7;
         });
 
-        return currentY + 3;
+        // Full data table below
+        let tableY = 115;
+
+        // Table header
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margin, tableY, pageWidth - margin * 2, 8, 'F');
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(80, 80, 80);
+        doc.text('Item', margin + 3, tableY + 5.5);
+        doc.text('Count', pageWidth - margin - 35, tableY + 5.5, { align: 'right' });
+        doc.text('Percentage', pageWidth - margin - 3, tableY + 5.5, { align: 'right' });
+
+        tableY += 10;
+
+        // Table rows
+        sorted.forEach(([label, count], index) => {
+          if (tableY > pageHeight - 25) {
+            doc.addPage();
+            tableY = margin;
+
+            // Continue header on new page
+            doc.setFillColor(245, 245, 245);
+            doc.rect(margin, tableY, pageWidth - margin * 2, 8, 'F');
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(80, 80, 80);
+            doc.text('Item', margin + 3, tableY + 5.5);
+            doc.text('Count', pageWidth - margin - 35, tableY + 5.5, { align: 'right' });
+            doc.text('Percentage', pageWidth - margin - 3, tableY + 5.5, { align: 'right' });
+            tableY += 10;
+          }
+
+          const pct = ((count / total) * 100).toFixed(1);
+          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
+
+          // Alternating row background
+          if (index % 2 === 0) {
+            doc.setFillColor(252, 252, 252);
+            doc.rect(margin, tableY - 1, pageWidth - margin * 2, 7, 'F');
+          }
+
+          // Color indicator
+          doc.setFillColor(...color);
+          doc.rect(margin + 2, tableY + 0.5, 3, 3, 'F');
+
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(50, 50, 50);
+          const displayLabel = label.length > 45 ? label.substring(0, 43) + '...' : label;
+          doc.text(displayLabel, margin + 8, tableY + 4);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...color);
+          doc.text(String(count), pageWidth - margin - 35, tableY + 4, { align: 'right' });
+
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(`${pct}%`, pageWidth - margin - 3, tableY + 4, { align: 'right' });
+
+          tableY += 7;
+        });
       };
 
-      // Title
+      // ===== PAGE 1: TITLE PAGE WITH SUMMARY =====
       const typeLabel = typeFilter === 'all' ? 'All Organizations' :
         typeFilter === 'MGA' ? 'MGAs' :
         typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
-      const statusLabel = statusFilter === 'all' ? '' : ` - ${statusFilter.replace('_', ' ')}`;
+      const statusLabel = statusFilter === 'all' ? '' : ` (${statusFilter.replace('_', ' ')})`;
 
-      // Header background
+      // Title page header
       doc.setFillColor(45, 85, 116);
-      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.rect(0, 0, pageWidth, 50, 'F');
 
-      doc.setFontSize(20);
+      doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      doc.text(`FASE Report: ${typeLabel}${statusLabel}`, pageWidth / 2, 15, { align: 'center' });
+      doc.text('FASE Membership Report', pageWidth / 2, 22, { align: 'center' });
 
-      doc.setFontSize(10);
+      doc.setFontSize(14);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(200, 200, 200);
+      doc.text(`${typeLabel}${statusLabel}`, pageWidth / 2, 35, { align: 'center' });
+
+      doc.setFontSize(10);
       doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', {
         day: 'numeric', month: 'long', year: 'numeric'
-      })}`, pageWidth / 2, 25, { align: 'center' });
-
-      yPos = 45;
+      })}`, pageWidth / 2, 45, { align: 'center' });
 
       // Summary cards
       if (pdfSections.summary) {
+        const cardY = 65;
+        const cardHeight = 35;
         const cardWidth = (pageWidth - margin * 2 - 15) / 4;
-        const cardHeight = 20;
 
-        // Total card
-        doc.setFillColor(45, 85, 116);
-        doc.roundedRect(margin, yPos, cardWidth, cardHeight, 2, 2, 'F');
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text(String(reportData.totalAccounts), margin + cardWidth / 2, yPos + 10, { align: 'center' });
-        doc.setFontSize(7);
-        doc.text('Total', margin + cardWidth / 2, yPos + 16, { align: 'center' });
+        const cards = [
+          { count: reportData.totalAccounts, label: 'Total', color: [45, 85, 116] as [number, number, number] },
+          { count: reportData.mgas.length, label: 'MGAs', color: [30, 136, 229] as [number, number, number] },
+          { count: reportData.carriers.length, label: 'Carriers', color: [67, 160, 71] as [number, number, number] },
+          { count: reportData.providers.length, label: 'Providers', color: [244, 81, 30] as [number, number, number] },
+        ];
 
-        // MGA card
-        doc.setFillColor(30, 136, 229);
-        doc.roundedRect(margin + cardWidth + 5, yPos, cardWidth, cardHeight, 2, 2, 'F');
-        doc.setFontSize(16);
-        doc.text(String(reportData.mgas.length), margin + cardWidth * 1.5 + 5, yPos + 10, { align: 'center' });
-        doc.setFontSize(7);
-        doc.text('MGAs', margin + cardWidth * 1.5 + 5, yPos + 16, { align: 'center' });
+        cards.forEach((card, i) => {
+          const x = margin + i * (cardWidth + 5);
+          doc.setFillColor(...card.color);
+          doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, 'F');
 
-        // Carrier card
-        doc.setFillColor(67, 160, 71);
-        doc.roundedRect(margin + cardWidth * 2 + 10, yPos, cardWidth, cardHeight, 2, 2, 'F');
-        doc.setFontSize(16);
-        doc.text(String(reportData.carriers.length), margin + cardWidth * 2.5 + 10, yPos + 10, { align: 'center' });
-        doc.setFontSize(7);
-        doc.text('Carriers', margin + cardWidth * 2.5 + 10, yPos + 16, { align: 'center' });
-
-        // Provider card
-        doc.setFillColor(244, 81, 30);
-        doc.roundedRect(margin + cardWidth * 3 + 15, yPos, cardWidth, cardHeight, 2, 2, 'F');
-        doc.setFontSize(16);
-        doc.text(String(reportData.providers.length), margin + cardWidth * 3.5 + 15, yPos + 10, { align: 'center' });
-        doc.setFontSize(7);
-        doc.text('Providers', margin + cardWidth * 3.5 + 15, yPos + 16, { align: 'center' });
-
-        yPos += cardHeight + 12;
-      }
-
-      // Status and Country pie charts side by side
-      if (pdfSections.status || pdfSections.country) {
-        checkNewPage(70);
-        const chartRadius = 22;
-
-        if (pdfSections.status) {
-          drawPieChart(reportData.byStatus, reportData.totalAccounts, margin + 45, yPos + 35, chartRadius, 'By Status');
-        }
-        if (pdfSections.country) {
-          drawPieChart(reportData.byCountry, reportData.totalAccounts, pageWidth - margin - 45, yPos + 35, chartRadius, 'By Country');
-        }
-        yPos += 85;
-      }
-
-      // Associations bar chart
-      if (pdfSections.associations && Object.keys(reportData.byAssociation).length > 0) {
-        checkNewPage(60);
-        yPos = drawBarChart(reportData.byAssociation, reportData.withAssociations, margin, yPos, pageWidth - margin * 2, 'Other Association Memberships', 6);
-      }
-
-      // MGA Section
-      const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
-      if (showMGA && (pdfSections.mgaGWP || pdfSections.mgaLinesOfBusiness || pdfSections.mgaMarkets)) {
-        doc.addPage();
-
-        // MGA header
-        doc.setFillColor(30, 136, 229);
-        doc.rect(0, 0, pageWidth, 25, 'F');
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text('MGA Analysis', pageWidth / 2, 15, { align: 'center' });
-
-        yPos = 35;
-
-        if (pdfSections.mgaGWP) {
-          // GWP highlight box
-          doc.setFillColor(30, 136, 229);
-          doc.roundedRect(margin, yPos, pageWidth - margin * 2, 18, 2, 2, 'F');
-          doc.setFontSize(10);
-          doc.setTextColor(200, 220, 255);
-          doc.text('Total Gross Written Premiums', margin + 5, yPos + 7);
-          doc.setFontSize(16);
+          doc.setFontSize(22);
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(255, 255, 255);
-          doc.text(`€${(reportData.mgaTotalGWP / 1000000).toFixed(1)}M`, pageWidth - margin - 5, yPos + 12, { align: 'right' });
-          yPos += 25;
+          doc.text(String(card.count), x + cardWidth / 2, cardY + 18, { align: 'center' });
 
-          // GWP Band pie chart
-          checkNewPage(70);
-          drawPieChart(reportData.mgaByGWPBand, reportData.mgas.length, margin + 45, yPos + 30, 20, 'By GWP Band');
-          yPos += 75;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text(card.label, x + cardWidth / 2, cardY + 28, { align: 'center' });
+        });
+
+        // Organization type breakdown
+        if (typeFilter === 'all') {
+          let breakdownY = 115;
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(45, 85, 116);
+          doc.text('Organization Breakdown', margin, breakdownY);
+
+          breakdownY += 12;
+          drawDonutChart(reportData.byOrganizationType, reportData.totalAccounts, 50, breakdownY + 25, 22);
+
+          // Legend
+          let legendY = breakdownY;
+          Object.entries(reportData.byOrganizationType).sort((a, b) => b[1] - a[1]).forEach(([label, count], index) => {
+            const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
+            const pct = ((count / reportData.totalAccounts) * 100).toFixed(1);
+
+            doc.setFillColor(...color);
+            doc.rect(85, legendY - 2, 4, 4, 'F');
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(60, 60, 60);
+            doc.text(label, 92, legendY + 1);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...color);
+            doc.text(`${count} (${pct}%)`, 160, legendY + 1, { align: 'right' });
+
+            legendY += 10;
+          });
         }
+      }
 
+      // ===== SECTION PAGES =====
+
+      // Status page
+      if (pdfSections.status) {
+        drawSectionPage('By Status', reportData.byStatus, reportData.totalAccounts, [45, 85, 116]);
+      }
+
+      // Country page
+      if (pdfSections.country) {
+        drawSectionPage('By Country', reportData.byCountry, reportData.totalAccounts, [45, 85, 116]);
+      }
+
+      // Associations page
+      if (pdfSections.associations && Object.keys(reportData.byAssociation).length > 0) {
+        drawSectionPage('Other Association Memberships', reportData.byAssociation, reportData.withAssociations, [45, 85, 116], `${reportData.withAssociations} organizations with other memberships`);
+      }
+
+      // MGA pages
+      const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
+      if (showMGA) {
+        if (pdfSections.mgaGWP) {
+          drawSectionPage('MGA: GWP Bands', reportData.mgaByGWPBand, reportData.mgas.length, [30, 136, 229], `Total GWP: €${(reportData.mgaTotalGWP / 1000000).toFixed(1)}M across ${reportData.mgas.length} MGAs`);
+        }
         if (pdfSections.mgaLinesOfBusiness) {
-          checkNewPage(70);
-          yPos = drawBarChart(reportData.mgaByLinesOfBusiness, reportData.mgas.length, margin, yPos, pageWidth - margin * 2, 'Lines of Business', 10);
+          drawSectionPage('MGA: Lines of Business', reportData.mgaByLinesOfBusiness, reportData.mgas.length, [30, 136, 229]);
         }
-
         if (pdfSections.mgaMarkets) {
-          checkNewPage(70);
-          yPos = drawBarChart(reportData.mgaByMarket, reportData.mgas.length, margin, yPos, pageWidth - margin * 2, 'Target Markets', 10);
+          drawSectionPage('MGA: Target Markets', reportData.mgaByMarket, reportData.mgas.length, [30, 136, 229]);
         }
       }
 
-      // Carrier Section
+      // Carrier pages
       const showCarrier = (typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0;
-      if (showCarrier && (pdfSections.carrierFronting || pdfSections.carrierRatings || pdfSections.carrierStartups || pdfSections.carrierCountries)) {
-        doc.addPage();
-
-        // Carrier header
-        doc.setFillColor(67, 160, 71);
-        doc.rect(0, 0, pageWidth, 25, 'F');
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Carrier Analysis', pageWidth / 2, 15, { align: 'center' });
-
-        yPos = 35;
-
-        if (pdfSections.carrierFronting || pdfSections.carrierRatings) {
-          checkNewPage(70);
-          if (pdfSections.carrierFronting) {
-            drawPieChart(reportData.carrierByFronting, reportData.carriers.length, margin + 45, yPos + 30, 20, 'Fronting Options');
-          }
-          if (pdfSections.carrierRatings) {
-            drawPieChart(reportData.carrierByRating, reportData.carriers.length, pageWidth - margin - 45, yPos + 30, 20, 'AM Best Ratings');
-          }
-          yPos += 75;
+      if (showCarrier) {
+        if (pdfSections.carrierFronting) {
+          drawSectionPage('Carrier: Fronting Options', reportData.carrierByFronting, reportData.carriers.length, [67, 160, 71]);
         }
-
+        if (pdfSections.carrierRatings) {
+          drawSectionPage('Carrier: AM Best Ratings', reportData.carrierByRating, reportData.carriers.length, [67, 160, 71]);
+        }
         if (pdfSections.carrierStartups) {
-          checkNewPage(60);
-          drawPieChart(reportData.carrierByStartupMGA, reportData.carriers.length, pageWidth / 2, yPos + 30, 20, 'Considers Startup MGAs');
-          yPos += 75;
+          drawSectionPage('Carrier: Considers Startup MGAs', reportData.carrierByStartupMGA, reportData.carriers.length, [67, 160, 71]);
         }
-
         if (pdfSections.carrierCountries) {
-          checkNewPage(70);
-          yPos = drawBarChart(reportData.carrierDelegatingCountries, reportData.carriers.length, margin, yPos, pageWidth - margin * 2, 'Delegating Countries', 10);
+          drawSectionPage('Carrier: Delegating Countries', reportData.carrierDelegatingCountries, reportData.carriers.length, [67, 160, 71]);
         }
       }
 
-      // Provider Section
+      // Provider pages
       const showProvider = (typeFilter === 'all' || typeFilter === 'provider') && reportData.providers.length > 0;
       if (showProvider && pdfSections.providerServices) {
-        doc.addPage();
-
-        // Provider header
-        doc.setFillColor(244, 81, 30);
-        doc.rect(0, 0, pageWidth, 25, 'F');
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Service Provider Analysis', pageWidth / 2, 15, { align: 'center' });
-
-        yPos = 35;
-
-        // Pie chart and bar chart side by side concept
-        checkNewPage(70);
-        drawPieChart(reportData.providerByService, reportData.providers.length, margin + 45, yPos + 30, 20, 'Services Overview');
-        yPos += 80;
-
-        yPos = drawBarChart(reportData.providerByService, reportData.providers.length, margin, yPos, pageWidth - margin * 2, 'Service Distribution', 12);
+        drawSectionPage('Provider: Services Offered', reportData.providerByService, reportData.providers.length, [244, 81, 30]);
       }
 
       // Footer on all pages
