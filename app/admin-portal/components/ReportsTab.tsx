@@ -112,7 +112,6 @@ interface ReportData {
   providerByService: Record<string, number>;
 }
 
-type ReportView = 'summary' | 'mga' | 'carrier' | 'provider';
 type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice' | 'paid' | 'flagged' | 'rejected';
 type TypeFilter = 'all' | 'MGA' | 'carrier' | 'provider';
 
@@ -120,7 +119,6 @@ export default function ReportsTab() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [activeView, setActiveView] = useState<ReportView>('summary');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [allAccounts, setAllAccounts] = useState<AccountData[]>([]);
@@ -355,11 +353,18 @@ export default function ReportsTab() {
         yPos += 5;
       };
 
+      // Build title based on filters
+      const typeLabel = typeFilter === 'all' ? 'All Organizations' :
+        typeFilter === 'MGA' ? 'MGAs' :
+        typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
+      const statusLabel = statusFilter === 'all' ? '' : ` - ${statusFilter.replace('_', ' ')}`;
+      const reportTitle = `FASE Report: ${typeLabel}${statusLabel}`;
+
       // Title
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(45, 85, 116);
-      doc.text('FASE Membership Report', pageWidth / 2, yPos, { align: 'center' });
+      doc.text(reportTitle, pageWidth / 2, yPos, { align: 'center' });
       yPos += 8;
 
       // Date
@@ -373,15 +378,12 @@ export default function ReportsTab() {
 
       // Summary Box
       doc.setFillColor(245, 245, 245);
-      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 30, 3, 3, 'F');
+      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 20, 3, 3, 'F');
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(45, 85, 116);
-      doc.text(`Total: ${reportData.totalAccounts} Organizations`, pageWidth / 2, yPos + 10, { align: 'center' });
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`MGAs: ${reportData.mgas.length} | Carriers: ${reportData.carriers.length} | Providers: ${reportData.providers.length}`, pageWidth / 2, yPos + 20, { align: 'center' });
-      yPos += 40;
+      doc.text(`Total: ${reportData.totalAccounts} Organizations`, pageWidth / 2, yPos + 12, { align: 'center' });
+      yPos += 30;
 
       // By Status
       addSectionHeader('By Status');
@@ -401,8 +403,8 @@ export default function ReportsTab() {
         });
       yPos += 5;
 
-      // MGA Section
-      if (reportData.mgas.length > 0) {
+      // MGA Section - only if type filter includes MGAs
+      if ((typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0) {
         doc.addPage();
         yPos = margin;
 
@@ -436,8 +438,8 @@ export default function ReportsTab() {
           .forEach(([market, count]) => addDataRow(market, count));
       }
 
-      // Carrier Section
-      if (reportData.carriers.length > 0) {
+      // Carrier Section - only if type filter includes carriers
+      if ((typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0) {
         doc.addPage();
         yPos = margin;
 
@@ -464,8 +466,8 @@ export default function ReportsTab() {
           .forEach(([answer, count]) => addDataRow(answer, count));
       }
 
-      // Provider Section
-      if (reportData.providers.length > 0) {
+      // Provider Section - only if type filter includes providers
+      if ((typeFilter === 'all' || typeFilter === 'provider') && reportData.providers.length > 0) {
         doc.addPage();
         yPos = margin;
 
@@ -496,7 +498,10 @@ export default function ReportsTab() {
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
       }
 
-      const fileName = `FASE-Report-${new Date().toISOString().split('T')[0]}.pdf`;
+      // Dynamic filename based on filters
+      const fileTypeLabel = typeFilter === 'all' ? 'All' : typeFilter;
+      const fileStatusLabel = statusFilter === 'all' ? '' : `-${statusFilter}`;
+      const fileName = `FASE-Report-${fileTypeLabel}${fileStatusLabel}-${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -553,6 +558,14 @@ export default function ReportsTab() {
     );
   }
 
+  const getReportTitle = () => {
+    const typeLabel = typeFilter === 'all' ? 'All Organizations' :
+      typeFilter === 'MGA' ? 'MGAs' :
+      typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
+    const statusLabel = statusFilter === 'all' ? '' : ` (${statusFilter.replace('_', ' ')})`;
+    return `${typeLabel}${statusLabel}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -560,7 +573,7 @@ export default function ReportsTab() {
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Membership Reports</h3>
           <p className="text-sm text-gray-600">
-            Comprehensive analytics on {reportData.totalAccounts} organizations
+            {getReportTitle()} - {reportData.totalAccounts} organizations
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -594,86 +607,65 @@ export default function ReportsTab() {
         </div>
       </div>
 
-      {/* View Tabs */}
-      <div className="flex border-b border-gray-200">
-        {[
-          { id: 'summary', label: 'Summary' },
-          { id: 'mga', label: `MGAs (${reportData.mgas.length})` },
-          { id: 'carrier', label: `Carriers (${reportData.carriers.length})` },
-          { id: 'provider', label: `Providers (${reportData.providers.length})` }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveView(tab.id as ReportView)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeView === tab.id
-                ? 'border-fase-navy text-fase-navy'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Summary Stats - always shown */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-fase-navy text-white rounded-lg p-4">
+          <div className="text-2xl font-bold">{reportData.totalAccounts}</div>
+          <div className="text-fase-cream/80 text-sm">Total</div>
+        </div>
+        {(typeFilter === 'all' || typeFilter === 'MGA') && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-2xl font-bold text-fase-navy">{reportData.mgas.length}</div>
+            <div className="text-gray-600 text-sm">MGAs</div>
+          </div>
+        )}
+        {(typeFilter === 'all' || typeFilter === 'carrier') && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-2xl font-bold text-fase-navy">{reportData.carriers.length}</div>
+            <div className="text-gray-600 text-sm">Carriers</div>
+          </div>
+        )}
+        {(typeFilter === 'all' || typeFilter === 'provider') && (
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="text-2xl font-bold text-fase-navy">{reportData.providers.length}</div>
+            <div className="text-gray-600 text-sm">Service Providers</div>
+          </div>
+        )}
       </div>
 
-      {/* Summary View */}
-      {activeView === 'summary' && (
-        <div className="space-y-6">
-          {/* Stat Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-fase-navy text-white rounded-lg p-4">
-              <div className="text-2xl font-bold">{reportData.totalAccounts}</div>
-              <div className="text-fase-cream/80 text-sm">Total Organizations</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="text-2xl font-bold text-fase-navy">{reportData.mgas.length}</div>
-              <div className="text-gray-600 text-sm">MGAs</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="text-2xl font-bold text-fase-navy">{reportData.carriers.length}</div>
-              <div className="text-gray-600 text-sm">Carriers</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="text-2xl font-bold text-fase-navy">{reportData.providers.length}</div>
-              <div className="text-gray-600 text-sm">Service Providers</div>
-            </div>
-          </div>
-
-          {/* Status & Country */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h4 className="text-lg font-semibold text-fase-navy mb-4">By Status</h4>
-              {renderBarChart(reportData.byStatus, reportData.totalAccounts)}
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h4 className="text-lg font-semibold text-fase-navy mb-4">By Country</h4>
-              <div className="max-h-80 overflow-y-auto">
-                {renderBarChart(reportData.byCountry, reportData.totalAccounts, 'bg-fase-gold')}
-              </div>
-            </div>
-          </div>
-
-          {/* Associations */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h4 className="text-lg font-semibold text-fase-navy mb-4">
-              Other Association Memberships
-              <span className="ml-2 text-sm font-normal text-gray-500">
-                ({reportData.withAssociations} organizations)
-              </span>
-            </h4>
-            {Object.keys(reportData.byAssociation).length > 0 ? (
-              renderBarChart(reportData.byAssociation, reportData.withAssociations, 'bg-green-500')
-            ) : (
-              <p className="text-sm text-gray-500 italic">No association data</p>
-            )}
+      {/* Status & Country - always shown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-fase-navy mb-4">By Status</h4>
+          {renderBarChart(reportData.byStatus, reportData.totalAccounts)}
+        </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-fase-navy mb-4">By Country</h4>
+          <div className="max-h-80 overflow-y-auto">
+            {renderBarChart(reportData.byCountry, reportData.totalAccounts, 'bg-fase-gold')}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* MGA View */}
-      {activeView === 'mga' && (
-        <div className="space-y-6">
-          {/* GWP Summary */}
+      {/* Associations - always shown */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h4 className="text-lg font-semibold text-fase-navy mb-4">
+          Other Association Memberships
+          <span className="ml-2 text-sm font-normal text-gray-500">
+            ({reportData.withAssociations} organizations)
+          </span>
+        </h4>
+        {Object.keys(reportData.byAssociation).length > 0 ? (
+          renderBarChart(reportData.byAssociation, reportData.withAssociations, 'bg-green-500')
+        ) : (
+          <p className="text-sm text-gray-500 italic">No association data</p>
+        )}
+      </div>
+
+      {/* MGA Section - shown when type is 'all' or 'MGA' */}
+      {(typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0 && (
+        <>
+          <h3 className="text-xl font-bold text-fase-navy border-b pb-2">MGA Analysis</h3>
           <div className="bg-fase-navy text-white rounded-lg p-6">
             <div className="text-sm text-fase-cream/80 mb-1">Total Gross Written Premiums</div>
             <div className="text-3xl font-bold">
@@ -685,13 +677,10 @@ export default function ReportsTab() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* GWP Bands */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">By GWP Band</h4>
               {renderBarChart(reportData.mgaByGWPBand, reportData.mgas.length)}
             </div>
-
-            {/* Lines of Business */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">Lines of Business</h4>
               <div className="max-h-80 overflow-y-auto">
@@ -700,27 +689,24 @@ export default function ReportsTab() {
             </div>
           </div>
 
-          {/* Target Markets */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-fase-navy mb-4">Target Markets</h4>
             <div className="max-h-80 overflow-y-auto">
               {renderBarChart(reportData.mgaByMarket, reportData.mgas.length, 'bg-fase-gold')}
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Carrier View */}
-      {activeView === 'carrier' && (
-        <div className="space-y-6">
+      {/* Carrier Section - shown when type is 'all' or 'carrier' */}
+      {(typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0 && (
+        <>
+          <h3 className="text-xl font-bold text-fase-navy border-b pb-2">Carrier Analysis</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Fronting Options */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">Fronting Options</h4>
               {renderBarChart(reportData.carrierByFronting, reportData.carriers.length)}
             </div>
-
-            {/* AM Best Ratings */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">AM Best Ratings</h4>
               {renderBarChart(reportData.carrierByRating, reportData.carriers.length, 'bg-green-500')}
@@ -728,13 +714,10 @@ export default function ReportsTab() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Startup MGAs */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">Considers Startup MGAs</h4>
               {renderBarChart(reportData.carrierByStartupMGA, reportData.carriers.length, 'bg-purple-500')}
             </div>
-
-            {/* Delegating Countries */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h4 className="text-lg font-semibold text-fase-navy mb-4">Delegating Countries</h4>
               <div className="max-h-64 overflow-y-auto">
@@ -742,17 +725,18 @@ export default function ReportsTab() {
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Provider View */}
-      {activeView === 'provider' && (
-        <div className="space-y-6">
+      {/* Provider Section - shown when type is 'all' or 'provider' */}
+      {(typeFilter === 'all' || typeFilter === 'provider') && reportData.providers.length > 0 && (
+        <>
+          <h3 className="text-xl font-bold text-fase-navy border-b pb-2">Service Provider Analysis</h3>
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-fase-navy mb-4">Services Provided</h4>
             {renderBarChart(reportData.providerByService, reportData.providers.length, 'bg-orange-500')}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
