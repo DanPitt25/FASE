@@ -675,11 +675,10 @@ export default function ReportsTab() {
         return centerY + radius + 15;
       };
 
-      // Draw detailed table with organization names
-      const drawDetailedTable = (
+      // Draw simple table (no organizations column)
+      const drawSimpleTable = (
         data: Record<string, number>,
         total: number,
-        getOrgsForItem: (item: string) => string[],
         startY: number,
         title: string
       ): number => {
@@ -687,9 +686,9 @@ export default function ReportsTab() {
         if (sorted.length === 0) return startY;
 
         let y = startY;
+        const rowHeight = 8;
 
         // Table header
-        doc.setFillColor(255, 255, 255);
         doc.setDrawColor(45, 85, 116);
         doc.setLineWidth(0.5);
         doc.line(margin, y + 8, pageWidth - margin, y + 8);
@@ -697,23 +696,16 @@ export default function ReportsTab() {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(45, 85, 116);
-        doc.text('#', margin + 3, y + 5);
-        doc.text(title, margin + 15, y + 5);
-        doc.text('Count', margin + 85, y + 5);
-        doc.text('Coverage', margin + 105, y + 5);
-        doc.text('Organizations', margin + 130, y + 5);
+        doc.text('#', margin + 5, y + 5);
+        doc.text(title, margin + 18, y + 5);
+        doc.text('Count', pageWidth - margin - 45, y + 5, { align: 'right' });
+        doc.text('Coverage', pageWidth - margin - 5, y + 5, { align: 'right' });
 
         y += 12;
 
         // Table rows
         sorted.forEach(([label, count], index) => {
           const pct = Math.round((count / total) * 100);
-          const orgs = getOrgsForItem(label);
-          const displayOrgs = orgs.slice(0, 5);
-          const moreCount = orgs.length - 5;
-
-          // Calculate row height based on content
-          const rowHeight = Math.max(12, Math.min(displayOrgs.length * 4 + 4, 24));
 
           // Check for page break
           if (y + rowHeight > pageHeight - 20) {
@@ -735,11 +727,10 @@ export default function ReportsTab() {
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(45, 85, 116);
-            doc.text('#', margin + 3, y + 5);
-            doc.text(title, margin + 15, y + 5);
-            doc.text('Count', margin + 85, y + 5);
-            doc.text('Coverage', margin + 105, y + 5);
-            doc.text('Organizations', margin + 130, y + 5);
+            doc.text('#', margin + 5, y + 5);
+            doc.text(title, margin + 18, y + 5);
+            doc.text('Count', pageWidth - margin - 45, y + 5, { align: 'right' });
+            doc.text('Coverage', pageWidth - margin - 5, y + 5, { align: 'right' });
 
             y += 12;
           }
@@ -747,41 +738,27 @@ export default function ReportsTab() {
           // Row separator
           doc.setDrawColor(230, 230, 230);
           doc.setLineWidth(0.2);
-          doc.line(margin, y + rowHeight - 2, pageWidth - margin, y + rowHeight - 2);
+          doc.line(margin, y + rowHeight - 1, pageWidth - margin, y + rowHeight - 1);
 
           // Row number
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(100, 100, 100);
-          doc.text(String(index + 1), margin + 3, y + 5);
+          doc.text(String(index + 1), margin + 5, y + 5);
 
           // Item name
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(45, 85, 116);
-          const displayLabel = label.length > 25 ? label.substring(0, 23) + '...' : label;
-          doc.text(displayLabel, margin + 15, y + 5);
+          const displayLabel = label.length > 40 ? label.substring(0, 38) + '...' : label;
+          doc.text(displayLabel, margin + 18, y + 5);
 
           // Count
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(60, 60, 60);
-          doc.text(String(count), margin + 85, y + 5);
+          doc.text(String(count), pageWidth - margin - 45, y + 5, { align: 'right' });
 
           // Coverage percentage
-          doc.text(`${pct}%`, margin + 105, y + 5);
-
-          // Organizations list
-          doc.setFontSize(7);
-          doc.setTextColor(80, 80, 80);
-          let orgY = y + 4;
-          displayOrgs.forEach((org) => {
-            const displayOrg = org.length > 30 ? org.substring(0, 28) + '...' : org;
-            doc.text(displayOrg, margin + 130, orgY);
-            orgY += 3.5;
-          });
-          if (moreCount > 0) {
-            doc.setTextColor(45, 85, 116);
-            doc.text(`+${moreCount} more`, margin + 130, orgY);
-          }
+          doc.text(`${pct}%`, pageWidth - margin - 5, y + 5, { align: 'right' });
 
           y += rowHeight;
         });
@@ -796,47 +773,6 @@ export default function ReportsTab() {
       const typeLabel = typeFilter === 'all' ? 'All Organizations' :
         typeFilter === 'MGA' ? 'MGAs' :
         typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
-
-      // Helper to get MGAs for a line of business
-      const getMGAsForLineOfBusiness = (lobLabel: string): string[] => {
-        return reportData.mgas
-          .filter(mga => mga.portfolio?.linesOfBusiness?.some(lob => getLineOfBusinessDisplay(lob, 'en') === lobLabel))
-          .map(mga => mga.organizationName)
-          .sort();
-      };
-
-      // Helper to get MGAs for a market
-      const getMGAsForMarket = (marketName: string): string[] => {
-        return reportData.mgas
-          .filter(mga => mga.portfolio?.markets?.some(m => (countryNames[m] || m) === marketName))
-          .map(mga => mga.organizationName)
-          .sort();
-      };
-
-      // Helper to get carriers for a rating
-      const getCarriersForRating = (rating: string): string[] => {
-        return reportData.carriers
-          .filter(c => c.carrierInfo?.amBestRating === rating)
-          .map(c => c.organizationName)
-          .sort();
-      };
-
-      // Helper to get carriers for fronting option
-      const getCarriersForFronting = (option: string): string[] => {
-        return reportData.carriers
-          .filter(c => c.carrierInfo?.frontingOptions === option)
-          .map(c => c.organizationName)
-          .sort();
-      };
-
-      // Helper to get providers for a service
-      const getProvidersForService = (serviceLabel: string): string[] => {
-        const serviceKey = Object.entries(serviceLabels).find(([, v]) => v === serviceLabel)?.[0] || serviceLabel;
-        return reportData.providers
-          .filter(p => p.servicesProvided?.includes(serviceKey))
-          .map(p => p.organizationName)
-          .sort();
-      };
 
       // MGA Lines of Business Report
       const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
@@ -919,14 +855,14 @@ export default function ReportsTab() {
 
         // Bar chart section
         let y = cardY + cardHeight + 15;
-        drawCardBorder(margin, y, pageWidth - margin * 2, 130);
+        drawCardBorder(margin, y, pageWidth - margin * 2, 155);
 
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(45, 85, 116);
         doc.text('Distribution by Line of Business (Top 15)', margin + 5, y + 10);
 
-        drawHorizontalBarChart(lobData, maxCount, y + 18, 15);
+        drawHorizontalBarChart(lobData, maxCount, y + 16, 15);
 
         // Page 2: Donut chart + detailed table
         doc.addPage();
@@ -935,7 +871,7 @@ export default function ReportsTab() {
         y = drawDonutWithLegend(lobData, totalLobEntries, margin + 5, 'Market Share by Line of Business');
 
         // Detailed table
-        drawDetailedTable(lobData, reportData.mgas.length, getMGAsForLineOfBusiness, y + 5, 'Line of Business');
+        drawSimpleTable(lobData, reportData.mgas.length, y + 5, 'Line of Business');
       }
 
       // Summary page (if selected and not already showing specific MGA report)
@@ -986,8 +922,7 @@ export default function ReportsTab() {
       const drawSimpleSectionPage = (
         title: string,
         data: Record<string, number>,
-        total: number,
-        getOrgsForItem?: (item: string) => string[]
+        total: number
       ) => {
         if (needsFirstPage) {
           needsFirstPage = false;
@@ -999,6 +934,8 @@ export default function ReportsTab() {
         if (sorted.length === 0) return;
 
         const maxCount = sorted[0][1];
+        const itemCount = Math.min(sorted.length, 15);
+        const chartHeight = itemCount * 9 + 30;
 
         // Title
         doc.setFontSize(18);
@@ -1008,7 +945,7 @@ export default function ReportsTab() {
 
         // Bar chart
         let y = 30;
-        drawCardBorder(margin, y, pageWidth - margin * 2, Math.min(sorted.length * 9 + 25, 140));
+        drawCardBorder(margin, y, pageWidth - margin * 2, chartHeight);
         y = drawHorizontalBarChart(data, maxCount, y + 12, 15);
 
         // Donut + legend if we have room
@@ -1017,11 +954,9 @@ export default function ReportsTab() {
           y = drawDonutWithLegend(data, Object.values(data).reduce((a, b) => a + b, 0), y, 'Distribution');
         }
 
-        // Detailed table if org lookup provided
-        if (getOrgsForItem && y < pageHeight - 50) {
-          doc.addPage();
-          drawDetailedTable(data, total, getOrgsForItem, margin + 5, title);
-        }
+        // Table on next page
+        doc.addPage();
+        drawSimpleTable(data, total, margin + 5, title);
       };
 
       // Status page
@@ -1061,7 +996,7 @@ export default function ReportsTab() {
         drawHorizontalBarChart(reportData.mgaByMarket, maxCount, y + 12, 15);
 
         doc.addPage();
-        drawDetailedTable(reportData.mgaByMarket, reportData.mgas.length, getMGAsForMarket, margin + 5, 'Target Market');
+        drawSimpleTable(reportData.mgaByMarket, reportData.mgas.length, margin + 5, 'Target Market');
       }
 
       // Carrier pages
@@ -1079,7 +1014,7 @@ export default function ReportsTab() {
           drawHorizontalBarChart(reportData.carrierByFronting, sorted[0][1], y + 12, 10);
           y = drawDonutWithLegend(reportData.carrierByFronting, Object.values(reportData.carrierByFronting).reduce((a, b) => a + b, 0), 140, 'Distribution');
           doc.addPage();
-          drawDetailedTable(reportData.carrierByFronting, reportData.carriers.length, getCarriersForFronting, margin + 5, 'Fronting Option');
+          drawSimpleTable(reportData.carrierByFronting, reportData.carriers.length, margin + 5, 'Fronting Option');
         }
 
         if (pdfSections.carrierRatings && Object.keys(reportData.carrierByRating).length > 0) {
@@ -1094,7 +1029,7 @@ export default function ReportsTab() {
           drawHorizontalBarChart(reportData.carrierByRating, sorted[0][1], y + 12, 10);
           y = drawDonutWithLegend(reportData.carrierByRating, Object.values(reportData.carrierByRating).reduce((a, b) => a + b, 0), 140, 'Distribution');
           doc.addPage();
-          drawDetailedTable(reportData.carrierByRating, reportData.carriers.length, getCarriersForRating, margin + 5, 'AM Best Rating');
+          drawSimpleTable(reportData.carrierByRating, reportData.carriers.length, margin + 5, 'AM Best Rating');
         }
 
         if (pdfSections.carrierStartups && Object.keys(reportData.carrierByStartupMGA).length > 0) {
@@ -1120,7 +1055,7 @@ export default function ReportsTab() {
         drawHorizontalBarChart(reportData.providerByService, sorted[0][1], y + 12, 15);
         y = drawDonutWithLegend(reportData.providerByService, Object.values(reportData.providerByService).reduce((a, b) => a + b, 0), 170, 'Distribution');
         doc.addPage();
-        drawDetailedTable(reportData.providerByService, reportData.providers.length, getProvidersForService, margin + 5, 'Service');
+        drawSimpleTable(reportData.providerByService, reportData.providers.length, margin + 5, 'Service');
       }
 
       // Footer on all pages
