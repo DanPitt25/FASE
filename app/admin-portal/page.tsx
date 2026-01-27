@@ -18,6 +18,7 @@ import TempAccountTab from './components/TempAccountTab';
 import SponsorsTab from './components/SponsorsTab';
 import BioReviewTab from './components/BioReviewTab';
 import RendezvousTab from './components/RendezvousTab';
+import TasksTab from './components/TasksTab';
 
 
 export default function AdminPortalPage() {
@@ -37,7 +38,7 @@ export default function AdminPortalPage() {
     members: false,
   });
 
-  const [activeSection, setActiveSection] = useState<string>('members');
+  const [activeSection, setActiveSection] = useState<string>('tasks');
 
   // State for email prefill
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
@@ -205,8 +206,18 @@ export default function AdminPortalPage() {
     return null;
   }
 
-  // Dashboard sections - streamlined to 6 essential tabs
+  // Dashboard sections
   const dashboardSections = [
+    {
+      id: 'tasks',
+      title: 'Tasks',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      ),
+      content: <TasksTab />
+    },
     {
       id: 'members',
       title: `Members (${memberApplications.length})`,
@@ -299,7 +310,7 @@ export default function AdminPortalPage() {
       statusBadge={statusBadge()}
       activeSection={activeSection}
       onActiveSectionChange={handleActiveSectionChange}
-      defaultActiveSection="members"
+      defaultActiveSection="tasks"
     />
   );
 }

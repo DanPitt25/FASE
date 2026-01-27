@@ -1,0 +1,223 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { logPaymentReceived, logInvoicePaid } from '../../../../lib/activity-logger';
+
+export const dynamic = 'force-dynamic';
+
+let admin: any;
+let db: FirebaseFirestore.Firestore;
+
+const initializeFirebase = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { admin, db };
+};
+
+/**
+ * POST: Match a Wise transfer to an invoice
+ * Body: { invoiceId, wiseReference, amount, currency, senderName, transactionDate }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const { admin, db } = await initializeFirebase();
+
+    const body = await request.json();
+    const { invoiceId, wiseReference, amount, currency, senderName, transactionDate } = body;
+
+    if (!invoiceId) {
+      return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 });
+    }
+
+    // Get the invoice
+    const invoiceRef = db.collection('invoices').doc(invoiceId);
+    const invoiceDoc = await invoiceRef.get();
+
+    if (!invoiceDoc.exists) {
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+    }
+
+    const invoiceData = invoiceDoc.data();
+
+    if (invoiceData?.status === 'paid') {
+      return NextResponse.json(
+        { error: 'Invoice is already marked as paid' },
+        { status: 400 }
+      );
+    }
+
+    // Update the invoice
+    await invoiceRef.update({
+      status: 'paid',
+      paymentMethod: 'wise',
+      wiseReference: wiseReference || null,
+      paidAt: transactionDate
+        ? admin.firestore.Timestamp.fromDate(new Date(transactionDate))
+        : admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Log activity if we have an account ID
+    if (invoiceData?.accountId) {
+      await logPaymentReceived(
+        invoiceData.accountId,
+        amount || invoiceData.amount,
+        currency || invoiceData.currency,
+        'wise',
+        invoiceId
+      );
+
+      await logInvoicePaid(
+        invoiceData.accountId,
+        invoiceData.invoiceNumber,
+        amount || invoiceData.amount,
+        currency || invoiceData.currency,
+        invoiceId,
+        'Wise Transfer'
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Invoice matched and marked as paid',
+      invoice: {
+        id: invoiceId,
+        invoiceNumber: invoiceData?.invoiceNumber,
+        status: 'paid',
+        paymentMethod: 'wise',
+        wiseReference,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error matching Wise transfer to invoice:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to match transfer' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET: Auto-match all unmatched transfers to invoices
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { db } = await initializeFirebase();
+
+    // Get all unpaid invoices
+    const unpaidInvoices = await db
+      .collection('invoices')
+      .where('status', '!=', 'paid')
+      .get();
+
+    const invoiceMap = new Map<string, any>();
+    unpaidInvoices.docs.forEach((doc) => {
+      const data = doc.data();
+      invoiceMap.set(data.invoiceNumber?.toUpperCase(), {
+        id: doc.id,
+        ...data,
+      });
+    });
+
+    // Get Wise transactions
+    const { getWiseClient } = await import('../../../../lib/wise-api');
+    const wiseClient = getWiseClient();
+    const transactions = await wiseClient.getIncomingPayments();
+
+    const matches: any[] = [];
+    const unmatched: any[] = [];
+
+    for (const transaction of transactions) {
+      const reference = (
+        transaction.details.paymentReference ||
+        transaction.details.description ||
+        ''
+      ).toUpperCase();
+
+      let matched = false;
+
+      // Try to find a matching invoice
+      for (const [invoiceNumber, invoice] of invoiceMap) {
+        if (reference.includes(invoiceNumber)) {
+          matches.push({
+            transaction: {
+              referenceNumber: transaction.referenceNumber,
+              date: transaction.date,
+              amount: transaction.amount.value,
+              currency: transaction.amount.currency,
+              senderName: transaction.details.senderName,
+              paymentReference: transaction.details.paymentReference,
+            },
+            invoice: {
+              id: invoice.id,
+              invoiceNumber: invoice.invoiceNumber,
+              amount: invoice.amount,
+              currency: invoice.currency,
+              organizationName: invoice.organizationName,
+            },
+            confidence: 'high',
+          });
+          matched = true;
+          break;
+        }
+      }
+
+      if (!matched) {
+        unmatched.push({
+          referenceNumber: transaction.referenceNumber,
+          date: transaction.date,
+          amount: transaction.amount.value,
+          currency: transaction.amount.currency,
+          senderName: transaction.details.senderName,
+          paymentReference: transaction.details.paymentReference,
+          description: transaction.details.description,
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      matches,
+      unmatched,
+      summary: {
+        totalTransactions: transactions.length,
+        matchedCount: matches.length,
+        unmatchedCount: unmatched.length,
+        unpaidInvoicesCount: unpaidInvoices.size,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error auto-matching Wise transfers:', error);
+
+    if (error.message?.includes('environment variable')) {
+      return NextResponse.json(
+        {
+          error: 'Wise API not configured',
+          details: error.message,
+          configured: false,
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: error.message || 'Failed to auto-match transfers' },
+      { status: 500 }
+    );
+  }
+}

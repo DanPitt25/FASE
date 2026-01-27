@@ -8,7 +8,7 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
 }
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }: ModalProps) {
@@ -42,12 +42,16 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
 
   if (!isOpen) return null;
 
-  const maxWidthClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md', 
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl'
+  const widthClasses: Record<string, string> = {
+    sm: 'w-full max-w-sm',
+    md: 'w-full max-w-md',
+    lg: 'w-full max-w-lg',
+    xl: 'w-full max-w-xl',
+    '2xl': 'w-full max-w-2xl',
+    '3xl': 'w-full max-w-3xl',
+    '4xl': 'w-full max-w-4xl',
+    '5xl': 'w-full max-w-5xl',
+    '6xl': 'w-full max-w-6xl',
   };
 
   const modalContent = (
@@ -59,8 +63,8 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md
       />
 
       {/* Modal with scale and fade animation */}
-      <div 
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${maxWidthClasses[maxWidth]} overflow-hidden text-left transition-all bg-white shadow-xl rounded-lg z-10 max-h-[90vh] overflow-y-auto animate-modalSlideIn`}
+      <div
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${widthClasses[maxWidth]} overflow-hidden text-left transition-all bg-white shadow-xl rounded-lg z-10 max-h-[90vh] overflow-y-auto animate-modalSlideIn`}
         style={{ maxWidth: 'calc(100vw - 2rem)' }}
       >
           {/* Header */}

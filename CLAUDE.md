@@ -1,7 +1,8 @@
 # FASE Site - Claude Memory
 
 ## Project Overview
-- Next.js 14 website for Federation of European MGAs
+- Next.js 14 website for FASE
+- **FASE stands for "Fédération des Agences de Souscription Européennes"** - DO NOT use any other expansion of the acronym (not "Federation of Associations of Specialised Expertise" or anything else)
 - Tech stack: Next.js, TypeScript, Firebase, Tailwind CSS, NextAuth
 - Deployment: Vercel
 

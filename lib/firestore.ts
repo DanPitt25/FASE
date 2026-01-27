@@ -581,6 +581,152 @@ export interface Invoice {
   sentAt: any;
   pdfGenerated: boolean;
   pdfUrl?: string; // Firebase Storage URL for the PDF
+
+  // Payment tracking fields
+  accountId?: string; // Link to accounts collection
+  paymentMethod?: 'stripe' | 'wise' | 'bank_transfer' | 'manual';
+  paymentId?: string; // External payment reference
+  paidAt?: any; // Timestamp when paid
+
+  // Stripe-specific fields
+  stripePaymentIntentId?: string;
+  stripeCheckoutSessionId?: string;
+  stripeCustomerId?: string;
+
+  // Wise-specific fields
+  wiseTransferId?: string;
+  wiseReference?: string;
+}
+
+// ==========================================
+// CRM: ACTIVITY TIMELINE
+// Collection: accounts/{accountId}/activities
+// ==========================================
+
+export type ActivityType =
+  | 'email_sent'
+  | 'status_change'
+  | 'payment_received'
+  | 'invoice_sent'
+  | 'invoice_paid'
+  | 'note_added'
+  | 'note_updated'
+  | 'note_deleted'
+  | 'member_added'
+  | 'member_removed'
+  | 'task_created'
+  | 'task_updated'
+  | 'task_completed'
+  | 'wise_transfer'
+  | 'stripe_payment'
+  | 'bio_updated'
+  | 'logo_updated'
+  | 'manual_entry';
+
+export interface Activity {
+  id: string;
+  accountId: string;
+  type: ActivityType;
+  title: string;
+  description?: string;
+  metadata?: Record<string, any>;
+  performedBy?: string; // Admin user ID or 'system'
+  performedByName?: string;
+  createdAt: any;
+  relatedInvoiceId?: string;
+  relatedMemberId?: string;
+}
+
+// ==========================================
+// CRM: NOTES
+// Collection: accounts/{accountId}/notes
+// ==========================================
+
+export type NoteCategory = 'general' | 'payment' | 'support' | 'sales' | 'other';
+
+export interface Note {
+  id: string;
+  accountId: string;
+  content: string;
+  createdBy: string; // Admin user ID
+  createdByName: string;
+  createdAt: any;
+  updatedAt: any;
+  category?: NoteCategory;
+  isPinned?: boolean;
+}
+
+// ==========================================
+// CRM: TASKS
+// Collection: accounts/{accountId}/tasks
+// ==========================================
+
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskPriority = 'low' | 'medium' | 'high';
+
+export interface Task {
+  id: string;
+  accountId: string;
+  accountName?: string; // Denormalized for display
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority?: TaskPriority;
+  dueDate?: any;
+  assignedTo?: string; // Admin user ID
+  assignedToName?: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: any;
+  updatedAt: any;
+  completedAt?: any;
+}
+
+// ==========================================
+// STRIPE PAYMENT TRACKING
+// ==========================================
+
+export interface StripePayment {
+  id: string;
+  accountId?: string;
+  invoiceId?: string;
+  stripePaymentIntentId: string;
+  stripeCustomerId?: string;
+  stripeChargeId?: string;
+  amount: number;
+  currency: string;
+  status: 'initiated' | 'processing' | 'succeeded' | 'failed' | 'canceled' | 'refunded';
+  paymentMethod?: string;
+  errorMessage?: string;
+  createdAt: any;
+  updatedAt: any;
+  succeededAt?: any;
+  metadata?: Record<string, any>;
+}
+
+// ==========================================
+// WISE TRANSFER TRACKING
+// ==========================================
+
+export interface WiseTransfer {
+  id: string;
+  accountId?: string;
+  invoiceId?: string;
+  wiseTransferId: string;
+  wiseQuoteId?: string;
+  sourceAmount: number;
+  sourceCurrency: string;
+  targetAmount: number;
+  targetCurrency: string;
+  exchangeRate?: number;
+  reference: string;
+  status: 'incoming_payment_waiting' | 'processing' | 'funds_converted' | 'outgoing_payment_sent' | 'completed' | 'cancelled' | 'failed';
+  senderName?: string;
+  createdAt: any;
+  updatedAt: any;
+  completedAt?: any;
+  matched: boolean; // Whether matched to an invoice
+  matchedAt?: any;
 }
 
 

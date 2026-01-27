@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { safeDocExists, safeDocData } from '../../../lib/firebase-helpers';
+import { logStripePayment, logPaymentReceived, logInvoicePaid } from '../../../lib/activity-logger';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object as Stripe.Checkout.Session;
-      
+
       if (session.metadata?.user_id) {
         try {
           await updateMemberStatus(
@@ -127,6 +128,42 @@ export async function POST(request: NextRequest) {
             'stripe',
             session.id
           );
+
+          // Log activity for the payment
+          const accountId = session.metadata.account_id || session.metadata.user_id;
+          if (accountId && session.amount_total) {
+            await logPaymentReceived(
+              accountId,
+              session.amount_total / 100,
+              (session.currency || 'eur').toUpperCase(),
+              'stripe'
+            );
+          }
+
+          // If there's an invoice number, mark it as paid and log
+          if (session.metadata.invoice_number && accountId) {
+            await logInvoicePaid(
+              accountId,
+              session.metadata.invoice_number,
+              (session.amount_total || 0) / 100,
+              (session.currency || 'eur').toUpperCase(),
+              session.metadata.invoice_id || '',
+              'Stripe'
+            );
+
+            // Update the invoice in Firestore if we have an invoice_id
+            if (session.metadata.invoice_id) {
+              const db = admin.firestore();
+              await db.collection('invoices').doc(session.metadata.invoice_id).update({
+                status: 'paid',
+                paymentMethod: 'stripe',
+                paymentId: session.id,
+                stripeCheckoutSessionId: session.id,
+                paidAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
+          }
         } catch (error) {
           console.error('Failed to update member application:', error);
         }

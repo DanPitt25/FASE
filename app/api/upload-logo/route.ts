@@ -9,19 +9,23 @@ export const runtime = 'nodejs';
 // Initialize Firebase Admin using service account key
 const initializeAdmin = async () => {
   if (admin.apps.length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
+    }
+
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+    // Use explicit bucket name or construct from project ID (new Firebase Storage format)
+    const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
 
     admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
+      credential: admin.credential.cert(serviceAccount),
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      storageBucket,
     });
   }
-  
+
   return {
     auth: admin.auth(),
     storage: admin.storage()
@@ -92,8 +96,10 @@ export async function POST(request: NextRequest) {
     // Convert File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to Firebase Storage
-    const bucket = storage.bucket();
+    // Upload to Firebase Storage - explicitly specify bucket name
+    const bucketToUse = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
+    const bucket = storage.bucket(bucketToUse);
     const fileRef = bucket.file(filePath);
 
     await fileRef.save(buffer, {
@@ -151,8 +157,14 @@ export async function POST(request: NextRequest) {
       filePath,
       fileName,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Logo upload error:', error);
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack?.substring(0, 500)
+    });
 
     if (error instanceof AuthError) {
       await logSecurityEvent({
@@ -168,8 +180,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Return actual error message for debugging
     return NextResponse.json(
-      { error: 'Failed to upload logo' },
+      { error: error?.message || 'Failed to upload logo' },
       { status: 500 }
     );
   }
