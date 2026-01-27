@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
       let matched = false;
 
       // Try to find a matching invoice
-      for (const [invoiceNumber, invoice] of invoiceMap) {
+      for (const [invoiceNumber, invoice] of Array.from(invoiceMap.entries())) {
         if (reference.includes(invoiceNumber)) {
           matches.push({
             transaction: {
