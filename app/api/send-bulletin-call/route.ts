@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     // Get template for locale
     const template = bulletinTemplates[locale] || bulletinTemplates['en'];
-    const deadline = requestData.bulletinDeadline || 'Tuesday, 28 January';
+    const deadline = 'Friday, 31 January';
     const recipientName = requestData.greeting || requestData.fullName;
 
     // Load signatures

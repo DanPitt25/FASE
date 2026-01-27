@@ -69,8 +69,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       isComplimentary: false,
       specialRequests: ''
     },
-    // Bulletin call fields
-    bulletinDeadline: 'Tuesday, 28 January'
   });
 
   const [sending, setSending] = useState(false);
@@ -1132,8 +1130,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           </div>
 
-          {/* Contact Details - Only for non-freeform templates */}
-          {selectedTemplate !== 'freeform' && (
+          {/* Contact Details - Only for templates that need full contact info */}
+          {selectedTemplate !== 'freeform' && selectedTemplate !== 'bulletin_call' && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Contact Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1172,8 +1170,26 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Organization Details - Only for non-freeform templates */}
-          {selectedTemplate !== 'freeform' && (
+          {/* Simple Name Field - For bulletin_call */}
+          {selectedTemplate === 'bulletin_call' && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Recipient</h4>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  required
+                  placeholder="e.g., John Smith"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Organization Details - Only for templates that need it */}
+          {selectedTemplate !== 'freeform' && selectedTemplate !== 'bulletin_call' && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Organization Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1637,28 +1653,12 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Bulletin Call Fields */}
+          {/* Bulletin Call Info */}
           {selectedTemplate === 'bulletin_call' && (
-            <div>
-              <h4 className="text-md font-semibold mb-4 text-fase-navy">Bulletin Details</h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Submission Deadline</label>
-                  <input
-                    type="text"
-                    value={formData.bulletinDeadline}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bulletinDeadline: e.target.value }))}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    placeholder="e.g., Tuesday, 28 January"
-                  />
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> This email will be sent using the recipient&apos;s name from the form above.
-                    The template will be automatically translated based on the selected locale.
-                  </p>
-                </div>
-              </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Deadline:</strong> Friday, 31 January (hardcoded). The template will be automatically translated based on the selected locale.
+              </p>
             </div>
           )}
 
