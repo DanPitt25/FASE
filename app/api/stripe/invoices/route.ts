@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       hostedInvoiceUrl: invoice.hosted_invoice_url,
       invoicePdf: invoice.invoice_pdf,
       metadata: invoice.metadata,
-      subscriptionId: typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id,
+      subscriptionId: (invoice as any).subscription ? (typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : (invoice as any).subscription?.id) : null,
       description: invoice.description,
       // Line items summary
       lineItems: invoice.lines?.data?.map((line) => ({
