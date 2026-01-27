@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Bulletin call email sent successfully',
+      message: `Email sent successfully (ID: ${result.id})`,
       emailId: result.id,
       to: requestData.email,
       subject: template.subject

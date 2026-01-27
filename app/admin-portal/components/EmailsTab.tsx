@@ -1700,7 +1700,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           {/* Result Display */}
           {result && (
             <div className={`p-4 rounded-lg ${result.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
-              {result.error ? `Error: ${result.error}` : 'Email sent successfully!'}
+              {result.error ? `Error: ${result.error}` : (result.message || 'Email sent successfully!')}
             </div>
           )}
         </form>
