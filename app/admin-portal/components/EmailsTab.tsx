@@ -331,14 +331,18 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           body: JSON.stringify(payload),
         });
       } else {
+        console.log('Sending to endpoint:', template.apiEndpoint);
+        console.log('Payload:', JSON.stringify(payload, null, 2));
         response = await fetch(template.apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+        console.log('Response status:', response.status);
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (isPreview) {
         setPreview(data);
