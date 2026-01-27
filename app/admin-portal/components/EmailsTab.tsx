@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import EmailEditorModal from './EmailEditorModal';
+import BulletinTemplateModal from './BulletinTemplateModal';
 import { createInvoiceRecord } from '../../../lib/firestore';
 
 interface EmailsTabProps {
@@ -96,6 +97,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sendingMassEmail, setSendingMassEmail] = useState(false);
   const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; error?: string } | null>(null);
+  const [showBulletinTemplate, setShowBulletinTemplate] = useState(false);
 
   // Update form data when prefilledData changes
   useEffect(() => {
@@ -1405,7 +1407,16 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           {/* Freeform Email Fields */}
           {selectedTemplate === 'freeform' && (
             <div>
-              <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Content</h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-md font-semibold text-fase-navy">Email Content</h4>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowBulletinTemplate(true)}
+                  className="text-sm"
+                >
+                  Use Bulletin Template
+                </Button>
+              </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
@@ -1776,6 +1787,19 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           originalTemplate={defaultTemplate}
         />
       )}
+
+      {/* Bulletin Template Modal */}
+      <BulletinTemplateModal
+        isOpen={showBulletinTemplate}
+        onClose={() => setShowBulletinTemplate(false)}
+        onApply={(subject, body) => {
+          setFormData(prev => ({
+            ...prev,
+            freeformSubject: subject,
+            freeformBody: body
+          }));
+        }}
+      />
     </div>
   );
 }
