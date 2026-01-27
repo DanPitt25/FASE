@@ -1170,20 +1170,34 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Simple Name Field - For bulletin_call */}
+          {/* Simple Name + Gender - For bulletin_call */}
           {selectedTemplate === 'bulletin_call' && (
             <div>
               <h4 className="text-md font-semibold mb-4 text-fase-navy">Recipient</h4>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
-                <input
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  required
-                  placeholder="e.g., John Smith"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    required
+                    placeholder="e.g., Pitt"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Surname only (for formal salutation)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  >
+                    <option value="m">Male (Mr / Herr / Monsieur)</option>
+                    <option value="f">Female (Ms / Frau / Madame)</option>
+                  </select>
+                </div>
               </div>
             </div>
           )}

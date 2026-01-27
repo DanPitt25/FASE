@@ -4,11 +4,39 @@ import * as path from 'path';
 
 export const runtime = 'nodejs';
 
+// Salutations by language and gender
+const salutations: Record<string, { m: (name: string) => string; f: (name: string) => string }> = {
+  en: {
+    m: (name) => `Dear Mr ${name}`,
+    f: (name) => `Dear Ms ${name}`
+  },
+  fr: {
+    m: (name) => `Cher Monsieur ${name}`,
+    f: (name) => `Chère Madame ${name}`
+  },
+  de: {
+    m: (name) => `Sehr geehrter Herr ${name}`,
+    f: (name) => `Sehr geehrte Frau ${name}`
+  },
+  es: {
+    m: (name) => `Estimado Sr. ${name}`,
+    f: (name) => `Estimada Sra. ${name}`
+  },
+  it: {
+    m: (name) => `Gentile Sig. ${name}`,
+    f: (name) => `Gentile Sig.ra ${name}`
+  },
+  nl: {
+    m: (name) => `Geachte heer ${name}`,
+    f: (name) => `Geachte mevrouw ${name}`
+  }
+};
+
 // Bulletin templates in all supported languages
-const bulletinTemplates: Record<string, { subject: string; body: (name: string, deadline: string) => string }> = {
+const bulletinTemplates: Record<string, { subject: string; body: (salutation: string, deadline: string) => string }> = {
   en: {
     subject: 'Call for Content: The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Dear ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 We'll shortly be issuing the first edition of The Entrepreneurial Underwriter, FASE's monthly member bulletin, and we'd like to include any items that may be relevant to our members from your organization.
 
@@ -26,7 +54,7 @@ The Entrepreneurial Underwriter will be distributed to all FASE members and post
   },
   fr: {
     subject: 'Appel à contributions : The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Cher/Chère ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 Nous publierons prochainement la première édition de The Entrepreneurial Underwriter, le bulletin mensuel des membres de FASE, et nous aimerions y inclure toute information pertinente pour nos membres provenant de votre organisation.
 
@@ -44,7 +72,7 @@ The Entrepreneurial Underwriter sera distribué à tous les membres de FASE et p
   },
   de: {
     subject: 'Aufruf zur Einreichung: The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Sehr geehrte/r ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 Wir werden in Kürze die erste Ausgabe von The Entrepreneurial Underwriter, dem monatlichen Mitglieder-Newsletter von FASE, veröffentlichen und möchten gerne relevante Beiträge Ihrer Organisation für unsere Mitglieder aufnehmen.
 
@@ -62,7 +90,7 @@ The Entrepreneurial Underwriter wird an alle FASE-Mitglieder verteilt und auf un
   },
   es: {
     subject: 'Convocatoria de contenidos: The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Estimado/a ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 Próximamente publicaremos la primera edición de The Entrepreneurial Underwriter, el boletín mensual para miembros de FASE, y nos gustaría incluir cualquier información relevante para nuestros miembros procedente de su organización.
 
@@ -80,7 +108,7 @@ The Entrepreneurial Underwriter se distribuirá a todos los miembros de FASE y s
   },
   it: {
     subject: 'Invito a contribuire: The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Gentile ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 A breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e vorremmo includere eventuali contenuti rilevanti per i nostri membri provenienti dalla vostra organizzazione.
 
@@ -98,7 +126,7 @@ The Entrepreneurial Underwriter sarà distribuito a tutti i membri FASE e pubbli
   },
   nl: {
     subject: 'Oproep voor bijdragen: The Entrepreneurial Underwriter',
-    body: (name: string, deadline: string) => `Beste ${name},
+    body: (salutation: string, deadline: string) => `${salutation},
 
 Binnenkort brengen we de eerste editie uit van The Entrepreneurial Underwriter, de maandelijkse nieuwsbrief voor FASE-leden, en we willen graag relevante items van uw organisatie opnemen voor onze leden.
 
@@ -155,7 +183,12 @@ export async function POST(request: NextRequest) {
     // Get template for locale
     const template = bulletinTemplates[locale] || bulletinTemplates['en'];
     const deadline = 'Friday, 31 January';
-    const recipientName = requestData.greeting || requestData.fullName;
+
+    // Build salutation based on gender
+    const gender = requestData.gender || 'm';
+    const recipientName = requestData.fullName;
+    const localeSalutations = salutations[locale] || salutations['en'];
+    const salutation = gender === 'f' ? localeSalutations.f(recipientName) : localeSalutations.m(recipientName);
 
     // Load signatures
     const emailTranslations = loadEmailTranslations(locale);
@@ -167,7 +200,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate email body
-    const bodyText = template.body(recipientName, deadline);
+    const bodyText = template.body(salutation, deadline);
 
     // Create HTML content
     const htmlContent = `
