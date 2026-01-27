@@ -4,22 +4,149 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import Button from '../../../components/Button';
-import { OrganizationAccount } from '../../../lib/unified-member';
+
+// Lines of business labels for display
+const linesOfBusinessLabels: Record<string, string> = {
+  'accident_health': 'Accident & Health',
+  'aviation': 'Aviation',
+  'bloodstock': 'Bloodstock',
+  'commercial_property': 'Commercial Property',
+  'construction_engineering': 'Construction & Engineering',
+  'contingency': 'Contingency',
+  'cyber': 'Cyber',
+  'energy': 'Energy',
+  'environmental': 'Environmental',
+  'fine_art_specie': 'Fine Art / Specie',
+  'liability': 'Liability',
+  'marine': 'Marine',
+  'motor': 'Motor',
+  'personal_lines': 'Personal Lines',
+  'political_risk': 'Political Risk / Trade Credit',
+  'professional_liability': 'Professional Liability',
+  'property': 'Property',
+  'surety': 'Surety',
+  'terrorism': 'Terrorism',
+  'warranty': 'Warranty',
+  'other': 'Other',
+  'other_2': 'Other 2',
+  'other_3': 'Other 3'
+};
+
+// Country code to name mapping
+const countryNames: Record<string, string> = {
+  'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria', 'HR': 'Croatia',
+  'CY': 'Cyprus', 'CZ': 'Czech Republic', 'DK': 'Denmark', 'EE': 'Estonia',
+  'FI': 'Finland', 'FR': 'France', 'DE': 'Germany', 'GR': 'Greece',
+  'HU': 'Hungary', 'IE': 'Ireland', 'IT': 'Italy', 'LV': 'Latvia',
+  'LT': 'Lithuania', 'LU': 'Luxembourg', 'MT': 'Malta', 'NL': 'Netherlands',
+  'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SK': 'Slovakia',
+  'SI': 'Slovenia', 'ES': 'Spain', 'SE': 'Sweden', 'GB': 'United Kingdom',
+  'CH': 'Switzerland', 'NO': 'Norway', 'IS': 'Iceland', 'LI': 'Liechtenstein'
+};
+
+// Service provider categories
+const serviceLabels: Record<string, string> = {
+  'actuarial': 'Actuarial',
+  'claims': 'Claims Management',
+  'compliance': 'Compliance',
+  'consulting': 'Consulting',
+  'data': 'Data & Analytics',
+  'finance': 'Finance & Accounting',
+  'hr': 'HR & Recruitment',
+  'it': 'IT & Technology',
+  'legal': 'Legal',
+  'marketing': 'Marketing',
+  'operations': 'Operations',
+  'pricing': 'Pricing',
+  'reinsurance': 'Reinsurance',
+  'risk': 'Risk Management',
+  'underwriting': 'Underwriting Support',
+  'other': 'Other'
+};
+
+interface AccountData {
+  id: string;
+  organizationName: string;
+  organizationType: 'MGA' | 'carrier' | 'provider';
+  status: string;
+  businessAddress?: {
+    country?: string;
+    city?: string;
+    line1?: string;
+  };
+  registeredAddress?: {
+    country?: string;
+  };
+  portfolio?: {
+    grossWrittenPremiums?: string;
+    grossWrittenPremiumsValue?: number;
+    grossWrittenPremiumsCurrency?: string;
+    grossWrittenPremiumsEUR?: number;
+    linesOfBusiness?: string[];
+    markets?: string[];
+    otherLinesOfBusiness?: { other1?: string; other2?: string; other3?: string };
+  };
+  carrierInfo?: {
+    organizationType?: string;
+    isDelegatingInEurope?: string;
+    numberOfMGAs?: string;
+    delegatingCountries?: string[];
+    frontingOptions?: string;
+    considerStartupMGAs?: string;
+    amBestRating?: string;
+    otherRating?: string;
+  };
+  servicesProvided?: string[];
+  hasOtherAssociations?: boolean;
+  otherAssociations?: string[];
+  createdAt?: any;
+}
 
 interface ReportData {
-  totalMembers: number;
+  // Totals
+  totalAccounts: number;
+  mgas: AccountData[];
+  carriers: AccountData[];
+  providers: AccountData[];
+
+  // By organization type
   byOrganizationType: Record<string, number>;
-  byCountry: Record<string, number>;
-  byLinesOfBusiness: Record<string, number>;
+
+  // By status
   byStatus: Record<string, number>;
-  members: OrganizationAccount[];
+
+  // By country (from businessAddress)
+  byCountry: Record<string, number>;
+
+  // By other associations
+  byAssociation: Record<string, number>;
+  withAssociations: number;
+
+  // MGA-specific
+  mgaByGWPBand: Record<string, number>;
+  mgaByLinesOfBusiness: Record<string, number>;
+  mgaByMarket: Record<string, number>;
+  mgaTotalGWP: number;
+
+  // Carrier-specific
+  carrierByFronting: Record<string, number>;
+  carrierByRating: Record<string, number>;
+  carrierByStartupMGA: Record<string, number>;
+  carrierDelegatingCountries: Record<string, number>;
+
+  // Provider-specific
+  providerByService: Record<string, number>;
 }
+
+type ReportView = 'summary' | 'mga' | 'carrier' | 'provider';
+type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice';
 
 export default function ReportsTab() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [selectedReportType, setSelectedReportType] = useState<'summary' | 'detailed'>('summary');
+  const [activeView, setActiveView] = useState<ReportView>('summary');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   useEffect(() => {
     loadReportData();
@@ -31,47 +158,149 @@ export default function ReportsTab() {
       const accountsRef = collection(db, 'accounts');
       const snapshot = await getDocs(accountsRef);
 
-      const members: OrganizationAccount[] = [];
+      const mgas: AccountData[] = [];
+      const carriers: AccountData[] = [];
+      const providers: AccountData[] = [];
       const byOrganizationType: Record<string, number> = {};
-      const byCountry: Record<string, number> = {};
-      const byLinesOfBusiness: Record<string, number> = {};
       const byStatus: Record<string, number> = {};
+      const byCountry: Record<string, number> = {};
+      const byAssociation: Record<string, number> = {};
+      let withAssociations = 0;
+
+      // MGA-specific aggregations
+      const mgaByGWPBand: Record<string, number> = {};
+      const mgaByLinesOfBusiness: Record<string, number> = {};
+      const mgaByMarket: Record<string, number> = {};
+      let mgaTotalGWP = 0;
+
+      // Carrier-specific aggregations
+      const carrierByFronting: Record<string, number> = {};
+      const carrierByRating: Record<string, number> = {};
+      const carrierByStartupMGA: Record<string, number> = {};
+      const carrierDelegatingCountries: Record<string, number> = {};
+
+      // Provider-specific aggregations
+      const providerByService: Record<string, number> = {};
 
       snapshot.docs.forEach((doc) => {
-        const data = doc.data() as OrganizationAccount;
+        const data = doc.data() as AccountData;
         const account = { ...data, id: doc.id };
 
-        // Only include approved members in reports
-        if (data.status !== 'approved' && data.status !== 'admin') return;
-
-        members.push(account);
+        // Count by status (all accounts)
+        const status = data.status || 'unknown';
+        byStatus[status] = (byStatus[status] || 0) + 1;
 
         // Count by organization type
         const orgType = data.organizationType || 'Unknown';
         byOrganizationType[orgType] = (byOrganizationType[orgType] || 0) + 1;
 
-        // Count by country
-        const country = data.registeredAddress?.country || 'Unknown';
-        byCountry[country] = (byCountry[country] || 0) + 1;
+        // Count by country - check businessAddress first, fall back to registeredAddress
+        const country = data.businessAddress?.country || data.registeredAddress?.country;
+        if (country) {
+          const countryName = countryNames[country] || country;
+          byCountry[countryName] = (byCountry[countryName] || 0) + 1;
+        } else {
+          byCountry['Not Specified'] = (byCountry['Not Specified'] || 0) + 1;
+        }
 
-        // Count by lines of business
-        if (data.linesOfBusiness) {
-          data.linesOfBusiness.forEach((lob) => {
-            byLinesOfBusiness[lob] = (byLinesOfBusiness[lob] || 0) + 1;
+        // Count associations
+        if (data.hasOtherAssociations && data.otherAssociations?.length) {
+          withAssociations++;
+          data.otherAssociations.forEach((assoc) => {
+            byAssociation[assoc] = (byAssociation[assoc] || 0) + 1;
           });
         }
 
-        // Count by status
-        byStatus[data.status] = (byStatus[data.status] || 0) + 1;
+        // Categorize by type
+        if (orgType === 'MGA') {
+          mgas.push(account);
+
+          // GWP Band
+          if (data.portfolio?.grossWrittenPremiums) {
+            const band = data.portfolio.grossWrittenPremiums;
+            mgaByGWPBand[band] = (mgaByGWPBand[band] || 0) + 1;
+          }
+
+          // Total GWP (in EUR)
+          if (data.portfolio?.grossWrittenPremiumsEUR) {
+            mgaTotalGWP += data.portfolio.grossWrittenPremiumsEUR;
+          }
+
+          // Lines of Business
+          if (data.portfolio?.linesOfBusiness) {
+            data.portfolio.linesOfBusiness.forEach((lob) => {
+              const label = linesOfBusinessLabels[lob] || lob;
+              mgaByLinesOfBusiness[label] = (mgaByLinesOfBusiness[label] || 0) + 1;
+            });
+          }
+
+          // Markets
+          if (data.portfolio?.markets) {
+            data.portfolio.markets.forEach((market) => {
+              const marketName = countryNames[market] || market;
+              mgaByMarket[marketName] = (mgaByMarket[marketName] || 0) + 1;
+            });
+          }
+        } else if (orgType === 'carrier') {
+          carriers.push(account);
+
+          // Fronting options
+          if (data.carrierInfo?.frontingOptions) {
+            const fronting = data.carrierInfo.frontingOptions;
+            carrierByFronting[fronting] = (carrierByFronting[fronting] || 0) + 1;
+          }
+
+          // AM Best Rating
+          if (data.carrierInfo?.amBestRating) {
+            const rating = data.carrierInfo.amBestRating;
+            carrierByRating[rating] = (carrierByRating[rating] || 0) + 1;
+          }
+
+          // Considers Startup MGAs
+          if (data.carrierInfo?.considerStartupMGAs) {
+            const startup = data.carrierInfo.considerStartupMGAs;
+            carrierByStartupMGA[startup] = (carrierByStartupMGA[startup] || 0) + 1;
+          }
+
+          // Delegating Countries
+          if (data.carrierInfo?.delegatingCountries) {
+            data.carrierInfo.delegatingCountries.forEach((country) => {
+              const countryName = countryNames[country] || country;
+              carrierDelegatingCountries[countryName] = (carrierDelegatingCountries[countryName] || 0) + 1;
+            });
+          }
+        } else if (orgType === 'provider') {
+          providers.push(account);
+
+          // Services provided
+          if (data.servicesProvided) {
+            data.servicesProvided.forEach((service) => {
+              const label = serviceLabels[service] || service;
+              providerByService[label] = (providerByService[label] || 0) + 1;
+            });
+          }
+        }
       });
 
       setReportData({
-        totalMembers: members.length,
+        totalAccounts: snapshot.docs.length,
+        mgas,
+        carriers,
+        providers,
         byOrganizationType,
-        byCountry,
-        byLinesOfBusiness,
         byStatus,
-        members
+        byCountry,
+        byAssociation,
+        withAssociations,
+        mgaByGWPBand,
+        mgaByLinesOfBusiness,
+        mgaByMarket,
+        mgaTotalGWP,
+        carrierByFronting,
+        carrierByRating,
+        carrierByStartupMGA,
+        carrierDelegatingCountries,
+        providerByService
       });
     } catch (error) {
       console.error('Error loading report data:', error);
@@ -80,21 +309,36 @@ export default function ReportsTab() {
     }
   };
 
+  const getFilteredData = () => {
+    if (!reportData) return null;
+    if (statusFilter === 'all') return reportData;
+
+    // Re-filter based on status
+    const filtered = {
+      ...reportData,
+      mgas: reportData.mgas.filter((m) => m.status === statusFilter),
+      carriers: reportData.carriers.filter((c) => c.status === statusFilter),
+      providers: reportData.providers.filter((p) => p.status === statusFilter)
+    };
+
+    // Recalculate totals
+    filtered.totalAccounts = filtered.mgas.length + filtered.carriers.length + filtered.providers.length;
+
+    return filtered;
+  };
+
   const generatePDF = async () => {
     if (!reportData) return;
 
     setGenerating(true);
     try {
-      // Dynamically import jsPDF
       const { jsPDF } = await import('jspdf');
-
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 20;
       let yPos = margin;
 
-      // Helper function to add new page if needed
       const checkNewPage = (requiredSpace: number) => {
         if (yPos + requiredSpace > pageHeight - margin) {
           doc.addPage();
@@ -104,162 +348,166 @@ export default function ReportsTab() {
         return false;
       };
 
+      const addSectionHeader = (title: string) => {
+        checkNewPage(20);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 85, 116);
+        doc.text(title, margin, yPos);
+        yPos += 8;
+      };
+
+      const addDataRow = (label: string, value: string | number) => {
+        checkNewPage(8);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(50, 50, 50);
+        doc.text(`${label}: ${value}`, margin + 5, yPos);
+        yPos += 5;
+      };
+
       // Title
-      doc.setFontSize(24);
+      doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 85, 116); // FASE navy
+      doc.setTextColor(45, 85, 116);
       doc.text('FASE Membership Report', pageWidth / 2, yPos, { align: 'center' });
-      yPos += 10;
+      yPos += 8;
 
       // Date
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(100, 100, 100);
       doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+        day: 'numeric', month: 'long', year: 'numeric'
       })}`, pageWidth / 2, yPos, { align: 'center' });
       yPos += 15;
 
       // Summary Box
       doc.setFillColor(245, 245, 245);
-      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 25, 3, 3, 'F');
-      doc.setFontSize(14);
+      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 30, 3, 3, 'F');
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(45, 85, 116);
-      doc.text(`Total Active Members: ${reportData.totalMembers}`, pageWidth / 2, yPos + 15, { align: 'center' });
-      yPos += 35;
-
-      // Organization Types Section
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 85, 116);
-      doc.text('Organization Types', margin, yPos);
-      yPos += 8;
-
-      doc.setFontSize(11);
+      doc.text(`Total: ${reportData.totalAccounts} Organizations`, pageWidth / 2, yPos + 10, { align: 'center' });
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(50, 50, 50);
+      doc.text(`MGAs: ${reportData.mgas.length} | Carriers: ${reportData.carriers.length} | Providers: ${reportData.providers.length}`, pageWidth / 2, yPos + 20, { align: 'center' });
+      yPos += 40;
 
-      const sortedOrgTypes = Object.entries(reportData.byOrganizationType)
-        .sort((a, b) => b[1] - a[1]);
+      // By Status
+      addSectionHeader('By Status');
+      Object.entries(reportData.byStatus)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([status, count]) => addDataRow(status, count));
+      yPos += 5;
 
-      sortedOrgTypes.forEach(([type, count]) => {
-        const percentage = ((count / reportData.totalMembers) * 100).toFixed(1);
-        doc.text(`${type}: ${count} (${percentage}%)`, margin + 5, yPos);
-        yPos += 6;
-      });
-      yPos += 10;
-
-      // Countries Section
-      checkNewPage(50);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 85, 116);
-      doc.text('Countries', margin, yPos);
-      yPos += 8;
-
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(50, 50, 50);
-
-      const sortedCountries = Object.entries(reportData.byCountry)
-        .sort((a, b) => b[1] - a[1]);
-
-      sortedCountries.forEach(([country, count]) => {
-        checkNewPage(8);
-        const percentage = ((count / reportData.totalMembers) * 100).toFixed(1);
-        doc.text(`${country}: ${count} (${percentage}%)`, margin + 5, yPos);
-        yPos += 6;
-      });
-      yPos += 10;
-
-      // Lines of Business Section
-      checkNewPage(50);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 85, 116);
-      doc.text('Lines of Business', margin, yPos);
-      yPos += 8;
-
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(50, 50, 50);
-
-      const sortedLoB = Object.entries(reportData.byLinesOfBusiness)
-        .sort((a, b) => b[1] - a[1]);
-
-      if (sortedLoB.length === 0) {
-        doc.text('No lines of business data available', margin + 5, yPos);
-        yPos += 6;
-      } else {
-        sortedLoB.forEach(([lob, count]) => {
-          checkNewPage(8);
-          doc.text(`${lob}: ${count} members`, margin + 5, yPos);
-          yPos += 6;
+      // By Country
+      addSectionHeader('By Country');
+      Object.entries(reportData.byCountry)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .forEach(([country, count]) => {
+          const pct = ((count / reportData.totalAccounts) * 100).toFixed(1);
+          addDataRow(country, `${count} (${pct}%)`);
         });
-      }
+      yPos += 5;
 
-      // Detailed Member List (if detailed report selected)
-      if (selectedReportType === 'detailed') {
+      // MGA Section
+      if (reportData.mgas.length > 0) {
         doc.addPage();
         yPos = margin;
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(45, 85, 116);
-        doc.text('Member Directory', pageWidth / 2, yPos, { align: 'center' });
+        doc.text('MGA Analysis', pageWidth / 2, yPos, { align: 'center' });
         yPos += 15;
 
-        // Sort members alphabetically
-        const sortedMembers = [...reportData.members].sort((a, b) =>
-          (a.organizationName || '').localeCompare(b.organizationName || '')
-        );
+        // GWP Summary
+        addSectionHeader('Gross Written Premiums');
+        addDataRow('Total GWP (EUR)', `€${(reportData.mgaTotalGWP / 1000000).toFixed(1)}M`);
+        yPos += 3;
+        Object.entries(reportData.mgaByGWPBand)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([band, count]) => addDataRow(band, count));
+        yPos += 5;
 
-        sortedMembers.forEach((member, index) => {
-          checkNewPage(25);
+        // Lines of Business
+        addSectionHeader('Lines of Business');
+        Object.entries(reportData.mgaByLinesOfBusiness)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([lob, count]) => addDataRow(lob, count));
+        yPos += 5;
 
-          // Member name
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(45, 85, 116);
-          doc.text(`${index + 1}. ${member.organizationName || 'Unknown'}`, margin, yPos);
-          yPos += 5;
-
-          // Member details
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(80, 80, 80);
-
-          const details = [];
-          if (member.organizationType) details.push(`Type: ${member.organizationType}`);
-          if (member.registeredAddress?.country) details.push(`Country: ${member.registeredAddress.country}`);
-          if (member.linesOfBusiness?.length) {
-            details.push(`Lines: ${member.linesOfBusiness.slice(0, 3).join(', ')}${member.linesOfBusiness.length > 3 ? '...' : ''}`);
-          }
-
-          if (details.length > 0) {
-            doc.text(details.join(' | '), margin + 5, yPos);
-            yPos += 8;
-          } else {
-            yPos += 3;
-          }
-        });
+        // Target Markets
+        addSectionHeader('Target Markets');
+        Object.entries(reportData.mgaByMarket)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 15)
+          .forEach(([market, count]) => addDataRow(market, count));
       }
 
-      // Footer on last page
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text(
-        'FASE - Fédération des Agences de Souscription Européennes',
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: 'center' }
-      );
+      // Carrier Section
+      if (reportData.carriers.length > 0) {
+        doc.addPage();
+        yPos = margin;
 
-      // Save the PDF
-      const fileName = `FASE-Membership-Report-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 85, 116);
+        doc.text('Carrier Analysis', pageWidth / 2, yPos, { align: 'center' });
+        yPos += 15;
+
+        addSectionHeader('Fronting Options');
+        Object.entries(reportData.carrierByFronting)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([option, count]) => addDataRow(option, count));
+        yPos += 5;
+
+        addSectionHeader('AM Best Ratings');
+        Object.entries(reportData.carrierByRating)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([rating, count]) => addDataRow(rating, count));
+        yPos += 5;
+
+        addSectionHeader('Considers Startup MGAs');
+        Object.entries(reportData.carrierByStartupMGA)
+          .forEach(([answer, count]) => addDataRow(answer, count));
+      }
+
+      // Provider Section
+      if (reportData.providers.length > 0) {
+        doc.addPage();
+        yPos = margin;
+
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 85, 116);
+        doc.text('Service Provider Analysis', pageWidth / 2, yPos, { align: 'center' });
+        yPos += 15;
+
+        addSectionHeader('Services Provided');
+        Object.entries(reportData.providerByService)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([service, count]) => addDataRow(service, count));
+      }
+
+      // Footer
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          'FASE - Fédération des Agences de Souscription Européennes',
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+      }
+
+      const fileName = `FASE-Report-${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -269,7 +517,37 @@ export default function ReportsTab() {
   };
 
   const formatPercentage = (count: number, total: number) => {
+    if (total === 0) return '0';
     return ((count / total) * 100).toFixed(1);
+  };
+
+  const renderBarChart = (data: Record<string, number>, total: number, color: string = 'bg-fase-navy') => {
+    const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
+    if (sorted.length === 0) {
+      return <p className="text-sm text-gray-500 italic">No data available</p>;
+    }
+
+    return (
+      <div className="space-y-2">
+        {sorted.map(([label, count]) => {
+          const percentage = total > 0 ? (count / total) * 100 : 0;
+          return (
+            <div key={label} className="flex items-center gap-3">
+              <span className="text-sm text-gray-600 w-40 truncate" title={label}>{label}</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                <div
+                  className={`${color} h-full rounded-full transition-all duration-500`}
+                  style={{ width: `${Math.max(percentage, 2)}%` }}
+                />
+              </div>
+              <span className="text-sm font-medium text-fase-navy w-20 text-right">
+                {count} ({percentage.toFixed(0)}%)
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (loading) {
@@ -291,158 +569,196 @@ export default function ReportsTab() {
     );
   }
 
-  const sortedOrgTypes = Object.entries(reportData.byOrganizationType).sort((a, b) => b[1] - a[1]);
-  const sortedCountries = Object.entries(reportData.byCountry).sort((a, b) => b[1] - a[1]);
-  const sortedLoB = Object.entries(reportData.byLinesOfBusiness).sort((a, b) => b[1] - a[1]);
+  const filteredData = getFilteredData();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Generate Reports</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Membership Reports</h3>
           <p className="text-sm text-gray-600">
-            View membership statistics and generate PDF reports
+            Comprehensive analytics on {reportData.totalAccounts} organizations
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <select
-            value={selectedReportType}
-            onChange={(e) => setSelectedReportType(e.target.value as 'summary' | 'detailed')}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
-            <option value="summary">Summary Report</option>
-            <option value="detailed">Detailed Report (with member list)</option>
+            <option value="all">All Statuses</option>
+            <option value="approved">Approved Only</option>
+            <option value="pending">Pending</option>
+            <option value="invoice_sent">Invoice Sent</option>
+            <option value="pending_invoice">Pending Invoice</option>
           </select>
-          <Button
-            onClick={generatePDF}
-            disabled={generating}
-            variant="primary"
-          >
+          <Button onClick={generatePDF} disabled={generating} variant="primary">
             {generating ? 'Generating...' : 'Download PDF'}
           </Button>
         </div>
       </div>
 
-      {/* Summary Card */}
-      <div className="bg-fase-navy text-white rounded-lg p-6">
-        <div className="text-3xl font-bold">{reportData.totalMembers}</div>
-        <div className="text-fase-cream/80">Active Members</div>
+      {/* View Tabs */}
+      <div className="flex border-b border-gray-200">
+        {[
+          { id: 'summary', label: 'Summary' },
+          { id: 'mga', label: `MGAs (${reportData.mgas.length})` },
+          { id: 'carrier', label: `Carriers (${reportData.carriers.length})` },
+          { id: 'provider', label: `Providers (${reportData.providers.length})` }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveView(tab.id as ReportView)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeView === tab.id
+                ? 'border-fase-navy text-fase-navy'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Organization Types */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-semibold text-fase-navy mb-4">Organization Types</h4>
-          <div className="space-y-3">
-            {sortedOrgTypes.map(([type, count]) => (
-              <div key={type} className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">{type}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-fase-navy">{count}</span>
-                  <span className="text-xs text-gray-500">
-                    ({formatPercentage(count, reportData.totalMembers)}%)
-                  </span>
-                </div>
+      {/* Summary View */}
+      {activeView === 'summary' && (
+        <div className="space-y-6">
+          {/* Stat Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-fase-navy text-white rounded-lg p-4">
+              <div className="text-2xl font-bold">{reportData.totalAccounts}</div>
+              <div className="text-fase-cream/80 text-sm">Total Organizations</div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-2xl font-bold text-fase-navy">{reportData.mgas.length}</div>
+              <div className="text-gray-600 text-sm">MGAs</div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-2xl font-bold text-fase-navy">{reportData.carriers.length}</div>
+              <div className="text-gray-600 text-sm">Carriers</div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-2xl font-bold text-fase-navy">{reportData.providers.length}</div>
+              <div className="text-gray-600 text-sm">Service Providers</div>
+            </div>
+          </div>
+
+          {/* Status & Country */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">By Status</h4>
+              {renderBarChart(reportData.byStatus, reportData.totalAccounts)}
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">By Country</h4>
+              <div className="max-h-80 overflow-y-auto">
+                {renderBarChart(reportData.byCountry, reportData.totalAccounts, 'bg-fase-gold')}
               </div>
-            ))}
-            {sortedOrgTypes.length === 0 && (
-              <p className="text-sm text-gray-500 italic">No data available</p>
+            </div>
+          </div>
+
+          {/* Associations */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 className="text-lg font-semibold text-fase-navy mb-4">
+              Other Association Memberships
+              <span className="ml-2 text-sm font-normal text-gray-500">
+                ({reportData.withAssociations} organizations)
+              </span>
+            </h4>
+            {Object.keys(reportData.byAssociation).length > 0 ? (
+              renderBarChart(reportData.byAssociation, reportData.withAssociations, 'bg-green-500')
+            ) : (
+              <p className="text-sm text-gray-500 italic">No association data</p>
             )}
           </div>
         </div>
+      )}
 
-        {/* Countries */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-semibold text-fase-navy mb-4">Countries</h4>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {sortedCountries.map(([country, count]) => (
-              <div key={country} className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">{country}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-fase-navy">{count}</span>
-                  <span className="text-xs text-gray-500">
-                    ({formatPercentage(count, reportData.totalMembers)}%)
-                  </span>
-                </div>
+      {/* MGA View */}
+      {activeView === 'mga' && (
+        <div className="space-y-6">
+          {/* GWP Summary */}
+          <div className="bg-fase-navy text-white rounded-lg p-6">
+            <div className="text-sm text-fase-cream/80 mb-1">Total Gross Written Premiums</div>
+            <div className="text-3xl font-bold">
+              €{(reportData.mgaTotalGWP / 1000000).toFixed(1)}M
+            </div>
+            <div className="text-sm text-fase-cream/60 mt-1">
+              Across {reportData.mgas.length} MGAs
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* GWP Bands */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">By GWP Band</h4>
+              {renderBarChart(reportData.mgaByGWPBand, reportData.mgas.length)}
+            </div>
+
+            {/* Lines of Business */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">Lines of Business</h4>
+              <div className="max-h-80 overflow-y-auto">
+                {renderBarChart(reportData.mgaByLinesOfBusiness, reportData.mgas.length, 'bg-blue-500')}
               </div>
-            ))}
-            {sortedCountries.length === 0 && (
-              <p className="text-sm text-gray-500 italic">No data available</p>
-            )}
+            </div>
+          </div>
+
+          {/* Target Markets */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 className="text-lg font-semibold text-fase-navy mb-4">Target Markets</h4>
+            <div className="max-h-80 overflow-y-auto">
+              {renderBarChart(reportData.mgaByMarket, reportData.mgas.length, 'bg-fase-gold')}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Lines of Business */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-semibold text-fase-navy mb-4">Lines of Business</h4>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {sortedLoB.map(([lob, count]) => (
-              <div key={lob} className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">{lob}</span>
-                <span className="text-sm font-medium text-fase-navy">{count}</span>
+      {/* Carrier View */}
+      {activeView === 'carrier' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Fronting Options */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">Fronting Options</h4>
+              {renderBarChart(reportData.carrierByFronting, reportData.carriers.length)}
+            </div>
+
+            {/* AM Best Ratings */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">AM Best Ratings</h4>
+              {renderBarChart(reportData.carrierByRating, reportData.carriers.length, 'bg-green-500')}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Startup MGAs */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">Considers Startup MGAs</h4>
+              {renderBarChart(reportData.carrierByStartupMGA, reportData.carriers.length, 'bg-purple-500')}
+            </div>
+
+            {/* Delegating Countries */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-fase-navy mb-4">Delegating Countries</h4>
+              <div className="max-h-64 overflow-y-auto">
+                {renderBarChart(reportData.carrierDelegatingCountries, reportData.carriers.length, 'bg-fase-gold')}
               </div>
-            ))}
-            {sortedLoB.length === 0 && (
-              <p className="text-sm text-gray-500 italic">No lines of business data</p>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Visual Charts Section */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="text-lg font-semibold text-fase-navy mb-4">Distribution Overview</h4>
-
-        {/* Organization Type Bar Chart */}
-        <div className="mb-6">
-          <h5 className="text-sm font-medium text-gray-700 mb-3">By Organization Type</h5>
-          <div className="space-y-2">
-            {sortedOrgTypes.map(([type, count]) => {
-              const percentage = (count / reportData.totalMembers) * 100;
-              return (
-                <div key={type} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600 w-24 truncate">{type}</span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div
-                      className="bg-fase-navy h-full rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-fase-navy w-16 text-right">
-                    {count} ({percentage.toFixed(0)}%)
-                  </span>
-                </div>
-              );
-            })}
+      {/* Provider View */}
+      {activeView === 'provider' && (
+        <div className="space-y-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 className="text-lg font-semibold text-fase-navy mb-4">Services Provided</h4>
+            {renderBarChart(reportData.providerByService, reportData.providers.length, 'bg-orange-500')}
           </div>
         </div>
-
-        {/* Country Distribution */}
-        <div>
-          <h5 className="text-sm font-medium text-gray-700 mb-3">Top Countries</h5>
-          <div className="space-y-2">
-            {sortedCountries.slice(0, 10).map(([country, count]) => {
-              const percentage = (count / reportData.totalMembers) * 100;
-              return (
-                <div key={country} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600 w-32 truncate">{country}</span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div
-                      className="bg-fase-gold h-full rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-fase-navy w-16 text-right">
-                    {count} ({percentage.toFixed(0)}%)
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
