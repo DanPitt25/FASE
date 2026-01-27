@@ -587,16 +587,6 @@ export default function ReportsTab() {
         // Donut hole
         doc.setFillColor(255, 255, 255);
         doc.circle(centerX, centerY, radius * 0.55, 'F');
-
-        // Center text
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(45, 85, 116);
-        doc.text(String(total), centerX, centerY + 3, { align: 'center' });
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(120, 120, 120);
-        doc.text('total', centerX, centerY + 10, { align: 'center' });
       };
 
       // Draw a complete section page with title, optional pie chart, and full list
@@ -622,7 +612,7 @@ export default function ReportsTab() {
         if (subtitle) {
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
-          doc.setTextColor(220, 220, 220);
+          doc.setTextColor(255, 255, 255);
           doc.text(subtitle, pageWidth / 2, 26, { align: 'center' });
         }
 
@@ -637,36 +627,13 @@ export default function ReportsTab() {
         let tableY = 45;
 
         if (showChart) {
-          // Pie chart on the left
-          const chartCenterX = 55;
-          const chartCenterY = 75;
-          const chartRadius = 30;
+          // Pie chart centered at the top
+          const chartCenterX = pageWidth / 2;
+          const chartCenterY = 70;
+          const chartRadius = 28;
           drawDonutChart(data, total, chartCenterX, chartCenterY, chartRadius);
 
-          // Legend next to pie chart
-          let legendY = 48;
-          const legendX = 95;
-          sorted.slice(0, 8).forEach(([label, count], index) => {
-            const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-            const pct = ((count / total) * 100).toFixed(1);
-
-            doc.setFillColor(...color);
-            doc.rect(legendX, legendY - 2.5, 4, 4, 'F');
-
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(60, 60, 60);
-            const displayLabel = label.length > 25 ? label.substring(0, 23) + '...' : label;
-            doc.text(displayLabel, legendX + 7, legendY + 1);
-
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...color);
-            doc.text(`${count} (${pct}%)`, pageWidth - margin, legendY + 1, { align: 'right' });
-
-            legendY += 7;
-          });
-
-          tableY = 115;
+          tableY = 110;
         }
 
         // Full data table
@@ -689,7 +656,14 @@ export default function ReportsTab() {
             doc.addPage();
             tableY = margin;
 
-            // Continue header on new page
+            // Continuation header
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...headerColor);
+            doc.text(`${title} (continued)`, margin, tableY + 5);
+            tableY += 12;
+
+            // Continue table header on new page
             doc.setFillColor(245, 245, 245);
             doc.rect(margin, tableY, pageWidth - margin * 2, 8, 'F');
             doc.setFontSize(9);
@@ -702,7 +676,6 @@ export default function ReportsTab() {
           }
 
           const pct = ((count / total) * 100).toFixed(1);
-          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
 
           // Alternating row background
           if (index % 2 === 0) {
@@ -710,18 +683,22 @@ export default function ReportsTab() {
             doc.rect(margin, tableY - 1, pageWidth - margin * 2, 7, 'F');
           }
 
-          // Color indicator
-          doc.setFillColor(...color);
-          doc.rect(margin + 2, tableY + 0.5, 3, 3, 'F');
+          // Color indicator only for items shown in chart (top 10)
+          const labelX = showChart && index < 10 ? margin + 8 : margin + 3;
+          if (showChart && index < 10) {
+            const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
+            doc.setFillColor(...color);
+            doc.rect(margin + 2, tableY + 0.5, 3, 3, 'F');
+          }
 
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(50, 50, 50);
-          const displayLabel = label.length > 45 ? label.substring(0, 43) + '...' : label;
-          doc.text(displayLabel, margin + 8, tableY + 4);
+          const displayLabel = label.length > 50 ? label.substring(0, 48) + '...' : label;
+          doc.text(displayLabel, labelX, tableY + 4);
 
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(...color);
+          doc.setTextColor(45, 85, 116);
           doc.text(String(count), pageWidth - margin - 35, tableY + 4, { align: 'right' });
 
           doc.setFont('helvetica', 'normal');
@@ -784,50 +761,29 @@ export default function ReportsTab() {
           doc.setFont('helvetica', 'normal');
           doc.text(card.label, x + cardWidth / 2, cardY + 28, { align: 'center' });
         });
-
-        // Organization type breakdown
-        if (typeFilter === 'all') {
-          let breakdownY = 115;
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(45, 85, 116);
-          doc.text('Organization Breakdown', margin, breakdownY);
-
-          breakdownY += 12;
-          drawDonutChart(reportData.byOrganizationType, reportData.totalAccounts, 50, breakdownY + 25, 22);
-
-          // Legend
-          let legendY = breakdownY;
-          Object.entries(reportData.byOrganizationType).sort((a, b) => b[1] - a[1]).forEach(([label, count], index) => {
-            const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-            const pct = ((count / reportData.totalAccounts) * 100).toFixed(1);
-
-            doc.setFillColor(...color);
-            doc.rect(85, legendY - 2, 4, 4, 'F');
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(60, 60, 60);
-            doc.text(label, 92, legendY + 1);
-
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(...color);
-            doc.text(`${count} (${pct}%)`, 160, legendY + 1, { align: 'right' });
-
-            legendY += 10;
-          });
-        }
       }
 
       // ===== SECTION PAGES =====
 
+      // Helper to format large numbers
+      const formatGWP = (value: number): string => {
+        if (value >= 1000000000) {
+          return `€${(value / 1000000000).toFixed(1)}B`;
+        } else if (value >= 1000000) {
+          return `€${(value / 1000000).toFixed(1)}M`;
+        } else if (value >= 1000) {
+          return `€${(value / 1000).toFixed(0)}K`;
+        }
+        return `€${value.toLocaleString()}`;
+      };
+
       // Status page
-      if (pdfSections.status) {
+      if (pdfSections.status && Object.keys(reportData.byStatus).length > 0) {
         drawSectionPage('By Status', reportData.byStatus, reportData.totalAccounts, [45, 85, 116]);
       }
 
       // Country page
-      if (pdfSections.country) {
+      if (pdfSections.country && Object.keys(reportData.byCountry).length > 0) {
         drawSectionPage('By Country', reportData.byCountry, reportData.totalAccounts, [45, 85, 116]);
       }
 
@@ -839,31 +795,32 @@ export default function ReportsTab() {
       // MGA pages
       const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
       if (showMGA) {
-        if (pdfSections.mgaGWP) {
-          drawSectionPage('MGA: GWP Bands', reportData.mgaByGWPBand, reportData.mgas.length, [30, 136, 229], `Total GWP: €${(reportData.mgaTotalGWP / 1000000).toFixed(1)}M across ${reportData.mgas.length} MGAs`);
+        if (pdfSections.mgaGWP && Object.keys(reportData.mgaByGWPBand).length > 0) {
+          const gwpSubtitle = `Total GWP: ${formatGWP(reportData.mgaTotalGWP)} across ${reportData.mgas.length} MGAs`;
+          drawSectionPage('MGA: GWP Bands', reportData.mgaByGWPBand, reportData.mgas.length, [30, 136, 229], gwpSubtitle);
         }
-        if (pdfSections.mgaLinesOfBusiness) {
+        if (pdfSections.mgaLinesOfBusiness && Object.keys(reportData.mgaByLinesOfBusiness).length > 0) {
           drawSectionPage('MGA: Lines of Business', reportData.mgaByLinesOfBusiness, reportData.mgas.length, [30, 136, 229], undefined, false);
         }
-        if (pdfSections.mgaMarkets) {
-          drawSectionPage('MGA: Target Markets', reportData.mgaByMarket, reportData.mgas.length, [30, 136, 229]);
+        if (pdfSections.mgaMarkets && Object.keys(reportData.mgaByMarket).length > 0) {
+          drawSectionPage('MGA: Target Markets', reportData.mgaByMarket, reportData.mgas.length, [30, 136, 229], undefined, false);
         }
       }
 
       // Carrier pages
       const showCarrier = (typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0;
       if (showCarrier) {
-        if (pdfSections.carrierFronting) {
+        if (pdfSections.carrierFronting && Object.keys(reportData.carrierByFronting).length > 0) {
           drawSectionPage('Carrier: Fronting Options', reportData.carrierByFronting, reportData.carriers.length, [67, 160, 71]);
         }
-        if (pdfSections.carrierRatings) {
+        if (pdfSections.carrierRatings && Object.keys(reportData.carrierByRating).length > 0) {
           drawSectionPage('Carrier: AM Best Ratings', reportData.carrierByRating, reportData.carriers.length, [67, 160, 71]);
         }
-        if (pdfSections.carrierStartups) {
+        if (pdfSections.carrierStartups && Object.keys(reportData.carrierByStartupMGA).length > 0) {
           drawSectionPage('Carrier: Considers Startup MGAs', reportData.carrierByStartupMGA, reportData.carriers.length, [67, 160, 71]);
         }
-        if (pdfSections.carrierCountries) {
-          drawSectionPage('Carrier: Delegating Countries', reportData.carrierDelegatingCountries, reportData.carriers.length, [67, 160, 71]);
+        if (pdfSections.carrierCountries && Object.keys(reportData.carrierDelegatingCountries).length > 0) {
+          drawSectionPage('Carrier: Delegating Countries', reportData.carrierDelegatingCountries, reportData.carriers.length, [67, 160, 71], undefined, false);
         }
       }
 
