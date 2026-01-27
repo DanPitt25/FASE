@@ -599,13 +599,14 @@ export default function ReportsTab() {
         doc.text('total', centerX, centerY + 10, { align: 'center' });
       };
 
-      // Draw a complete section page with title, pie chart, and full list
+      // Draw a complete section page with title, optional pie chart, and full list
       const drawSectionPage = (
         title: string,
         data: Record<string, number>,
         total: number,
         headerColor: [number, number, number],
-        subtitle?: string
+        subtitle?: string,
+        showChart: boolean = true
       ) => {
         doc.addPage();
 
@@ -633,37 +634,42 @@ export default function ReportsTab() {
           return;
         }
 
-        // Pie chart on the left
-        const chartCenterX = 55;
-        const chartCenterY = 75;
-        const chartRadius = 30;
-        drawDonutChart(data, total, chartCenterX, chartCenterY, chartRadius);
+        let tableY = 45;
 
-        // Legend next to pie chart
-        let legendY = 48;
-        const legendX = 95;
-        sorted.slice(0, 8).forEach(([label, count], index) => {
-          const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
-          const pct = ((count / total) * 100).toFixed(1);
+        if (showChart) {
+          // Pie chart on the left
+          const chartCenterX = 55;
+          const chartCenterY = 75;
+          const chartRadius = 30;
+          drawDonutChart(data, total, chartCenterX, chartCenterY, chartRadius);
 
-          doc.setFillColor(...color);
-          doc.rect(legendX, legendY - 2.5, 4, 4, 'F');
+          // Legend next to pie chart
+          let legendY = 48;
+          const legendX = 95;
+          sorted.slice(0, 8).forEach(([label, count], index) => {
+            const color = hexToRgb(CHART_COLORS[index % CHART_COLORS.length]);
+            const pct = ((count / total) * 100).toFixed(1);
 
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(60, 60, 60);
-          const displayLabel = label.length > 25 ? label.substring(0, 23) + '...' : label;
-          doc.text(displayLabel, legendX + 7, legendY + 1);
+            doc.setFillColor(...color);
+            doc.rect(legendX, legendY - 2.5, 4, 4, 'F');
 
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(...color);
-          doc.text(`${count} (${pct}%)`, pageWidth - margin, legendY + 1, { align: 'right' });
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(60, 60, 60);
+            const displayLabel = label.length > 25 ? label.substring(0, 23) + '...' : label;
+            doc.text(displayLabel, legendX + 7, legendY + 1);
 
-          legendY += 7;
-        });
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...color);
+            doc.text(`${count} (${pct}%)`, pageWidth - margin, legendY + 1, { align: 'right' });
 
-        // Full data table below
-        let tableY = 115;
+            legendY += 7;
+          });
+
+          tableY = 115;
+        }
+
+        // Full data table
 
         // Table header
         doc.setFillColor(245, 245, 245);
@@ -837,7 +843,7 @@ export default function ReportsTab() {
           drawSectionPage('MGA: GWP Bands', reportData.mgaByGWPBand, reportData.mgas.length, [30, 136, 229], `Total GWP: €${(reportData.mgaTotalGWP / 1000000).toFixed(1)}M across ${reportData.mgas.length} MGAs`);
         }
         if (pdfSections.mgaLinesOfBusiness) {
-          drawSectionPage('MGA: Lines of Business', reportData.mgaByLinesOfBusiness, reportData.mgas.length, [30, 136, 229]);
+          drawSectionPage('MGA: Lines of Business', reportData.mgaByLinesOfBusiness, reportData.mgas.length, [30, 136, 229], undefined, false);
         }
         if (pdfSections.mgaMarkets) {
           drawSectionPage('MGA: Target Markets', reportData.mgaByMarket, reportData.mgas.length, [30, 136, 229]);
