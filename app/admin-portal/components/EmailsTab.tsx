@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import EmailEditorModal from './EmailEditorModal';
-import BulletinTemplateModal from './BulletinTemplateModal';
 import { createInvoiceRecord } from '../../../lib/firestore';
 
 interface EmailsTabProps {
   prefilledData?: any;
 }
 
-type EmailTemplate = 'invoice' | 'standalone_invoice' | 'member_portal_welcome' | 'reminder' | 'freeform' | 'rendezvous_confirmation';
+type EmailTemplate = 'invoice' | 'standalone_invoice' | 'member_portal_welcome' | 'reminder' | 'freeform' | 'rendezvous_confirmation' | 'bulletin_call';
 
 // Types for mass email
 type OrganizationType = 'MGA' | 'carrier' | 'provider';
@@ -69,7 +68,9 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       isFaseMember: true,
       isComplimentary: false,
       specialRequests: ''
-    }
+    },
+    // Bulletin call fields
+    bulletinDeadline: 'Tuesday, 28 January'
   });
 
   const [sending, setSending] = useState(false);
@@ -97,7 +98,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sendingMassEmail, setSendingMassEmail] = useState(false);
   const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; error?: string } | null>(null);
-  const [showBulletinTemplate, setShowBulletinTemplate] = useState(false);
 
   // Update form data when prefilledData changes
   useEffect(() => {
@@ -190,6 +190,13 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       title: 'Rendezvous Confirmation',
       description: 'Manual entry - use Rendezvous tab for auto-fill',
       apiEndpoint: '/api/send-rendezvous-confirmation',
+      requiresPricing: false,
+      generatesPDF: false
+    },
+    bulletin_call: {
+      title: 'Bulletin Call for Content',
+      description: 'Request content from members for The Entrepreneurial Underwriter',
+      apiEndpoint: '/api/send-bulletin-call',
       requiresPricing: false,
       generatesPDF: false
     }
@@ -391,7 +398,8 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
       'member_portal_welcome': 'member_portal_welcome',
       'reminder': 'payment_reminder',
       'freeform': 'invoice_delivery',
-      'rendezvous_confirmation': 'ticket_confirmation'
+      'rendezvous_confirmation': 'ticket_confirmation',
+      'bulletin_call': 'bulletin_call'
     };
     return templateKeyMap[emailTemplate] || 'invoice_delivery';
   };
@@ -1407,16 +1415,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           {/* Freeform Email Fields */}
           {selectedTemplate === 'freeform' && (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-md font-semibold text-fase-navy">Email Content</h4>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowBulletinTemplate(true)}
-                  className="text-sm"
-                >
-                  Use Bulletin Template
-                </Button>
-              </div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Email Content</h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
@@ -1638,6 +1637,31 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
+          {/* Bulletin Call Fields */}
+          {selectedTemplate === 'bulletin_call' && (
+            <div>
+              <h4 className="text-md font-semibold mb-4 text-fase-navy">Bulletin Details</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Submission Deadline</label>
+                  <input
+                    type="text"
+                    value={formData.bulletinDeadline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bulletinDeadline: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="e.g., Tuesday, 28 January"
+                  />
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> This email will be sent using the recipient&apos;s name from the form above.
+                    The template will be automatically translated based on the selected locale.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
@@ -1787,19 +1811,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
           originalTemplate={defaultTemplate}
         />
       )}
-
-      {/* Bulletin Template Modal */}
-      <BulletinTemplateModal
-        isOpen={showBulletinTemplate}
-        onClose={() => setShowBulletinTemplate(false)}
-        onApply={(subject, body) => {
-          setFormData(prev => ({
-            ...prev,
-            freeformSubject: subject,
-            freeformBody: body
-          }));
-        }}
-      />
     </div>
   );
 }
