@@ -35,110 +35,110 @@ const salutations: Record<string, { m: (name: string) => string; f: (name: strin
 // Bulletin templates in all supported languages
 const bulletinTemplates: Record<string, { subject: string; body: (salutation: string, deadline: string) => string }> = {
   en: {
-    subject: 'Contribute to The Entrepreneurial Underwriter – January Edition',
+    subject: 'Invitation to Contribute to The Entrepreneurial Underwriter – January Edition',
     body: (salutation: string, deadline: string) => `${salutation},
 
-We'll shortly be issuing the first edition of The Entrepreneurial Underwriter, FASE's monthly member bulletin, and we'd like to include any items that may be relevant to our members from your organization.
+We shall shortly be issuing the first edition of The Entrepreneurial Underwriter, FASE's monthly member bulletin, and we would be pleased to include any items that may be relevant to our members from your organization.
 
-This bulletin will highlight news, achievements, and significant developments from our member community. If you have any of the following you'd like to share, please send them our way:
+This bulletin will highlight news, achievements, and significant developments from our member community. Should you wish to share any of the following, we would be grateful to receive them:
 
 • Company announcements or milestones
-• New appointments or team updates
+• New appointments or team changes
 • Product launches or partnerships
-• Industry insights or thought leadership
+• Industry insights or opinion pieces
 • Upcoming events or webinars
 
-Please send details to admin@fasemga.com by ${deadline} for inclusion in next week's edition.
+We kindly request that you send details to admin@fasemga.com by ${deadline} for inclusion in next week's edition.
 
 The Entrepreneurial Underwriter will be distributed to all FASE members and posted on our member portal.`
   },
   fr: {
-    subject: 'Contribuez à The Entrepreneurial Underwriter – Édition de janvier',
+    subject: 'Invitation à contribuer à The Entrepreneurial Underwriter – Édition de janvier',
     body: (salutation: string, deadline: string) => `${salutation},
 
-Nous publierons prochainement la première édition de The Entrepreneurial Underwriter, le bulletin mensuel des membres de FASE, et nous aimerions y inclure toute information pertinente pour nos membres provenant de votre organisation.
+Nous publierons prochainement la première édition de The Entrepreneurial Underwriter, le bulletin mensuel des membres de FASE, et nous souhaiterions y inclure toute information pertinente pour nos membres provenant de votre organisation.
 
-Ce bulletin mettra en avant les actualités, les réalisations et les développements significatifs de notre communauté de membres. Si vous avez l'un des éléments suivants à partager, n'hésitez pas à nous les envoyer :
+Ce bulletin mettra en avant les actualités, les réalisations et les développements significatifs de notre communauté de membres. Si vous souhaitez partager l'un des éléments suivants, nous vous prions de bien vouloir nous les transmettre :
 
 • Annonces ou étapes importantes de l'entreprise
 • Nouvelles nominations ou évolutions d'équipe
 • Lancements de produits ou partenariats
-• Analyses sectorielles ou leadership éclairé
+• Analyses sectorielles ou articles de réflexion
 • Événements ou webinaires à venir
 
-Veuillez envoyer les détails à admin@fasemga.com avant le ${deadline} pour inclusion dans l'édition de la semaine prochaine.
+Nous vous prions de bien vouloir envoyer les détails à admin@fasemga.com avant le ${deadline} pour inclusion dans l'édition de la semaine prochaine.
 
 The Entrepreneurial Underwriter sera distribué à tous les membres de FASE et publié sur notre portail membres.`
   },
   de: {
-    subject: 'Beitrag zu The Entrepreneurial Underwriter – Januar-Ausgabe',
+    subject: 'Einladung zur Mitwirkung an The Entrepreneurial Underwriter – Januar-Ausgabe',
     body: (salutation: string, deadline: string) => `${salutation},
 
-Wir werden in Kürze die erste Ausgabe von The Entrepreneurial Underwriter, dem monatlichen Mitglieder-Newsletter von FASE, veröffentlichen und möchten gerne relevante Beiträge Ihrer Organisation für unsere Mitglieder aufnehmen.
+wir werden in Kürze die erste Ausgabe von The Entrepreneurial Underwriter, dem monatlichen Mitglieder-Newsletter von FASE, veröffentlichen und würden uns freuen, relevante Beiträge Ihrer Organisation für unsere Mitglieder aufnehmen zu dürfen.
 
-Dieser Newsletter wird Neuigkeiten, Erfolge und bedeutende Entwicklungen aus unserer Mitgliedergemeinschaft hervorheben. Wenn Sie eines der folgenden Themen teilen möchten, senden Sie uns diese bitte zu:
+Dieser Newsletter wird Neuigkeiten, Erfolge und bedeutende Entwicklungen aus unserer Mitgliedergemeinschaft hervorheben. Sollten Sie eines der folgenden Themen teilen wollen, würden wir uns über Ihre Zusendung freuen:
 
 • Unternehmensankündigungen oder Meilensteine
-• Neue Ernennungen oder Team-Updates
+• Neue Ernennungen oder Personalveränderungen
 • Produkteinführungen oder Partnerschaften
-• Brancheneinblicke oder Thought Leadership
+• Brancheneinblicke oder Fachbeiträge
 • Kommende Veranstaltungen oder Webinare
 
-Bitte senden Sie die Details bis ${deadline} an admin@fasemga.com, damit sie in die Ausgabe der nächsten Woche aufgenommen werden können.
+Wir bitten Sie, die Details bis ${deadline} an admin@fasemga.com zu senden, damit sie in die Ausgabe der nächsten Woche aufgenommen werden können.
 
 The Entrepreneurial Underwriter wird an alle FASE-Mitglieder verteilt und auf unserem Mitgliederportal veröffentlicht.`
   },
   es: {
-    subject: 'Contribuya a The Entrepreneurial Underwriter – Edición de enero',
+    subject: 'Invitación a contribuir a The Entrepreneurial Underwriter – Edición de enero',
     body: (salutation: string, deadline: string) => `${salutation},
 
-Próximamente publicaremos la primera edición de The Entrepreneurial Underwriter, el boletín mensual para miembros de FASE, y nos gustaría incluir cualquier información relevante para nuestros miembros procedente de su organización.
+Próximamente publicaremos la primera edición de The Entrepreneurial Underwriter, el boletín mensual para miembros de FASE, y nos complacería incluir cualquier información relevante para nuestros miembros procedente de su organización.
 
-Este boletín destacará noticias, logros y desarrollos significativos de nuestra comunidad de miembros. Si tiene alguno de los siguientes elementos que le gustaría compartir, por favor envíenoslos:
+Este boletín destacará noticias, logros y desarrollos significativos de nuestra comunidad de miembros. Si desea compartir alguno de los siguientes elementos, le agradeceríamos nos los hiciera llegar:
 
 • Anuncios o hitos de la empresa
-• Nuevos nombramientos o actualizaciones del equipo
-• Lanzamientos de productos o asociaciones
-• Perspectivas del sector o liderazgo de opinión
+• Nuevos nombramientos o cambios en el equipo
+• Lanzamientos de productos o alianzas
+• Perspectivas del sector o artículos de opinión
 • Próximos eventos o seminarios web
 
-Por favor, envíe los detalles a admin@fasemga.com antes del ${deadline} para su inclusión en la edición de la próxima semana.
+Le rogamos envíe los detalles a admin@fasemga.com antes del ${deadline} para su inclusión en la edición de la próxima semana.
 
 The Entrepreneurial Underwriter se distribuirá a todos los miembros de FASE y se publicará en nuestro portal de miembros.`
   },
   it: {
-    subject: 'Contribuisci a The Entrepreneurial Underwriter – Edizione di gennaio',
+    subject: 'Invito a contribuire a The Entrepreneurial Underwriter – Edizione di gennaio',
     body: (salutation: string, deadline: string) => `${salutation},
 
-A breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e vorremmo includere eventuali contenuti rilevanti per i nostri membri provenienti dalla vostra organizzazione.
+a breve pubblicheremo la prima edizione di The Entrepreneurial Underwriter, il bollettino mensile per i membri FASE, e saremmo lieti di includere eventuali contenuti rilevanti per i nostri membri provenienti dalla Sua organizzazione.
 
-Questo bollettino metterà in evidenza notizie, traguardi e sviluppi significativi della nostra comunità di membri. Se avete uno dei seguenti elementi da condividere, vi preghiamo di inviarceli:
+Questo bollettino metterà in evidenza notizie, traguardi e sviluppi significativi della nostra comunità di membri. Qualora desiderasse condividere uno dei seguenti elementi, La preghiamo di farceli pervenire:
 
 • Annunci aziendali o traguardi raggiunti
-• Nuove nomine o aggiornamenti del team
+• Nuove nomine o cambiamenti nel team
 • Lanci di prodotti o partnership
-• Approfondimenti di settore o thought leadership
+• Approfondimenti di settore o articoli di riflessione
 • Eventi o webinar in programma
 
-Vi preghiamo di inviare i dettagli a admin@fasemga.com entro ${deadline} per l'inclusione nell'edizione della prossima settimana.
+La preghiamo di inviare i dettagli a admin@fasemga.com entro ${deadline} per l'inclusione nell'edizione della prossima settimana.
 
 The Entrepreneurial Underwriter sarà distribuito a tutti i membri FASE e pubblicato sul nostro portale membri.`
   },
   nl: {
-    subject: 'Draag bij aan The Entrepreneurial Underwriter – Januari-editie',
+    subject: 'Uitnodiging om bij te dragen aan The Entrepreneurial Underwriter – Januari-editie',
     body: (salutation: string, deadline: string) => `${salutation},
 
-Binnenkort brengen we de eerste editie uit van The Entrepreneurial Underwriter, de maandelijkse nieuwsbrief voor FASE-leden, en we willen graag relevante items van uw organisatie opnemen voor onze leden.
+Binnenkort brengen wij de eerste editie uit van The Entrepreneurial Underwriter, de maandelijkse nieuwsbrief voor FASE-leden, en wij zouden graag relevante items van uw organisatie opnemen ten behoeve van onze leden.
 
-Deze nieuwsbrief zal nieuws, prestaties en belangrijke ontwikkelingen uit onze ledengemeenschap uitlichten. Als u een van de volgende items wilt delen, stuur ze dan naar ons:
+Deze nieuwsbrief zal nieuws, prestaties en belangrijke ontwikkelingen uit onze ledengemeenschap uitlichten. Indien u een van de volgende items wenst te delen, verzoeken wij u deze aan ons toe te zenden:
 
 • Bedrijfsaankondigingen of mijlpalen
-• Nieuwe benoemingen of teamupdates
+• Nieuwe benoemingen of wijzigingen in het team
 • Productlanceringen of partnerschappen
-• Branche-inzichten of thought leadership
+• Branche-inzichten of vakartikelen
 • Aankomende evenementen of webinars
 
-Stuur de details naar admin@fasemga.com vóór ${deadline} voor opname in de editie van volgende week.
+Wij verzoeken u de details vóór ${deadline} te sturen naar admin@fasemga.com voor opname in de editie van volgende week.
 
 The Entrepreneurial Underwriter wordt verspreid onder alle FASE-leden en gepubliceerd op ons ledenportaal.`
   }
