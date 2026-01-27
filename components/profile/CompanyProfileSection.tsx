@@ -185,7 +185,7 @@ export default function CompanyProfileSection({
               <span className="text-sm font-medium text-gray-900">Company Bio</span>
               <div className="flex items-center gap-2">
                 {getBioStatusText()}
-                {bioStatus === 'approved' && !editingBio && (
+                {(bioStatus === 'approved' || bioStatus === 'pending_review') && !editingBio && (
                   <Button
                     onClick={() => setEditingBio(true)}
                     variant="secondary"
@@ -202,7 +202,7 @@ export default function CompanyProfileSection({
               <div className="text-sm text-gray-700 leading-relaxed">
                 {bioText || <span className="text-gray-400 italic">No bio set</span>}
                 {bioStatus === 'pending_review' && (
-                  <p className="mt-2 text-xs text-gray-500 italic">Your bio is awaiting review and cannot be edited until it is approved or rejected.</p>
+                  <p className="mt-2 text-xs text-gray-500 italic">Your bio is awaiting review. You can still edit and resubmit if needed.</p>
                 )}
               </div>
             ) : (
@@ -245,7 +245,7 @@ export default function CompanyProfileSection({
                   >
                     Save Draft
                   </Button>
-                  {bioStatus === 'approved' && (
+                  {(bioStatus === 'approved' || bioStatus === 'pending_review') && (
                     <Button
                       onClick={() => {
                         setBioText(organizationAccount.companySummary?.text || '');

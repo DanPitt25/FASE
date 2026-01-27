@@ -111,8 +111,9 @@ export async function POST(request: NextRequest) {
     // Make the file publicly readable
     await fileRef.makePublic();
 
-    // Get the download URL
-    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    // Get the download URL with cache-busting timestamp
+    const timestamp = Date.now();
+    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}?t=${timestamp}`;
 
     // Update the organization's logo status in Firestore if identifier provided
     // Logo goes to pending review - not immediately visible in directories
