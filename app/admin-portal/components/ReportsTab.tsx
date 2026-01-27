@@ -4,33 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import Button from '../../../components/Button';
-
-// Lines of business labels for display
-const linesOfBusinessLabels: Record<string, string> = {
-  'accident_health': 'Accident & Health',
-  'aviation': 'Aviation',
-  'bloodstock': 'Bloodstock',
-  'commercial_property': 'Commercial Property',
-  'construction_engineering': 'Construction & Engineering',
-  'contingency': 'Contingency',
-  'cyber': 'Cyber',
-  'energy': 'Energy',
-  'environmental': 'Environmental',
-  'fine_art_specie': 'Fine Art / Specie',
-  'liability': 'Liability',
-  'marine': 'Marine',
-  'motor': 'Motor',
-  'personal_lines': 'Personal Lines',
-  'political_risk': 'Political Risk / Trade Credit',
-  'professional_liability': 'Professional Liability',
-  'property': 'Property',
-  'surety': 'Surety',
-  'terrorism': 'Terrorism',
-  'warranty': 'Warranty',
-  'other': 'Other',
-  'other_2': 'Other 2',
-  'other_3': 'Other 3'
-};
+import { getLineOfBusinessDisplay } from '../../../lib/lines-of-business';
 
 // Country code to name mapping
 const countryNames: Record<string, string> = {
@@ -139,7 +113,8 @@ interface ReportData {
 }
 
 type ReportView = 'summary' | 'mga' | 'carrier' | 'provider';
-type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice';
+type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice' | 'paid' | 'flagged' | 'rejected';
+type TypeFilter = 'all' | 'MGA' | 'carrier' | 'provider';
 
 export default function ReportsTab() {
   const [loading, setLoading] = useState(true);
@@ -147,184 +122,198 @@ export default function ReportsTab() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [activeView, setActiveView] = useState<ReportView>('summary');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [allAccounts, setAllAccounts] = useState<AccountData[]>([]);
 
   useEffect(() => {
-    loadReportData();
+    loadAccounts();
   }, []);
 
-  const loadReportData = async () => {
+  // Recalculate report data when filters change
+  useEffect(() => {
+    if (allAccounts.length > 0) {
+      const filtered = calculateReportData(allAccounts, statusFilter, typeFilter);
+      setReportData(filtered);
+    }
+  }, [allAccounts, statusFilter, typeFilter]);
+
+  const loadAccounts = async () => {
     try {
       setLoading(true);
       const accountsRef = collection(db, 'accounts');
       const snapshot = await getDocs(accountsRef);
 
-      const mgas: AccountData[] = [];
-      const carriers: AccountData[] = [];
-      const providers: AccountData[] = [];
-      const byOrganizationType: Record<string, number> = {};
-      const byStatus: Record<string, number> = {};
-      const byCountry: Record<string, number> = {};
-      const byAssociation: Record<string, number> = {};
-      let withAssociations = 0;
+      const accounts: AccountData[] = snapshot.docs.map((doc) => ({
+        ...doc.data() as AccountData,
+        id: doc.id
+      }));
 
-      // MGA-specific aggregations
-      const mgaByGWPBand: Record<string, number> = {};
-      const mgaByLinesOfBusiness: Record<string, number> = {};
-      const mgaByMarket: Record<string, number> = {};
-      let mgaTotalGWP = 0;
-
-      // Carrier-specific aggregations
-      const carrierByFronting: Record<string, number> = {};
-      const carrierByRating: Record<string, number> = {};
-      const carrierByStartupMGA: Record<string, number> = {};
-      const carrierDelegatingCountries: Record<string, number> = {};
-
-      // Provider-specific aggregations
-      const providerByService: Record<string, number> = {};
-
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data() as AccountData;
-        const account = { ...data, id: doc.id };
-
-        // Count by status (all accounts)
-        const status = data.status || 'unknown';
-        byStatus[status] = (byStatus[status] || 0) + 1;
-
-        // Count by organization type
-        const orgType = data.organizationType || 'Unknown';
-        byOrganizationType[orgType] = (byOrganizationType[orgType] || 0) + 1;
-
-        // Count by country - check businessAddress first, fall back to registeredAddress
-        const country = data.businessAddress?.country || data.registeredAddress?.country;
-        if (country) {
-          const countryName = countryNames[country] || country;
-          byCountry[countryName] = (byCountry[countryName] || 0) + 1;
-        } else {
-          byCountry['Not Specified'] = (byCountry['Not Specified'] || 0) + 1;
-        }
-
-        // Count associations
-        if (data.hasOtherAssociations && data.otherAssociations?.length) {
-          withAssociations++;
-          data.otherAssociations.forEach((assoc) => {
-            byAssociation[assoc] = (byAssociation[assoc] || 0) + 1;
-          });
-        }
-
-        // Categorize by type
-        if (orgType === 'MGA') {
-          mgas.push(account);
-
-          // GWP Band
-          if (data.portfolio?.grossWrittenPremiums) {
-            const band = data.portfolio.grossWrittenPremiums;
-            mgaByGWPBand[band] = (mgaByGWPBand[band] || 0) + 1;
-          }
-
-          // Total GWP (in EUR)
-          if (data.portfolio?.grossWrittenPremiumsEUR) {
-            mgaTotalGWP += data.portfolio.grossWrittenPremiumsEUR;
-          }
-
-          // Lines of Business
-          if (data.portfolio?.linesOfBusiness) {
-            data.portfolio.linesOfBusiness.forEach((lob) => {
-              const label = linesOfBusinessLabels[lob] || lob;
-              mgaByLinesOfBusiness[label] = (mgaByLinesOfBusiness[label] || 0) + 1;
-            });
-          }
-
-          // Markets
-          if (data.portfolio?.markets) {
-            data.portfolio.markets.forEach((market) => {
-              const marketName = countryNames[market] || market;
-              mgaByMarket[marketName] = (mgaByMarket[marketName] || 0) + 1;
-            });
-          }
-        } else if (orgType === 'carrier') {
-          carriers.push(account);
-
-          // Fronting options
-          if (data.carrierInfo?.frontingOptions) {
-            const fronting = data.carrierInfo.frontingOptions;
-            carrierByFronting[fronting] = (carrierByFronting[fronting] || 0) + 1;
-          }
-
-          // AM Best Rating
-          if (data.carrierInfo?.amBestRating) {
-            const rating = data.carrierInfo.amBestRating;
-            carrierByRating[rating] = (carrierByRating[rating] || 0) + 1;
-          }
-
-          // Considers Startup MGAs
-          if (data.carrierInfo?.considerStartupMGAs) {
-            const startup = data.carrierInfo.considerStartupMGAs;
-            carrierByStartupMGA[startup] = (carrierByStartupMGA[startup] || 0) + 1;
-          }
-
-          // Delegating Countries
-          if (data.carrierInfo?.delegatingCountries) {
-            data.carrierInfo.delegatingCountries.forEach((country) => {
-              const countryName = countryNames[country] || country;
-              carrierDelegatingCountries[countryName] = (carrierDelegatingCountries[countryName] || 0) + 1;
-            });
-          }
-        } else if (orgType === 'provider') {
-          providers.push(account);
-
-          // Services provided
-          if (data.servicesProvided) {
-            data.servicesProvided.forEach((service) => {
-              const label = serviceLabels[service] || service;
-              providerByService[label] = (providerByService[label] || 0) + 1;
-            });
-          }
-        }
-      });
-
-      setReportData({
-        totalAccounts: snapshot.docs.length,
-        mgas,
-        carriers,
-        providers,
-        byOrganizationType,
-        byStatus,
-        byCountry,
-        byAssociation,
-        withAssociations,
-        mgaByGWPBand,
-        mgaByLinesOfBusiness,
-        mgaByMarket,
-        mgaTotalGWP,
-        carrierByFronting,
-        carrierByRating,
-        carrierByStartupMGA,
-        carrierDelegatingCountries,
-        providerByService
-      });
+      setAllAccounts(accounts);
     } catch (error) {
-      console.error('Error loading report data:', error);
+      console.error('Error loading accounts:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getFilteredData = () => {
-    if (!reportData) return null;
-    if (statusFilter === 'all') return reportData;
+  const calculateReportData = (
+    accounts: AccountData[],
+    status: StatusFilter,
+    type: TypeFilter
+  ): ReportData => {
+    // Apply filters
+    let filtered = accounts;
 
-    // Re-filter based on status
-    const filtered = {
-      ...reportData,
-      mgas: reportData.mgas.filter((m) => m.status === statusFilter),
-      carriers: reportData.carriers.filter((c) => c.status === statusFilter),
-      providers: reportData.providers.filter((p) => p.status === statusFilter)
+    if (status !== 'all') {
+      filtered = filtered.filter((a) => a.status === status);
+    }
+
+    if (type !== 'all') {
+      filtered = filtered.filter((a) => a.organizationType === type);
+    }
+
+    const mgas: AccountData[] = [];
+    const carriers: AccountData[] = [];
+    const providers: AccountData[] = [];
+    const byOrganizationType: Record<string, number> = {};
+    const byStatus: Record<string, number> = {};
+    const byCountry: Record<string, number> = {};
+    const byAssociation: Record<string, number> = {};
+    let withAssociations = 0;
+
+    // MGA-specific aggregations
+    const mgaByGWPBand: Record<string, number> = {};
+    const mgaByLinesOfBusiness: Record<string, number> = {};
+    const mgaByMarket: Record<string, number> = {};
+    let mgaTotalGWP = 0;
+
+    // Carrier-specific aggregations
+    const carrierByFronting: Record<string, number> = {};
+    const carrierByRating: Record<string, number> = {};
+    const carrierByStartupMGA: Record<string, number> = {};
+    const carrierDelegatingCountries: Record<string, number> = {};
+
+    // Provider-specific aggregations
+    const providerByService: Record<string, number> = {};
+
+    filtered.forEach((account) => {
+      // Count by status (all accounts)
+      const accountStatus = account.status || 'unknown';
+      byStatus[accountStatus] = (byStatus[accountStatus] || 0) + 1;
+
+      // Count by organization type
+      const orgType = account.organizationType || 'Unknown';
+      byOrganizationType[orgType] = (byOrganizationType[orgType] || 0) + 1;
+
+      // Count by country - check businessAddress first, fall back to registeredAddress
+      const country = account.businessAddress?.country || account.registeredAddress?.country;
+      if (country) {
+        const countryName = countryNames[country] || country;
+        byCountry[countryName] = (byCountry[countryName] || 0) + 1;
+      } else {
+        byCountry['Not Specified'] = (byCountry['Not Specified'] || 0) + 1;
+      }
+
+      // Count associations
+      if (account.hasOtherAssociations && account.otherAssociations?.length) {
+        withAssociations++;
+        account.otherAssociations.forEach((assoc) => {
+          byAssociation[assoc] = (byAssociation[assoc] || 0) + 1;
+        });
+      }
+
+      // Categorize by type
+      if (orgType === 'MGA') {
+        mgas.push(account);
+
+        // GWP Band
+        if (account.portfolio?.grossWrittenPremiums) {
+          const band = account.portfolio.grossWrittenPremiums;
+          mgaByGWPBand[band] = (mgaByGWPBand[band] || 0) + 1;
+        }
+
+        // Total GWP (in EUR)
+        if (account.portfolio?.grossWrittenPremiumsEUR) {
+          mgaTotalGWP += account.portfolio.grossWrittenPremiumsEUR;
+        }
+
+        // Lines of Business - always use English labels
+        if (account.portfolio?.linesOfBusiness) {
+          account.portfolio.linesOfBusiness.forEach((lob) => {
+            // Map raw key to English label, fallback to formatted key if not found
+            const label = getLineOfBusinessDisplay(lob, 'en');
+            mgaByLinesOfBusiness[label] = (mgaByLinesOfBusiness[label] || 0) + 1;
+          });
+        }
+
+        // Markets
+        if (account.portfolio?.markets) {
+          account.portfolio.markets.forEach((market) => {
+            const marketName = countryNames[market] || market;
+            mgaByMarket[marketName] = (mgaByMarket[marketName] || 0) + 1;
+          });
+        }
+      } else if (orgType === 'carrier') {
+        carriers.push(account);
+
+        // Fronting options
+        if (account.carrierInfo?.frontingOptions) {
+          const fronting = account.carrierInfo.frontingOptions;
+          carrierByFronting[fronting] = (carrierByFronting[fronting] || 0) + 1;
+        }
+
+        // AM Best Rating
+        if (account.carrierInfo?.amBestRating) {
+          const rating = account.carrierInfo.amBestRating;
+          carrierByRating[rating] = (carrierByRating[rating] || 0) + 1;
+        }
+
+        // Considers Startup MGAs
+        if (account.carrierInfo?.considerStartupMGAs) {
+          const startup = account.carrierInfo.considerStartupMGAs;
+          carrierByStartupMGA[startup] = (carrierByStartupMGA[startup] || 0) + 1;
+        }
+
+        // Delegating Countries
+        if (account.carrierInfo?.delegatingCountries) {
+          account.carrierInfo.delegatingCountries.forEach((c) => {
+            const countryName = countryNames[c] || c;
+            carrierDelegatingCountries[countryName] = (carrierDelegatingCountries[countryName] || 0) + 1;
+          });
+        }
+      } else if (orgType === 'provider') {
+        providers.push(account);
+
+        // Services provided
+        if (account.servicesProvided) {
+          account.servicesProvided.forEach((service) => {
+            const label = serviceLabels[service] || service;
+            providerByService[label] = (providerByService[label] || 0) + 1;
+          });
+        }
+      }
+    });
+
+    return {
+      totalAccounts: filtered.length,
+      mgas,
+      carriers,
+      providers,
+      byOrganizationType,
+      byStatus,
+      byCountry,
+      byAssociation,
+      withAssociations,
+      mgaByGWPBand,
+      mgaByLinesOfBusiness,
+      mgaByMarket,
+      mgaTotalGWP,
+      carrierByFronting,
+      carrierByRating,
+      carrierByStartupMGA,
+      carrierDelegatingCountries,
+      providerByService
     };
-
-    // Recalculate totals
-    filtered.totalAccounts = filtered.mgas.length + filtered.carriers.length + filtered.providers.length;
-
-    return filtered;
   };
 
   const generatePDF = async () => {
@@ -516,11 +505,6 @@ export default function ReportsTab() {
     }
   };
 
-  const formatPercentage = (count: number, total: number) => {
-    if (total === 0) return '0';
-    return ((count / total) * 100).toFixed(1);
-  };
-
   const renderBarChart = (data: Record<string, number>, total: number, color: string = 'bg-fase-navy') => {
     const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
     if (sorted.length === 0) {
@@ -562,14 +546,12 @@ export default function ReportsTab() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-600">Failed to load report data</p>
-        <Button onClick={loadReportData} variant="secondary" className="mt-4">
+        <Button onClick={loadAccounts} variant="secondary" className="mt-4">
           Retry
         </Button>
       </div>
     );
   }
-
-  const filteredData = getFilteredData();
 
   return (
     <div className="space-y-6">
@@ -583,15 +565,28 @@ export default function ReportsTab() {
         </div>
         <div className="flex items-center gap-3">
           <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="all">All Types</option>
+            <option value="MGA">MGAs Only</option>
+            <option value="carrier">Carriers Only</option>
+            <option value="provider">Providers Only</option>
+          </select>
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
             <option value="all">All Statuses</option>
-            <option value="approved">Approved Only</option>
+            <option value="approved">Approved</option>
             <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="flagged">Flagged</option>
             <option value="invoice_sent">Invoice Sent</option>
             <option value="pending_invoice">Pending Invoice</option>
+            <option value="rejected">Rejected</option>
           </select>
           <Button onClick={generatePDF} disabled={generating} variant="primary">
             {generating ? 'Generating...' : 'Download PDF'}
