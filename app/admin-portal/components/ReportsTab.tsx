@@ -428,9 +428,14 @@ export default function ReportsTab() {
     type: TypeFilter
   ): ReportData => {
     let filtered = accounts;
-    if (status !== 'all') {
+
+    // Exclude flagged and rejected unless explicitly filtering for them
+    if (status === 'all') {
+      filtered = filtered.filter((a) => a.status !== 'flagged' && a.status !== 'rejected');
+    } else {
       filtered = filtered.filter((a) => a.status === status);
     }
+
     if (type !== 'all') {
       filtered = filtered.filter((a) => a.organizationType === type);
     }
@@ -589,6 +594,9 @@ export default function ReportsTab() {
         doc.circle(centerX, centerY, radius * 0.55, 'F');
       };
 
+      // Track if we need to use the first page or add a new one
+      let needsFirstPage = true;
+
       // Draw a complete section page with title, optional pie chart, and full list
       const drawSectionPage = (
         title: string,
@@ -598,7 +606,12 @@ export default function ReportsTab() {
         subtitle?: string,
         showChart: boolean = true
       ) => {
-        doc.addPage();
+        if (needsFirstPage) {
+          needsFirstPage = false;
+          // Use the existing first page
+        } else {
+          doc.addPage();
+        }
 
         // Header bar
         doc.setFillColor(...headerColor);
@@ -715,27 +728,30 @@ export default function ReportsTab() {
         typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
       const statusLabel = statusFilter === 'all' ? '' : ` (${statusFilter.replace('_', ' ')})`;
 
-      // Title page header
-      doc.setFillColor(45, 85, 116);
-      doc.rect(0, 0, pageWidth, 50, 'F');
-
-      doc.setFontSize(24);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(255, 255, 255);
-      doc.text('FASE Membership Report', pageWidth / 2, 22, { align: 'center' });
-
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(200, 200, 200);
-      doc.text(`${typeLabel}${statusLabel}`, pageWidth / 2, 35, { align: 'center' });
-
-      doc.setFontSize(10);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      })}`, pageWidth / 2, 45, { align: 'center' });
-
-      // Summary cards
+      // Only generate title page if summary is selected
       if (pdfSections.summary) {
+        needsFirstPage = false;
+
+        // Title page header
+        doc.setFillColor(45, 85, 116);
+        doc.rect(0, 0, pageWidth, 50, 'F');
+
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('FASE Membership Report', pageWidth / 2, 22, { align: 'center' });
+
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(200, 200, 200);
+        doc.text(`${typeLabel}${statusLabel}`, pageWidth / 2, 35, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        })}`, pageWidth / 2, 45, { align: 'center' });
+
+        // Summary cards
         const cardY = 65;
         const cardHeight = 35;
         const cardWidth = (pageWidth - margin * 2 - 15) / 4;
