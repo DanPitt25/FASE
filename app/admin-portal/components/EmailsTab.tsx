@@ -1671,14 +1671,6 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
             </div>
           )}
 
-          {/* Bulletin Call Info */}
-          {selectedTemplate === 'bulletin_call' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>Deadline:</strong> Friday, 31 January (hardcoded). The template will be automatically translated based on the selected locale.
-              </p>
-            </div>
-          )}
 
           {/* Action Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

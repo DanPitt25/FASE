@@ -32,6 +32,16 @@ const salutations: Record<string, { m: (name: string) => string; f: (name: strin
   }
 };
 
+// Localized deadlines
+const localizedDeadlines: Record<string, string> = {
+  en: 'Friday, 31 January',
+  fr: 'vendredi 31 janvier',
+  de: 'Freitag, 31. Januar',
+  es: 'viernes, 31 de enero',
+  it: 'venerdì 31 gennaio',
+  nl: 'vrijdag 31 januari'
+};
+
 // Bulletin templates in all supported languages
 const bulletinTemplates: Record<string, { subject: string; body: (salutation: string, deadline: string) => string }> = {
   en: {
@@ -182,7 +192,7 @@ export async function POST(request: NextRequest) {
 
     // Get template for locale
     const template = bulletinTemplates[locale] || bulletinTemplates['en'];
-    const deadline = 'Friday, 31 January';
+    const deadline = localizedDeadlines[locale] || localizedDeadlines['en'];
 
     // Build salutation based on gender
     const gender = requestData.gender || 'm';
