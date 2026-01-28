@@ -572,7 +572,7 @@ export default function ReportsTab() {
         const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
         const barHeight = 7;
         const barGap = 2;
-        const labelWidth = 70;
+        const labelWidth = 95;
         const barMaxWidth = pageWidth - margin * 2 - labelWidth - 25;
         let y = startY;
 
@@ -584,8 +584,7 @@ export default function ReportsTab() {
           doc.setFontSize(8);
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(60, 60, 60);
-          const displayLabel = label.length > 30 ? label.substring(0, 28) + '...' : label;
-          doc.text(displayLabel, margin + labelWidth - 2, y + barHeight / 2 + 1, { align: 'right' });
+          doc.text(label, margin + labelWidth - 2, y + barHeight / 2 + 1, { align: 'right' });
 
           // Bar
           doc.setFillColor(...color);
