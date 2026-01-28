@@ -209,22 +209,24 @@ function ColoredBarChart({ data, total, maxItems = 10 }: { data: Record<string, 
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {sorted.map(([label, count], index) => {
         const percentage = total > 0 ? (count / total) * 100 : 0;
         const color = CHART_COLORS[index % CHART_COLORS.length];
         return (
-          <div key={label} className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 w-48 flex-shrink-0" title={label}>{label}</span>
-            <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+          <div key={label}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-gray-600">{label}</span>
+              <span className="text-sm font-semibold" style={{ color }}>
+                {count} <span className="text-gray-400 font-normal">({percentage.toFixed(0)}%)</span>
+              </span>
+            </div>
+            <div className="bg-gray-100 rounded-full h-4 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.max(percentage, 3)}%`, backgroundColor: color }}
               />
             </div>
-            <span className="text-sm font-semibold w-20 text-right" style={{ color }}>
-              {count} <span className="text-gray-400 font-normal">({percentage.toFixed(0)}%)</span>
-            </span>
           </div>
         );
       })}
