@@ -28,23 +28,17 @@ function loadEmailTranslations(language: string): any {
 export async function POST(request: NextRequest) {
   try {
     const requestData = await request.json();
-    
-    // Validate required fields
-    const requiredFields = ['email', 'organizationName', 'invoiceNumber'];
-    const missingFields = [];
-    
-    for (const field of requiredFields) {
-      if (!requestData[field] || requestData[field].trim() === '') {
-        missingFields.push(field);
-      }
-    }
 
-    if (missingFields.length > 0) {
+    // Validate required fields - only organizationName is truly required
+    if (!requestData.organizationName || requestData.organizationName.toString().trim() === '') {
       return NextResponse.json(
-        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { error: 'Organization name is required' },
         { status: 400 }
       );
     }
+
+    // Generate invoice number if not provided
+    const invoiceNumber = requestData.invoiceNumber || `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
     // Build custom line item for rendezvous passes if present
     const rendezvousPassData = requestData.rendezvousPassReservation;
@@ -62,9 +56,9 @@ export async function POST(request: NextRequest) {
     }
 
     const invoiceData: any = {
-      email: requestData.email,
+      email: requestData.email || '',
       organizationName: requestData.organizationName,
-      invoiceNumber: requestData.invoiceNumber,
+      invoiceNumber: invoiceNumber,
       greeting: requestData.greeting || requestData.fullName || 'Client',
       gender: requestData.gender || 'm',
       totalAmount: requestData.totalAmount || 0,
@@ -223,14 +217,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         preview: true,
-        to: invoiceData.email,
+        to: invoiceData.email || null,
         cc: requestData.cc || null,
         subject: emailContent.subject,
         htmlContent: emailData.invoiceHTML,
         textContent: null,
+        pdfBase64: pdfBase64,
         attachments: [{ filename: emailData.pdfFilename, type: 'application/pdf' }],
-        invoiceNumber: invoiceData.invoiceNumber
+        invoiceNumber: invoiceData.invoiceNumber,
+        totalAmount: invoiceData.totalAmount,
+        convertedCurrency: invoiceData.convertedCurrency,
+        convertedAmount: invoiceData.convertedAmount
       });
+    }
+
+    // Email is required for actual sending
+    if (!invoiceData.email || invoiceData.email.trim() === '') {
+      return NextResponse.json(
+        { error: 'Email address is required to send the invoice' },
+        { status: 400 }
+      );
     }
 
     // Call Firebase Function directly via HTTP for actual sending
