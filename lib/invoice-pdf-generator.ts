@@ -80,6 +80,33 @@ export interface InvoiceGenerationResult {
   bankDetails: any;
 }
 
+// New clean interface for line-items-first invoice generation
+export interface LineItemInput {
+  description: string;
+  amount: number;
+  isDiscount?: boolean;
+}
+
+export interface LineItemsInvoiceData {
+  invoiceNumber: string;
+  email: string;
+  fullName?: string;
+  organizationName: string;
+  greeting?: string;
+  gender?: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    postcode?: string;
+    country?: string;
+  };
+  lineItems: LineItemInput[];
+  paymentCurrency: string; // EUR, GBP, or USD
+  userLocale?: string;
+  generationSource?: string;
+}
+
 interface InvoiceLineItem {
   description: string;
   quantity: number;
@@ -255,7 +282,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     };
 
     if (targetCurrency !== baseCurrency) {
-      currencyConversion = await convertCurrency(calculatedTotal, baseCurrency, targetCurrency);
+      currencyConversion = await convertCurrency(calculatedTotal, '', targetCurrency);
     }
 
     // Start drawing content
@@ -596,7 +623,443 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
 
   } catch (error: any) {
     console.error('❌ Failed to generate invoice PDF:', error);
-    
+
+    throw error;
+  }
+}
+
+/**
+ * Generate invoice PDF from line items (cleaner interface)
+ * Total is calculated from line items, currency conversion applied at the end
+ */
+export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): Promise<InvoiceGenerationResult> {
+  console.log(`🧾 Generating PDF invoice from line items: ${data.invoiceNumber}`);
+
+  try {
+    // Validate
+    if (!data.organizationName || !data.invoiceNumber) {
+      throw new Error('Missing required fields: organizationName or invoiceNumber');
+    }
+    if (!data.lineItems || data.lineItems.length === 0) {
+      throw new Error('At least one line item is required');
+    }
+
+    // Set defaults
+    const fullName = data.fullName || data.greeting || 'Client';
+    const greeting = data.greeting || data.fullName || 'Client';
+    const gender = data.gender || 'm';
+    const address = data.address || {
+      line1: 'Not provided',
+      line2: '',
+      city: 'Not provided',
+      postcode: 'Not provided',
+      country: 'Netherlands'
+    };
+
+    // Language setup
+    const userLocale = data.userLocale || 'en';
+    const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
+    const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
+
+    // Currency setup
+    const baseCurrency = 'EUR';
+    const targetCurrency = data.paymentCurrency || baseCurrency;
+
+    // Get bank details
+    const bankDetails = getWiseBankDetails(targetCurrency);
+
+    // Build internal line items from input
+    const lineItems: InvoiceLineItem[] = data.lineItems.map(item => ({
+      description: item.description,
+      quantity: 1,
+      unitPrice: item.amount,
+      total: item.amount,
+      isDiscount: item.isDiscount || item.amount < 0
+    }));
+
+    // Calculate total
+    const calculatedTotal = calculateInvoiceTotal(lineItems);
+
+    if (calculatedTotal <= 0) {
+      throw new Error('Invoice total must be greater than zero');
+    }
+
+    // Currency conversion (after calculating total)
+    let currencyConversion = {
+      convertedCurrency: baseCurrency,
+      roundedAmount: calculatedTotal,
+      exchangeRate: 1
+    };
+
+    if (targetCurrency !== baseCurrency) {
+      currencyConversion = await convertCurrency(calculatedTotal, '', targetCurrency);
+    }
+
+    // Load PDF template
+    const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
+    const letterheadBytes = fs.readFileSync(letterheadPath);
+    const pdfDoc = await PDFDocument.load(letterheadBytes);
+
+    const pages = pdfDoc.getPages();
+    const firstPage = pages[0];
+    const { width, height } = firstPage.getSize();
+
+    // Embed fonts
+    const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // FASE Brand Colors
+    const faseNavy = rgb(0.176, 0.333, 0.455);
+    const faseBlack = rgb(0.137, 0.122, 0.125);
+    const faseCream = rgb(0.922, 0.910, 0.894);
+
+    // Layout settings
+    const margins = { left: 50, right: 50, top: 150, bottom: 80 };
+    const contentWidth = width - margins.left - margins.right;
+    const standardLineHeight = 18;
+    const sectionGap = 25;
+
+    // Currency formatting
+    const formatEuro = (amount: number) => `€ ${amount.toLocaleString()}`;
+    const formatCurrency = (amount: number, currency: string) => {
+      const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
+      return `${symbols[currency] || currency} ${amount.toLocaleString()}`;
+    };
+
+    // Load PDF text translations
+    const translations = loadEmailTranslations(locale);
+    const pdfTexts = {
+      invoice: 'INVOICE',
+      billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
+      invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
+      date: translations.pdf_invoice?.date || 'Date:',
+      terms: translations.pdf_invoice?.terms || 'Terms: Payment upon receipt',
+      description: translations.pdf_invoice?.description || 'Description',
+      quantity: translations.pdf_invoice?.quantity || 'Qty',
+      unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
+      total: translations.pdf_invoice?.total || 'Total',
+      totalAmountDue: translations.pdf_invoice?.total_amount_due || 'Total Amount Due:',
+      paymentInstructions: translations.pdf_invoice?.payment_instructions || 'Payment Instructions:'
+    };
+
+    // Date formatting
+    const dateLocales: Record<string, string> = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
+    const dateLocale = dateLocales[locale] || 'en-GB';
+    const currentDate = new Date().toLocaleDateString(dateLocale);
+
+    // Start drawing
+    let currentY = height - margins.top;
+
+    // Title
+    firstPage.drawText(pdfTexts.invoice, {
+      x: margins.left,
+      y: currentY,
+      size: 18,
+      font: boldFont,
+      color: faseNavy,
+    });
+
+    currentY -= 40;
+
+    // Bill To and Invoice Details
+    firstPage.drawText(pdfTexts.billTo, {
+      x: margins.left,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+      color: faseNavy,
+    });
+
+    const invoiceDetailsX = width - margins.right - 150;
+    firstPage.drawText(`${pdfTexts.invoiceNumber} ${data.invoiceNumber}`, {
+      x: invoiceDetailsX,
+      y: currentY,
+      size: 11,
+      font: boldFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText(`${pdfTexts.date} ${currentDate}`, {
+      x: invoiceDetailsX,
+      y: currentY - 16,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText(pdfTexts.terms, {
+      x: invoiceDetailsX,
+      y: currentY - 32,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('VAT Number Pending', {
+      x: invoiceDetailsX,
+      y: currentY - 48,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    // Bill To details
+    currentY -= 20;
+
+    const billToLines = [
+      data.organizationName,
+      fullName,
+      address.line1 || '',
+      address.line2 || '',
+      `${address.city || ''} ${address.postcode || ''}`.trim(),
+      address.country || ''
+    ].filter(line => line && line.trim() !== '');
+
+    billToLines.forEach((line, index) => {
+      firstPage.drawText(line, {
+        x: margins.left,
+        y: currentY - (index * standardLineHeight),
+        size: 10,
+        font: index === 0 ? boldFont : bodyFont,
+        color: faseBlack,
+      });
+    });
+
+    // Table
+    currentY -= (billToLines.length * standardLineHeight) + sectionGap + 20;
+
+    const tableY = currentY;
+    const colWidths = [250, 50, 100, 100];
+    const colX = [
+      margins.left,
+      margins.left + colWidths[0],
+      margins.left + colWidths[0] + colWidths[1],
+      margins.left + colWidths[0] + colWidths[1] + colWidths[2]
+    ];
+
+    // Table header
+    firstPage.drawRectangle({
+      x: margins.left,
+      y: tableY - 35,
+      width: contentWidth,
+      height: 35,
+      color: faseCream,
+    });
+
+    const headers = [pdfTexts.description, pdfTexts.quantity, pdfTexts.unitPrice, pdfTexts.total];
+    headers.forEach((header, i) => {
+      firstPage.drawText(header, {
+        x: colX[i] + 10,
+        y: tableY - 20,
+        size: 11,
+        font: boldFont,
+        color: faseNavy,
+      });
+    });
+
+    currentY = tableY - 40;
+
+    // Render line items
+    lineItems.forEach((item) => {
+      const color = item.isDiscount ? rgb(0.0, 0.6, 0.0) : faseBlack;
+
+      firstPage.drawText(item.description, {
+        x: colX[0] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      firstPage.drawText(item.quantity.toString(), {
+        x: colX[1] + 25,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      const unitPriceText = item.isDiscount ?
+        `-${formatEuro(Math.abs(item.unitPrice))}` :
+        formatEuro(item.unitPrice);
+
+      firstPage.drawText(unitPriceText, {
+        x: colX[2] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      const totalText = item.isDiscount ?
+        `-${formatEuro(Math.abs(item.total))}` :
+        formatEuro(item.total);
+
+      firstPage.drawText(totalText, {
+        x: colX[3] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      currentY -= 30;
+    });
+
+    // Total section
+    currentY -= 20;
+
+    const totalSectionWidth = 320;
+    const totalX = width - margins.right - totalSectionWidth;
+    const sectionHeight = currencyConversion.convertedCurrency === 'EUR' ? 35 : 55;
+
+    firstPage.drawRectangle({
+      x: totalX,
+      y: currentY - sectionHeight,
+      width: totalSectionWidth,
+      height: sectionHeight,
+      borderColor: faseNavy,
+      borderWidth: 2,
+    });
+
+    const labelX = totalX + 15;
+
+    if (currencyConversion.convertedCurrency === 'EUR') {
+      firstPage.drawText(pdfTexts.totalAmountDue, {
+        x: labelX,
+        y: currentY - 22,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+
+      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
+      firstPage.drawText(formatEuro(calculatedTotal), {
+        x: labelX + textWidth + 15,
+        y: currentY - 22,
+        size: 13,
+        font: boldFont,
+        color: faseNavy,
+      });
+    } else {
+      firstPage.drawText('Base Amount (EUR):', {
+        x: labelX,
+        y: currentY - 18,
+        size: 11,
+        font: bodyFont,
+        color: faseNavy,
+      });
+
+      firstPage.drawText(formatEuro(calculatedTotal), {
+        x: labelX + 130,
+        y: currentY - 18,
+        size: 11,
+        font: bodyFont,
+        color: faseNavy,
+      });
+
+      firstPage.drawText(pdfTexts.totalAmountDue, {
+        x: labelX,
+        y: currentY - 38,
+        size: 12,
+        font: boldFont,
+        color: faseNavy,
+      });
+
+      firstPage.drawText(formatCurrency(currencyConversion.roundedAmount, currencyConversion.convertedCurrency), {
+        x: labelX + 130,
+        y: currentY - 38,
+        size: 13,
+        font: boldFont,
+        color: faseNavy,
+      });
+    }
+
+    // Payment Instructions
+    currentY -= 80;
+
+    firstPage.drawLine({
+      start: { x: margins.left, y: currentY - 10 },
+      end: { x: width - margins.right, y: currentY - 10 },
+      thickness: 1,
+      color: faseNavy,
+    });
+
+    firstPage.drawText(pdfTexts.paymentInstructions, {
+      x: margins.left,
+      y: currentY - 30,
+      size: 12,
+      font: boldFont,
+      color: faseNavy,
+    });
+
+    const invoiceT = translations.pdf_invoice || {};
+
+    const paymentLines = [
+      `${invoiceT.reference || 'Reference'}: ${bankDetails.reference}`,
+      `${invoiceT.account_holder || 'Account holder'}: ${bankDetails.accountHolder}`,
+    ];
+
+    switch (currencyConversion.convertedCurrency) {
+      case 'USD':
+        paymentLines.push(
+          `ACH and Wire routing number: ${bankDetails.routingNumber}`,
+          `Account number: ${bankDetails.accountNumber}`,
+          `Account type: ${bankDetails.accountType}`
+        );
+        break;
+      case 'GBP':
+        paymentLines.push(
+          `Sort code: ${bankDetails.sortCode}`,
+          `Account number: ${bankDetails.accountNumber}`,
+          `IBAN: ${bankDetails.iban}`
+        );
+        break;
+      case 'EUR':
+      default:
+        paymentLines.push(
+          `BIC: ${bankDetails.bic}`,
+          `IBAN: ${bankDetails.iban}`
+        );
+        break;
+    }
+
+    paymentLines.push(
+      '',
+      `${invoiceT.bank_name_address || 'Bank name and address'}:`,
+      bankDetails.bankName,
+      ...bankDetails.address
+    );
+
+    paymentLines.forEach((line, index) => {
+      firstPage.drawText(line, {
+        x: margins.left,
+        y: currentY - 50 - (index * standardLineHeight),
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+    });
+
+    // Generate PDF
+    const pdfBytes = await pdfDoc.save();
+    const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
+
+    console.log('✅ PDF generated from line items, size:', pdfBytes.length);
+
+    return {
+      pdfBase64,
+      invoiceNumber: data.invoiceNumber,
+      totalAmount: calculatedTotal,
+      currency: baseCurrency,
+      convertedCurrency: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.convertedCurrency : undefined,
+      convertedAmount: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.roundedAmount : undefined,
+      exchangeRate: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.exchangeRate : undefined,
+      bankDetails
+    };
+
+  } catch (error: any) {
+    console.error('❌ Failed to generate invoice from line items:', error);
     throw error;
   }
 }

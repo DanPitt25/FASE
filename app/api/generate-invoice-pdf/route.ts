@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { generateInvoicePDF, generateInvoiceFromLineItems, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 export const runtime = 'nodejs';
@@ -12,36 +12,60 @@ export async function POST(request: NextRequest) {
     if (!requestData.organizationName?.trim()) {
       return NextResponse.json({ error: 'Organization name is required' }, { status: 400 });
     }
-    if (!requestData.totalAmount || requestData.totalAmount <= 0) {
-      return NextResponse.json({ error: 'Valid amount is required' }, { status: 400 });
-    }
 
     // Generate invoice number
     const invoiceNumber = requestData.invoiceNumber || `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const invoiceGenerationData: InvoiceGenerationData = {
-      invoiceNumber,
-      invoiceType: 'regular',
-      email: requestData.email || '',
-      fullName: requestData.fullName || requestData.recipientName || '',
-      organizationName: requestData.organizationName,
-      greeting: requestData.greeting || requestData.fullName || requestData.recipientName || '',
-      gender: requestData.gender || 'm',
-      address: requestData.address || {},
-      totalAmount: requestData.totalAmount,
-      originalAmount: requestData.originalAmount || requestData.totalAmount,
-      discountAmount: requestData.discountAmount || 0,
-      discountReason: requestData.discountReason || '',
-      hasOtherAssociations: requestData.hasOtherAssociations || false,
-      forceCurrency: requestData.currency || 'EUR',
-      userLocale: requestData.locale || 'en',
-      customLineItem: requestData.customLineItem || null,
-      generationSource: 'admin_portal',
-      isPreview: false
-    };
+    let result;
 
-    console.log('Generating custom invoice PDF:', invoiceNumber);
-    const result = await generateInvoicePDF(invoiceGenerationData);
+    // Check if using new line-items format
+    if (requestData.lineItems && Array.isArray(requestData.lineItems)) {
+      // New line-items-first approach
+      console.log('Generating invoice from line items:', invoiceNumber);
+
+      result = await generateInvoiceFromLineItems({
+        invoiceNumber,
+        email: requestData.email || '',
+        fullName: requestData.fullName || requestData.recipientName || '',
+        organizationName: requestData.organizationName,
+        greeting: requestData.greeting || requestData.fullName || requestData.recipientName || '',
+        gender: requestData.gender || 'm',
+        address: requestData.address || {},
+        lineItems: requestData.lineItems,
+        paymentCurrency: requestData.paymentCurrency || 'EUR',
+        userLocale: requestData.locale || 'en',
+        generationSource: 'admin_portal'
+      });
+    } else {
+      // Legacy format - require totalAmount
+      if (!requestData.totalAmount || requestData.totalAmount <= 0) {
+        return NextResponse.json({ error: 'Valid amount is required' }, { status: 400 });
+      }
+
+      const invoiceGenerationData: InvoiceGenerationData = {
+        invoiceNumber,
+        invoiceType: 'regular',
+        email: requestData.email || '',
+        fullName: requestData.fullName || requestData.recipientName || '',
+        organizationName: requestData.organizationName,
+        greeting: requestData.greeting || requestData.fullName || requestData.recipientName || '',
+        gender: requestData.gender || 'm',
+        address: requestData.address || {},
+        totalAmount: requestData.totalAmount,
+        originalAmount: requestData.originalAmount || requestData.totalAmount,
+        discountAmount: requestData.discountAmount || 0,
+        discountReason: requestData.discountReason || '',
+        hasOtherAssociations: requestData.hasOtherAssociations || false,
+        forceCurrency: requestData.currency || 'EUR',
+        userLocale: requestData.locale || 'en',
+        customLineItem: requestData.customLineItem || null,
+        generationSource: 'admin_portal',
+        isPreview: false
+      };
+
+      console.log('Generating custom invoice PDF (legacy):', invoiceNumber);
+      result = await generateInvoicePDF(invoiceGenerationData);
+    }
 
     // Upload to Firebase Storage
     let pdfUrl: string | undefined;

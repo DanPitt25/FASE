@@ -232,17 +232,49 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
     }
 
     if (selectedTemplate === 'standalone_invoice') {
+      // Build line items for the new line-items-first system
+      const lineItems: { description: string; amount: number; isDiscount?: boolean }[] = [];
+
+      // Main membership line item
+      const membershipDescription = formData.userLocale === 'nl'
+        ? 'FASE Jaarlijks Lidmaatschap (1/1/2026 - 1/1/2027)'
+        : 'FASE Annual Membership (1/1/2026 - 1/1/2027)';
+      lineItems.push({ description: membershipDescription, amount: originalAmount });
+
+      // Add discount if hasOtherAssociations
+      if (formData.hasOtherAssociations) {
+        const discountDescription = formData.userLocale === 'nl'
+          ? 'Lidmaatschapskorting voor Meerdere Verenigingen (20%)'
+          : 'Multi-Association Member Discount (20%)';
+        lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
+      }
+
+      // Add rendezvous passes if present
+      if (prefilledData?.rendezvousPassReservation?.passTotal > 0) {
+        const passData = prefilledData.rendezvousPassReservation;
+        const passLabel = passData.organizationType === 'MGA' ? 'MGA' :
+                         passData.organizationType === 'carrier' ? 'Carrier/Broker' :
+                         'Service Provider';
+        lineItems.push({
+          description: `MGA Rendezvous 2026 Pass${passData.passCount > 1 ? 'es' : ''} (${passLabel} - ${passData.passCount}x, incl. VAT)`,
+          amount: passData.passTotal
+        });
+      }
+
+      // Add custom line item if enabled
+      if (formData.customLineItem.enabled && formData.customLineItem.amount > 0) {
+        lineItems.push({
+          description: formData.customLineItem.description || 'Additional Item',
+          amount: formData.customLineItem.amount
+        });
+      }
+
       payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
-      payload.totalAmount = finalAmount;
-      payload.originalAmount = originalAmount;
-      payload.hasOtherAssociations = formData.hasOtherAssociations;
-      payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-      payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+      payload.lineItems = lineItems;
+      payload.paymentCurrency = formData.forceCurrency || 'EUR';
       payload.country = formData.address.country;
       payload.address = formData.address;
       payload.userLocale = formData.userLocale;
-      payload.forceCurrency = formData.forceCurrency;
-      payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
     } else {
       payload.template = selectedTemplate;
       if (template.requiresPricing) {

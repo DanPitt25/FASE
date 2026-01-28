@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
-import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
+import { generateInvoicePDF, generateInvoiceFromLineItems, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 // Force Node.js runtime to enable file system access
@@ -126,45 +126,73 @@ export async function POST(request: NextRequest) {
 
     // Generate PDF invoice using the shared generator
     let pdfBase64 = requestData.pdfAttachment;
-    
-    if (!pdfBase64) {
-      console.log('🧾 Generating invoice PDF using shared generator...');
-      
-      const invoiceGenerationData: InvoiceGenerationData = {
-        invoiceNumber: invoiceData.invoiceNumber,
-        invoiceType: 'regular',
-        
-        email: invoiceData.email,
-        fullName: invoiceData.fullName,
-        organizationName: invoiceData.organizationName,
-        greeting: invoiceData.greeting,
-        gender: invoiceData.gender,
-        address: invoiceData.address,
-        
-        totalAmount: invoiceData.totalAmount,
-        originalAmount: invoiceData.originalAmount,
-        discountAmount: invoiceData.discountAmount,
-        discountReason: invoiceData.discountReason,
-        hasOtherAssociations,
-        
-        forceCurrency: requestData.forceCurrency,
-        userLocale: locale,
-        
-        customLineItem: invoiceData.customLineItem,
-        
-        generationSource: 'customer_request',
-        isPreview: isPreview
-      };
+    let generatedTotal = invoiceData.totalAmount;
 
-      const result = await generateInvoicePDF(invoiceGenerationData);
+    if (!pdfBase64) {
+      console.log('🧾 Generating invoice PDF...');
+
+      let result;
+
+      // Check if using new line-items format
+      if (requestData.lineItems && Array.isArray(requestData.lineItems) && requestData.lineItems.length > 0) {
+        console.log('Using line-items-first generation');
+
+        result = await generateInvoiceFromLineItems({
+          invoiceNumber: invoiceData.invoiceNumber,
+          email: invoiceData.email,
+          fullName: invoiceData.fullName,
+          organizationName: invoiceData.organizationName,
+          greeting: invoiceData.greeting,
+          gender: invoiceData.gender,
+          address: invoiceData.address,
+          lineItems: requestData.lineItems,
+          paymentCurrency: requestData.paymentCurrency || requestData.forceCurrency || 'EUR',
+          userLocale: locale,
+          generationSource: 'customer_request'
+        });
+      } else {
+        // Legacy format
+        console.log('Using legacy generation format');
+
+        const invoiceGenerationData: InvoiceGenerationData = {
+          invoiceNumber: invoiceData.invoiceNumber,
+          invoiceType: 'regular',
+
+          email: invoiceData.email,
+          fullName: invoiceData.fullName,
+          organizationName: invoiceData.organizationName,
+          greeting: invoiceData.greeting,
+          gender: invoiceData.gender,
+          address: invoiceData.address,
+
+          totalAmount: invoiceData.totalAmount,
+          originalAmount: invoiceData.originalAmount,
+          discountAmount: invoiceData.discountAmount,
+          discountReason: invoiceData.discountReason,
+          hasOtherAssociations,
+
+          forceCurrency: requestData.forceCurrency,
+          userLocale: locale,
+
+          customLineItem: invoiceData.customLineItem,
+
+          generationSource: 'customer_request',
+          isPreview: isPreview
+        };
+
+        result = await generateInvoicePDF(invoiceGenerationData);
+      }
+
       pdfBase64 = result.pdfBase64;
-      
+      generatedTotal = result.totalAmount;
+
       // Store currency conversion info for logging
       invoiceData.generatedCurrency = result.currency;
       invoiceData.convertedCurrency = result.convertedCurrency;
       invoiceData.convertedAmount = result.convertedAmount;
       invoiceData.exchangeRate = result.exchangeRate;
       invoiceData.bankDetails = result.bankDetails;
+      invoiceData.totalAmount = result.totalAmount;
     }
 
     const emailData = {
@@ -276,7 +304,10 @@ export async function POST(request: NextRequest) {
       message: 'Invoice delivery email sent successfully',
       result: result,
       pdfUrl,
-      invoiceNumber: invoiceData.invoiceNumber
+      invoiceNumber: invoiceData.invoiceNumber,
+      totalAmount: invoiceData.totalAmount,
+      convertedCurrency: invoiceData.convertedCurrency,
+      convertedAmount: invoiceData.convertedAmount
     });
 
   } catch (error: any) {

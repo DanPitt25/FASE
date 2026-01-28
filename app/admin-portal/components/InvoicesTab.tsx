@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { getAllInvoices, updateInvoiceStatus, Invoice, createInvoiceRecord } from '../../../lib/firestore';
 
+interface LineItem {
+  id: string;
+  description: string;
+  amount: string;
+  isDiscount: boolean;
+}
+
 interface CustomInvoiceForm {
   recipientName: string;
   recipientEmail: string;
@@ -14,18 +21,17 @@ interface CustomInvoiceForm {
     postcode: string;
     country: string;
   };
-  totalAmount: string;
-  currency: string;
-  originalAmount: string;
-  discountAmount: string;
-  discountReason: string;
-  customLineItem: {
-    enabled: boolean;
-    description: string;
-    amount: string;
-  };
+  lineItems: LineItem[];
+  paymentCurrency: string; // Currency for payment (EUR base, convert to GBP/USD)
   locale: string;
 }
+
+const createLineItem = (description = '', amount = '', isDiscount = false): LineItem => ({
+  id: Math.random().toString(36).substr(2, 9),
+  description,
+  amount,
+  isDiscount
+});
 
 const initialFormState: CustomInvoiceForm = {
   recipientName: '',
@@ -38,16 +44,8 @@ const initialFormState: CustomInvoiceForm = {
     postcode: '',
     country: ''
   },
-  totalAmount: '',
-  currency: 'EUR',
-  originalAmount: '',
-  discountAmount: '',
-  discountReason: '',
-  customLineItem: {
-    enabled: false,
-    description: '',
-    amount: ''
-  },
+  lineItems: [createLineItem('FASE Annual Membership (1/1/2026 - 1/1/2027)', '')],
+  paymentCurrency: 'EUR',
   locale: 'en'
 };
 
@@ -102,13 +100,56 @@ export default function InvoicesTab() {
     }
   };
 
+  // Calculate total from line items
+  const calculateTotal = () => {
+    return formData.lineItems.reduce((sum, item) => {
+      const amount = parseFloat(item.amount) || 0;
+      return sum + (item.isDiscount ? -Math.abs(amount) : amount);
+    }, 0);
+  };
+
+  const addLineItem = (isDiscount = false) => {
+    setFormData({
+      ...formData,
+      lineItems: [...formData.lineItems, createLineItem('', '', isDiscount)]
+    });
+  };
+
+  const removeLineItem = (id: string) => {
+    if (formData.lineItems.length <= 1) return;
+    setFormData({
+      ...formData,
+      lineItems: formData.lineItems.filter(item => item.id !== id)
+    });
+  };
+
+  const updateLineItem = (id: string, field: keyof LineItem, value: string | boolean) => {
+    setFormData({
+      ...formData,
+      lineItems: formData.lineItems.map(item =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    });
+  };
+
   const handleGenerateInvoice = async () => {
     if (!formData.organizationName.trim()) {
       alert('Organization name is required');
       return;
     }
-    if (!formData.totalAmount || parseFloat(formData.totalAmount) <= 0) {
-      alert('Valid amount is required');
+
+    const total = calculateTotal();
+    if (total <= 0) {
+      alert('Total amount must be greater than zero');
+      return;
+    }
+
+    // Check that at least one line item has description and amount
+    const validItems = formData.lineItems.filter(item =>
+      item.description.trim() && (parseFloat(item.amount) || 0) !== 0
+    );
+    if (validItems.length === 0) {
+      alert('At least one line item with description and amount is required');
       return;
     }
 
@@ -116,23 +157,24 @@ export default function InvoicesTab() {
     setGeneratedInvoice(null);
 
     try {
+      // Convert line items to the format expected by the API
+      const lineItemsPayload = formData.lineItems
+        .filter(item => item.description.trim() && (parseFloat(item.amount) || 0) !== 0)
+        .map(item => ({
+          description: item.description,
+          amount: item.isDiscount ? -Math.abs(parseFloat(item.amount) || 0) : parseFloat(item.amount) || 0,
+          isDiscount: item.isDiscount
+        }));
+
       const payload = {
         recipientName: formData.recipientName,
         email: formData.recipientEmail,
         organizationName: formData.organizationName,
         fullName: formData.recipientName,
         address: formData.address,
-        totalAmount: parseFloat(formData.totalAmount),
-        originalAmount: formData.originalAmount ? parseFloat(formData.originalAmount) : parseFloat(formData.totalAmount),
-        discountAmount: formData.discountAmount ? parseFloat(formData.discountAmount) : 0,
-        discountReason: formData.discountReason,
-        currency: formData.currency,
-        locale: formData.locale,
-        customLineItem: formData.customLineItem.enabled ? {
-          enabled: true,
-          description: formData.customLineItem.description,
-          amount: parseFloat(formData.customLineItem.amount) || 0
-        } : null
+        lineItems: lineItemsPayload,
+        paymentCurrency: formData.paymentCurrency,
+        locale: formData.locale
       };
 
       const response = await fetch('/api/generate-invoice-pdf', {
@@ -153,8 +195,8 @@ export default function InvoicesTab() {
         recipientEmail: formData.recipientEmail || '',
         recipientName: formData.recipientName || formData.organizationName,
         organizationName: formData.organizationName,
-        amount: parseFloat(formData.totalAmount),
-        currency: formData.currency,
+        amount: data.totalAmount,
+        currency: data.convertedCurrency || 'EUR',
         type: 'standalone',
         status: 'sent',
         sentAt: new Date(),
@@ -409,26 +451,83 @@ export default function InvoicesTab() {
                     </div>
                   </div>
 
-                  {/* Amount */}
+                  {/* Line Items */}
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Amount (EUR)</h4>
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="text-sm font-medium text-gray-700">Line Items (EUR)</h4>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => addLineItem(false)}
+                          className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                        >
+                          + Add Item
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addLineItem(true)}
+                          className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                        >
+                          + Add Discount
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {formData.lineItems.map((item, index) => (
+                        <div key={item.id} className={`flex gap-2 items-center p-2 rounded ${item.isDiscount ? 'bg-green-50' : 'bg-gray-50'}`}>
+                          <div className="flex-grow">
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                              placeholder={item.isDiscount ? "Discount description" : "Item description"}
+                            />
+                          </div>
+                          <div className="w-28">
+                            <div className="relative">
+                              <span className={`absolute left-3 top-2 ${item.isDiscount ? 'text-green-600' : 'text-gray-500'}`}>
+                                {item.isDiscount ? '-€' : '€'}
+                              </span>
+                              <input
+                                type="number"
+                                value={item.amount}
+                                onChange={(e) => updateLineItem(item.id, 'amount', e.target.value)}
+                                className={`w-full pl-8 pr-3 py-2 border rounded text-sm ${item.isDiscount ? 'border-green-300 text-green-700' : 'border-gray-300'}`}
+                                placeholder="0"
+                              />
+                            </div>
+                          </div>
+                          {formData.lineItems.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeLineItem(item.id)}
+                              className="text-red-500 hover:text-red-700 p-1"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Total Display */}
+                    <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-700">Total (EUR):</span>
+                      <span className={`text-lg font-bold ${calculateTotal() > 0 ? 'text-gray-900' : 'text-red-600'}`}>
+                        €{calculateTotal().toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Settings Row */}
+                  <div className="border-t pt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Total Amount (EUR) *</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2 text-gray-500">€</span>
-                          <input
-                            type="number"
-                            value={formData.totalAmount}
-                            onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
-                            className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-sm"
-                            placeholder="1500"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Language</label>
+                        <label className="block text-xs text-gray-500 mb-1">Invoice Language</label>
                         <select
                           value={formData.locale}
                           onChange={(e) => setFormData({ ...formData, locale: e.target.value })}
@@ -442,105 +541,24 @@ export default function InvoicesTab() {
                           <option value="nl">Dutch</option>
                         </select>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Currency Conversion */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Payment Currency</h4>
-                    <p className="text-xs text-gray-500 mb-2">
-                      Invoice will show EUR base amount with converted total for payment
-                    </p>
-                    <select
-                      value={formData.currency}
-                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                    >
-                      <option value="EUR">EUR (no conversion)</option>
-                      <option value="GBP">GBP (British Pounds)</option>
-                      <option value="USD">USD (US Dollars)</option>
-                    </select>
-                  </div>
-
-                  {/* Discount */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Discount (optional)</h4>
-                    <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Original Amount</label>
-                        <input
-                          type="number"
-                          value={formData.originalAmount}
-                          onChange={(e) => setFormData({ ...formData, originalAmount: e.target.value })}
+                        <label className="block text-xs text-gray-500 mb-1">Payment Currency</label>
+                        <select
+                          value={formData.paymentCurrency}
+                          onChange={(e) => setFormData({ ...formData, paymentCurrency: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="2000"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Discount Amount</label>
-                        <input
-                          type="number"
-                          value={formData.discountAmount}
-                          onChange={(e) => setFormData({ ...formData, discountAmount: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Discount Reason</label>
-                        <input
-                          type="text"
-                          value={formData.discountReason}
-                          onChange={(e) => setFormData({ ...formData, discountReason: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="Early bird"
-                        />
+                        >
+                          <option value="EUR">EUR (no conversion)</option>
+                          <option value="GBP">GBP (convert to British Pounds)</option>
+                          <option value="USD">USD (convert to US Dollars)</option>
+                        </select>
+                        {formData.paymentCurrency !== 'EUR' && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Invoice shows EUR base + converted {formData.paymentCurrency} total
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Custom Line Item */}
-                  <div className="border-t pt-4">
-                    <label className="flex items-center text-sm font-medium text-gray-700 mb-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.customLineItem.enabled}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          customLineItem: { ...formData.customLineItem, enabled: e.target.checked }
-                        })}
-                        className="mr-2"
-                      />
-                      Add Custom Line Item
-                    </label>
-                    {formData.customLineItem.enabled && (
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-2">
-                          <input
-                            type="text"
-                            value={formData.customLineItem.description}
-                            onChange={(e) => setFormData({
-                              ...formData,
-                              customLineItem: { ...formData.customLineItem, description: e.target.value }
-                            })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                            placeholder="Description"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="number"
-                            value={formData.customLineItem.amount}
-                            onChange={(e) => setFormData({
-                              ...formData,
-                              customLineItem: { ...formData.customLineItem, amount: e.target.value }
-                            })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                            placeholder="Amount"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Actions */}

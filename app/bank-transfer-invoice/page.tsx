@@ -91,7 +91,7 @@ function BankTransferInvoiceContent() {
       country: country || 'Netherlands'
     };
 
-    // Generate invoice number to use consistently
+    // Generate invoice number
     const invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
     try {
@@ -106,7 +106,7 @@ function BankTransferInvoiceContent() {
           organizationName: orgName,
           invoiceNumber,
           greeting: fullName || 'Client',
-          totalAmount: originalAmount ? parseFloat(originalAmount) * (hasOtherAssociations ? 0.8 : 1.0) : parseFloat(amount),
+          totalAmount: originalAmount ? parseFloat(originalAmount) * (hasOtherAssociations ? 0.8 : 1.0) : parseFloat(amount || '0'),
           originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
           userLocale: searchParams?.get('locale') || 'en',
           gender: gender || 'm',
@@ -124,7 +124,7 @@ function BankTransferInvoiceContent() {
       }
 
       const result = await response.json();
-      
+
       // Track invoice in database (client-side)
       try {
         await createInvoiceRecord({
@@ -132,8 +132,8 @@ function BankTransferInvoiceContent() {
           recipientEmail: email.trim(),
           recipientName: fullName || 'Client',
           organizationName: orgName,
-          amount: parseFloat(amount),
-          currency: currency,
+          amount: result.totalAmount || parseFloat(amount || '0'),
+          currency: result.convertedCurrency || currency,
           type: 'regular',
           status: 'sent',
           sentAt: new Date(),
