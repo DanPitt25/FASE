@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
                        'Service Provider';
       customLineItem = {
         enabled: true,
-        description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x, incl. VAT)`,
+        description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x)`,
         amount: rendezvousPassData.passTotal || 0
       };
     }

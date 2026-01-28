@@ -256,7 +256,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                          passData.organizationType === 'carrier' ? 'Carrier/Broker' :
                          'Service Provider';
         lineItems.push({
-          description: `MGA Rendezvous 2026 Pass${passData.passCount > 1 ? 'es' : ''} (${passLabel} - ${passData.passCount}x, incl. VAT)`,
+          description: `MGA Rendezvous 2026 Pass${passData.passCount > 1 ? 'es' : ''} (${passLabel} - ${passData.passCount}x)`,
           amount: passData.passTotal
         });
       }
@@ -1467,7 +1467,7 @@ export default function EmailsTab({ prefilledData = null }: EmailsTabProps) {
                 )}
                 {rendezvousTotal > 0 && (
                   <div className="text-amber-700">
-                    MGA Rendezvous 2026 ({prefilledData?.rendezvousPassReservation?.passCount || 1} pass{(prefilledData?.rendezvousPassReservation?.passCount || 1) > 1 ? 'es' : ''} incl. VAT): €{rendezvousTotal.toLocaleString()}
+                    MGA Rendezvous 2026 ({prefilledData?.rendezvousPassReservation?.passCount || 1} pass{(prefilledData?.rendezvousPassReservation?.passCount || 1) > 1 ? 'es' : ''}): €{rendezvousTotal.toLocaleString()}
                   </div>
                 )}
                 {formData.customLineItem.enabled && formData.customLineItem.amount > 0 && (
