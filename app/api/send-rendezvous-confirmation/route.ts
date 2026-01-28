@@ -228,7 +228,7 @@ function generateTicketConfirmationEmail(
                         <a href="https://www.marriott.com/en-gb/event-reservations/reservation-link.mi?id=1767784681245&key=GRP&app=resvlink" style="display: inline-block; background-color: #2D5574; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">${t.hotel_link_text}</a>
                     </p>
                     <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.5;">
-                        ${t.hotel_alternative} <a href="mailto:sandra@infiniteintelligencesupport.com">sandra@infiniteintelligencesupport.com</a>
+                        ${t.hotel_alternative} <a href="mailto:sandra.stojak@fasemga.com">sandra.stojak@fasemga.com</a>
                     </p>
                 </div>
             </div>
