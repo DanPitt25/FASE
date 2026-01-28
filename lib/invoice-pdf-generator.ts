@@ -178,18 +178,9 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
     const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
     
-    // Currency conversion
+    // Currency setup (conversion happens after line items are calculated)
     const baseCurrency = 'EUR';
     const targetCurrency = data.forceCurrency || baseCurrency;
-    let currencyConversion = {
-      convertedCurrency: baseCurrency,
-      roundedAmount: invoiceData.totalAmount,
-      exchangeRate: 1
-    };
-
-    if (targetCurrency !== baseCurrency) {
-      currencyConversion = await convertCurrency(invoiceData.totalAmount, baseCurrency, targetCurrency);
-    }
 
     // Get bank details
     const { getWiseBankDetails } = await import('./currency-conversion');
@@ -255,7 +246,18 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     // Build line items and calculate total
     const lineItems = buildLineItems(data, locale);
     const calculatedTotal = calculateInvoiceTotal(lineItems);
-    
+
+    // Currency conversion (must happen AFTER calculating total from line items)
+    let currencyConversion = {
+      convertedCurrency: baseCurrency,
+      roundedAmount: calculatedTotal,
+      exchangeRate: 1
+    };
+
+    if (targetCurrency !== baseCurrency) {
+      currencyConversion = await convertCurrency(calculatedTotal, baseCurrency, targetCurrency);
+    }
+
     // Start drawing content
     let currentY = height - margins.top;
     
