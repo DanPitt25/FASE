@@ -782,8 +782,6 @@ export default function ReportsTab() {
         const totalLinesCount = Object.keys(lobData).length;
         const totalLobEntries = Object.values(lobData).reduce((a, b) => a + b, 0);
         const avgLinesPerMGA = (totalLobEntries / reportData.mgas.length).toFixed(1);
-        const topLine = lobSorted[0];
-        const topLinePct = Math.round((topLine[1] / reportData.mgas.length) * 100);
         const maxCount = lobSorted[0][1];
 
         // Page 1: Summary + Bar Chart
@@ -802,7 +800,7 @@ export default function ReportsTab() {
         // Summary cards (bordered, not filled)
         const cardY = 42;
         const cardHeight = 28;
-        const cardWidth = (pageWidth - margin * 2 - 15) / 4;
+        const cardWidth = (pageWidth - margin * 2 - 10) / 3;
 
         // Card 1: Total MGAs
         drawCardBorder(margin, cardY, cardWidth, cardHeight);
@@ -827,30 +825,17 @@ export default function ReportsTab() {
         doc.setTextColor(100, 100, 100);
         doc.text('Lines of Business', card2X + cardWidth / 2, cardY + 20, { align: 'center' });
 
-        // Card 3: Most popular
+        // Card 3: Avg lines per MGA
         const card3X = margin + (cardWidth + 5) * 2;
         drawCardBorder(card3X, cardY, cardWidth, cardHeight);
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(45, 85, 116);
-        const topLineLabel = topLine[0].length > 12 ? topLine[0].substring(0, 10) + '...' : topLine[0];
-        doc.text(topLineLabel, card3X + cardWidth / 2, cardY + 12, { align: 'center' });
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Most Popular (${topLinePct}%)`, card3X + cardWidth / 2, cardY + 20, { align: 'center' });
-
-        // Card 4: Avg lines per MGA
-        const card4X = margin + (cardWidth + 5) * 3;
-        drawCardBorder(card4X, cardY, cardWidth, cardHeight);
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(45, 85, 116);
-        doc.text(avgLinesPerMGA, card4X + cardWidth / 2, cardY + 12, { align: 'center' });
+        doc.text(avgLinesPerMGA, card3X + cardWidth / 2, cardY + 12, { align: 'center' });
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 100, 100);
-        doc.text('Avg Lines per MGA', card4X + cardWidth / 2, cardY + 20, { align: 'center' });
+        doc.text('Avg Lines per MGA', card3X + cardWidth / 2, cardY + 20, { align: 'center' });
 
         // Bar chart section
         let y = cardY + cardHeight + 15;
