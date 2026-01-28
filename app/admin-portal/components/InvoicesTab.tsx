@@ -411,31 +411,21 @@ export default function InvoicesTab() {
 
                   {/* Amount */}
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Amount</h4>
-                    <div className="grid grid-cols-3 gap-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Amount (EUR)</h4>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Total Amount *</label>
-                        <input
-                          type="number"
-                          value={formData.totalAmount}
-                          onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="1500"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Currency</label>
-                        <select
-                          value={formData.currency}
-                          onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="EUR">EUR</option>
-                          <option value="GBP">GBP</option>
-                          <option value="USD">USD</option>
-                          <option value="CHF">CHF</option>
-                        </select>
+                        <label className="block text-xs text-gray-500 mb-1">Total Amount (EUR) *</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-gray-500">€</span>
+                          <input
+                            type="number"
+                            value={formData.totalAmount}
+                            onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
+                            className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded text-sm"
+                            placeholder="1500"
+                            required
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Language</label>
@@ -453,6 +443,23 @@ export default function InvoicesTab() {
                         </select>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Currency Conversion */}
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Payment Currency</h4>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Invoice will show EUR base amount with converted total for payment
+                    </p>
+                    <select
+                      value={formData.currency}
+                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                    >
+                      <option value="EUR">EUR (no conversion)</option>
+                      <option value="GBP">GBP (British Pounds)</option>
+                      <option value="USD">USD (US Dollars)</option>
+                    </select>
                   </div>
 
                   {/* Discount */}
