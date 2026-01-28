@@ -189,7 +189,7 @@ function DonutChart({ data, total, size = 180 }: { data: Record<string, number>;
         {segments.slice(0, 6).map((seg, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
             <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: seg.color }} />
-            <span className="truncate text-gray-600" title={seg.label}>{seg.label}</span>
+            <span className="text-gray-600" title={seg.label}>{seg.label}</span>
             <span className="ml-auto font-medium text-gray-800 flex-shrink-0">{seg.percentage.toFixed(0)}%</span>
           </div>
         ))}
@@ -215,7 +215,7 @@ function ColoredBarChart({ data, total, maxItems = 10 }: { data: Record<string, 
         const color = CHART_COLORS[index % CHART_COLORS.length];
         return (
           <div key={label} className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 w-36 truncate" title={label}>{label}</span>
+            <span className="text-sm text-gray-600 w-48 flex-shrink-0" title={label}>{label}</span>
             <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
