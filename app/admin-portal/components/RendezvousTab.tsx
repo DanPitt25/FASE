@@ -58,6 +58,20 @@ export default function RendezvousTab() {
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [newRegistration, setNewRegistration] = useState({
+    company: '',
+    billingEmail: '',
+    country: '',
+    address: '',
+    organizationType: 'mga',
+    companyIsFaseMember: false,
+    isAsaseMember: false,
+    totalPrice: 0,
+    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+  });
 
   useEffect(() => {
     loadRegistrations();
@@ -188,6 +202,79 @@ export default function RendezvousTab() {
     }
   };
 
+  const handleAddRegistration = async () => {
+    // Validate required fields
+    if (!newRegistration.company || !newRegistration.billingEmail || !newRegistration.country) {
+      setAddError('Please fill in all required company fields');
+      return;
+    }
+
+    // Validate attendees
+    for (const attendee of newRegistration.attendees) {
+      if (!attendee.firstName || !attendee.lastName || !attendee.email || !attendee.jobTitle) {
+        setAddError('Please fill in all required fields for each attendee');
+        return;
+      }
+    }
+
+    try {
+      setAdding(true);
+      setAddError(null);
+
+      const response = await fetch('/api/admin/rendezvous-registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          billingInfo: {
+            company: newRegistration.company,
+            billingEmail: newRegistration.billingEmail,
+            country: newRegistration.country,
+            address: newRegistration.address,
+            organizationType: newRegistration.organizationType,
+          },
+          attendees: newRegistration.attendees,
+          totalPrice: newRegistration.totalPrice,
+          subtotal: newRegistration.totalPrice,
+          numberOfAttendees: newRegistration.attendees.length,
+          companyIsFaseMember: newRegistration.companyIsFaseMember,
+          isAsaseMember: newRegistration.isAsaseMember,
+          membershipType: newRegistration.isAsaseMember ? 'asase' : (newRegistration.companyIsFaseMember ? 'fase' : 'none'),
+          discount: 0,
+          paymentMethod: 'admin_manual',
+          paymentStatus: 'confirmed',
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create registration');
+      }
+
+      // Add to local state
+      setRegistrations(prev => [result.registration, ...prev]);
+
+      // Reset form and close modal
+      setShowAddModal(false);
+      setNewRegistration({
+        company: '',
+        billingEmail: '',
+        country: '',
+        address: '',
+        organizationType: 'mga',
+        companyIsFaseMember: false,
+        isAsaseMember: false,
+        totalPrice: 0,
+        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+      });
+    } catch (error: any) {
+      console.error('Error creating registration:', error);
+      setAddError(error.message || 'Failed to create registration');
+    } finally {
+      setAdding(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -297,6 +384,9 @@ export default function RendezvousTab() {
             </select>
             <Button variant="secondary" size="small" onClick={loadRegistrations}>
               Refresh
+            </Button>
+            <Button variant="primary" size="small" onClick={() => setShowAddModal(true)}>
+              + Add Registration
             </Button>
           </div>
         </div>
@@ -811,6 +901,250 @@ export default function RendezvousTab() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Add Registration Modal */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setAddError(null);
+          setNewRegistration({
+            company: '',
+            billingEmail: '',
+            country: '',
+            address: '',
+            organizationType: 'mga',
+            companyIsFaseMember: false,
+            isAsaseMember: false,
+            totalPrice: 0,
+            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+          });
+        }}
+        title="Add Registration"
+        maxWidth="2xl"
+      >
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+          {/* Company Information */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-fase-navy mb-3">Company Information</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+                <input
+                  type="text"
+                  value={newRegistration.company}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, company: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Billing Email *</label>
+                <input
+                  type="email"
+                  value={newRegistration.billingEmail}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, billingEmail: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
+                <input
+                  type="text"
+                  value={newRegistration.country}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, country: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Organization Type</label>
+                <select
+                  value={newRegistration.organizationType}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, organizationType: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                >
+                  <option value="mga">MGA</option>
+                  <option value="carrier_broker">Carrier/Broker</option>
+                  <option value="service_provider">Service Provider</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  value={newRegistration.address}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, address: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRegistration.companyIsFaseMember}
+                    onChange={(e) => setNewRegistration({ ...newRegistration, companyIsFaseMember: e.target.checked })}
+                    className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                    disabled={adding}
+                  />
+                  <span className="text-sm text-gray-700">FASE Member</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRegistration.isAsaseMember}
+                    onChange={(e) => setNewRegistration({ ...newRegistration, isAsaseMember: e.target.checked })}
+                    className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                    disabled={adding}
+                  />
+                  <span className="text-sm text-gray-700">ASASE Member</span>
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Price (€)</label>
+                <input
+                  type="number"
+                  value={newRegistration.totalPrice}
+                  onChange={(e) => setNewRegistration({ ...newRegistration, totalPrice: parseFloat(e.target.value) || 0 })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={adding}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Attendees */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-fase-navy">Attendees ({newRegistration.attendees.length})</h4>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => setNewRegistration({
+                  ...newRegistration,
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '' }]
+                })}
+                disabled={adding}
+              >
+                + Add Attendee
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {newRegistration.attendees.map((attendee, index) => (
+                <div key={index} className="bg-white p-3 rounded border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">Attendee {index + 1}</span>
+                    {newRegistration.attendees.length > 1 && (
+                      <button
+                        onClick={() => setNewRegistration({
+                          ...newRegistration,
+                          attendees: newRegistration.attendees.filter((_, i) => i !== index)
+                        })}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                        disabled={adding}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="First Name *"
+                      value={attendee.firstName}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].firstName = e.target.value;
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name *"
+                      value={attendee.lastName}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].lastName = e.target.value;
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email *"
+                      value={attendee.email}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].email = e.target.value;
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Job Title *"
+                      value={attendee.jobTitle}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].jobTitle = e.target.value;
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {addError && (
+            <div className="bg-red-50 text-red-800 p-3 rounded-lg text-sm">
+              {addError}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowAddModal(false);
+                setAddError(null);
+                setNewRegistration({
+                  company: '',
+                  billingEmail: '',
+                  country: '',
+                  address: '',
+                  organizationType: 'mga',
+                  companyIsFaseMember: false,
+                  isAsaseMember: false,
+                  totalPrice: 0,
+                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+                });
+              }}
+              disabled={adding}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleAddRegistration}
+              disabled={adding}
+            >
+              {adding ? 'Creating...' : 'Create Registration'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
