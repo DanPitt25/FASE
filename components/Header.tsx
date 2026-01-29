@@ -361,6 +361,11 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                 currentPage === 'member-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>{tNav('member_portal')}</a>
             )}
+            {isAdmin && locale === 'en' && (
+              <a href="/admin-portal" className={`block px-3 py-2 text-base font-medium ${
+                currentPage === 'admin-portal' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
+              }`}>Admin Portal</a>
+            )}
             <a href="/sponsors" className={`block px-3 py-2 text-base font-medium ${
               currentPage === 'sponsors' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
             }`}>{tNav('sponsors')}</a>
