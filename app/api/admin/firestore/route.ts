@@ -12,19 +12,6 @@ const initAdmin = () => {
   return getFirestore();
 };
 
-// Verify API key for security
-const verifyApiKey = (request: NextRequest): boolean => {
-  const apiKey = request.headers.get('x-api-key');
-  const validKey = process.env.FIRESTORE_ADMIN_API_KEY;
-
-  if (!validKey) {
-    console.warn('FIRESTORE_ADMIN_API_KEY not set - API access disabled');
-    return false;
-  }
-
-  return apiKey === validKey;
-};
-
 // Helper to serialize Firestore documents
 const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot) => {
   const data = doc.data();
@@ -51,10 +38,6 @@ const serializeDoc = (doc: FirebaseFirestore.DocumentSnapshot) => {
 //   orderDir: optional - 'asc' or 'desc' (default 'desc')
 //   where: optional - JSON array of conditions like [["field", "==", "value"]]
 export async function GET(request: NextRequest) {
-  if (!verifyApiKey(request)) {
-    return NextResponse.json({ error: 'Unauthorized - Invalid or missing API key' }, { status: 401 });
-  }
-
   try {
     const db = initAdmin();
     const { searchParams } = new URL(request.url);
@@ -129,10 +112,6 @@ export async function GET(request: NextRequest) {
 // POST - Create a new document
 // Body: { collection: string, data: object, id?: string }
 export async function POST(request: NextRequest) {
-  if (!verifyApiKey(request)) {
-    return NextResponse.json({ error: 'Unauthorized - Invalid or missing API key' }, { status: 401 });
-  }
-
   try {
     const db = initAdmin();
     const body = await request.json();
@@ -183,10 +162,6 @@ export async function POST(request: NextRequest) {
 // PATCH - Update an existing document
 // Body: { collection: string, id: string, data: object, merge?: boolean }
 export async function PATCH(request: NextRequest) {
-  if (!verifyApiKey(request)) {
-    return NextResponse.json({ error: 'Unauthorized - Invalid or missing API key' }, { status: 401 });
-  }
-
   try {
     const db = initAdmin();
     const body = await request.json();
@@ -245,10 +220,6 @@ export async function PATCH(request: NextRequest) {
 // Query params: collection, id
 // Optional body: { confirmPhrase: 'DELETE' } for safety
 export async function DELETE(request: NextRequest) {
-  if (!verifyApiKey(request)) {
-    return NextResponse.json({ error: 'Unauthorized - Invalid or missing API key' }, { status: 401 });
-  }
-
   try {
     const db = initAdmin();
     const { searchParams } = new URL(request.url);

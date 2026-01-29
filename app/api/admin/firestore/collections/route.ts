@@ -12,27 +12,10 @@ const initAdmin = () => {
   return getFirestore();
 };
 
-// Verify API key for security
-const verifyApiKey = (request: NextRequest): boolean => {
-  const apiKey = request.headers.get('x-api-key');
-  const validKey = process.env.FIRESTORE_ADMIN_API_KEY;
-
-  if (!validKey) {
-    console.warn('FIRESTORE_ADMIN_API_KEY not set - API access disabled');
-    return false;
-  }
-
-  return apiKey === validKey;
-};
-
 // GET - List all top-level collections, or subcollections of a document
 // Query params:
 //   parentPath: optional - document path to get subcollections (e.g., "accounts/abc123")
 export async function GET(request: NextRequest) {
-  if (!verifyApiKey(request)) {
-    return NextResponse.json({ error: 'Unauthorized - Invalid or missing API key' }, { status: 401 });
-  }
-
   try {
     const db = initAdmin();
     const { searchParams } = new URL(request.url);
