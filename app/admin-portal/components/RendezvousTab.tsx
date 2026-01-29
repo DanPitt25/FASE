@@ -42,16 +42,37 @@ interface RendezvousRegistration {
   status: string;
 }
 
+interface InterestRegistration {
+  id: string;
+  billingInfo: {
+    company: string;
+    billingEmail: string;
+  };
+  additionalContacts?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }>;
+  registrationType: string;
+  submittedAt: string;
+  createdAt: any;
+  status: string;
+  source: string;
+}
+
 type PaymentStatus = 'paid' | 'pending_bank_transfer' | 'confirmed';
 
 export default function RendezvousTab() {
   const [registrations, setRegistrations] = useState<RendezvousRegistration[]>([]);
+  const [interestRegistrations, setInterestRegistrations] = useState<InterestRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showInterestModal, setShowInterestModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
@@ -84,7 +105,14 @@ export default function RendezvousTab() {
       const response = await fetch('/api/admin/rendezvous-registrations');
       if (!response.ok) throw new Error('Failed to fetch registrations');
       const data = await response.json();
-      setRegistrations(data.registrations || []);
+      const allRegistrations = data.registrations || [];
+
+      // Separate interest registrations from actual paid/pending registrations
+      const interest = allRegistrations.filter((r: any) => r.registrationType === 'interest');
+      const actual = allRegistrations.filter((r: any) => r.registrationType !== 'interest');
+
+      setInterestRegistrations(interest);
+      setRegistrations(actual);
     } catch (error) {
       console.error('Error loading registrations:', error);
     } finally {
@@ -385,6 +413,13 @@ export default function RendezvousTab() {
             </select>
             <Button variant="secondary" size="small" onClick={loadRegistrations}>
               Refresh
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() => setShowInterestModal(true)}
+            >
+              Interest Signups ({interestRegistrations.length})
             </Button>
             <Button variant="primary" size="small" onClick={() => setShowAddModal(true)}>
               + Add Registration
@@ -1141,6 +1176,77 @@ export default function RendezvousTab() {
               disabled={adding}
             >
               {adding ? 'Creating...' : 'Create Registration'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Interest Registrations Modal */}
+      <Modal
+        isOpen={showInterestModal}
+        onClose={() => setShowInterestModal(false)}
+        title={`Interest Registrations (${interestRegistrations.length})`}
+        maxWidth="4xl"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            These are companies that have expressed interest in attending the MGA Rendezvous but have not yet registered or paid.
+          </p>
+
+          {interestRegistrations.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No interest registrations found.
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto">
+              <table className="w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contacts</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {interestRegistrations.map((reg) => (
+                    <tr key={reg.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        {reg.billingInfo?.company}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {reg.billingInfo?.billingEmail}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {reg.additionalContacts?.length ? (
+                          <div className="space-y-1">
+                            {reg.additionalContacts.map((contact, idx) => (
+                              <div key={contact.id || idx} className="text-xs">
+                                {contact.firstName} {contact.lastName}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500">
+                        {reg.submittedAt
+                          ? new Date(reg.submittedAt).toLocaleDateString('en-GB')
+                          : reg.createdAt?._seconds
+                            ? new Date(reg.createdAt._seconds * 1000).toLocaleDateString('en-GB')
+                            : 'Unknown'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="secondary" onClick={() => setShowInterestModal(false)}>
+              Close
             </Button>
           </div>
         </div>
