@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
+import AdminCountrySelect from './AdminCountrySelect';
 
 interface Attendee {
   id: string;
@@ -951,11 +952,9 @@ export default function RendezvousTab() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                <input
-                  type="text"
+                <AdminCountrySelect
                   value={newRegistration.country}
-                  onChange={(e) => setNewRegistration({ ...newRegistration, country: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  onChange={(value) => setNewRegistration({ ...newRegistration, country: value })}
                   disabled={adding}
                 />
               </div>
