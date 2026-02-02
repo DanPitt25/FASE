@@ -69,8 +69,10 @@ export async function POST(request: NextRequest) {
     // Convert File to Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload to Firebase Storage
-    const bucket = storage.bucket();
+    // Upload to Firebase Storage - explicitly specify bucket name
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
+    const bucket = storage.bucket(bucketName);
     const fileRef = bucket.file(filePath);
 
     await fileRef.save(buffer, {
