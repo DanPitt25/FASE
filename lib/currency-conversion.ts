@@ -132,7 +132,7 @@ export function getWiseBankDetails(currency: string): {
         bic: 'TRWIBEB1XXX',
         iban: 'BE90 9057 9070 7732',
         bankName: 'Wise',
-        address: ['Rue du Trône 100, 3rd floor', 'Brussels', '1050', 'Belgium']
+        address: ['Rue du Trône 100, 3rd floor', 'Brussels 1050', 'Belgium']
       };
   }
 }
