@@ -135,6 +135,7 @@ export default function RendezvousTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: registration.billingInfo?.billingEmail,
+          cc: 'admin@fasemga.com',
           registrationId: registration.registrationId,
           companyName: registration.billingInfo?.company,
           organizationType: registration.billingInfo?.organizationType,
