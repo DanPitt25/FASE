@@ -287,18 +287,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
 
     // Start drawing content
     let currentY = height - margins.top;
-    
-    // Title - INVOICE
-    firstPage.drawText(pdfTexts.invoice, {
-      x: margins.left,
-      y: currentY,
-      size: 18,
-      font: boldFont,
-      color: faseNavy,
-    });
-    
-    currentY -= 40;
-    
+
     // BILL TO and INVOICE DETAILS on same line
     firstPage.drawText(pdfTexts.billTo, {
       x: margins.left,
@@ -749,17 +738,6 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
 
     // Start drawing
     let currentY = height - margins.top;
-
-    // Title
-    firstPage.drawText(pdfTexts.invoice, {
-      x: margins.left,
-      y: currentY,
-      size: 18,
-      font: boldFont,
-      color: faseNavy,
-    });
-
-    currentY -= 40;
 
     // Bill To and Invoice Details
     firstPage.drawText(pdfTexts.billTo, {
