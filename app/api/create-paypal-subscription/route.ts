@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
         email_address: userEmail
       },
       application_context: {
-        brand_name: 'Federation of European MGAs (FASE)',
+        brand_name: 'FASE',
         locale: 'en-US',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'SUBSCRIBE_NOW',

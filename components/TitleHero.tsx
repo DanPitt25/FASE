@@ -31,7 +31,7 @@ interface TitleHeroProps {
   features?: string[];
 }
 
-const DEFAULT_FASE_SUBTITLE = "FASE - The Federation of European MGAs - representing the MGA community across Europe.";
+const DEFAULT_FASE_SUBTITLE = "FASE - Fédération des Agences de Souscription Européennes - representing the MGA community across Europe.";
 
 const getVariantStyles = (variant: HeroVariant) => {
   switch (variant) {

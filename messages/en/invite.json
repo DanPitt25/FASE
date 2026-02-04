@@ -49,7 +49,7 @@
     "subject": "Invitation to join {{companyName}} on FASE",
     "title": "Invitation to join {{companyName}} on FASE",
     "greeting": "Dear {{name}},",
-    "invitation_text": "{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the Federation of European MGAs (FASE) platform.",
+    "invitation_text": "{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the FASE platform.",
     "instruction": "To complete your account setup and gain access to your company's member portal, please click the button below:",
     "button_text": "Complete Account Setup",
     "guide_text": "This link will guide you through creating your secure account password and accessing all member benefits.",

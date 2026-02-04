@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         invoice_id: `FASE-${userId}-${Date.now()}`
       }],
       application_context: {
-        brand_name: 'Federation of European MGAs (FASE)',
+        brand_name: 'FASE',
         locale: 'en-US',
         landing_page: 'NO_PREFERENCE',
         shipping_preference: 'NO_SHIPPING',

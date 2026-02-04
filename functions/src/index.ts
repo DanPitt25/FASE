@@ -612,7 +612,7 @@ export const sendInviteEmail = functions.https.onCall({
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #2D5574;">You're invited to join ${companyName} on FASE</h2>
         <p>Hi ${name},</p>
-        <p>${inviterName} has invited you to join <strong>${companyName}</strong> on the Federation of European MGAs (FASE) platform.</p>
+        <p>${inviterName} has invited you to join <strong>${companyName}</strong> on the FASE platform.</p>
         <p>To complete your account setup and gain access to your company's member portal, please click the button below:</p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${inviteUrl}" style="background-color: #2D5574; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Account Setup</a>

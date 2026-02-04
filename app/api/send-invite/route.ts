@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const emailTexts = translations.email || {};
     const title = (emailTexts.title || 'You\'re invited to join {{companyName}} on FASE').replace('{{companyName}}', companyName);
     const greeting = (emailTexts.greeting || 'Hi {{name}},').replace('{{name}}', name);
-    const invitationText = (emailTexts.invitation_text || '{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the Federation of European MGAs (FASE) platform.')
+    const invitationText = (emailTexts.invitation_text || '{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the FASE platform.')
       .replace('{{inviterName}}', inviterName)
       .replace('{{companyName}}', companyName);
     

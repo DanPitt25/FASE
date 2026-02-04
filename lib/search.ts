@@ -15,7 +15,7 @@ const searchablePages: SearchableContent[] = [
   // Main pages
   {
     id: 'home',
-    title: 'Federation of European MGAs',
+    title: 'Fédération des Agences de Souscription Européennes',
     description: 'The leading professional association for Managing General Agents across Europe',
     content: 'FASE Federation European MGAs managing general agents professional association membership directory events knowledge base industry advocacy capacity transparency market intelligence digital platform networking',
     url: '/',
@@ -27,7 +27,7 @@ const searchablePages: SearchableContent[] = [
   {
     id: 'about',
     title: 'About FASE',
-    description: 'Learn about the Federation of European MGAs and our mission',
+    description: 'Learn about FASE and our mission',
     content: 'About FASE federation mission vision values history leadership team board directors advisory council membership benefits professional development industry standards',
     url: '/about',
     category: 'About',
@@ -110,7 +110,7 @@ const searchablePages: SearchableContent[] = [
   {
     id: 'join',
     title: 'Join FASE',
-    description: 'Become a member of the Federation of European MGAs',
+    description: 'Become a member of FASE',
     content: 'Join membership application benefits requirements fees corporate individual associate member types registration signup',
     url: '/join',
     category: 'Membership',

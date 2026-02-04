@@ -36,7 +36,7 @@
     },
     "fase": {
       "title": "About FASE",
-      "subtitle": "Federation of European MGAs", 
+      "subtitle": "Fédération des Agences de Souscription Européennes", 
       "description": "FASE is the pan-European federation established to serve the needs of Europe's managing general agents, connecting them with insurance capacity providers, distributors, investors and service providers. We share best practices in a rapidly growing sector of the market, offering an array of informational and educational services for MGAs.",
       "register": "Register interest",
       "learn": "Learn more about FASE"
@@ -205,7 +205,7 @@
     "linkedin": "LinkedIn",
     "about_event": "About the event",
     "speakers": "Speakers",
-    "copyright": "© 2025 FASE - Federation of European MGAs. All rights reserved."
+    "copyright": "© 2025 FASE - Fédération des Agences de Souscription Européennes. All rights reserved."
   },
   "code_of_conduct": {
     "title": "FASE Code of Conduct",

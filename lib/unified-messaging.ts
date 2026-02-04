@@ -445,7 +445,7 @@ export const createWelcomeMessage = async (newUserId: string): Promise<void> => 
     
     const welcomeMessage = {
       subject: 'Welcome to FASE - Fédération des agences de souscription',
-      content: `Welcome to the Federation of European Managing General Agents (FASE)!
+      content: `Welcome to the Fédération des Agences de Souscription Européennes (FASE)!
 
 We're delighted to have you join our growing community of MGA professionals, capacity providers, and service companies across Europe.
 

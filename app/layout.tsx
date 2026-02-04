@@ -5,7 +5,7 @@ import DynamicIntlProvider from '../components/DynamicIntlProvider';
 import CookieBanner from '../components/CookieBanner';
 import ConsentAwareAnalytics from '../components/ConsentAwareAnalytics';
 
-let title = 'FASE - Federation of European MGAs';
+let title = 'FASE - Fédération des Agences de Souscription Européennes';
 let description =
   'The voice of Managing General Agents across Europe, driving innovation and excellence in the insurance marketplace.';
 

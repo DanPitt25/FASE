@@ -49,7 +49,7 @@
     "subject": "Einladung zum Beitritt zu {{companyName}} auf FASE",
     "title": "Einladung zum Beitritt zu {{companyName}} auf FASE",
     "greeting": "Sehr geehrte/r {{name}},",
-    "invitation_text": "{{inviterName}} hat Sie eingeladen, <strong>{{companyName}}</strong> auf der Plattform der Federation of European MGAs (FASE) beizutreten.",
+    "invitation_text": "{{inviterName}} hat Sie eingeladen, <strong>{{companyName}}</strong> auf der FASE-Plattform beizutreten.",
     "instruction": "Um Ihre Kontoeinrichtung abzuschließen und Zugang zum Mitgliederportal Ihres Unternehmens zu erhalten, klicken Sie bitte auf die Schaltfläche unten:",
     "button_text": "Kontoeinrichtung abschließen",
     "guide_text": "Dieser Link führt Sie durch die Erstellung Ihres sicheren Kontopassworts und ermöglicht Ihnen den Zugang zu allen Mitgliedsvorteilen.",
