@@ -115,7 +115,7 @@ interface InvoiceLineItem {
   isDiscount?: boolean;
 }
 
-function buildLineItems(data: InvoiceGenerationData, translations: any): InvoiceLineItem[] {
+function buildLineItems(data: InvoiceGenerationData, translations: any, locale: string): InvoiceLineItem[] {
   const lineItems: InvoiceLineItem[] = [];
 
   // Skip main membership line for sponsorship invoices
@@ -269,7 +269,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     const currentDate = new Date().toLocaleDateString(dateLocale);
     
     // Build line items and calculate total
-    const lineItems = buildLineItems(data, translations);
+    const lineItems = buildLineItems(data, translations, locale);
     const calculatedTotal = calculateInvoiceTotal(lineItems);
 
     // Currency conversion (must happen AFTER calculating total from line items)
