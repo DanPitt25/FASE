@@ -76,6 +76,7 @@ export default function RendezvousTab() {
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
+  const [emailLanguage, setEmailLanguage] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -144,7 +145,7 @@ export default function RendezvousTab() {
           attendeeNames,
           isFaseMember: registration.companyIsFaseMember,
           isComplimentary: registration.isAsaseMember,
-          userLocale: 'en'
+          userLocale: emailLanguage
         })
       });
 
@@ -763,6 +764,7 @@ export default function RendezvousTab() {
           setShowEmailModal(false);
           setSelectedRegistration(null);
           setEmailResult(null);
+          setEmailLanguage('en');
         }}
         title="Send Confirmation Email"
         maxWidth="md"
@@ -796,6 +798,25 @@ export default function RendezvousTab() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Language
+              </label>
+              <select
+                value={emailLanguage}
+                onChange={(e) => setEmailLanguage(e.target.value as typeof emailLanguage)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={sendingEmail}
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+                <option value="it">Italiano</option>
+                <option value="nl">Nederlands</option>
+              </select>
             </div>
 
             {emailResult && (

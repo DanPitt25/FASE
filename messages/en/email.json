@@ -149,6 +149,7 @@
   },
   "pdf_invoice": {
     "invoice": "INVOICE",
+    "membership_description": "FASE Annual Membership",
     "bill_to": "Bill To:",
     "invoice_number": "Invoice #:",
     "date": "Date:",

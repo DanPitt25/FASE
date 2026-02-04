@@ -154,6 +154,7 @@
   },
   "pdf_invoice": {
     "invoice": "FACTUUR",
+    "membership_description": "FASE Jaarlijks Lidmaatschap",
     "bill_to": "Factureren aan:",
     "invoice_number": "Factuur #:",
     "date": "Datum:",

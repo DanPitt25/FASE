@@ -9,7 +9,6 @@ import CompanyMembersModal from './CompanyMembersModal';
 interface MembersTabProps {
   memberApplications: UnifiedMember[];
   loading: boolean;
-  onEmailFormOpen: (account: any) => void;
   onStatusUpdate: (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => void;
   onMemberDeleted?: (memberId: string) => void;
 }
@@ -17,15 +16,12 @@ interface MembersTabProps {
 export default function MembersTab({
   memberApplications,
   loading,
-  onEmailFormOpen,
   onStatusUpdate,
   onMemberDeleted
 }: MembersTabProps) {
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<UnifiedMember | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string } | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
 
   // Delete confirmation state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -69,21 +65,12 @@ export default function MembersTab({
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const handleStatusChangeClick = (member: UnifiedMember) => {
-    setSelectedMember(member);
-    setShowStatusModal(true);
-  };
-
-  const handleStatusChange = (newStatus: UnifiedMember['status']) => {
-    if (selectedMember) {
-      onStatusUpdate(selectedMember.id, newStatus);
-      setShowStatusModal(false);
-      setSelectedMember(null);
-    }
-  };
-
   const handleViewMembers = (member: UnifiedMember) => {
-    setSelectedCompany({ id: member.id, name: member.organizationName || 'Unknown Organization' });
+    setSelectedCompany({
+      id: member.id,
+      name: member.organizationName || 'Unknown Organization',
+      memberData: member
+    });
     setShowMembersModal(true);
   };
 
@@ -135,19 +122,6 @@ export default function MembersTab({
     } finally {
       setDeleting(false);
     }
-  };
-
-  const getAvailableStatuses = (currentStatus: UnifiedMember['status']): { status: UnifiedMember['status'], label: string, description: string }[] => {
-    const statuses = [
-      { status: 'pending' as const, label: 'Pending', description: 'Awaiting review' },
-      { status: 'pending_invoice' as const, label: 'Pending Invoice', description: 'Invoice needs to be created' },
-      { status: 'invoice_sent' as const, label: 'Invoice Sent', description: 'Invoice dispatched, awaiting payment' },
-      { status: 'approved' as const, label: 'Approved', description: 'Active member with full access' },
-      { status: 'flagged' as const, label: 'Flagged', description: 'Flagged for admin review' },
-      { status: 'admin' as const, label: 'Admin', description: 'Administrative privileges' }
-    ];
-
-    return statuses.filter(s => s.status !== currentStatus);
   };
 
   return (
@@ -222,29 +196,13 @@ export default function MembersTab({
                     {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Unknown'}
                   </td>
                   <td className="px-4 py-4 text-sm font-medium">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => handleViewMembers(member)}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => onEmailFormOpen(member)}
-                      >
-                        Email
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="small"
-                        onClick={() => handleStatusChangeClick(member)}
-                      >
-                        Status
-                      </Button>
-                    </div>
+                    <Button
+                      variant="primary"
+                      size="small"
+                      onClick={() => handleViewMembers(member)}
+                    >
+                      View
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -258,83 +216,6 @@ export default function MembersTab({
         )}
       </div>
 
-      {/* Status Change Modal */}
-      <Modal
-        isOpen={showStatusModal}
-        onClose={() => {
-          setShowStatusModal(false);
-          setSelectedMember(null);
-        }}
-        title={`Change Status - ${selectedMember?.primaryContact?.name || selectedMember?.personalName || 'Unknown'}`}
-        maxWidth="lg"
-      >
-        {selectedMember && (
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 mb-2">Current Status</div>
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedMember.status)}`}>
-                  {formatStatus(selectedMember.status)}
-                </span>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                {selectedMember.organizationName} • {selectedMember.email}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-md font-semibold mb-4 text-fase-navy">Select New Status</h4>
-              <div className="space-y-3">
-                {getAvailableStatuses(selectedMember.status).map(({ status, label, description }) => (
-                  <button
-                    key={status}
-                    onClick={() => handleStatusChange(status)}
-                    className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-fase-light-gold hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900 group-hover:text-fase-navy">
-                          {label}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {description}
-                        </div>
-                      </div>
-                      <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowStatusModal(false);
-                  setSelectedMember(null);
-                  handleDeleteClick(selectedMember);
-                }}
-                className="text-red-600 hover:text-red-800 hover:bg-red-50"
-              >
-                Delete Account
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowStatusModal(false);
-                  setSelectedMember(null);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
       {/* Company Members Modal */}
       <CompanyMembersModal
         isOpen={showMembersModal}
@@ -344,6 +225,8 @@ export default function MembersTab({
         }}
         companyId={selectedCompany?.id || ''}
         companyName={selectedCompany?.name || ''}
+        memberData={selectedCompany?.memberData}
+        onStatusUpdate={onStatusUpdate}
       />
 
       {/* Delete Confirmation Modal */}
@@ -426,6 +309,7 @@ export default function MembersTab({
           </div>
         )}
       </Modal>
+
     </div>
   );
 }

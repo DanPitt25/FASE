@@ -157,6 +157,7 @@
   },
   "pdf_invoice": {
     "invoice": "FACTURE",
+    "membership_description": "Adhésion Annuelle FASE",
     "bill_to": "Facturer à :",
     "invoice_number": "Facture #:",
     "date": "Date :",

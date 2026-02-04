@@ -115,15 +115,13 @@ interface InvoiceLineItem {
   isDiscount?: boolean;
 }
 
-function buildLineItems(data: InvoiceGenerationData, locale: string): InvoiceLineItem[] {
+function buildLineItems(data: InvoiceGenerationData, translations: any): InvoiceLineItem[] {
   const lineItems: InvoiceLineItem[] = [];
 
   // Skip main membership line for sponsorship invoices
   if (data.invoiceType !== 'sponsorship') {
     // Main membership line item - use original amount as the base price
-    const membershipDescription = locale === 'nl' ? 
-      'FASE Jaarlijks Lidmaatschap (1/1/2026 - 1/1/2027)' : 
-      'FASE Annual Membership (1/1/2026 - 1/1/2027)';
+    const membershipDescription = translations.pdf_invoice?.membership_description || 'FASE Annual Membership';
     
     const originalAmount = data.originalAmount || data.totalAmount;
     
@@ -271,7 +269,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     const currentDate = new Date().toLocaleDateString(dateLocale);
     
     // Build line items and calculate total
-    const lineItems = buildLineItems(data, locale);
+    const lineItems = buildLineItems(data, translations);
     const calculatedTotal = calculateInvoiceTotal(lineItems);
 
     // Currency conversion (must happen AFTER calculating total from line items)

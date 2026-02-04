@@ -6,10 +6,10 @@ export const runtime = 'nodejs';
 
 type Language = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 
-// Load email translations from JSON files
+// Load email translations from MGA Rendezvous messages folder
 function loadEmailTranslations(language: Language): any {
   try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
+    const filePath = path.join(process.cwd(), 'mga-rendezvous', 'messages', language, 'email.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
   } catch (error) {

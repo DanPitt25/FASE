@@ -163,6 +163,7 @@
   },
   "pdf_invoice": {
     "invoice": "RECHNUNG",
+    "membership_description": "FASE Jahresmitgliedschaft",
     "bill_to": "Rechnung an:",
     "invoice_number": "Rechnungsnummer:",
     "date": "Datum:",

@@ -12,14 +12,11 @@ import {
 
 // Import modular tab components
 import MembersTab from './components/MembersTab';
-import EmailsTab from './components/EmailsTab';
+import FreeformEmailTab from './components/FreeformEmailTab';
 import InvoicesTab from './components/InvoicesTab';
-import TempAccountTab from './components/TempAccountTab';
-import SponsorsTab from './components/SponsorsTab';
-import BioReviewTab from './components/BioReviewTab';
 import RendezvousTab from './components/RendezvousTab';
-import TasksTab from './components/TasksTab';
-import ReportsTab from './components/ReportsTab';
+import ContentTab from './components/ContentTab';
+import UtilitiesDrawer from './components/UtilitiesDrawer';
 
 
 export default function AdminPortalPage() {
@@ -39,10 +36,7 @@ export default function AdminPortalPage() {
     members: false,
   });
 
-  const [activeSection, setActiveSection] = useState<string>('tasks');
-
-  // State for email prefill
-  const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [activeSection, setActiveSection] = useState<string>('members');
 
   // Check admin access
   useEffect(() => {
@@ -113,44 +107,7 @@ export default function AdminPortalPage() {
     return null;
   };
 
-  // Handler functions
-  const handleEmailFormOpen = async (account: any) => {
-    // Fetch rendezvous registration for this account if it exists
-    try {
-      const response = await fetch('/api/admin/rendezvous-registrations');
-      if (response.ok) {
-        const data = await response.json();
-        const accountRegistration = data.registrations?.find(
-          (reg: any) => reg.accountId === account.id
-        );
-
-        if (accountRegistration) {
-          // Map to the format expected by the invoice email
-          account.rendezvousPassReservation = {
-            reserved: true,
-            passCount: accountRegistration.numberOfAttendees || 1,
-            organizationType: accountRegistration.billingInfo?.organizationType || account.organizationType,
-            passTotal: accountRegistration.totalPrice || 0,
-            subtotal: accountRegistration.subtotal || 0,
-            vatAmount: accountRegistration.vatAmount || 0,
-            isAsaseMember: accountRegistration.isAsaseMember || false,
-            attendees: accountRegistration.attendees || []
-          };
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching rendezvous registration:', error);
-    }
-
-    setSelectedAccount(account);
-    setActiveSection('emails');
-  };
-
-  // Clear selected account when switching away from emails
   const handleActiveSectionChange = (section: string) => {
-    if (section !== 'emails') {
-      setSelectedAccount(null);
-    }
     setActiveSection(section);
   };
 
@@ -207,18 +164,8 @@ export default function AdminPortalPage() {
     return null;
   }
 
-  // Dashboard sections
+  // Dashboard sections - Simplified 5-tab structure
   const dashboardSections = [
-    {
-      id: 'tasks',
-      title: 'Tasks',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-        </svg>
-      ),
-      content: <TasksTab />
-    },
     {
       id: 'members',
       title: `Members (${memberApplications.length})`,
@@ -231,63 +178,12 @@ export default function AdminPortalPage() {
         <MembersTab
           memberApplications={memberApplications}
           loading={loading.members}
-          onEmailFormOpen={handleEmailFormOpen}
           onStatusUpdate={handleMemberStatusUpdate}
           onMemberDeleted={(memberId) => {
             setMemberApplications(prev => prev.filter(m => m.id !== memberId));
           }}
         />
       )
-    },
-    {
-      id: 'emails',
-      title: 'Emails',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-      content: <EmailsTab prefilledData={selectedAccount} />
-    },
-    {
-      id: 'invoices',
-      title: 'Invoices',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      content: <InvoicesTab />
-    },
-    {
-      id: 'bio-reviews',
-      title: 'Bio Reviews',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
-      content: <BioReviewTab />
-    },
-    {
-      id: 'directory-entries',
-      title: 'Directory Entries',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      ),
-      content: <TempAccountTab />
-    },
-    {
-      id: 'sponsors',
-      title: 'Sponsors',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0h3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
-      content: <SponsorsTab />
     },
     {
       id: 'rendezvous',
@@ -300,14 +196,39 @@ export default function AdminPortalPage() {
       content: <RendezvousTab />
     },
     {
-      id: 'reports',
-      title: 'Reports',
+      id: 'invoices',
+      title: 'Invoices',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      content: <ReportsTab />
+      content: <InvoicesTab />
+    },
+    {
+      id: 'content',
+      title: 'Content',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      ),
+      content: (
+        <>
+          <ContentTab />
+          <UtilitiesDrawer />
+        </>
+      )
+    },
+    {
+      id: 'emails',
+      title: 'Freeform Email',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      content: <FreeformEmailTab />
     }
   ];
 
@@ -321,7 +242,7 @@ export default function AdminPortalPage() {
       statusBadge={statusBadge()}
       activeSection={activeSection}
       onActiveSectionChange={handleActiveSectionChange}
-      defaultActiveSection="tasks"
+      defaultActiveSection="members"
     />
   );
 }
