@@ -25,6 +25,7 @@ interface RendezvousRegistration {
     organizationType: string;
   };
   attendees: Attendee[];
+  additionalInfo?: { specialRequests?: string };
   totalPrice: number;
   subtotal: number;
   vatAmount: number;
@@ -75,8 +76,24 @@ export default function RendezvousTab() {
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [previewingEmail, setPreviewingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
-  const [emailLanguage, setEmailLanguage] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
+  const [emailPreviewHtml, setEmailPreviewHtml] = useState<string | null>(null);
+  const [emailForm, setEmailForm] = useState({
+    to: '',
+    cc: 'admin@fasemga.com',
+    sender: 'admin@fasemga.com',
+    language: 'en' as 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl',
+    companyName: '',
+    organizationType: '',
+    registrationId: '',
+    attendeeNames: '',
+    numberOfAttendees: 1,
+    totalAmount: 0,
+    isFaseMember: true,
+    isComplimentary: false,
+    specialRequests: ''
+  });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -121,32 +138,81 @@ export default function RendezvousTab() {
     }
   };
 
-  const handleSendConfirmationEmail = async (registration: RendezvousRegistration) => {
-    try {
-      setSendingEmail(true);
-      setEmailResult(null);
+  const initEmailForm = (registration: RendezvousRegistration) => {
+    const attendeeNames = registration.attendees
+      ?.map(a => `${a.firstName} ${a.lastName}`.trim())
+      .join(', ') || '';
 
-      // Build attendee names from the attendees array
-      const attendeeNames = registration.attendees
-        ?.map(a => `${a.firstName} ${a.lastName}`.trim())
-        .join(', ') || '';
+    setEmailForm({
+      to: registration.billingInfo?.billingEmail || '',
+      cc: 'admin@fasemga.com',
+      sender: 'admin@fasemga.com',
+      language: 'en',
+      companyName: registration.billingInfo?.company || '',
+      organizationType: registration.billingInfo?.organizationType || '',
+      registrationId: registration.registrationId || '',
+      attendeeNames,
+      numberOfAttendees: registration.attendees?.length || 1,
+      totalAmount: registration.totalPrice || 0,
+      isFaseMember: registration.companyIsFaseMember ?? true,
+      isComplimentary: registration.isAsaseMember ?? false,
+      specialRequests: registration.additionalInfo?.specialRequests || ''
+    });
+    setEmailPreviewHtml(null);
+    setEmailResult(null);
+  };
+
+  const buildEmailPayload = (isPreview: boolean) => ({
+    preview: isPreview,
+    email: emailForm.to,
+    cc: emailForm.cc,
+    freeformSender: emailForm.sender,
+    registrationId: emailForm.registrationId,
+    companyName: emailForm.companyName,
+    organizationType: emailForm.organizationType,
+    numberOfAttendees: emailForm.numberOfAttendees,
+    totalAmount: emailForm.totalAmount,
+    attendeeNames: emailForm.attendeeNames,
+    isFaseMember: emailForm.isFaseMember,
+    isComplimentary: emailForm.isComplimentary,
+    specialRequests: emailForm.specialRequests,
+    userLocale: emailForm.language
+  });
+
+  const handlePreviewEmail = async () => {
+    try {
+      setPreviewingEmail(true);
+      setEmailPreviewHtml(null);
 
       const response = await fetch('/api/send-rendezvous-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: registration.billingInfo?.billingEmail,
-          cc: 'admin@fasemga.com',
-          registrationId: registration.registrationId,
-          companyName: registration.billingInfo?.company,
-          organizationType: registration.billingInfo?.organizationType,
-          numberOfAttendees: registration.attendees?.length || 1,
-          totalAmount: registration.totalPrice || 0,
-          attendeeNames,
-          isFaseMember: registration.companyIsFaseMember,
-          isComplimentary: registration.isAsaseMember,
-          userLocale: emailLanguage
-        })
+        body: JSON.stringify(buildEmailPayload(true))
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to generate preview');
+      }
+
+      setEmailPreviewHtml(result.htmlContent);
+    } catch (error: any) {
+      console.error('Error previewing email:', error);
+      setEmailResult({ error: error.message || 'Failed to generate preview' });
+    } finally {
+      setPreviewingEmail(false);
+    }
+  };
+
+  const handleSendConfirmationEmail = async () => {
+    try {
+      setSendingEmail(true);
+      setEmailResult(null);
+
+      const response = await fetch('/api/send-rendezvous-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildEmailPayload(false))
       });
 
       const result = await response.json();
@@ -681,6 +747,7 @@ export default function RendezvousTab() {
                   variant="secondary"
                   onClick={() => {
                     setShowDetailModal(false);
+                    if (selectedRegistration) initEmailForm(selectedRegistration);
                     setShowEmailModal(true);
                   }}
                 >
@@ -764,61 +831,192 @@ export default function RendezvousTab() {
           setShowEmailModal(false);
           setSelectedRegistration(null);
           setEmailResult(null);
-          setEmailLanguage('en');
+          setEmailPreviewHtml(null);
         }}
         title="Send Confirmation Email"
-        maxWidth="md"
+        maxWidth="2xl"
       >
         {selectedRegistration && (
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-              <p className="text-blue-800 font-medium mb-2">
-                Send MGA Rendezvous ticket confirmation to:
-              </p>
-              <div className="text-sm space-y-1">
-                <p><span className="text-blue-600">Company:</span> {selectedRegistration.billingInfo?.company}</p>
-                <p><span className="text-blue-600">Email:</span> {selectedRegistration.billingInfo?.billingEmail}</p>
-                <p><span className="text-blue-600">Attendees:</span> {selectedRegistration.attendees?.length || 0}</p>
-                <p>
-                  <span className="text-blue-600">Amount:</span>{' '}
-                  {selectedRegistration.isAsaseMember
-                    ? <span className="text-green-600 font-medium">Complimentary (ASASE Member)</span>
-                    : `€${(selectedRegistration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                  }
-                </p>
+          <div className="space-y-5">
+            {/* Row 1: Send From + Language */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Send From</label>
+                <select
+                  value={emailForm.sender}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, sender: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                >
+                  <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
+                  <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
+                  <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
+                  <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
+                  <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                <select
+                  value={emailForm.language}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, language: e.target.value as typeof emailForm.language }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                >
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="es">Español</option>
+                  <option value="it">Italiano</option>
+                  <option value="nl">Nederlands</option>
+                </select>
               </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-medium text-gray-700 mb-2">Attendee List:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                {selectedRegistration.attendees?.map((attendee, index) => (
-                  <li key={attendee.id || index}>
-                    {attendee.firstName} {attendee.lastName} ({attendee.email})
-                  </li>
-                ))}
-              </ul>
+            {/* Row 2: To + CC */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">To *</label>
+                <input
+                  type="email"
+                  value={emailForm.to}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, to: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">CC</label>
+                <input
+                  type="email"
+                  value={emailForm.cc}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, cc: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Language
-              </label>
-              <select
-                value={emailLanguage}
-                onChange={(e) => setEmailLanguage(e.target.value as typeof emailLanguage)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={sendingEmail}
-              >
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="es">Español</option>
-                <option value="it">Italiano</option>
-                <option value="nl">Nederlands</option>
-              </select>
+            {/* Row 3: Company + Org Type + Registration ID */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                <input
+                  type="text"
+                  value={emailForm.companyName}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, companyName: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Org Type</label>
+                <select
+                  value={emailForm.organizationType}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, organizationType: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                >
+                  <option value="mga">MGA</option>
+                  <option value="carrier_broker">Carrier/Broker</option>
+                  <option value="service_provider">Service Provider</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Registration ID</label>
+                <input
+                  type="text"
+                  value={emailForm.registrationId}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, registrationId: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
             </div>
 
+            {/* Row 4: Attendees + Count + Amount */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attendee Names</label>
+                <input
+                  type="text"
+                  value={emailForm.attendeeNames}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, attendeeNames: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  placeholder="Name 1, Name 2, ..."
+                  disabled={sendingEmail}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">No. Attendees</label>
+                <input
+                  type="number"
+                  value={emailForm.numberOfAttendees}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, numberOfAttendees: parseInt(e.target.value) || 0 }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount (€)</label>
+                <input
+                  type="number"
+                  value={emailForm.totalAmount}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, totalAmount: parseFloat(e.target.value) || 0 }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
+            </div>
+
+            {/* Row 5: Checkboxes + Special Requests */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-6 pt-5">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={emailForm.isFaseMember}
+                    onChange={(e) => setEmailForm(prev => ({ ...prev, isFaseMember: e.target.checked }))}
+                    disabled={sendingEmail}
+                  />
+                  FASE Member
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={emailForm.isComplimentary}
+                    onChange={(e) => setEmailForm(prev => ({ ...prev, isComplimentary: e.target.checked }))}
+                    disabled={sendingEmail}
+                  />
+                  Complimentary
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                <input
+                  type="text"
+                  value={emailForm.specialRequests}
+                  onChange={(e) => setEmailForm(prev => ({ ...prev, specialRequests: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={sendingEmail}
+                />
+              </div>
+            </div>
+
+            {/* Preview */}
+            {emailPreviewHtml && (
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <div className="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 border-b">Email Preview</div>
+                <iframe
+                  srcDoc={emailPreviewHtml}
+                  className="w-full bg-white"
+                  style={{ height: '500px' }}
+                  title="Email Preview"
+                />
+              </div>
+            )}
+
+            {/* Result */}
             {emailResult && (
               <div className={`p-4 rounded-lg ${emailResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
                 {emailResult.success
@@ -828,6 +1026,7 @@ export default function RendezvousTab() {
               </div>
             )}
 
+            {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button
                 variant="secondary"
@@ -835,19 +1034,29 @@ export default function RendezvousTab() {
                   setShowEmailModal(false);
                   setSelectedRegistration(null);
                   setEmailResult(null);
+                  setEmailPreviewHtml(null);
                 }}
                 disabled={sendingEmail}
               >
                 {emailResult?.success ? 'Close' : 'Cancel'}
               </Button>
               {!emailResult?.success && (
-                <Button
-                  variant="primary"
-                  onClick={() => handleSendConfirmationEmail(selectedRegistration)}
-                  disabled={sendingEmail}
-                >
-                  {sendingEmail ? 'Sending...' : 'Send Email'}
-                </Button>
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={handlePreviewEmail}
+                    disabled={sendingEmail || previewingEmail}
+                  >
+                    {previewingEmail ? 'Loading...' : 'Preview'}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSendConfirmationEmail}
+                    disabled={sendingEmail || previewingEmail}
+                  >
+                    {sendingEmail ? 'Sending...' : 'Send Email'}
+                  </Button>
+                </>
               )}
             </div>
           </div>

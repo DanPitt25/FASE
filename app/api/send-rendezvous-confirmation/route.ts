@@ -265,6 +265,7 @@ export async function POST(request: NextRequest) {
     const {
       email,
       cc,
+      freeformSender,
       registrationId,
       companyName,
       organizationType,
@@ -323,8 +324,16 @@ export async function POST(request: NextRequest) {
       throw new Error('RESEND_API_KEY environment variable is not configured');
     }
 
+    const senderMap: Record<string, string> = {
+      'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
+      'aline.sullivan@fasemga.com': 'Aline Sullivan <aline.sullivan@fasemga.com>',
+      'william.pitt@fasemga.com': 'William Pitt <william.pitt@fasemga.com>',
+      'info@fasemga.com': 'FASE Info <info@fasemga.com>',
+      'media@fasemga.com': 'FASE Media <media@fasemga.com>'
+    };
+
     const emailPayload: any = {
-      from: 'FASE Admin <admin@fasemga.com>',
+      from: senderMap[freeformSender] || senderMap['admin@fasemga.com'],
       to: email,
       subject,
       html
