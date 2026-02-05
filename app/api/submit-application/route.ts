@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 </head>
 <body>
     <div class="header">
-        <div class="logo">FEDERATION OF EUROPEAN MGAS</div>
+        <div class="logo">FASE</div>
         <div class="tagline">New Membership Application</div>
     </div>
 
