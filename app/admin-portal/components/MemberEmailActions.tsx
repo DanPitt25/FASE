@@ -389,21 +389,37 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         <h3 className="text-lg font-semibold text-fase-navy">{config.title}</h3>
       </div>
 
-      {/* Language Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-        <select
-          value={formData.userLocale}
-          onChange={(e) => setFormData(prev => ({ ...prev, userLocale: e.target.value }))}
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-        >
-          <option value="en">English</option>
-          <option value="fr">Francais</option>
-          <option value="de">Deutsch</option>
-          <option value="es">Espanol</option>
-          <option value="it">Italiano</option>
-          <option value="nl">Nederlands</option>
-        </select>
+      {/* Language and Sender */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+          <select
+            value={formData.userLocale}
+            onChange={(e) => setFormData(prev => ({ ...prev, userLocale: e.target.value }))}
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="en">English</option>
+            <option value="fr">Francais</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Espanol</option>
+            <option value="it">Italiano</option>
+            <option value="nl">Nederlands</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Send From</label>
+          <select
+            value={formData.freeformSender}
+            onChange={(e) => setFormData(prev => ({ ...prev, freeformSender: e.target.value }))}
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
+            <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
+            <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
+            <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
+            <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+          </select>
+        </div>
       </div>
 
       {/* Email Recipients */}
