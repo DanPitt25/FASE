@@ -21,6 +21,12 @@ export default function PeoplePage() {
           role: t('members.aline_sullivan.role'),
           bio: t('members.aline_sullivan.bio'),
           image: '/AlineSullivan.png'
+        },
+        {
+          name: t('members.sandra_stojak.name'),
+          role: t('members.sandra_stojak.role'),
+          bio: t('members.sandra_stojak.bio'),
+          image: '/SandraStojak.png'
         }
       ]
     }

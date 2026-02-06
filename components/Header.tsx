@@ -187,7 +187,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                       }`}>{tNav('advisory_board')}</a>
                       <a href="/about/people" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'people' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
-                      }`}>{tNav('management')}</a>
+                      }`}>{tNav('team')}</a>
                       <Link href="/about/news" className={`block px-4 py-3 text-sm hover:bg-fase-cream transition-all duration-200 ${
                         currentPage === 'news' ? 'text-white bg-fase-gold' : 'text-fase-black hover:text-fase-navy'
                       }`}>{tNav('news')}</Link>
