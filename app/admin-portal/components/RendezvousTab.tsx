@@ -98,6 +98,7 @@ export default function RendezvousTab() {
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
@@ -296,6 +297,62 @@ export default function RendezvousTab() {
       setDeleteError(error.message || 'Failed to delete registration');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleGeneratePaidInvoice = async (registration: RendezvousRegistration) => {
+    try {
+      setGeneratingInvoice(true);
+
+      const response = await fetch('/api/admin/generate-paid-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber: registration.invoiceNumber,
+          registrationId: registration.registrationId,
+          companyName: registration.billingInfo?.company || '',
+          billingEmail: registration.billingInfo?.billingEmail || '',
+          address: registration.billingInfo?.address || '',
+          country: registration.billingInfo?.country || '',
+          attendees: registration.attendees || [],
+          pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
+          numberOfTickets: registration.numberOfAttendees || 1,
+          subtotal: registration.subtotal || 0,
+          vatAmount: registration.vatAmount || 0,
+          vatRate: 21,
+          totalPrice: registration.totalPrice || 0,
+          discount: registration.discount || 0,
+          isFaseMember: registration.companyIsFaseMember || false,
+          isAsaseMember: registration.isAsaseMember || false,
+          organizationType: registration.billingInfo?.organizationType || 'mga'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate invoice');
+      }
+
+      // Create a download link for the PDF
+      const pdfBlob = new Blob(
+        [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
+        { type: 'application/pdf' }
+      );
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename || `${registration.invoiceNumber}-PAID.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+    } catch (error: any) {
+      console.error('Error generating paid invoice:', error);
+      alert('Failed to generate invoice: ' + (error.message || 'Unknown error'));
+    } finally {
+      setGeneratingInvoice(false);
     }
   };
 
@@ -752,6 +809,14 @@ export default function RendezvousTab() {
                   }}
                 >
                   Send Confirmation Email
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleGeneratePaidInvoice(selectedRegistration)}
+                  disabled={generatingInvoice}
+                  className="!bg-green-50 !text-green-700 !border-green-200 hover:!bg-green-100"
+                >
+                  {generatingInvoice ? 'Generating...' : 'Download Paid Invoice'}
                 </Button>
                 {selectedRegistration.paymentStatus === 'pending_bank_transfer' && (
                   <Button
