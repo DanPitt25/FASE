@@ -2,9 +2,54 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
-import { detectCurrency, getWiseBankDetails, convertCurrency, getCurrencySymbol } from '../../../../mga-rendezvous/lib/currency-conversion';
 
 export const dynamic = 'force-dynamic';
+
+// Currency conversion utilities (inlined from mga-rendezvous)
+const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+  'US': 'USD', 'USA': 'USD', 'United States': 'USD',
+  'CA': 'USD', 'Canada': 'USD',
+  'MX': 'USD', 'Mexico': 'USD',
+  'GB': 'GBP', 'UK': 'GBP', 'United Kingdom': 'GBP',
+  'AT': 'EUR', 'BE': 'EUR', 'CY': 'EUR', 'EE': 'EUR', 'FI': 'EUR',
+  'FR': 'EUR', 'DE': 'EUR', 'GR': 'EUR', 'IE': 'EUR', 'IT': 'EUR',
+  'LV': 'EUR', 'LT': 'EUR', 'LU': 'EUR', 'MT': 'EUR', 'NL': 'EUR',
+  'PT': 'EUR', 'SK': 'EUR', 'SI': 'EUR', 'ES': 'EUR', 'HR': 'EUR',
+};
+
+function detectCurrency(country: string): string {
+  if (!country) return 'EUR';
+  const currency = COUNTRY_CURRENCY_MAP[country];
+  if (currency) return currency;
+  const upperCountry = country.toUpperCase();
+  for (const [key, value] of Object.entries(COUNTRY_CURRENCY_MAP)) {
+    if (key.toUpperCase() === upperCountry) return value;
+  }
+  return 'EUR';
+}
+
+function getCurrencySymbol(currency: string): string {
+  const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
+  return symbols[currency] || currency;
+}
+
+async function convertCurrency(eurAmount: number, targetCurrency: string) {
+  if (targetCurrency === 'EUR') {
+    return { convertedCurrency: 'EUR', roundedAmount: eurAmount, exchangeRate: 1 };
+  }
+  try {
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+    const data = await response.json();
+    const rate = data.rates[targetCurrency] || 1;
+    const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
+    return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
+  } catch {
+    const fallbackRates: Record<string, number> = { 'EUR': 1, 'USD': 1.10, 'GBP': 0.85 };
+    const rate = fallbackRates[targetCurrency] || 1;
+    const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
+    return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
+  }
+}
 
 interface RegistrationData {
   invoiceNumber: string;
@@ -48,7 +93,6 @@ export async function POST(request: NextRequest) {
 
     // Detect currency based on country
     const targetCurrency = detectCurrency(data.country);
-    const bankDetails = getWiseBankDetails(targetCurrency);
 
     // Convert currency if needed (use subtotal since VAT is invoiced separately)
     let currencyConversion = {
