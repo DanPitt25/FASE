@@ -3,7 +3,7 @@ title: FASE accoglie le analisi di mercato e gli strumenti formativi di AM Best 
 date: 2026-02-10
 excerpt: AM Best è sponsor Silver e contribuirà alle comunicazioni di FASE e ospiterà una serie di webinar sulle performance delle Agenzie di Sottoscrizione
 author: FASE Communications
-bannerImage: /conferenceWood.jpg
+bannerImage: /data.jpg
 bannerImageAlt: AM Best partner di FASE
 language: it
 primarySlug: am-best-partnership

@@ -3,7 +3,7 @@ title: FASE da la bienvenida a los análisis de mercado y herramientas educativa
 date: 2026-02-10
 excerpt: AM Best es patrocinador Silver y contribuirá a las comunicaciones de FASE y organizará una serie de webinarios sobre el rendimiento de las Agencias de Suscripción
 author: FASE Communications
-bannerImage: /conferenceWood.jpg
+bannerImage: /data.jpg
 bannerImageAlt: AM Best socio de FASE
 language: es
 primarySlug: am-best-partnership

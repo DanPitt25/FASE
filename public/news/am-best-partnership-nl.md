@@ -3,7 +3,7 @@ title: FASE verwelkomt AM Best's belangrijke marktinzichten en educatieve tools 
 date: 2026-02-10
 excerpt: AM Best is Zilver-sponsor en zal bijdragen aan FASE's ledencommunicatie en een webinarreeks over GA-prestaties organiseren
 author: FASE Communications
-bannerImage: /conferenceWood.jpg
+bannerImage: /data.jpg
 bannerImageAlt: AM Best partner van FASE
 language: nl
 primarySlug: am-best-partnership

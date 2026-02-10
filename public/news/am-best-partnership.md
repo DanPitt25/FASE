@@ -3,7 +3,7 @@ title: FASE Welcomes AM Best's Key Market Insights, Educational Tools for Its Me
 date: 2026-02-10
 excerpt: AM Best is a Silver sponsor and will contribute to FASE's member communications and host a webinar series on MGA performance
 author: FASE Communications
-bannerImage: /conferenceWood.jpg
+bannerImage: /data.jpg
 bannerImageAlt: AM Best partners with FASE
 language: en
 primarySlug: am-best-partnership
