@@ -35,6 +35,31 @@ This project uses the Firebase Admin SDK (server-side) with the `FIREBASE_SERVIC
 - Falls back to browser language if geolocation fails
 - User preference stored in localStorage as `mga-rendezvous-locale`
 
+## EMAIL SAFETY - CRITICAL
+**NEVER SEND EMAILS TO ANYONE OTHER THAN daniel.pitt@fasemga.com UNLESS THE USER EXPLICITLY ASKS.**
+
+- NEVER call APIs that send emails to clients/customers without explicit user permission
+- NEVER trigger registration flows, invoice sends, or any automated emails to external recipients
+- If generating invoices or documents, find a way to generate the PDF WITHOUT sending emails
+- When in doubt, ASK FIRST before any action that could contact someone outside the organization
+- This includes calling production API endpoints that have email-sending side effects
+
+## Translation Guidelines - CRITICAL
+**ALWAYS check messages/glossary.json before translating any content.**
+
+Key terminology by language:
+- **English**: MGA (Managing General Agent)
+- **French**: Agence de Souscription (feminine - use "une", "la", "cette")
+- **Spanish**: Agencia de Suscripción (feminine - use "una", "la", "esta")
+- **Italian**: Agenzia di Sottoscrizione (feminine - use "una", "la", "questa")
+- **German**: MGA (kept in English)
+- **Dutch**: GA (Gevolmachtigd Agent)
+
+Other key terms:
+- "Sponsors" → French: "Partenaires"
+- "Underwriting" → French: "Souscription", Dutch: "Acceptatie", German/Italian: keep as "Underwriting"
+- "Entrepreneurial Underwriter" → Keep as-is in ALL languages
+
 ## UI/UX Guidelines
 - **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, hero sections, or any UI components. This includes any secondary text under titles/headings that describes or elaborates on the title. Just use the title alone.
 - **ALWAYS USE NEXT.JS LINK COMPONENT** - Never use `<a>` tags for internal navigation. Always use `<Link>` from `next/link` for internal routes. Only use `<a>` tags for external URLs.
