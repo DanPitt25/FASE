@@ -177,8 +177,8 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     if (selectedAction === 'standalone_invoice') {
       const lineItems: { description: string; amount: number; isDiscount?: boolean }[] = [];
       const membershipDescription = formData.userLocale === 'nl'
-        ? 'FASE Jaarlijks Lidmaatschap (1/1/2026 - 1/1/2027)'
-        : 'FASE Annual Membership (1/1/2026 - 1/1/2027)';
+        ? 'FASE Jaarlijks Lidmaatschap'
+        : 'FASE Annual Membership';
       lineItems.push({ description: membershipDescription, amount: originalAmount });
 
       if (formData.hasOtherAssociations) {

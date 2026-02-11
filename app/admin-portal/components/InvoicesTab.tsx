@@ -44,7 +44,7 @@ const initialFormState: CustomInvoiceForm = {
     postcode: '',
     country: ''
   },
-  lineItems: [createLineItem('FASE Annual Membership (1/1/2026 - 1/1/2027)', '')],
+  lineItems: [createLineItem('FASE Annual Membership', '')],
   paymentCurrency: 'EUR',
   locale: 'en'
 };
