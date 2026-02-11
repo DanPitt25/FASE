@@ -31,37 +31,6 @@ function replaceTemplateVars(template: string, vars: Record<string, string>): st
   return result;
 }
 
-// Get organization type label
-function getOrgTypeLabel(orgType: string, t: any): string {
-  const labels: Record<string, string> = {
-    mga: t.org_type_mga,
-    carrier_broker: t.org_type_carrier_broker,
-    service_provider: t.org_type_service_provider,
-    MGA: t.org_type_mga,
-    carrier: t.org_type_carrier_broker,
-    provider: t.org_type_service_provider
-  };
-  return labels[orgType] || orgType;
-}
-
-// Format date for locale
-function formatDateForLocale(date: Date, language: Language): string {
-  const localeMap: Record<Language, string> = {
-    en: 'en-GB',
-    fr: 'fr-FR',
-    de: 'de-DE',
-    es: 'es-ES',
-    it: 'it-IT',
-    nl: 'nl-NL'
-  };
-
-  return date.toLocaleDateString(localeMap[language], {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-}
-
 // Format currency for locale
 function formatCurrencyForLocale(amount: number, language: Language): string {
   const localeMap: Record<Language, string> = {
@@ -79,24 +48,19 @@ function formatCurrencyForLocale(amount: number, language: Language): string {
   });
 }
 
-// Generate ticket confirmation email HTML (same as MGA Rendezvous site)
-function generateTicketConfirmationEmail(
+// Generate confirmation email HTML (simple version from MGA Rendezvous site)
+function generateConfirmationEmail(
   details: {
     registrationId: string;
     companyName: string;
-    billingEmail: string;
-    organizationType: string;
     numberOfAttendees: number;
-    isFaseMember: boolean;
     totalAmount: number;
-    attendeeNames: string;
-    specialRequests?: string;
     isComplimentary?: boolean;
   },
   language: Language = 'en'
 ): { subject: string; html: string } {
   const translations = loadEmailTranslations(language);
-  const t = translations.ticket_confirmation;
+  const t = translations.rendezvous_confirmation;
 
   // Ensure translations loaded correctly
   if (!t || !t.subject) {
@@ -104,14 +68,9 @@ function generateTicketConfirmationEmail(
   }
 
   const subject = replaceTemplateVars(t.subject, { companyName: details.companyName });
-  const orgTypeDisplay = getOrgTypeLabel(details.organizationType, t);
-  const formattedDate = formatDateForLocale(new Date(), language);
-  const formattedAmount = details.isComplimentary ? 'Complimentary (ASASE Member)' : formatCurrencyForLocale(details.totalAmount, language);
-
-  const attendeesList = details.attendeeNames
-    .split(', ')
-    .map((name: string) => `<li>${name}</li>`)
-    .join('');
+  const formattedAmount = details.isComplimentary
+    ? 'Complimentary (ASASE Member)'
+    : formatCurrencyForLocale(details.totalAmount, language);
 
   const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
@@ -120,46 +79,31 @@ function generateTicketConfirmationEmail(
       <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
     </div>
 
-    <h2 style="color: #2D5574; margin-bottom: 20px;">${t.banner_title}</h2>
+    <h2 style="color: #2D5574; margin-bottom: 20px;">${t.registration_details}</h2>
 
-    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 0 0 25px 0;">
-      <p style="margin: 0 0 10px 0; color: #2D5574;"><strong>${t.date_label}</strong> ${formattedDate}</p>
-      <p style="margin: 0 0 10px 0; color: #2D5574;"><strong>${t.tickets_label}</strong> ${details.numberOfAttendees}</p>
-      <p style="margin: 0; color: #2D5574;"><strong>${t.total_paid_label}</strong> ${formattedAmount}</p>
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
+      ${t.thank_you}
+    </p>
+
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 20px 0;">
+      ${t.payment_confirmed}
+    </p>
+
+    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0; color: #2D5574;"><strong>${t.tickets}</strong> ${details.numberOfAttendees}</p>
+      <p style="margin: 0; color: #2D5574;"><strong>${t.total_paid}</strong> ${formattedAmount}</p>
     </div>
 
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 0 0 25px 0;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_event}</h3>
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.event_info}</h3>
       <p style="margin: 0 0 8px 0; color: #333;"><strong>${t.event_name}</strong></p>
-      <p style="margin: 0 0 8px 0; color: #333;">${t.event_date_value}</p>
-      <p style="margin: 0; color: #333;">${t.location_value}</p>
+      <p style="margin: 0 0 8px 0; color: #333;">${t.event_date}</p>
+      <p style="margin: 0; color: #333;">${t.event_location}</p>
     </div>
 
-    <div style="margin: 0 0 25px 0;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_billing}</h3>
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333;"><strong>${t.company_label}</strong> ${details.companyName}</p>
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333;"><strong>${t.type_label}</strong> ${orgTypeDisplay}</p>
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333;"><strong>${t.fase_member_label}</strong> ${details.isFaseMember ? t.fase_member_yes : t.fase_member_no}</p>
-      <p style="margin: 0; font-size: 14px; color: #333;"><strong>${t.email_label}</strong> ${details.billingEmail}</p>
-    </div>
-
-    <div style="margin: 0 0 25px 0;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_attendees}</h3>
-      <ul style="margin: 0; padding-left: 20px;">
-        ${attendeesList}
-      </ul>
-    </div>
-
-    ${details.specialRequests ? `
-    <div style="margin: 0 0 25px 0;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_requests}</h3>
-      <p style="font-size: 14px; margin: 0; color: #333;">${details.specialRequests}</p>
-    </div>
-    ` : ''}
-
-    <div style="background-color: #fefce8; padding: 20px; border-radius: 6px; margin: 0 0 25px 0; border: 1px solid #fde047;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_hotel}</h3>
-      <p style="font-size: 14px; margin: 0 0 15px 0; line-height: 1.5; color: #333;">
+    <div style="background-color: #fefce8; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #fde047;">
+      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.hotel_title}</h3>
+      <p style="margin: 0 0 15px 0; color: #333; font-size: 14px; line-height: 1.5;">
         ${t.hotel_intro}
       </p>
       <p style="margin: 0 0 15px 0;">
@@ -170,22 +114,17 @@ function generateTicketConfirmationEmail(
       </p>
     </div>
 
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 0 0 25px 0;">
-      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.section_next_steps}</h3>
-      <ul style="margin: 0; padding-left: 20px;">
-        <li style="margin-bottom: 8px; font-size: 14px; color: #333;">${t.next_step_1}</li>
-        <li style="margin-bottom: 8px; font-size: 14px; color: #333;">${t.next_step_2}</li>
-        <li style="margin-bottom: 0; font-size: 14px; color: #333;">${t.next_step_3} <a href="mailto:admin@fasemga.com" style="color: #2D5574;">admin@fasemga.com</a></li>
-      </ul>
-    </div>
-
-    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 15px 0;">
-      ${t.footer_text}
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 20px 0 15px 0;">
+      ${t.next_steps}
     </p>
 
-    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0;">
-      ${t.footer_company}<br>
-      <a href="https://fasemga.com" style="color: #2D5574;">www.fasemga.com</a>
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0;">
+      ${t.contact} <a href="mailto:admin@fasemga.com" style="color: #2D5574;">admin@fasemga.com</a>
+    </p>
+
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 0 0;">
+      ${t.sign_off}<br><br>
+      <strong>${t.team_name}</strong>
     </p>
   </div>
 </div>`;
@@ -202,19 +141,15 @@ export async function POST(request: NextRequest) {
       freeformSender,
       registrationId,
       companyName,
-      organizationType,
       numberOfAttendees,
       totalAmount,
-      attendeeNames,
-      isFaseMember,
       isComplimentary,
-      specialRequests,
       userLocale,
       preview
     } = data;
 
     // Validate required fields
-    if (!email || !registrationId || !companyName || !attendeeNames) {
+    if (!email || !registrationId || !companyName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -224,17 +159,12 @@ export async function POST(request: NextRequest) {
     const language = (userLocale || 'en') as Language;
 
     // Generate the confirmation email
-    const { subject, html } = generateTicketConfirmationEmail(
+    const { subject, html } = generateConfirmationEmail(
       {
         registrationId,
         companyName,
-        billingEmail: email,
-        organizationType: organizationType || 'MGA',
         numberOfAttendees: numberOfAttendees || 1,
-        isFaseMember: isFaseMember ?? true,
         totalAmount: totalAmount || 0,
-        attendeeNames,
-        specialRequests,
         isComplimentary
       },
       language
