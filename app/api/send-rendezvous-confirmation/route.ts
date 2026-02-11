@@ -6,17 +6,18 @@ export const runtime = 'nodejs';
 
 type Language = 'en' | 'fr' | 'de' | 'es' | 'it' | 'nl';
 
-// Load email translations from MGA Rendezvous messages folder
+// Load email translations from messages folder
 function loadEmailTranslations(language: Language): any {
   try {
-    const filePath = path.join(process.cwd(), 'mga-rendezvous', 'messages', language, 'email.json');
+    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
     const fileContent = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(fileContent);
-  } catch (error) {
+  } catch (error: any) {
+    console.error(`Failed to load email translations for ${language}:`, error.message);
     if (language !== 'en') {
       return loadEmailTranslations('en');
     }
-    return {};
+    throw new Error(`Could not load email translations: ${error.message}`);
   }
 }
 
