@@ -97,6 +97,11 @@ function generateTicketConfirmationEmail(
   const translations = loadEmailTranslations(language);
   const t = translations.ticket_confirmation;
 
+  // Ensure translations loaded correctly
+  if (!t || !t.subject) {
+    throw new Error(`Missing email translations for language: ${language}`);
+  }
+
   const subject = replaceTemplateVars(t.subject, { companyName: details.companyName });
   const orgTypeDisplay = getOrgTypeLabel(details.organizationType, t);
   const formattedDate = formatDateForLocale(new Date(), language);
@@ -233,6 +238,14 @@ export async function POST(request: NextRequest) {
       },
       language
     );
+
+    // Validate that subject and html were generated
+    if (!subject || !html) {
+      return NextResponse.json(
+        { error: 'Failed to generate email content - missing subject or body' },
+        { status: 500 }
+      );
+    }
 
     // If preview mode, return the HTML without sending
     if (preview) {
