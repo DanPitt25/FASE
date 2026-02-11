@@ -55,6 +55,7 @@ function generateConfirmationEmail(
     companyName: string;
     numberOfAttendees: number;
     totalAmount: number;
+    attendeeNames?: string;
     isComplimentary?: boolean;
   },
   language: Language = 'en'
@@ -71,6 +72,11 @@ function generateConfirmationEmail(
   const formattedAmount = details.isComplimentary
     ? 'Complimentary (ASASE Member)'
     : formatCurrencyForLocale(details.totalAmount, language);
+
+  // Format attendee list if provided
+  const attendeesList = details.attendeeNames
+    ? details.attendeeNames.split(', ').map((name: string) => `<li style="margin-bottom: 4px;">${name}</li>`).join('')
+    : '';
 
   const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
@@ -100,6 +106,15 @@ function generateConfirmationEmail(
       <p style="margin: 0 0 8px 0; color: #333;">${t.event_date}</p>
       <p style="margin: 0; color: #333;">${t.event_location}</p>
     </div>
+
+    ${attendeesList ? `
+    <div style="margin: 20px 0;">
+      <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">Registered Attendees</h3>
+      <ul style="margin: 0; padding-left: 20px; color: #333;">
+        ${attendeesList}
+      </ul>
+    </div>
+    ` : ''}
 
     <div style="background-color: #fefce8; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #fde047;">
       <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.hotel_title}</h3>
@@ -143,6 +158,7 @@ export async function POST(request: NextRequest) {
       companyName,
       numberOfAttendees,
       totalAmount,
+      attendeeNames,
       isComplimentary,
       userLocale,
       preview
@@ -165,6 +181,7 @@ export async function POST(request: NextRequest) {
         companyName,
         numberOfAttendees: numberOfAttendees || 1,
         totalAmount: totalAmount || 0,
+        attendeeNames,
         isComplimentary
       },
       language
