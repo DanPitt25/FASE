@@ -44,22 +44,31 @@ function BankTransferInvoiceContent() {
   }
 
   // Parse rendezvous pass data if provided
-  // IMPORTANT: Ignore any VAT fields - Spanish VAT is always invoiced separately
+  // IMPORTANT: Strip ALL pre-calculated amounts - API will calculate from first principles
+  // This ensures pricing is always correct regardless of what the URL contains
   const rendezvousPassParam = searchParams?.get('rendezvousPass');
   let rendezvousPass = null;
   try {
     if (rendezvousPassParam) {
       const parsed = JSON.parse(decodeURIComponent(rendezvousPassParam));
-      // Strip out any VAT-related fields from old URLs - VAT is invoiced separately
+      // Only keep the RAW DATA needed for calculation - strip all amounts
       rendezvousPass = {
-        ...parsed,
-        vatAmount: 0,
-        vatRate: 0
+        reserved: parsed.reserved,
+        passCount: parsed.passCount,
+        organizationType: parsed.organizationType,
+        isAsaseMember: parsed.isAsaseMember || false,
+        isFaseMember: parsed.isFaseMember !== false, // Default true for membership invoices
+        attendees: parsed.attendees || []
+        // DELIBERATELY NOT including: passTotal, subtotal, vatAmount, vatRate
       };
     }
   } catch (error) {
     console.error('Error parsing rendezvous pass:', error);
   }
+
+  // Extract organization type and GWP band for membership pricing calculation
+  const organizationType = searchParams?.get('organizationType') || 'MGA';
+  const gwpBand = searchParams?.get('gwpBand') || '<10m';
 
 
 
@@ -102,6 +111,8 @@ function BankTransferInvoiceContent() {
     const invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
     try {
+      // Pass RAW DATA to API - let API calculate all amounts from first principles
+      // This ensures pricing is always correct and consistent
       const response = await fetch('/api/send-invoice-only', {
         method: 'POST',
         headers: {
@@ -113,7 +124,10 @@ function BankTransferInvoiceContent() {
           organizationName: orgName,
           invoiceNumber,
           greeting: fullName || 'Client',
-          totalAmount: originalAmount ? parseFloat(originalAmount) * (hasOtherAssociations ? 0.8 : 1.0) : parseFloat(amount || '0'),
+          // Pass organization info for pricing calculation
+          organizationType: organizationType,
+          gwpBand: gwpBand,
+          // Legacy support: if originalAmount is in URL, pass it (API will use it as base)
           originalAmount: originalAmount ? parseFloat(originalAmount) : undefined,
           userLocale: searchParams?.get('locale') || 'en',
           gender: gender || 'm',
@@ -121,7 +135,9 @@ function BankTransferInvoiceContent() {
           country: addressData.country,
           forceCurrency: currency,
           hasOtherAssociations: hasOtherAssociations,
-          customLineItem: customLineItem,
+          // Only pass customLineItem if it's NOT from rendezvous (avoid double-counting)
+          customLineItem: rendezvousPass ? null : customLineItem,
+          // Pass raw rendezvous data - API calculates the cost
           rendezvousPassReservation: rendezvousPass
         }),
       });

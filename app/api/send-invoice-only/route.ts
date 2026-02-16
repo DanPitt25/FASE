@@ -3,6 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { generateInvoicePDF, generateInvoiceFromLineItems, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
+import {
+  calculateMembershipFee,
+  calculateRendezvousTotal,
+  getOrgTypeLabel,
+  normalizeOrgType,
+  MGA_MEMBERSHIP_TIERS,
+  MEMBERSHIP_FLAT_RATES
+} from '../../../lib/pricing';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -40,20 +48,76 @@ export async function POST(request: NextRequest) {
     // Generate invoice number if not provided
     const invoiceNumber = requestData.invoiceNumber || `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    // Build custom line item for rendezvous passes if present
+    const hasOtherAssociations = requestData.hasOtherAssociations || false;
     const rendezvousPassData = requestData.rendezvousPassReservation;
+
+    // ==========================================================================
+    // CALCULATE AMOUNTS FROM FIRST PRINCIPLES - DO NOT TRUST PRE-CALCULATED VALUES
+    // ==========================================================================
+
+    // Determine organization type for pricing
+    const membershipOrgType = requestData.organizationType || 'MGA';
+    const gwpBand = requestData.gwpBand || requestData.grossWrittenPremiums || '<10m';
+
+    // Calculate membership fee from scratch
+    let calculatedMembershipFee: number;
+    if (requestData.originalAmount && typeof requestData.originalAmount === 'number' && requestData.originalAmount > 0) {
+      // If originalAmount is explicitly provided (legacy support), use it as the base
+      calculatedMembershipFee = requestData.originalAmount;
+    } else {
+      // Calculate from organization type and GWP band
+      calculatedMembershipFee = calculateMembershipFee(membershipOrgType, gwpBand, false);
+    }
+
+    // Apply multi-association discount if applicable
+    const discountAmount = hasOtherAssociations ? Math.round(calculatedMembershipFee * 0.2) : 0;
+    const discountedMembershipFee = calculatedMembershipFee - discountAmount;
+
+    // Calculate rendezvous pass cost from first principles (NO VAT - invoiced separately)
     let customLineItem = requestData.customLineItem || null;
+    let rendezvousPassCost = 0;
 
     if (rendezvousPassData && rendezvousPassData.reserved) {
-      const passLabel = rendezvousPassData.organizationType === 'MGA' ? 'MGA' :
-                       rendezvousPassData.organizationType === 'carrier' ? 'Carrier/Broker' :
-                       'Service Provider';
+      const passOrgType = rendezvousPassData.organizationType || membershipOrgType;
+      const passCount = rendezvousPassData.passCount || 1;
+      const isFaseMember = rendezvousPassData.isFaseMember !== false; // Default to true for membership invoices
+      const isAsaseMember = rendezvousPassData.isAsaseMember || false;
+
+      // CALCULATE from pricing constants - ignore any pre-calculated amounts
+      const rendezvousCalc = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember);
+      rendezvousPassCost = rendezvousCalc.subtotal;
+
+      const passLabel = getOrgTypeLabel(passOrgType);
       customLineItem = {
         enabled: true,
-        description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x)`,
-        amount: rendezvousPassData.passTotal || 0
+        description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
+        amount: rendezvousPassCost
       };
+
+      console.log('🧮 Calculated rendezvous pass cost:', {
+        passOrgType,
+        passCount,
+        isFaseMember,
+        isAsaseMember,
+        unitPrice: rendezvousCalc.unitPrice,
+        subtotal: rendezvousCalc.subtotal,
+        discount: rendezvousCalc.discount
+      });
     }
+
+    // Total amount is membership + rendezvous (NO VAT anywhere)
+    const totalAmount = discountedMembershipFee + rendezvousPassCost;
+
+    console.log('🧮 Invoice calculation summary:', {
+      membershipOrgType,
+      gwpBand,
+      baseMembershipFee: calculatedMembershipFee,
+      hasOtherAssociations,
+      discountAmount,
+      discountedMembershipFee,
+      rendezvousPassCost,
+      totalAmount
+    });
 
     const invoiceData: any = {
       email: requestData.email || '',
@@ -61,7 +125,7 @@ export async function POST(request: NextRequest) {
       invoiceNumber: invoiceNumber,
       greeting: requestData.greeting || requestData.fullName || 'Client',
       gender: requestData.gender || 'm',
-      totalAmount: requestData.totalAmount || 0,
+      totalAmount: totalAmount,
       fullName: requestData.greeting || requestData.fullName || 'Client',
       address: requestData.address || {
         line1: 'Not provided',
@@ -70,15 +134,11 @@ export async function POST(request: NextRequest) {
         postcode: 'Not provided',
         country: requestData.country || 'Netherlands'
       },
-      originalAmount: requestData.originalAmount || requestData.totalAmount || 0,
-      discountAmount: requestData.discountAmount || (requestData.hasOtherAssociations ? (requestData.originalAmount || requestData.totalAmount) * 0.2 : 0),
-      discountReason: requestData.discountReason || (requestData.hasOtherAssociations ? "Multi-Association Member Discount (20%)" : ""),
+      originalAmount: calculatedMembershipFee,
+      discountAmount: discountAmount,
+      discountReason: hasOtherAssociations ? "Multi-Association Member Discount (20%)" : "",
       customLineItem: customLineItem
     };
-    
-    console.log('🔍 DEBUG: Custom line item data:', JSON.stringify(invoiceData.customLineItem, null, 2));
-    
-    const hasOtherAssociations = requestData.hasOtherAssociations || false;
 
     // Check if this is a preview request
     const isPreview = requestData.preview === true;

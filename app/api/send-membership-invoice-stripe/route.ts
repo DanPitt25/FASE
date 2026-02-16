@@ -56,7 +56,20 @@ export async function POST(request: NextRequest) {
     const requestData = await request.json();
 
     // Check for MGA Rendezvous pass reservation
-    const rendezvousPassData = requestData.rendezvousPassReservation || null;
+    // IMPORTANT: Only keep RAW DATA - strip all pre-calculated amounts
+    // The bank-transfer-invoice page and send-invoice-only API will calculate from scratch
+    let rendezvousPassData = requestData.rendezvousPassReservation || null;
+    if (rendezvousPassData) {
+      rendezvousPassData = {
+        reserved: rendezvousPassData.reserved,
+        passCount: rendezvousPassData.passCount,
+        organizationType: rendezvousPassData.organizationType,
+        isAsaseMember: rendezvousPassData.isAsaseMember || false,
+        isFaseMember: true, // Always true for membership invoices
+        attendees: rendezvousPassData.attendees || []
+        // DELIBERATELY NOT including: passTotal, subtotal, vatAmount, vatRate
+      };
+    }
 
     const invoiceData = {
       email: requestData.email || "danielhpitt@gmail.com",
@@ -297,7 +310,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 10px 0;">
               ${emailContent.bankTransferText
-                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${invoiceData.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&addressLine1=${encodeURIComponent(invoiceData.address?.line1 || '')}&addressLine2=${encodeURIComponent(invoiceData.address?.line2 || '')}&city=${encodeURIComponent(invoiceData.address?.city || '')}&county=${encodeURIComponent(invoiceData.address?.county || '')}&postcode=${encodeURIComponent(invoiceData.address?.postcode || '')}&country=${encodeURIComponent(invoiceData.address?.country || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}${invoiceData.customLineItem && invoiceData.customLineItem.enabled ? `&customLineItem=${encodeURIComponent(JSON.stringify(invoiceData.customLineItem))}` : ''}${hasRendezvousPasses ? `&rendezvousPass=${encodeURIComponent(JSON.stringify(rendezvousPassData))}` : ''}" style="color: #2D5574; text-decoration: underline;">`)
+                .replace('{LINK}', `<a href="${emailBaseUrl}/bank-transfer-invoice?originalAmount=${invoiceData.originalAmount}&amount=${currencyConversion.roundedAmount}&currency=${currencyConversion.convertedCurrency}&orgName=${encodeURIComponent(invoiceData.organizationName)}&fullName=${encodeURIComponent(invoiceData.fullName)}&addressLine1=${encodeURIComponent(invoiceData.address?.line1 || '')}&addressLine2=${encodeURIComponent(invoiceData.address?.line2 || '')}&city=${encodeURIComponent(invoiceData.address?.city || '')}&county=${encodeURIComponent(invoiceData.address?.county || '')}&postcode=${encodeURIComponent(invoiceData.address?.postcode || '')}&country=${encodeURIComponent(invoiceData.address?.country || '')}&locale=${locale}&gender=${invoiceData.gender}&email=${encodeURIComponent(invoiceData.email)}&hasOtherAssociations=${invoiceData.hasOtherAssociations || false}&organizationType=${encodeURIComponent(invoiceData.organizationType)}&gwpBand=${encodeURIComponent(invoiceData.grossWrittenPremiums || '<10m')}${invoiceData.customLineItem && invoiceData.customLineItem.enabled ? `&customLineItem=${encodeURIComponent(JSON.stringify(invoiceData.customLineItem))}` : ''}${hasRendezvousPasses ? `&rendezvousPass=${encodeURIComponent(JSON.stringify(rendezvousPassData))}` : ''}" style="color: #2D5574; text-decoration: underline;">`)
                 .replace('{/LINK}', '</a>')}.
             </p>
             

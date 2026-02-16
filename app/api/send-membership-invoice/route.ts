@@ -30,9 +30,19 @@ export async function POST(request: NextRequest) {
     const requestData = await request.json();
 
     // Check for MGA Rendezvous pass reservation from account data
+    // IMPORTANT: Only keep RAW DATA - strip all pre-calculated amounts
+    // Invoice generation will calculate from scratch using pricing constants
     let rendezvousPassData = null;
     if (requestData.rendezvousPassReservation) {
-      rendezvousPassData = requestData.rendezvousPassReservation;
+      rendezvousPassData = {
+        reserved: requestData.rendezvousPassReservation.reserved,
+        passCount: requestData.rendezvousPassReservation.passCount,
+        organizationType: requestData.rendezvousPassReservation.organizationType,
+        isAsaseMember: requestData.rendezvousPassReservation.isAsaseMember || false,
+        isFaseMember: true, // Always true for membership invoices
+        attendees: requestData.rendezvousPassReservation.attendees || []
+        // DELIBERATELY NOT including: passTotal, subtotal, vatAmount, vatRate
+      };
     }
 
     const invoiceData = {
