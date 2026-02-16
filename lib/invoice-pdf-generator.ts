@@ -105,6 +105,7 @@ export interface LineItemsInvoiceData {
   paymentCurrency: string; // EUR, GBP, or USD
   userLocale?: string;
   generationSource?: string;
+  customBankDetails?: any; // Optional custom bank details override
 }
 
 interface InvoiceLineItem {
@@ -182,8 +183,8 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     // Set defaults for optional fields
     const invoiceData = {
       ...data,
-      fullName: data.fullName || data.greeting || 'Client',
-      greeting: data.greeting || data.fullName || 'Client',
+      fullName: data.fullName || '',
+      greeting: data.greeting || data.fullName || '',
       gender: data.gender || 'm',
       originalAmount: data.originalAmount || data.totalAmount,
       discountAmount: data.discountAmount || (data.hasOtherAssociations ? data.totalAmount * 0.2 : 0),
@@ -632,8 +633,8 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
     }
 
     // Set defaults
-    const fullName = data.fullName || data.greeting || 'Client';
-    const greeting = data.greeting || data.fullName || 'Client';
+    const fullName = data.fullName || data.greeting || '';
+    const greeting = data.greeting || data.fullName || '';
     const gender = data.gender || 'm';
     const address = data.address || {
       line1: 'Not provided',
@@ -652,8 +653,25 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
     const baseCurrency = 'EUR';
     const targetCurrency = data.paymentCurrency || baseCurrency;
 
-    // Get bank details
-    const bankDetails = getWiseBankDetails(targetCurrency);
+    // Get bank details - use custom if provided, otherwise use Wise
+    let bankDetails;
+    if (data.customBankDetails?.[targetCurrency]) {
+      // Use custom bank details
+      const custom = data.customBankDetails[targetCurrency];
+      bankDetails = {
+        accountHolder: custom.accountHolder,
+        reference: custom.reference || '',
+        bic: custom.bic,
+        iban: custom.iban,
+        sortCode: custom.sortCode,
+        accountNumber: custom.accountNumber,
+        bankName: custom.bankName,
+        address: [custom.bankAddress]
+      };
+    } else {
+      // Fall back to Wise
+      bankDetails = getWiseBankDetails(targetCurrency);
+    }
 
     // Build internal line items from input
     const lineItems: InvoiceLineItem[] = data.lineItems.map(item => ({
