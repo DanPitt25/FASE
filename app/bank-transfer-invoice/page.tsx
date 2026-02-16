@@ -44,11 +44,18 @@ function BankTransferInvoiceContent() {
   }
 
   // Parse rendezvous pass data if provided
+  // IMPORTANT: Ignore any VAT fields - Spanish VAT is always invoiced separately
   const rendezvousPassParam = searchParams?.get('rendezvousPass');
   let rendezvousPass = null;
   try {
     if (rendezvousPassParam) {
-      rendezvousPass = JSON.parse(decodeURIComponent(rendezvousPassParam));
+      const parsed = JSON.parse(decodeURIComponent(rendezvousPassParam));
+      // Strip out any VAT-related fields from old URLs - VAT is invoiced separately
+      rendezvousPass = {
+        ...parsed,
+        vatAmount: 0,
+        vatRate: 0
+      };
     }
   } catch (error) {
     console.error('Error parsing rendezvous pass:', error);
