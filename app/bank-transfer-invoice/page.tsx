@@ -282,7 +282,7 @@ function BankTransferInvoiceContent() {
                         }
                       </p>
                     }
-                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{displayAmount}</span></p>
+                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">€{displayAmount}</span></p>
                   </div>
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
