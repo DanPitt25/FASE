@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { auth } from '../../lib/firebase';
 import Button from '../Button';
 import OrganizationLogo from '../OrganizationLogo';
 import type { OrganizationAccount } from '../../lib/unified-member';
@@ -72,22 +71,37 @@ export default function CompanyProfileSection({
     try {
       setSavingBio(true);
 
-      const accountRef = doc(db, 'accounts', organizationAccount.id);
-      await updateDoc(accountRef, {
-        'companySummary.text': bioText.trim(),
-        'companySummary.status': 'pending_review',
-        'companySummary.submittedAt': serverTimestamp(),
-        'companySummary.reviewedAt': null,
-        'companySummary.reviewedBy': null,
-        'companySummary.rejectionReason': null,
-        updatedAt: serverTimestamp()
+      const user = auth.currentUser;
+      if (!user) {
+        showError('You must be logged in to submit a bio.');
+        return;
+      }
+
+      const token = await user.getIdToken();
+      const response = await fetch('/api/submit-bio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          accountId: organizationAccount.id,
+          bioText: bioText.trim(),
+          action: 'submit'
+        })
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit bio');
+      }
 
       setEditingBio(false);
       onBioStatusChange?.('pending_review');
       showSuccess('Profile submitted for review. You will be notified once approved.');
-    } catch (error) {
-      showError('Failed to submit profile. Please try again.');
+    } catch (error: any) {
+      showError(error.message || 'Failed to submit profile. Please try again.');
     } finally {
       setSavingBio(false);
     }
@@ -96,18 +110,37 @@ export default function CompanyProfileSection({
   const handleSaveBioDraft = async () => {
     try {
       setSavingBio(true);
-      
-      const accountRef = doc(db, 'accounts', organizationAccount.id);
-      await updateDoc(accountRef, {
-        'companySummary.text': bioText.trim(),
-        'companySummary.status': 'draft',
-        updatedAt: serverTimestamp()
+
+      const user = auth.currentUser;
+      if (!user) {
+        showError('You must be logged in to save a draft.');
+        return;
+      }
+
+      const token = await user.getIdToken();
+      const response = await fetch('/api/submit-bio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          accountId: organizationAccount.id,
+          bioText: bioText.trim(),
+          action: 'draft'
+        })
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save draft');
+      }
 
       onBioStatusChange?.('draft');
       showInfo('Draft saved successfully.');
-    } catch (error) {
-      showError('Failed to save draft. Please try again.');
+    } catch (error: any) {
+      showError(error.message || 'Failed to save draft. Please try again.');
     } finally {
       setSavingBio(false);
     }
@@ -132,23 +165,37 @@ export default function CompanyProfileSection({
     try {
       setSavingWebsite(true);
 
-      // Auto-prepend https:// if missing
-      let url = websiteUrl.trim();
-      if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
+      const user = auth.currentUser;
+      if (!user) {
+        showError('You must be logged in to save website.');
+        return;
       }
 
-      const accountRef = doc(db, 'accounts', organizationAccount.id);
-      await updateDoc(accountRef, {
-        website: url || null,
-        updatedAt: serverTimestamp()
+      const token = await user.getIdToken();
+      const response = await fetch('/api/submit-bio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          accountId: organizationAccount.id,
+          website: websiteUrl.trim(),
+          action: 'update_website'
+        })
       });
 
-      setWebsiteUrl(url);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save website');
+      }
+
+      setWebsiteUrl(result.website || '');
       setEditingWebsite(false);
       showSuccess('Website URL saved successfully.');
-    } catch (error) {
-      showError('Failed to save website URL. Please try again.');
+    } catch (error: any) {
+      showError(error.message || 'Failed to save website URL. Please try again.');
     } finally {
       setSavingWebsite(false);
     }
