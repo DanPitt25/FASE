@@ -7,6 +7,7 @@ export const runtime = 'nodejs';
 import { generateInvoicePDF, InvoiceGenerationData } from '../../../lib/invoice-pdf-generator';
 import { getCurrencySymbol } from '../../../lib/currency-conversion';
 import { uploadInvoicePDF } from '../../../lib/invoice-storage';
+import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
 
 // Load email translations from JSON files
 function loadEmailTranslations(language: string): any {
@@ -156,15 +157,21 @@ export async function POST(request: NextRequest) {
       console.log('🧾 Generating membership invoice PDF using shared generator...');
       
       // Build custom line item for rendezvous passes if present
+      // CALCULATE from pricing constants - do not use pre-calculated amounts
       let customLineItem = null;
       if (rendezvousPassData && rendezvousPassData.reserved) {
-        const passLabel = rendezvousPassData.organizationType === 'MGA' ? 'MGA' :
-                         rendezvousPassData.organizationType === 'carrier' ? 'Carrier/Broker' :
-                         'Service Provider';
+        const passOrgType = rendezvousPassData.organizationType || invoiceData.organizationType;
+        const passCount = rendezvousPassData.passCount || 1;
+        const isFaseMember = rendezvousPassData.isFaseMember !== false;
+        const isAsaseMember = rendezvousPassData.isAsaseMember || false;
+
+        const rendezvousCalc = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember);
+        const passLabel = getOrgTypeLabel(passOrgType);
+
         customLineItem = {
           enabled: true,
-          description: `MGA Rendezvous 2026 Pass${rendezvousPassData.passCount > 1 ? 'es' : ''} (${passLabel} - ${rendezvousPassData.passCount}x)`,
-          amount: rendezvousPassData.passTotal || 0
+          description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
+          amount: rendezvousCalc.subtotal
         };
       }
 

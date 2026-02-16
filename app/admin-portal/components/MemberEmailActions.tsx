@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import { createInvoiceRecord } from '../../../lib/firestore';
+import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
 
 interface MemberEmailActionsProps {
   memberData: any;
@@ -141,7 +142,18 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
 
   const originalAmount = calculateOriginalAmount();
   const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
-  const rendezvousTotal = memberData?.rendezvousPassReservation?.passTotal || 0;
+
+  // Calculate rendezvous total from first principles - don't trust stored passTotal
+  const getRendezvousTotal = () => {
+    const passData = memberData?.rendezvousPassReservation;
+    if (!passData?.reserved && !passData?.passCount) return 0;
+    const passOrgType = passData.organizationType || formData.organizationType;
+    const passCount = passData.passCount || 1;
+    const isFaseMember = passData.isFaseMember !== false;
+    const isAsaseMember = passData.isAsaseMember || false;
+    return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+  };
+  const rendezvousTotal = getRendezvousTotal();
   const customLineItemTotal = formData.customLineItem.enabled ? formData.customLineItem.amount : 0;
   const finalAmount = baseAmount + rendezvousTotal + customLineItemTotal;
 
@@ -188,15 +200,21 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
       }
 
-      if (memberData?.rendezvousPassReservation?.passTotal > 0) {
+      if (memberData?.rendezvousPassReservation?.reserved || memberData?.rendezvousPassReservation?.passCount > 0) {
         const passData = memberData.rendezvousPassReservation;
-        const passLabel = passData.organizationType === 'MGA' ? 'MGA' :
-                         passData.organizationType === 'carrier' ? 'Carrier/Broker' :
-                         'Service Provider';
-        lineItems.push({
-          description: `MGA Rendezvous 2026 Pass${passData.passCount > 1 ? 'es' : ''} (${passLabel} - ${passData.passCount}x)`,
-          amount: passData.passTotal
-        });
+        const passOrgType = passData.organizationType || formData.organizationType;
+        const passCount = passData.passCount || 1;
+        const isFaseMember = passData.isFaseMember !== false;
+        const isAsaseMember = passData.isAsaseMember || false;
+        const calculatedTotal = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+        const passLabel = getOrgTypeLabel(passOrgType);
+
+        if (calculatedTotal > 0) {
+          lineItems.push({
+            description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
+            amount: calculatedTotal
+          });
+        }
       }
 
       if (formData.customLineItem.enabled && formData.customLineItem.amount > 0) {
