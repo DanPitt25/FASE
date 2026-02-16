@@ -2,10 +2,14 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
 import { createInvoiceRecord } from '../../lib/firestore';
+import {
+  calculateMembershipFee,
+  calculateRendezvousTotal,
+} from '../../lib/pricing';
 
 function BankTransferInvoiceContent() {
   const searchParams = useSearchParams();
@@ -70,10 +74,39 @@ function BankTransferInvoiceContent() {
   const organizationType = searchParams?.get('organizationType') || 'MGA';
   const gwpBand = searchParams?.get('gwpBand') || '<10m';
 
+  // Calculate the actual display amount from first principles (same logic as API)
+  const displayAmount = useMemo(() => {
+    // Calculate membership fee
+    let membershipFee: number;
+    if (originalAmount) {
+      membershipFee = parseFloat(originalAmount);
+    } else {
+      membershipFee = calculateMembershipFee(organizationType, gwpBand, false);
+    }
+
+    // Apply multi-association discount
+    const discountAmount = hasOtherAssociations ? Math.round(membershipFee * 0.2) : 0;
+    const discountedMembershipFee = membershipFee - discountAmount;
+
+    // Calculate rendezvous pass cost
+    let rendezvousPassCost = 0;
+    if (rendezvousPass && rendezvousPass.reserved) {
+      const passOrgType = rendezvousPass.organizationType || organizationType;
+      const passCount = rendezvousPass.passCount || 1;
+      const isFaseMember = rendezvousPass.isFaseMember !== false;
+      const isAsaseMember = rendezvousPass.isAsaseMember || false;
+
+      const rendezvousCalc = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember);
+      rendezvousPassCost = rendezvousCalc.subtotal;
+    }
+
+    return discountedMembershipFee + rendezvousPassCost;
+  }, [originalAmount, organizationType, gwpBand, hasOtherAssociations, rendezvousPass]);
+
 
 
   const generateInvoice = async () => {
-    if (!amount || !orgName) {
+    if (!displayAmount || !orgName) {
       setError('Missing required information. Please contact admin@fasemga.com for assistance.');
       return;
     }
@@ -249,7 +282,7 @@ function BankTransferInvoiceContent() {
                         }
                       </p>
                     }
-                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{amount}</span></p>
+                    <p className="mb-4 text-fase-black"><strong>{t('amount')}:</strong> <span className="text-fase-navy font-bold text-xl">{currency === 'USD' ? '$' : currency === 'GBP' ? '£' : '€'}{displayAmount}</span></p>
                   </div>
                   <div>
                     <p className="mb-4 text-fase-black"><strong>{t('invoice_type')}:</strong> FASE Annual Membership</p>
