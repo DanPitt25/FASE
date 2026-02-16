@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import * as admin from 'firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
-// Initialize Firebase Admin
+const APP_NAME = 'delete-rendezvous-registration';
+
+// Initialize Firebase Admin with a named app to avoid conflicts
 const initAdmin = () => {
-  if (!getApps().length) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}');
-    initializeApp({
-      credential: cert(serviceAccount),
-    });
+  let app = admin.apps.find(a => a?.name === APP_NAME);
+
+  if (!app) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
+    }
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    }, APP_NAME);
   }
-  return getFirestore();
+
+  return admin.firestore(app);
 };
 
 export async function POST(request: NextRequest) {
