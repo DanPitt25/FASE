@@ -1,30 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminDb, FieldValue } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
-const APP_NAME = 'rendezvous-registrations';
-
-// Initialize Firebase Admin with a named app to avoid conflicts
-const initAdmin = () => {
-  let app = admin.apps.find(a => a?.name === APP_NAME);
-
-  if (!app) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    }, APP_NAME);
-  }
-
-  return admin.firestore(app);
-};
-
 export async function GET(request: NextRequest) {
   try {
-    const db = initAdmin();
+    const db = getAdminDb();
 
     // Fetch all rendezvous registrations
     const registrationsSnapshot = await db
@@ -53,7 +34,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = initAdmin();
+    const db = getAdminDb();
     const data = await request.json();
 
     const {
@@ -122,7 +103,7 @@ export async function POST(request: NextRequest) {
       paymentStatus: paymentStatus || 'confirmed',
       status: 'confirmed',
       source: 'admin-portal',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     };
 
     // Save to Firestore

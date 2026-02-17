@@ -1,28 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminStorage } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 
 export const runtime = 'nodejs';
-
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
-    admin.initializeApp({
-      credential: serviceAccount
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    });
-  }
-
-  return {
-    storage: admin.storage()
-  };
-};
 
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
@@ -60,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { storage } = await initializeAdmin();
+    const storage = getAdminStorage();
 
     // Create file path - use graphics/logos for consistency with existing sponsors
     const fileName = `${Date.now()}_${file.name}`;

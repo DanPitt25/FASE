@@ -1,26 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminDb } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
-
-const APP_NAME = 'get-filtered-accounts';
-
-// Initialize Firebase Admin with a named app to avoid conflicts
-const initAdmin = () => {
-  let app = admin.apps.find(a => a?.name === APP_NAME);
-
-  if (!app) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    }, APP_NAME);
-  }
-
-  return admin.firestore(app);
-};
 
 // Normalize organization type to match filter values
 const normalizeOrgType = (type: string): string => {
@@ -38,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Mass email filter request:', { organizationTypes, accountStatuses });
 
-    const db = initAdmin();
+    const db = getAdminDb();
 
     // Fetch all accounts from the accounts collection
     const accountsSnapshot = await db.collection('accounts').get();

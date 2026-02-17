@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
+import { getAdminDb, FieldValue } from '../../../lib/firebase-admin';
 import { safeDocExists, safeDocData } from '../../../lib/firebase-helpers';
 import { logStripePayment, logPaymentReceived, logInvoicePaid } from '../../../lib/activity-logger';
 
@@ -8,49 +9,25 @@ import { logStripePayment, logPaymentReceived, logInvoicePaid } from '../../../l
 export const dynamic = 'force-dynamic';
 
 let stripe: Stripe;
-let admin: any;
 let endpointSecret: string;
 
-// Initialize everything at runtime
-const initializeServices = async () => {
+// Initialize Stripe at runtime
+const initializeStripe = () => {
   if (!stripe) {
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: '2025-08-27.basil',
     });
   }
-  
+
   if (!endpointSecret) {
     endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  }
-  
-  if (!admin) {
-    admin = await import('firebase-admin');
-    
-    if (admin.apps.length === 0) {
-      try {
-        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-          ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-          : undefined;
-
-        admin.initializeApp({
-          credential: serviceAccount 
-            ? admin.credential.cert(serviceAccount)
-            : admin.credential.applicationDefault(),
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        });
-      } catch (error) {
-        console.error('Firebase Admin initialization failed:', error);
-        throw new Error('Firebase credentials not configured properly');
-      }
-    }
   }
 };
 
 // Simplified payment status updater - uses direct Firebase Auth UID lookup
 const updateMemberStatus = async (userId: string, paymentStatus: string, paymentMethod: string, paymentId: string) => {
   try {
-    await initializeServices();
-    const db = admin.firestore();
+    const db = getAdminDb();
     
     // Step 1: Direct lookup by Firebase Auth UID (post-migration standard)
     const accountRef = db.collection('accounts').doc(userId);
@@ -63,21 +40,21 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
         paymentStatus: paymentStatus,
         paymentMethod: paymentMethod,
         paymentId: paymentId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       });
       return;
     }
-    
+
     // Step 2: Fallback - search as team member in corporate accounts
     // This handles team members who are not primary contacts
     // All accounts are corporate - search all accounts for team members
     const accountsSnapshot = await db.collection('accounts')
       .get();
-    
+
     for (const orgDoc of accountsSnapshot.docs) {
       const memberRef = orgDoc.ref.collection('members').doc(userId);
       const memberDoc = await memberRef.get();
-      
+
       if (safeDocExists(memberDoc)) {
         // Found user as team member - update the organization account
         await orgDoc.ref.update({
@@ -85,7 +62,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
           paymentStatus: paymentStatus,
           paymentMethod: paymentMethod,
           paymentId: paymentId,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         });
         
         return;
@@ -100,7 +77,7 @@ const updateMemberStatus = async (userId: string, paymentStatus: string, payment
 
 
 export async function POST(request: NextRequest) {
-  await initializeServices();
+  initializeStripe();
   
   const body = await request.text();
   const headersList = await headers();
@@ -153,14 +130,14 @@ export async function POST(request: NextRequest) {
 
             // Update the invoice in Firestore if we have an invoice_id
             if (session.metadata.invoice_id) {
-              const db = admin.firestore();
+              const db = getAdminDb();
               await db.collection('invoices').doc(session.metadata.invoice_id).update({
                 status: 'paid',
                 paymentMethod: 'stripe',
                 paymentId: session.id,
                 stripeCheckoutSessionId: session.id,
-                paidAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                paidAt: FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
               });
             }
           }

@@ -1,25 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminDb, FieldValue } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 
 export const runtime = 'nodejs';
-
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  }
-
-  return admin.firestore();
-};
 
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
@@ -40,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Website update action
     if (action === 'update_website') {
-      const db = await initializeAdmin();
+      const db = getAdminDb();
 
       // Verify user has access to this account
       const accountDoc = await db.collection('accounts').doc(accountId).get();
@@ -68,7 +51,7 @@ export async function POST(request: NextRequest) {
 
       await db.collection('accounts').doc(accountId).update({
         website: url || null,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       });
 
       return NextResponse.json({
@@ -92,7 +75,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = await initializeAdmin();
+    const db = getAdminDb();
 
     // Verify user has access to this account
     const accountDoc = await db.collection('accounts').doc(accountId).get();
@@ -125,7 +108,7 @@ export async function POST(request: NextRequest) {
       await db.collection('accounts').doc(accountId).update({
         'companySummary.text': bioText?.trim() || '',
         'companySummary.status': 'draft',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       });
 
       await logSecurityEvent({
@@ -147,11 +130,11 @@ export async function POST(request: NextRequest) {
       await db.collection('accounts').doc(accountId).update({
         'companySummary.text': bioText.trim(),
         'companySummary.status': 'pending_review',
-        'companySummary.submittedAt': admin.firestore.FieldValue.serverTimestamp(),
+        'companySummary.submittedAt': FieldValue.serverTimestamp(),
         'companySummary.reviewedAt': null,
         'companySummary.reviewedBy': null,
         'companySummary.rejectionReason': null,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       });
 
       await logSecurityEvent({

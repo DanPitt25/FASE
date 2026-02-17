@@ -1,27 +1,5 @@
 import { NextRequest } from 'next/server';
-import * as admin from 'firebase-admin';
-
-// Initialize Firebase Admin with service account key
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
-    admin.initializeApp({
-      credential: serviceAccount
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    });
-  }
-  
-  return {
-    auth: admin.auth(),
-    db: admin.firestore()
-  };
-};
+import { getAdminAuth, getAdminDb, FieldValue } from './firebase-admin';
 
 // Rate limiting storage (in production, use Redis or database)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -63,9 +41,10 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthResult>
   if (!authHeader?.startsWith('Bearer ')) {
     throw new AuthError('Missing or invalid authorization header');
   }
-  
+
   const token = authHeader.substring(7);
-  const { auth, db } = await initializeAdmin();
+  const auth = getAdminAuth();
+  const db = getAdminDb();
   
   try {
     // Verify the ID token and check expiration
@@ -138,12 +117,12 @@ export async function logSecurityEvent(event: {
   details?: any;
   severity?: 'low' | 'medium' | 'high' | 'critical';
 }) {
-  const { db } = await initializeAdmin();
-  
+  const db = getAdminDb();
+
   try {
     await db.collection('security_logs').add({
       ...event,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
       severity: event.severity || 'medium'
     });
     

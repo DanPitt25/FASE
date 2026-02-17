@@ -1,29 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
-
-// Initialize Firebase Admin
-const initializeAdmin = async () => {
-  if (!admin.apps.find(app => app?.name === 'log-error')) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    
-    try {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      }, 'log-error');
-    } catch (parseError) {
-      throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ' + parseError);
-    }
-  }
-  
-  const app = admin.apps.find(app => app?.name === 'log-error') || admin.app();
-  return {
-    db: admin.firestore(app)
-  };
-};
+import { getAdminDb, FieldValue } from '../../../lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,14 +10,14 @@ export async function POST(request: NextRequest) {
     // Add server-side information
     const enrichedError = {
       ...errorDetails,
-      serverTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+      serverTimestamp: FieldValue.serverTimestamp(),
       ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       referer: request.headers.get('referer') || 'none',
       origin: request.headers.get('origin') || 'none'
     };
     
     // Store in Firestore for analysis
-    const { db } = await initializeAdmin();
+    const db = getAdminDb();
     await db.collection('registration_errors').add(enrichedError);
     
     // Also send email notification for immediate attention

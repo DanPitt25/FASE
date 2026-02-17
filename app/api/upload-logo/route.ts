@@ -1,36 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminStorage, getAdminDb, FieldValue } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 import { DatabaseMonitor } from '../../../lib/monitoring';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
-
-// Initialize Firebase Admin using service account key
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-
-    // Use explicit bucket name or construct from project ID (new Firebase Storage format)
-    const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket,
-    });
-  }
-
-  return {
-    auth: admin.auth(),
-    storage: admin.storage()
-  };
-};
 
 
 export async function POST(request: NextRequest) {
@@ -74,8 +48,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { storage } = await initializeAdmin();
-    const db = admin.firestore();
+    const storage = getAdminStorage();
+    const db = getAdminDb();
 
     // Create file path - use sanitized organization name if provided, otherwise identifier
     let fileName: string;
@@ -122,11 +96,11 @@ export async function POST(request: NextRequest) {
         await db.collection('accounts').doc(identifier).update({
           'logoStatus.status': 'pending_review',
           'logoStatus.pendingURL': downloadURL,
-          'logoStatus.submittedAt': admin.firestore.FieldValue.serverTimestamp(),
+          'logoStatus.submittedAt': FieldValue.serverTimestamp(),
           'logoStatus.reviewedAt': null,
           'logoStatus.reviewedBy': null,
           'logoStatus.rejectionReason': null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         });
         console.log(`✅ Logo submitted for review - account ${identifier}`);
       } catch (firestoreError) {
