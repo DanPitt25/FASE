@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue } from '../../../lib/firebase-admin';
+import * as admin from 'firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
+
+// Initialize Firebase Admin using Application Default Credentials
+const initializeAdmin = async () => {
+  if (admin.apps.length === 0) {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    });
+  }
+  
+  return {
+    auth: admin.auth(),
+    db: admin.firestore()
+  };
+};
 
 
 export async function POST(request: NextRequest) {
@@ -14,8 +29,9 @@ export async function POST(request: NextRequest) {
     const membershipData = await request.json();
     console.log('Membership data received:', JSON.stringify(membershipData, null, 2));
     
-    const db = getAdminDb();
+    const { auth, db } = await initializeAdmin();
 
+    
     // Use authenticated user's UID, not from request body
     membershipData.userUid = userUid;
 
@@ -40,7 +56,7 @@ export async function POST(request: NextRequest) {
       hasOtherAssociations: hasOtherAssociations ?? false,
       otherAssociations: hasOtherAssociations ? otherAssociations : [],
       logoUrl: logoUrl || null,
-      updatedAt: FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
     // All memberships are corporate

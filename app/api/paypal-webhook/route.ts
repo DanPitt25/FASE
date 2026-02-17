@@ -1,8 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue } from '../../../lib/firebase-admin';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
+
+let admin: any;
+
+// Initialize Firebase Admin dynamically to avoid build-time issues
+const initializeAdmin = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+    
+    if (admin.apps.length === 0) {
+      try {
+        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+          ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+          : undefined;
+
+        admin.initializeApp({
+          credential: serviceAccount 
+            ? admin.credential.cert(serviceAccount)
+            : admin.credential.applicationDefault(),
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        });
+      } catch (error) {
+        console.error('Firebase Admin initialization failed:', error);
+        throw new Error('Firebase credentials not configured properly');
+      }
+    }
+  }
+  
+  return {
+    auth: admin.auth(),
+    db: admin.firestore()
+  };
+};
 
 // Get PayPal OAuth token
 async function getPayPalAccessToken() {
@@ -108,7 +139,7 @@ export async function POST(request: NextRequest) {
 
 // Shared payment processing logic
 async function processPayment(customId: string, paymentMethod: string, paymentId: string, webhookData: any) {
-  const db = getAdminDb();
+  const { db } = await initializeAdmin();
   
   // Check if account exists
   const accountRef = db.collection('accounts').doc(customId);
@@ -178,21 +209,21 @@ async function processPayment(customId: string, paymentMethod: string, paymentId
     paymentMethod: paymentMethod,
     paymentId: paymentId,
     applicationNumber: applicationNumber,
-    updatedAt: FieldValue.serverTimestamp()
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
   };
 
   // Add payment-specific details
   if (paymentMethod === 'paypal') {
     updateData.paymentDetails = {
       captureId: paymentId,
-      paymentTime: FieldValue.serverTimestamp(),
+      paymentTime: admin.firestore.FieldValue.serverTimestamp(),
       amount: webhookData.resource.amount?.value,
       currency: webhookData.resource.amount?.currency_code
     };
   } else if (paymentMethod === 'paypal_subscription') {
     updateData.paymentDetails = {
       subscriptionId: paymentId,
-      subscriptionTime: FieldValue.serverTimestamp(),
+      subscriptionTime: admin.firestore.FieldValue.serverTimestamp(),
       subscriptionStatus: 'active',
       nextBillingTime: webhookData.resource.billing_info?.next_billing_time
     };

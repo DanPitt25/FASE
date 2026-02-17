@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue } from '../../../../lib/firebase-admin';
 import { logNoteAdded } from '../../../../lib/activity-logger';
 import { Note, NoteCategory } from '../../../../lib/firestore';
 
 export const dynamic = 'force-dynamic';
+
+let admin: any;
+let db: FirebaseFirestore.Firestore;
+
+const initializeFirebase = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { admin, db };
+};
 
 /**
  * GET: List notes for an account
  */
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { db } = await initializeFirebase();
 
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
@@ -74,7 +99,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { admin, db } = await initializeFirebase();
 
     const body = await request.json();
     const { accountId, content, category, createdBy, createdByName } = body;
@@ -94,8 +119,8 @@ export async function POST(request: NextRequest) {
       category: category || 'general',
       createdBy: createdBy || 'unknown',
       createdByName: createdByName || 'Unknown',
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       isPinned: false,
     };
 
@@ -123,7 +148,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { admin, db } = await initializeFirebase();
 
     const body = await request.json();
     const { accountId, noteId, content, category, isPinned } = body;
@@ -143,7 +168,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updates: any = {
-      updatedAt: FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     if (content !== undefined) updates.content = content;
@@ -170,7 +195,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { db } = await initializeFirebase();
 
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');

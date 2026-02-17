@@ -1,9 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 import { logTaskCreated, logTaskCompleted } from '../../../../lib/activity-logger';
 import { Task, TaskStatus, TaskPriority } from '../../../../lib/firestore';
 
 export const dynamic = 'force-dynamic';
+
+let admin: any;
+let db: FirebaseFirestore.Firestore;
+
+const initializeFirebase = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { admin, db };
+};
 
 /**
  * GET: List tasks
@@ -12,7 +37,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { db } = await initializeFirebase();
 
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
@@ -98,7 +123,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { admin, db } = await initializeFirebase();
 
     const body = await request.json();
     const {
@@ -125,13 +150,13 @@ export async function POST(request: NextRequest) {
       description: description || '',
       status: 'pending',
       priority: priority || 'medium',
-      dueDate: dueDate ? Timestamp.fromDate(new Date(dueDate)) : null,
+      dueDate: dueDate ? admin.firestore.Timestamp.fromDate(new Date(dueDate)) : null,
       assignedTo: assignedTo || null,
       assignedToName: assignedToName || null,
       createdBy: createdBy || 'unknown',
       createdByName: createdByName || 'Unknown',
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     // Remove null values
@@ -176,7 +201,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { admin, db } = await initializeFirebase();
 
     const body = await request.json();
     const {
@@ -213,7 +238,7 @@ export async function PATCH(request: NextRequest) {
 
     const currentData = taskDoc.data();
     const updates: any = {
-      updatedAt: FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     if (title !== undefined) updates.title = title;
@@ -224,7 +249,7 @@ export async function PATCH(request: NextRequest) {
 
     if (dueDate !== undefined) {
       updates.dueDate = dueDate
-        ? Timestamp.fromDate(new Date(dueDate))
+        ? admin.firestore.Timestamp.fromDate(new Date(dueDate))
         : null;
     }
 
@@ -233,7 +258,7 @@ export async function PATCH(request: NextRequest) {
       updates.status = status;
 
       if (status === 'completed') {
-        updates.completedAt = FieldValue.serverTimestamp();
+        updates.completedAt = admin.firestore.FieldValue.serverTimestamp();
 
         // Only log activity for account-specific tasks
         if (accountId) {
@@ -270,7 +295,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const { db } = await initializeFirebase();
 
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');

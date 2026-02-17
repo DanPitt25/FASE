@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '../../../../lib/firebase-admin';
+import * as admin from 'firebase-admin';
 import { checkRateLimit, logSecurityEvent, getClientInfo, RateLimitError } from '../../../../lib/auth-security';
+
+// Initialize Firebase Admin using service account key
+const initializeAdmin = async () => {
+  if (admin.apps.length === 0) {
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+      : undefined;
+
+    admin.initializeApp({
+      credential: serviceAccount 
+        ? admin.credential.cert(serviceAccount)
+        : admin.credential.applicationDefault(),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    });
+  }
+  
+  return {
+    auth: admin.auth(),
+    db: admin.firestore()
+  };
+};
 
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
@@ -27,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const db = getAdminDb();
+    const { auth, db } = await initializeAdmin();
 
     // Get verification code from Firestore
     const doc = await db.collection('verification_codes').doc(email).get();

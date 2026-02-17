@@ -1,4 +1,27 @@
-import { getAdminStorage } from './firebase-admin';
+import * as admin from 'firebase-admin';
+
+const APP_NAME = 'invoice-storage';
+
+// Initialize Firebase Admin with a named app to avoid conflicts
+const initializeAdmin = () => {
+  let app = admin.apps.find(a => a?.name === APP_NAME);
+
+  if (!app) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
+    }
+
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+    app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`
+    }, APP_NAME);
+  }
+
+  return admin.storage(app);
+};
 
 /**
  * Upload an invoice PDF to Firebase Storage (server-side)
@@ -12,7 +35,7 @@ export async function uploadInvoicePDF(
   invoiceNumber: string,
   organizationName: string
 ): Promise<{ downloadURL: string; filePath: string }> {
-  const storage = getAdminStorage();
+  const storage = initializeAdmin();
 
   // Sanitize organization name for folder path
   const sanitizedOrgName = organizationName

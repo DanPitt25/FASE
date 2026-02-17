@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '../../../../lib/firebase-admin';
+import * as admin from 'firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
+const APP_NAME = 'update-rendezvous-status';
+
+// Initialize Firebase Admin with a named app to avoid conflicts
+const initAdmin = () => {
+  let app = admin.apps.find(a => a?.name === APP_NAME);
+
+  if (!app) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
+    }
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    }, APP_NAME);
+  }
+
+  return admin.firestore(app);
+};
+
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminDb();
+    const db = initAdmin();
     const { registrationId, status } = await request.json();
 
     if (!registrationId || !status) {

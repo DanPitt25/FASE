@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb, FieldValue } from '../../../lib/firebase-admin';
+import * as admin from 'firebase-admin';
 import { getGWPBand, convertToEUR } from '../../../lib/registration-utils-server';
+
+// Initialize Firebase Admin using service account key from environment variable
+const initializeAdmin = async () => {
+  if (!admin.apps.find(app => app?.name === 'register-account')) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
+    }
+    
+    try {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      }, 'register-account');
+    } catch (parseError) {
+      throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ' + parseError);
+    }
+  }
+  
+  const app = admin.apps.find(app => app?.name === 'register-account') || admin.app();
+  return {
+    auth: admin.auth(app),
+    db: admin.firestore(app)
+  };
+};
 
 export async function POST(request: NextRequest) {
   let createdUserId: string | null = null;
@@ -24,8 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Initializing Firebase Admin...');
-    const auth = getAdminAuth();
-    const db = getAdminDb();
+    const { auth, db } = await initializeAdmin();
     console.log('Firebase Admin initialized');
 
     // Step 1: Create Firebase Auth account
@@ -120,8 +144,8 @@ export async function POST(request: NextRequest) {
           servicesProvided: formData.servicesProvided
         }),
         logoUrl: null,
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
       
       batch.set(companyRef, companyRecord);
@@ -139,9 +163,9 @@ export async function POST(request: NextRequest) {
           isAccountAdministrator: member.isPrimaryContact,
           isRegistrant: member.id === 'registrant',
           accountConfirmed: member.id === 'registrant',
-          joinedAt: FieldValue.serverTimestamp(),
-          createdAt: FieldValue.serverTimestamp(),
-          updatedAt: FieldValue.serverTimestamp()
+          joinedAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
         
         batch.set(memberRef, memberRecord);
@@ -181,8 +205,8 @@ export async function POST(request: NextRequest) {
           paymentStatus: formData.rendezvousIsAsaseMember ? 'complimentary' : 'pending',
           status: formData.rendezvousIsAsaseMember ? 'confirmed' : 'pending_payment',
           source: 'fase_registration',
-          createdAt: FieldValue.serverTimestamp(),
-          updatedAt: FieldValue.serverTimestamp()
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
         batch.set(reservationRef, reservationRecord);
       }
@@ -210,11 +234,10 @@ export async function POST(request: NextRequest) {
     if (createdUserId) {
       try {
         console.log('Cleaning up created user:', createdUserId);
-        const cleanupAuth = getAdminAuth();
-        const cleanupDb = getAdminDb();
-        await cleanupAuth.deleteUser(createdUserId);
+        const { auth, db } = await initializeAdmin();
+        await auth.deleteUser(createdUserId);
         // Also try to delete any partial Firestore data
-        await cleanupDb.collection('accounts').doc(createdUserId).delete();
+        await db.collection('accounts').doc(createdUserId).delete();
         console.log('Cleanup completed');
       } catch (cleanupError) {
         console.error('Cleanup error:', cleanupError);

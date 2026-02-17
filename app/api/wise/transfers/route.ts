@@ -1,8 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '../../../../lib/firebase-admin';
 import { getWiseClient, matchTransactionToInvoice } from '../../../../lib/wise-api';
 
 export const dynamic = 'force-dynamic';
+
+let admin: any;
+let db: FirebaseFirestore.Firestore;
+
+const initializeFirebase = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { admin, db };
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +49,7 @@ export async function GET(request: NextRequest) {
     // If matching is requested, get unpaid invoices from Firestore
     let invoiceMatches: Record<string, string> = {};
     if (matchInvoices) {
-      const db = getAdminDb();
+      const { db } = await initializeFirebase();
 
       const unpaidInvoices = await db
         .collection('invoices')

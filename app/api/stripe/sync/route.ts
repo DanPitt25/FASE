@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getAdminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
 let stripe: Stripe;
+let admin: any;
+let db: FirebaseFirestore.Firestore;
 
-const initializeStripe = () => {
+const initializeServices = async () => {
   if (!stripe) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
@@ -16,7 +17,27 @@ const initializeStripe = () => {
       apiVersion: '2025-08-27.basil',
     });
   }
-  return stripe;
+
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { stripe, admin, db };
 };
 
 /**
@@ -25,8 +46,7 @@ const initializeStripe = () => {
  */
 export async function POST(request: NextRequest) {
   try {
-    const stripe = initializeStripe();
-    const db = getAdminDb();
+    const { stripe, admin, db } = await initializeServices();
 
     const body = await request.json();
     const { accountId, syncAll = false } = body;
@@ -78,8 +98,8 @@ export async function POST(request: NextRequest) {
             paymentMethod: 'stripe',
             paymentId: successfulPayment.id,
             stripePaymentIntentId: successfulPayment.id,
-            paidAt: Timestamp.fromMillis(successfulPayment.created * 1000),
-            updatedAt: FieldValue.serverTimestamp(),
+            paidAt: admin.firestore.Timestamp.fromMillis(successfulPayment.created * 1000),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
 
           syncResults.updated++;
@@ -136,8 +156,8 @@ export async function POST(request: NextRequest) {
                 typeof session.payment_intent === 'string'
                   ? session.payment_intent
                   : session.payment_intent?.id,
-              paidAt: Timestamp.fromMillis(session.created * 1000),
-              updatedAt: FieldValue.serverTimestamp(),
+              paidAt: admin.firestore.Timestamp.fromMillis(session.created * 1000),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             syncResults.matched++;
             syncResults.updated++;
@@ -167,8 +187,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const stripe = initializeStripe();
-    const db = getAdminDb();
+    const { stripe, db } = await initializeServices();
 
     // Get recent successful payments from Stripe
     const recentPayments = await stripe.paymentIntents.list({

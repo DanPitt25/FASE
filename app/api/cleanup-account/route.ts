@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb } from '../../../lib/firebase-admin';
+import * as admin from 'firebase-admin';
+
+// Initialize Firebase Admin using service account key from environment variable
+const initializeAdmin = async () => {
+  if (admin.apps.length === 0) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    });
+  }
+  
+  return {
+    auth: admin.auth(),
+    db: admin.firestore()
+  };
+};
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
-
+    
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID is required' },
@@ -12,8 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const auth = getAdminAuth();
-    const db = getAdminDb();
+    const { auth, db } = await initializeAdmin();
 
     // Delete user from Firebase Auth
     try {
