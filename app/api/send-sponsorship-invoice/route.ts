@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
       email: requestData.email,
       organizationName: requestData.organizationName,
       invoiceNumber: requestData.invoiceNumber,
-      greeting: requestData.greeting || requestData.fullName || 'Client',
+      greeting: requestData.greeting || requestData.fullName || '',
       gender: requestData.gender || 'm',
       totalAmount: requestData.totalAmount,
-      fullName: requestData.greeting || requestData.fullName || 'Client',
+      fullName: requestData.fullName || '',
       description: requestData.description,
       address: requestData.address || {
         line1: 'Not provided',
