@@ -102,6 +102,7 @@ export default function RendezvousTab() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [showDuplicatesModal, setShowDuplicatesModal] = useState(false);
   const [newRegistration, setNewRegistration] = useState({
     company: '',
     billingEmail: '',
@@ -473,16 +474,85 @@ export default function RendezvousTab() {
     ? registrations
     : registrations.filter(reg => reg.paymentStatus === statusFilter);
 
-  // Calculate stats
+  // Calculate stats - deduplicate attendees by email
+  const confirmedRegistrations = registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed');
+  const pendingRegistrations = registrations.filter(r => r.paymentStatus === 'pending_bank_transfer');
+
+  const confirmedAttendeeEmails = new Set<string>();
+  confirmedRegistrations.forEach(reg => {
+    reg.attendees?.forEach(attendee => {
+      if (attendee.email) {
+        confirmedAttendeeEmails.add(attendee.email.toLowerCase().trim());
+      }
+    });
+  });
+
+  const pendingAttendeeEmails = new Set<string>();
+  pendingRegistrations.forEach(reg => {
+    reg.attendees?.forEach(attendee => {
+      if (attendee.email) {
+        pendingAttendeeEmails.add(attendee.email.toLowerCase().trim());
+      }
+    });
+  });
+
   const stats = {
     total: registrations.length,
-    totalAttendees: registrations.reduce((sum, reg) => sum + (reg.attendees?.length || 0), 0),
-    paid: registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed').length,
-    pending: registrations.filter(r => r.paymentStatus === 'pending_bank_transfer').length,
-    revenue: registrations
-      .filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed')
-      .reduce((sum, r) => sum + (r.totalPrice || 0), 0)
+    confirmedAttendees: confirmedAttendeeEmails.size,
+    pendingAttendees: pendingAttendeeEmails.size,
+    paid: confirmedRegistrations.length,
+    pending: pendingRegistrations.length,
+    revenue: confirmedRegistrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0)
   };
+
+  // Find duplicate attendees (same email appears multiple times across registrations)
+  const attendeeOccurrences: Record<string, Array<{
+    email: string;
+    name: string;
+    company: string;
+    registrationId: string;
+    status: string;
+  }>> = {};
+
+  registrations.forEach(reg => {
+    reg.attendees?.forEach(attendee => {
+      if (attendee.email) {
+        const email = attendee.email.toLowerCase().trim();
+        if (!attendeeOccurrences[email]) {
+          attendeeOccurrences[email] = [];
+        }
+        attendeeOccurrences[email].push({
+          email: attendee.email,
+          name: `${attendee.firstName} ${attendee.lastName}`.trim(),
+          company: reg.billingInfo?.company || '',
+          registrationId: reg.registrationId,
+          status: reg.paymentStatus
+        });
+      }
+    });
+  });
+
+  const duplicateAttendees = Object.entries(attendeeOccurrences)
+    .filter(([_, occurrences]) => occurrences.length > 1)
+    .map(([email, occurrences]) => ({ email, occurrences }));
+
+  // Find duplicate company registrations (same company name, multiple registrations)
+  const companyRegistrations: Record<string, RendezvousRegistration[]> = {};
+  registrations.forEach(reg => {
+    const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
+    if (company) {
+      if (!companyRegistrations[company]) {
+        companyRegistrations[company] = [];
+      }
+      companyRegistrations[company].push(reg);
+    }
+  });
+
+  const duplicateCompanies = Object.entries(companyRegistrations)
+    .filter(([_, regs]) => regs.length > 1)
+    .map(([company, regs]) => ({ company: regs[0].billingInfo?.company, registrations: regs }));
+
+  const hasDuplicates = duplicateAttendees.length > 0 || duplicateCompanies.length > 0;
 
   if (loading) {
     return (
@@ -496,18 +566,22 @@ export default function RendezvousTab() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
           <div className="text-2xl font-bold text-fase-navy">{stats.total}</div>
           <div className="text-sm text-gray-600">Registrations</div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-fase-navy">{stats.totalAttendees}</div>
-          <div className="text-sm text-gray-600">Total Attendees</div>
+          <div className="text-2xl font-bold text-green-600">{stats.confirmedAttendees}</div>
+          <div className="text-sm text-gray-600">Confirmed Attendees</div>
+        </div>
+        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
+          <div className="text-2xl font-bold text-yellow-600">{stats.pendingAttendees}</div>
+          <div className="text-sm text-gray-600">Pending Attendees</div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
           <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
-          <div className="text-sm text-gray-600">Paid</div>
+          <div className="text-sm text-gray-600">Paid Registrations</div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
           <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
@@ -539,6 +613,16 @@ export default function RendezvousTab() {
             <Button variant="secondary" size="small" onClick={loadRegistrations}>
               Refresh
             </Button>
+            {hasDuplicates && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => setShowDuplicatesModal(true)}
+                className="!bg-orange-50 !text-orange-700 !border-orange-200 hover:!bg-orange-100"
+              >
+                Duplicates ({duplicateAttendees.length + duplicateCompanies.length})
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="small"
@@ -1542,6 +1626,107 @@ export default function RendezvousTab() {
 
           <div className="flex justify-end pt-4 border-t">
             <Button variant="secondary" onClick={() => setShowInterestModal(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Duplicates Modal */}
+      <Modal
+        isOpen={showDuplicatesModal}
+        onClose={() => setShowDuplicatesModal(false)}
+        title="Potential Duplicates"
+        maxWidth="4xl"
+      >
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            Review potential duplicate attendees and company registrations. Duplicates are detected but not automatically counted in stats.
+          </p>
+
+          {/* Duplicate Attendees */}
+          {duplicateAttendees.length > 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h4 className="font-semibold text-orange-800 mb-3">
+                Duplicate Attendees ({duplicateAttendees.length} emails appear multiple times)
+              </h4>
+              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+                {duplicateAttendees.map(({ email, occurrences }) => (
+                  <div key={email} className="bg-white rounded p-3 border border-orange-100">
+                    <div className="font-medium text-gray-900 mb-2">{email}</div>
+                    <div className="space-y-1">
+                      {occurrences.map((occ, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-sm">
+                          <div>
+                            <span className="text-gray-700">{occ.name}</span>
+                            <span className="text-gray-400 mx-2">·</span>
+                            <span className="text-gray-500">{occ.company}</span>
+                          </div>
+                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(occ.status)}`}>
+                            {formatStatus(occ.status)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Duplicate Companies */}
+          {duplicateCompanies.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-800 mb-3">
+                Multiple Registrations from Same Company ({duplicateCompanies.length})
+              </h4>
+              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+                {duplicateCompanies.map(({ company, registrations: companyRegs }) => (
+                  <div key={company} className="bg-white rounded p-3 border border-yellow-100">
+                    <div className="font-medium text-gray-900 mb-2">{company}</div>
+                    <div className="space-y-2">
+                      {companyRegs.map((reg) => (
+                        <div key={reg.registrationId} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                          <div>
+                            <span className="font-mono text-gray-600">{reg.invoiceNumber}</span>
+                            <span className="text-gray-400 mx-2">·</span>
+                            <span className="text-gray-500">{reg.attendees?.length || 0} attendees</span>
+                            <span className="text-gray-400 mx-2">·</span>
+                            <span className="text-gray-500">€{(reg.totalPrice || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
+                              {formatStatus(reg.paymentStatus)}
+                            </span>
+                            <Button
+                              variant="secondary"
+                              size="small"
+                              onClick={() => {
+                                setSelectedRegistration(reg);
+                                setShowDuplicatesModal(false);
+                                setShowDetailModal(true);
+                              }}
+                            >
+                              View
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!hasDuplicates && (
+            <div className="text-center py-8 text-gray-500">
+              No duplicates found.
+            </div>
+          )}
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="secondary" onClick={() => setShowDuplicatesModal(false)}>
               Close
             </Button>
           </div>
