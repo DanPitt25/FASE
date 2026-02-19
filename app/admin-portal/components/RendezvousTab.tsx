@@ -70,6 +70,7 @@ export default function RendezvousTab() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
+  const [selectedCompanyRegistrations, setSelectedCompanyRegistrations] = useState<RendezvousRegistration[]>([]);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -474,32 +475,40 @@ export default function RendezvousTab() {
     ? registrations
     : registrations.filter(reg => reg.paymentStatus === statusFilter);
 
-  // Calculate stats - deduplicate attendees by email
+  // Calculate stats - count actual attendees (people), deduplicate across registrations
+  // If same email appears in both confirmed and pending registrations, only count once (confirmed wins)
   const confirmedRegistrations = registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed');
   const pendingRegistrations = registrations.filter(r => r.paymentStatus === 'pending_bank_transfer');
 
+  // Count all attendees in confirmed registrations
+  let confirmedAttendeeCount = 0;
   const confirmedAttendeeEmails = new Set<string>();
   confirmedRegistrations.forEach(reg => {
     reg.attendees?.forEach(attendee => {
+      confirmedAttendeeCount++;
       if (attendee.email) {
         confirmedAttendeeEmails.add(attendee.email.toLowerCase().trim());
       }
     });
   });
 
-  const pendingAttendeeEmails = new Set<string>();
+  // Count pending attendees, but skip anyone whose email is already in confirmed
+  let pendingAttendeeCount = 0;
   pendingRegistrations.forEach(reg => {
     reg.attendees?.forEach(attendee => {
-      if (attendee.email) {
-        pendingAttendeeEmails.add(attendee.email.toLowerCase().trim());
+      const email = attendee.email?.toLowerCase().trim();
+      // Only skip if we have an email AND it's already confirmed
+      if (!email || !confirmedAttendeeEmails.has(email)) {
+        pendingAttendeeCount++;
       }
     });
   });
 
   const stats = {
     total: registrations.length,
-    confirmedAttendees: confirmedAttendeeEmails.size,
-    pendingAttendees: pendingAttendeeEmails.size,
+    uniqueAttendees: confirmedAttendeeCount + pendingAttendeeCount,
+    confirmedAttendees: confirmedAttendeeCount,
+    pendingAttendees: pendingAttendeeCount,
     paid: confirmedRegistrations.length,
     pending: pendingRegistrations.length,
     revenue: confirmedRegistrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0)
@@ -554,6 +563,27 @@ export default function RendezvousTab() {
 
   const hasDuplicates = duplicateAttendees.length > 0 || duplicateCompanies.length > 0;
 
+  // Group filtered registrations by company for the table
+  const filteredCompanyGroups: { company: string; registrations: RendezvousRegistration[] }[] = [];
+  const filteredCompanyMap: Record<string, RendezvousRegistration[]> = {};
+  filteredRegistrations.forEach(reg => {
+    const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
+    if (company) {
+      if (!filteredCompanyMap[company]) {
+        filteredCompanyMap[company] = [];
+      }
+      filteredCompanyMap[company].push(reg);
+    }
+  });
+  Object.entries(filteredCompanyMap).forEach(([_, regs]) => {
+    filteredCompanyGroups.push({
+      company: regs[0].billingInfo?.company || '',
+      registrations: regs
+    });
+  });
+  // Sort alphabetically by company name
+  filteredCompanyGroups.sort((a, b) => a.company.localeCompare(b.company));
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -566,18 +596,15 @@ export default function RendezvousTab() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
           <div className="text-2xl font-bold text-fase-navy">{stats.total}</div>
           <div className="text-sm text-gray-600">Registrations</div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.confirmedAttendees}</div>
-          <div className="text-sm text-gray-600">Confirmed Attendees</div>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-yellow-600">{stats.pendingAttendees}</div>
-          <div className="text-sm text-gray-600">Pending Attendees</div>
+          <div className="text-2xl font-bold text-fase-navy">{stats.uniqueAttendees}</div>
+          <div className="text-sm text-gray-600">Unique Attendees</div>
+          <div className="text-xs text-gray-400 mt-1">{stats.confirmedAttendees} confirmed · {stats.pendingAttendees} pending</div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
           <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
@@ -597,7 +624,7 @@ export default function RendezvousTab() {
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            MGA Rendezvous Registrations ({filteredRegistrations.length})
+            MGA Rendezvous Companies ({filteredCompanyGroups.length})
           </h3>
           <div className="flex gap-2">
             <select
@@ -670,93 +697,113 @@ export default function RendezvousTab() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredRegistrations.map((registration) => (
-                <tr key={registration.registrationId} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-900">{registration.billingInfo?.company}</div>
-                      <div className="text-gray-500 text-xs">{getOrgTypeLabel(registration.billingInfo?.organizationType)}</div>
-                      {registration.companyIsFaseMember && (
-                        <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded mt-1">FASE</span>
-                      )}
-                      {registration.isAsaseMember && (
-                        <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded mt-1 ml-1">ASASE</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="text-sm">
-                      <div className="font-mono text-gray-900">{registration.invoiceNumber}</div>
-                      {registration.invoiceUrl && (
-                        <a
-                          href={registration.invoiceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-fase-navy hover:text-fase-orange text-xs underline"
-                        >
-                          View PDF
-                        </a>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 text-sm text-gray-900">
-                    {registration.attendees?.length || 0}
-                  </td>
-                  <td className="px-3 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      €{(registration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </div>
-                    {registration.discount > 0 && (
-                      <div className="text-xs text-green-600">-{registration.discount}%</div>
-                    )}
-                  </td>
-                  <td className="px-3 py-4 text-xs text-gray-600">
-                    {getPaymentMethodLabel(registration.paymentMethod)}
-                  </td>
-                  <td className="px-3 py-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(registration.paymentStatus)}`}>
-                      {formatStatus(registration.paymentStatus)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-4 text-xs text-gray-500">
-                    {registration.createdAt?.toDate
-                      ? registration.createdAt.toDate().toLocaleDateString('en-GB')
-                      : registration.createdAt
-                        ? new Date(registration.createdAt).toLocaleDateString('en-GB')
-                        : 'Unknown'}
-                  </td>
-                  <td className="px-4 py-4 text-sm font-medium">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => {
-                          setSelectedRegistration(registration);
-                          setShowDetailModal(true);
-                        }}
-                      >
-                        View
-                      </Button>
-                      {registration.paymentStatus === 'pending_bank_transfer' && (
+              {filteredCompanyGroups.map((group) => {
+                const totalAttendees = group.registrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
+                const totalAmount = group.registrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+                const primaryReg = group.registrations[0];
+                const hasPending = group.registrations.some(r => r.paymentStatus === 'pending_bank_transfer');
+                const allConfirmed = group.registrations.every(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed');
+                // For single registration, use its actual status; for multiple, show overall
+                const isSingleReg = group.registrations.length === 1;
+                const overallStatus = isSingleReg ? primaryReg.paymentStatus : (allConfirmed ? 'paid' : 'pending_bank_transfer');
+
+                return (
+                  <tr key={group.company} className="hover:bg-gray-50">
+                    <td className="px-4 py-4">
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{group.company}</div>
+                        <div className="text-gray-500 text-xs">{getOrgTypeLabel(primaryReg.billingInfo?.organizationType)}</div>
+                        {primaryReg.companyIsFaseMember && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded mt-1">FASE</span>
+                        )}
+                        {primaryReg.isAsaseMember && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded mt-1 ml-1">ASASE</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm">
+                        {group.registrations.length === 1 ? (
+                          <>
+                            <div className="font-mono text-gray-900">{primaryReg.invoiceNumber}</div>
+                            {primaryReg.invoiceUrl && (
+                              <a
+                                href={primaryReg.invoiceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-fase-navy hover:text-fase-orange text-xs underline"
+                              >
+                                View PDF
+                              </a>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-gray-500">{group.registrations.length} registrations</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-900">
+                      {totalAttendees}
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        €{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-xs text-gray-600">
+                      {group.registrations.length === 1
+                        ? getPaymentMethodLabel(primaryReg.paymentMethod)
+                        : 'Multiple'}
+                    </td>
+                    <td className="px-3 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(overallStatus)}`}>
+                        {isSingleReg ? formatStatus(primaryReg.paymentStatus) : (allConfirmed ? 'Confirmed' : 'Partial')}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4 text-xs text-gray-500">
+                      {primaryReg.createdAt?.toDate
+                        ? primaryReg.createdAt.toDate().toLocaleDateString('en-GB')
+                        : primaryReg.createdAt
+                          ? new Date(primaryReg.createdAt).toLocaleDateString('en-GB')
+                          : 'Unknown'}
+                    </td>
+                    <td className="px-4 py-4 text-sm font-medium">
+                      <div className="flex gap-2">
                         <Button
-                          variant="primary"
+                          variant="secondary"
                           size="small"
                           onClick={() => {
-                            setSelectedRegistration(registration);
-                            setShowStatusModal(true);
+                            setSelectedCompanyRegistrations(group.registrations);
+                            setSelectedRegistration(group.registrations[0]);
+                            setShowDetailModal(true);
                           }}
                         >
-                          Confirm
+                          View
                         </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {hasPending && (
+                          <Button
+                            variant="primary"
+                            size="small"
+                            onClick={() => {
+                              const pendingReg = group.registrations.find(r => r.paymentStatus === 'pending_bank_transfer');
+                              if (pendingReg) {
+                                setSelectedRegistration(pendingReg);
+                                setShowStatusModal(true);
+                              }
+                            }}
+                          >
+                            Confirm
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-        {filteredRegistrations.length === 0 && (
+        {filteredCompanyGroups.length === 0 && (
           <div className="p-8 text-center">
             <p className="text-fase-black">No registrations found.</p>
           </div>
@@ -769,9 +816,10 @@ export default function RendezvousTab() {
         onClose={() => {
           setShowDetailModal(false);
           setSelectedRegistration(null);
+          setSelectedCompanyRegistrations([]);
         }}
-        title={`Registration Details - ${selectedRegistration?.billingInfo?.company}`}
-        maxWidth="2xl"
+        title={`${selectedRegistration?.billingInfo?.company}`}
+        maxWidth="3xl"
       >
         {selectedRegistration && (
           <div className="space-y-6">
@@ -804,85 +852,127 @@ export default function RendezvousTab() {
               </div>
             </div>
 
-            {/* Attendees */}
+            {/* All Attendees from all registrations */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-fase-navy mb-3">Attendees ({selectedRegistration.attendees?.length || 0})</h4>
+              <h4 className="font-semibold text-fase-navy mb-3">
+                Attendees ({selectedCompanyRegistrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0)})
+              </h4>
               <div className="space-y-2">
-                {selectedRegistration.attendees?.map((attendee, index) => (
-                  <div key={attendee.id || index} className="flex justify-between items-center text-sm bg-white p-2 rounded">
-                    <div>
-                      <div className="font-medium">{attendee.firstName} {attendee.lastName}</div>
-                      <div className="text-gray-500 text-xs">{attendee.email}</div>
+                {selectedCompanyRegistrations.flatMap((reg, regIndex) =>
+                  reg.attendees?.map((attendee, index) => (
+                    <div key={`${regIndex}-${attendee.id || index}`} className="flex justify-between items-center text-sm bg-white p-2 rounded">
+                      <div>
+                        <div className="font-medium">{attendee.firstName} {attendee.lastName}</div>
+                        <div className="text-gray-500 text-xs">{attendee.email}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-gray-500 text-xs">{attendee.jobTitle}</div>
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
+                          {formatStatus(reg.paymentStatus)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-gray-500 text-xs">{attendee.jobTitle}</div>
+                  )) || []
+                )}
+              </div>
+            </div>
+
+            {/* Registrations */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-fase-navy mb-3">
+                Registrations ({selectedCompanyRegistrations.length})
+              </h4>
+              <div className="space-y-3">
+                {selectedCompanyRegistrations.map((reg, index) => (
+                  <div key={reg.registrationId || index} className="bg-white p-3 rounded border border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="font-mono text-sm font-medium">{reg.invoiceNumber}</div>
+                        <div className="text-xs text-gray-500">{reg.attendees?.length || 0} attendees</div>
+                      </div>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
+                        {formatStatus(reg.paymentStatus)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <div className="text-gray-500 text-xs">Subtotal</div>
+                        <div className="font-medium">€{(reg.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 text-xs">VAT</div>
+                        <div className="font-medium">€{(reg.vatAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 text-xs">Total</div>
+                        <div className="font-medium">€{(reg.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
+                      {reg.invoiceUrl && (
+                        <a
+                          href={reg.invoiceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-fase-navy hover:text-fase-orange text-xs underline"
+                        >
+                          View Invoice
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleGeneratePaidInvoice(reg)}
+                        disabled={generatingInvoice}
+                        className="text-fase-navy hover:text-fase-orange text-xs underline disabled:opacity-50"
+                      >
+                        {generatingInvoice ? 'Generating...' : 'Regenerate Invoice'}
+                      </button>
+                      {reg.paymentStatus === 'pending_bank_transfer' && (
+                        <button
+                          onClick={() => {
+                            setSelectedRegistration(reg);
+                            setShowDetailModal(false);
+                            setShowStatusModal(true);
+                          }}
+                          className="text-green-600 hover:text-green-800 text-xs underline"
+                        >
+                          Confirm Payment
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setSelectedRegistration(reg);
+                          setShowDetailModal(false);
+                          setShowDeleteModal(true);
+                        }}
+                        className="text-red-600 hover:text-red-800 text-xs underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Payment Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-fase-navy mb-3">Payment Information</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            {/* Summary */}
+            <div className="bg-fase-navy text-white p-4 rounded-lg">
+              <div className="flex justify-between items-center">
                 <div>
-                  <div className="text-gray-500">Invoice Number</div>
-                  <div className="font-mono font-medium">{selectedRegistration.invoiceNumber}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Payment Method</div>
-                  <div className="font-medium">{getPaymentMethodLabel(selectedRegistration.paymentMethod)}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Subtotal</div>
-                  <div className="font-medium">€{(selectedRegistration.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">VAT</div>
-                  <div className="font-medium">€{(selectedRegistration.vatAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Total</div>
-                  <div className="font-medium text-lg">€{(selectedRegistration.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div>
-                  <div className="text-gray-500">Status</div>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedRegistration.paymentStatus)}`}>
-                    {formatStatus(selectedRegistration.paymentStatus)}
-                  </span>
-                </div>
-                {selectedRegistration.discount > 0 && (
-                  <div>
-                    <div className="text-gray-500">Discount</div>
-                    <div className="font-medium text-green-600">{selectedRegistration.discount}%</div>
+                  <div className="text-sm text-gray-300">Total Revenue</div>
+                  <div className="text-2xl font-bold">
+                    €{selectedCompanyRegistrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </div>
-                )}
-                {selectedRegistration.invoiceUrl && (
-                  <div className="col-span-2">
-                    <div className="text-gray-500">Invoice PDF</div>
-                    <a
-                      href={selectedRegistration.invoiceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-fase-navy hover:text-fase-orange underline"
-                    >
-                      Download Invoice
-                    </a>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-300">Total Attendees</div>
+                  <div className="text-2xl font-bold">
+                    {selectedCompanyRegistrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0)}
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-between pt-4 border-t">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowDetailModal(false);
-                  setShowDeleteModal(true);
-                }}
-                className="!bg-red-50 !text-red-700 !border-red-200 hover:!bg-red-100"
-              >
-                Delete Registration
-              </Button>
+            <div className="flex justify-end pt-4 border-t">
               <div className="flex gap-2">
                 <Button
                   variant="secondary"
@@ -894,25 +984,6 @@ export default function RendezvousTab() {
                 >
                   Send Confirmation Email
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleGeneratePaidInvoice(selectedRegistration)}
-                  disabled={generatingInvoice}
-                  className="!bg-green-50 !text-green-700 !border-green-200 hover:!bg-green-100"
-                >
-                  {generatingInvoice ? 'Generating...' : 'Download Paid Invoice'}
-                </Button>
-                {selectedRegistration.paymentStatus === 'pending_bank_transfer' && (
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      setShowDetailModal(false);
-                      setShowStatusModal(true);
-                    }}
-                  >
-                    Confirm Payment
-                  </Button>
-                )}
                 <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
                   Close
                 </Button>
@@ -1702,6 +1773,7 @@ export default function RendezvousTab() {
                               variant="secondary"
                               size="small"
                               onClick={() => {
+                                setSelectedCompanyRegistrations(companyRegs);
                                 setSelectedRegistration(reg);
                                 setShowDuplicatesModal(false);
                                 setShowDetailModal(true);
