@@ -301,7 +301,7 @@ export default function TeamManagementSection({
               {t('manage_profile.team_members')}
             </h2>
             <p className="text-sm text-gray-600">
-              {t('manage_profile.team_management_desc', { count: members.length })}
+              {t('manage_profile.team_management_desc', { count: String(members.length) })}
             </p>
           </div>
           {isCurrentUserAdmin && members.length < 3 && (
