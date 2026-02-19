@@ -201,6 +201,10 @@
     "sending": "Sending...",
     "resend_invite": "Resend Invite",
     "member_limit_reached_message": "Maximum 3 members allowed",
+    "team_management_desc": "Manage your organization's team members ({{count}}/3)",
+    "member_updated": "Member updated successfully",
+    "member_removed": "{{name}} has been removed from your team",
+    "remove_team_member": "Remove Team Member",
     "errors": {
       "load_members_failed": "Failed to load members",
       "update_member_failed": "Failed to update member",

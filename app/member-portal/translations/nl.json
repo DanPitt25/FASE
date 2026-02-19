@@ -191,6 +191,10 @@
     "no_members": "Geen Leden Gevonden",
     "no_members_desc": "Geen teamleden gevonden voor dit bedrijf.",
     "corporate_only": "Ledenbeheer is alleen beschikbaar voor zakelijke accounts.",
+    "team_management_desc": "Beheer de teamleden van uw organisatie ({{count}}/3)",
+    "member_updated": "Lid succesvol bijgewerkt",
+    "member_removed": "{{name}} is verwijderd uit uw team",
+    "remove_team_member": "Teamlid Verwijderen",
     "member_added_success": "{{name}} is toegevoegd aan het team. Ze ontvangen een uitnodigings-e-mail.",
     "member_update_failed": "Lid bijwerken mislukt. Probeer het opnieuw.",
     "member_delete_failed": "Lid verwijderen mislukt. Probeer het opnieuw.",
@@ -219,7 +223,8 @@
       "remove_member_failed": "Verwijderen van lid mislukt",
       "send_invitation_email_failed": "Verzenden van uitnodigings-e-mail mislukt",
       "send_invitation_failed": "Verzenden van uitnodiging mislukt",
-      "add_member_failed": "Toevoegen van lid mislukt"
+      "add_member_failed": "Toevoegen van lid mislukt",
+      "member_limit_reached": "Kan geen leden meer toevoegen. Maximaal 3 leden per bedrijf toegestaan."
     },
     "organization_types": {
       "mga_full": "Gevolmachtigde Agent",

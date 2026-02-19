@@ -180,6 +180,10 @@
     "no_members": "Nessun Membro Trovato",
     "no_members_desc": "Nessun membro del team trovato per questa azienda.",
     "corporate_only": "La gestione dei membri è disponibile solo per account aziendali.",
+    "team_management_desc": "Gestisca i membri del team della Sua organizzazione ({{count}}/3)",
+    "member_updated": "Membro aggiornato con successo",
+    "member_removed": "{{name}} è stato rimosso dal Suo team",
+    "remove_team_member": "Rimuovi Membro del Team",
     "member_added_success": "{{name}} è stato aggiunto al team. Riceverà un'email di invito.",
     "member_update_failed": "Aggiornamento membro fallito. Riprova.",
     "member_delete_failed": "Rimozione membro fallita. Riprova.",
@@ -208,7 +212,8 @@
       "remove_member_failed": "Rimozione membro fallita",
       "send_invitation_email_failed": "Invio email di invito fallito",
       "send_invitation_failed": "Invio dell'invito fallito",
-      "add_member_failed": "Aggiunta membro fallita"
+      "add_member_failed": "Aggiunta membro fallita",
+      "member_limit_reached": "Impossibile aggiungere più membri. Massimo 3 membri consentiti per azienda."
     },
     "organization_types": {
       "mga_full": "Agente Generale di Sottoscrizione",

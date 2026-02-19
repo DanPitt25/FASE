@@ -180,6 +180,10 @@
     "no_members": "No se Encontraron Miembros",
     "no_members_desc": "No se encontraron miembros del equipo para esta empresa.",
     "corporate_only": "La gestión de miembros solo está disponible para cuentas corporativas.",
+    "team_management_desc": "Gestione los miembros del equipo de su organización ({{count}}/3)",
+    "member_updated": "Miembro actualizado exitosamente",
+    "member_removed": "{{name}} ha sido eliminado de su equipo",
+    "remove_team_member": "Eliminar Miembro del Equipo",
     "member_added_success": "{{name}} ha sido agregado al equipo. Recibirá un correo electrónico de invitación.",
     "member_update_failed": "Error al actualizar miembro. Por favor, intente de nuevo.",
     "member_delete_failed": "Error al eliminar miembro. Por favor, intente de nuevo.",
@@ -208,7 +212,8 @@
       "remove_member_failed": "Error al eliminar miembro",
       "send_invitation_email_failed": "Error al enviar correo de invitación",
       "send_invitation_failed": "Error al enviar invitación",
-      "add_member_failed": "Error al agregar miembro"
+      "add_member_failed": "Error al agregar miembro",
+      "member_limit_reached": "No se pueden agregar más miembros. Máximo de 3 miembros permitidos por empresa."
     },
     "organization_types": {
       "mga_full": "Agente General de Suscripción",

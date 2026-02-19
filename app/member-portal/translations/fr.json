@@ -180,6 +180,10 @@
     "no_members": "Aucun Membre Trouvé",
     "no_members_desc": "Aucun membre d'équipe trouvé pour cette entreprise.",
     "corporate_only": "La gestion des membres n'est disponible que pour les comptes d'entreprise.",
+    "team_management_desc": "Gérer les membres de l'équipe de votre organisation ({{count}}/3)",
+    "member_updated": "Membre mis à jour avec succès",
+    "member_removed": "{{name}} a été retiré de votre équipe",
+    "remove_team_member": "Retirer un Membre de l'Équipe",
     "member_added_success": "{{name}} a été ajouté à l'équipe. Il recevra un e-mail d'invitation.",
     "member_update_failed": "Échec de la mise à jour du membre. Veuillez réessayer.",
     "member_delete_failed": "Échec de la suppression du membre. Veuillez réessayer.",
@@ -208,7 +212,8 @@
       "remove_member_failed": "Échec de la suppression du membre",
       "send_invitation_email_failed": "Échec de l'envoi de l'e-mail d'invitation",
       "send_invitation_failed": "Échec de l'envoi de l'invitation",
-      "add_member_failed": "Échec de l'ajout du membre"
+      "add_member_failed": "Échec de l'ajout du membre",
+      "member_limit_reached": "Impossible d'ajouter plus de membres. Maximum de 3 membres autorisé par entreprise."
     },
     "organization_types": {
       "mga_full": "Agent Général de Souscription",

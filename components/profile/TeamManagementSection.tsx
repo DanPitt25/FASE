@@ -138,9 +138,9 @@ export default function TeamManagementSection({
       ));
 
       setEditingMember(null);
-      showSuccess('Member updated successfully');
+      showSuccess(t('manage_profile.member_updated'));
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Failed to update member');
+      showError(t('manage_profile.errors.update_member_failed'));
     } finally {
       setSaving(false);
     }
@@ -150,20 +150,20 @@ export default function TeamManagementSection({
     if (!isCurrentUserAdmin) return;
     
     if (user.uid === memberToRemove.id) {
-      showError('You cannot remove yourself from the team');
+      showError(t('manage_profile.errors.cannot_remove_self'));
       return;
     }
 
     showConfirmation(
-      'Remove Team Member',
-      `Are you sure you want to remove ${memberToRemove.personalName} from your team? This action cannot be undone.`,
+      t('manage_profile.remove_team_member'),
+      t('manage_profile.confirm_remove', { name: memberToRemove.personalName }),
       () => handleRemoveMember(memberToRemove)
     );
   };
 
   const handleRemoveMember = async (memberToRemove: Member) => {
     if (!member?.organizationId) {
-      showError('Unable to remove member: organization not found');
+      showError(t('manage_profile.errors.remove_member_failed'));
       hideConfirmation();
       return;
     }
@@ -173,9 +173,9 @@ export default function TeamManagementSection({
       await deleteDoc(memberRef);
 
       onMembersChange(members.filter(m => m.id !== memberToRemove.id));
-      showSuccess(`${memberToRemove.personalName} has been removed from your team`);
+      showSuccess(t('manage_profile.member_removed', { name: memberToRemove.personalName }));
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Failed to remove member');
+      showError(t('manage_profile.errors.remove_member_failed'));
     } finally {
       hideConfirmation();
     }
@@ -217,9 +217,9 @@ export default function TeamManagementSection({
       const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
       await sendInviteEmail(memberToInvite.email, memberToInvite.personalName, inviteUrl);
 
-      showSuccess(`Invitation sent to ${memberToInvite.personalName} (${memberToInvite.email})`);
+      showSuccess(t('manage_profile.invitation_sent', { name: memberToInvite.personalName, email: memberToInvite.email }));
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Failed to send invitation');
+      showError(t('manage_profile.errors.send_invitation_failed'));
     } finally {
       setInviting(null);
     }
@@ -230,7 +230,7 @@ export default function TeamManagementSection({
     if (!isCurrentUserAdmin) return;
 
     if (members.length >= 3) {
-      showError('Maximum of 3 team members allowed');
+      showError(t('manage_profile.errors.member_limit_reached'));
       return;
     }
 
@@ -278,15 +278,15 @@ export default function TeamManagementSection({
         await sendInviteEmail(newMember.email, newMember.personalName, inviteUrl);
       } catch (inviteError) {
         // Don't fail the whole process if email fails
-        showError('Member added but failed to send invitation email. You can resend it from the team list.');
+        showError(t('manage_profile.errors.send_invitation_email_failed'));
       }
 
       // Reset form
       setNewMember({ email: '', personalName: '', jobTitle: '' });
       setShowAddForm(false);
-      showSuccess(`${newMember.personalName} has been added to your team`);
+      showSuccess(t('manage_profile.member_added_success', { name: newMember.personalName }));
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Failed to add member');
+      showError(t('manage_profile.errors.add_member_failed'));
     } finally {
       setAdding(false);
     }
@@ -298,10 +298,10 @@ export default function TeamManagementSection({
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">
-              Team Management
+              {t('manage_profile.team_members')}
             </h2>
             <p className="text-sm text-gray-600">
-              Manage your organization&apos;s team members ({members.length}/3)
+              {t('manage_profile.team_management_desc', { count: members.length })}
             </p>
           </div>
           {isCurrentUserAdmin && members.length < 3 && (
@@ -310,7 +310,7 @@ export default function TeamManagementSection({
               variant="primary"
               size="small"
             >
-              {showAddForm ? 'Cancel' : 'Add Member'}
+              {showAddForm ? t('manage_profile.cancel') : t('manage_profile.add_member')}
             </Button>
           )}
         </div>
@@ -319,46 +319,46 @@ export default function TeamManagementSection({
       {/* Add Member Form */}
       {showAddForm && (
         <div className="px-6 py-6 border-b border-fase-light-gold bg-gray-50">
-          <h3 className="text-lg font-medium text-fase-navy mb-4">Add New Team Member</h3>
+          <h3 className="text-lg font-medium text-fase-navy mb-4">{t('manage_profile.add_new_member')}</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-1">
-                  Email Address *
+                  {t('manage_profile.email_address')} *
                 </label>
                 <input
                   type="email"
                   value={newMember.email}
                   onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                  placeholder="colleague@company.com"
+                  placeholder={t('manage_profile.placeholders.email')}
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-fase-navy mb-1">
-                  Full Name *
+                  {t('manage_profile.full_name')} *
                 </label>
                 <input
                   type="text"
                   value={newMember.personalName}
                   onChange={(e) => setNewMember(prev => ({ ...prev, personalName: e.target.value }))}
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                  placeholder="John Smith"
+                  placeholder={t('manage_profile.placeholders.name')}
                   required
                 />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-fase-navy mb-1">
-                Job Title
+                {t('manage_profile.job_title')}
               </label>
               <input
                 type="text"
                 value={newMember.jobTitle}
                 onChange={(e) => setNewMember(prev => ({ ...prev, jobTitle: e.target.value }))}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                placeholder="e.g. Operations Manager"
+                placeholder={t('manage_profile.placeholders.job_title')}
               />
             </div>
             <div className="flex space-x-3">
@@ -368,7 +368,7 @@ export default function TeamManagementSection({
                 variant="primary"
                 size="small"
               >
-                {adding ? 'Adding...' : 'Add Member'}
+                {adding ? t('manage_profile.adding') : t('manage_profile.add_member')}
               </Button>
               <Button
                 onClick={() => {
@@ -378,7 +378,7 @@ export default function TeamManagementSection({
                 variant="secondary"
                 size="small"
               >
-                Cancel
+                {t('manage_profile.cancel')}
               </Button>
             </div>
           </div>
@@ -394,12 +394,12 @@ export default function TeamManagementSection({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-fase-navy mb-1">
-                      Full Name
+                      {t('manage_profile.full_name')}
                     </label>
                     <input
                       type="text"
                       value={editingMember.personalName}
-                      onChange={(e) => setEditingMember(prev => 
+                      onChange={(e) => setEditingMember(prev =>
                         prev ? { ...prev, personalName: e.target.value } : null
                       )}
                       className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
@@ -407,31 +407,31 @@ export default function TeamManagementSection({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fase-navy mb-1">
-                      Job Title
+                      {t('manage_profile.job_title')}
                     </label>
                     <input
                       type="text"
                       value={editingMember.jobTitle}
-                      onChange={(e) => setEditingMember(prev => 
+                      onChange={(e) => setEditingMember(prev =>
                         prev ? { ...prev, jobTitle: e.target.value } : null
                       )}
                       className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id={`admin-${memberItem.id}`}
                     checked={editingMember.isAccountAdministrator}
-                    onChange={(e) => setEditingMember(prev => 
+                    onChange={(e) => setEditingMember(prev =>
                       prev ? { ...prev, isAccountAdministrator: e.target.checked } : null
                     )}
                     className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-fase-light-gold rounded"
                   />
                   <label htmlFor={`admin-${memberItem.id}`} className="ml-2 text-sm text-fase-black">
-                    Account Administrator
+                    {t('manage_profile.account_administrator')}
                   </label>
                 </div>
 
@@ -442,14 +442,14 @@ export default function TeamManagementSection({
                     variant="primary"
                     size="small"
                   >
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? t('manage_profile.saving') : t('manage_profile.save')}
                   </Button>
                   <Button
                     onClick={() => setEditingMember(null)}
                     variant="secondary"
                     size="small"
                   >
-                    Cancel
+                    {t('manage_profile.cancel')}
                   </Button>
                 </div>
               </div>
@@ -469,17 +469,17 @@ export default function TeamManagementSection({
                       </h4>
                       {memberItem.isAccountAdministrator && (
                         <span className="text-xs font-medium text-gray-600">
-                          (Account Administrator)
+                          ({t('manage_profile.account_administrator')})
                         </span>
                       )}
                       {memberItem.id === user?.uid && (
                         <span className="text-xs font-medium text-gray-600">
-                          (You)
+                          ({t('manage_profile.you')})
                         </span>
                       )}
                       {memberNeedsInvite(memberItem) && (
                         <span className="text-xs font-medium text-amber-600">
-                          (Pending Invite)
+                          ({t('manage_profile.pending_invite')})
                         </span>
                       )}
                     </div>
@@ -488,7 +488,7 @@ export default function TeamManagementSection({
                       <p className="text-sm text-gray-600">{memberItem.jobTitle}</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      Joined {memberItem.joinedAt?.toDate?.()?.toLocaleDateString() || 'Unknown'}
+                      {t('manage_profile.joined_on', { date: memberItem.joinedAt?.toDate?.()?.toLocaleDateString() || t('manage_profile.unknown') })}
                     </p>
                   </div>
                 </div>
@@ -504,7 +504,7 @@ export default function TeamManagementSection({
                           variant="primary"
                           size="small"
                         >
-                          {inviting === memberItem.id ? 'Sending...' : 'Resend Invite'}
+                          {inviting === memberItem.id ? t('manage_profile.sending') : t('manage_profile.resend_invite')}
                         </Button>
                         <Button
                           onClick={() => handleRemoveMemberConfirm(memberItem)}
@@ -512,7 +512,7 @@ export default function TeamManagementSection({
                           size="small"
                           className="text-red-600 hover:text-red-800"
                         >
-                          Remove
+                          {t('manage_profile.remove')}
                         </Button>
                       </>
                     ) : null
@@ -524,7 +524,7 @@ export default function TeamManagementSection({
                           variant="secondary"
                           size="small"
                         >
-                          Edit
+                          {t('manage_profile.edit')}
                         </Button>
                       )}
                       {isCurrentUserAdmin && memberItem.id !== user?.uid && (
@@ -534,7 +534,7 @@ export default function TeamManagementSection({
                           size="small"
                           className="text-red-600 hover:text-red-800"
                         >
-                          Remove
+                          {t('manage_profile.remove')}
                         </Button>
                       )}
                     </>
@@ -553,8 +553,8 @@ export default function TeamManagementSection({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">No team members</h3>
-          <p className="text-fase-black">Add team members to collaborate on your account</p>
+          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('manage_profile.no_members')}</h3>
+          <p className="text-fase-black">{t('manage_profile.no_members_desc')}</p>
         </div>
       )}
 
@@ -565,8 +565,8 @@ export default function TeamManagementSection({
         message={confirmModal.message}
         onConfirm={confirmModal.onConfirm}
         onCancel={hideConfirmation}
-        confirmLabel="Remove"
-        cancelLabel="Cancel"
+        confirmLabel={t('manage_profile.remove')}
+        cancelLabel={t('manage_profile.cancel')}
         variant="danger"
       />
     </div>

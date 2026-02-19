@@ -180,6 +180,10 @@
     "no_members": "Keine Mitglieder Gefunden",
     "no_members_desc": "Keine Teammitglieder für dieses Unternehmen gefunden.",
     "corporate_only": "Mitgliederverwaltung ist nur für Unternehmenskonten verfügbar.",
+    "team_management_desc": "Verwalten Sie die Teammitglieder Ihrer Organisation ({{count}}/3)",
+    "member_updated": "Mitglied erfolgreich aktualisiert",
+    "member_removed": "{{name}} wurde aus Ihrem Team entfernt",
+    "remove_team_member": "Teammitglied Entfernen",
     "member_added_success": "{{name}} wurde zum Team hinzugefügt. Sie erhalten eine Einladungs-E-Mail.",
     "member_update_failed": "Mitglieder-Update fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "member_delete_failed": "Mitglied entfernen fehlgeschlagen. Bitte versuchen Sie es erneut.",
@@ -208,7 +212,8 @@
       "remove_member_failed": "Mitglied entfernen fehlgeschlagen",
       "send_invitation_email_failed": "Senden der Einladungs-E-Mail fehlgeschlagen",
       "send_invitation_failed": "Senden der Einladung fehlgeschlagen",
-      "add_member_failed": "Mitglied hinzufügen fehlgeschlagen"
+      "add_member_failed": "Mitglied hinzufügen fehlgeschlagen",
+      "member_limit_reached": "Kann keine weiteren Mitglieder hinzufügen. Maximal 3 Mitglieder pro Unternehmen erlaubt."
     },
     "organization_types": {
       "mga_full": "MGA",
