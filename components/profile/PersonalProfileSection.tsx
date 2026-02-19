@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { sendPasswordReset } from '../../lib/auth';
 import Button from '../Button';
+import { usePortalTranslations } from '../../app/member-portal/hooks/usePortalTranslations';
 import type { User } from 'firebase/auth';
 import type { UnifiedMember } from '../../lib/unified-member';
 
@@ -15,6 +16,7 @@ interface PersonalProfileSectionProps {
 }
 
 export default function PersonalProfileSection({ user, member, showSuccess, showError, onMemberDataRefresh }: PersonalProfileSectionProps) {
+  const { t } = usePortalTranslations();
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileData, setProfileData] = useState({ 
     personalName: member?.personalName || ''
@@ -56,9 +58,9 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
       }
       
       setEditingProfile(false);
-      showSuccess('Profile updated successfully');
+      showSuccess(t('manage_profile.profile_updated'));
     } catch (error) {
-      showError('Failed to update profile. Please try again.');
+      showError(t('manage_profile.profile_update_failed'));
     } finally {
       setSavingProfile(false);
     }
@@ -78,12 +80,12 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
       setSendingPasswordReset(true);
       await sendPasswordReset(user.email);
       setPasswordResetSent(true);
-      showSuccess('Password reset email sent to your inbox');
-      
+      showSuccess(t('manage_profile.password_reset_sent'));
+
       // Hide the success indicator after 5 seconds
       setTimeout(() => setPasswordResetSent(false), 5000);
     } catch (error) {
-      showError('Failed to send password reset email. Please try again.');
+      showError(t('manage_profile.password_reset_failed'));
     } finally {
       setSendingPasswordReset(false);
     }
@@ -91,12 +93,12 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
 
   return (
     <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-      <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">Your Profile</h2>
-      
+      <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">{t('manage_profile.your_profile')}</h2>
+
       <div className="space-y-6">
         {/* Personal Name */}
         <div>
-          <label className="block text-sm font-medium text-fase-navy mb-2">Personal Name</label>
+          <label className="block text-sm font-medium text-fase-navy mb-2">{t('manage_profile.personal_name')}</label>
           {editingProfile ? (
             <div className="space-y-3">
               <input
@@ -104,7 +106,7 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
                 value={profileData.personalName}
                 onChange={(e) => setProfileData(prev => ({ ...prev, personalName: e.target.value }))}
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
-                placeholder="Enter your name"
+                placeholder={t('manage_profile.enter_name_placeholder')}
               />
               <div className="flex space-x-2">
                 <Button
@@ -113,28 +115,28 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
                   variant="primary"
                   size="small"
                 >
-                  {savingProfile ? 'Saving...' : 'Save'}
+                  {savingProfile ? t('manage_profile.saving') : t('manage_profile.save')}
                 </Button>
                 <Button
                   onClick={handleCancelEdit}
                   variant="secondary"
                   size="small"
                 >
-                  Cancel
+                  {t('manage_profile.cancel')}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between">
               <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-fase-black mr-3">
-                {member?.personalName || 'Not set'}
+                {member?.personalName || t('manage_profile.not_set')}
               </div>
               <Button
                 onClick={handleEditProfile}
                 variant="secondary"
                 size="small"
               >
-                Edit
+                {t('manage_profile.edit')}
               </Button>
             </div>
           )}
@@ -142,15 +144,15 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
 
         {/* Password Security */}
         <div className="border-t border-gray-100 pt-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Security</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">{t('manage_profile.security')}</h3>
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-gray-700">Password</span>
-              <p className="text-xs text-gray-500">Reset your account password</p>
+              <span className="text-sm font-medium text-gray-700">{t('manage_profile.password')}</span>
+              <p className="text-xs text-gray-500">{t('manage_profile.password_desc')}</p>
             </div>
             <div className="flex items-center space-x-3">
               {passwordResetSent && (
-                <span className="text-sm text-green-600 font-medium">Reset email sent!</span>
+                <span className="text-sm text-green-600 font-medium">{t('manage_profile.reset_email_sent')}</span>
               )}
               <Button
                 onClick={handlePasswordReset}
@@ -158,7 +160,7 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
                 variant="secondary"
                 size="small"
               >
-                {sendingPasswordReset ? 'Sending...' : 'Reset Password'}
+                {sendingPasswordReset ? t('manage_profile.sending') : t('manage_profile.reset_password')}
               </Button>
             </div>
           </div>

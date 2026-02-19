@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { auth } from '../../lib/firebase';
 import Button from '../Button';
 import OrganizationLogo from '../OrganizationLogo';
+import { usePortalTranslations } from '../../app/member-portal/hooks/usePortalTranslations';
 import type { OrganizationAccount } from '../../lib/unified-member';
 
 interface CompanyInfo {
@@ -38,6 +39,7 @@ export default function CompanyProfileSection({
   showError,
   showInfo
 }: CompanyProfileSectionProps) {
+  const { t } = usePortalTranslations();
   const [bioText, setBioText] = useState('');
   const [savingBio, setSavingBio] = useState(false);
   const [editingBio, setEditingBio] = useState(false);
@@ -73,7 +75,7 @@ export default function CompanyProfileSection({
 
       const user = auth.currentUser;
       if (!user) {
-        showError('You must be logged in to submit a bio.');
+        showError(t('manage_profile.login_required'));
         return;
       }
 
@@ -99,9 +101,9 @@ export default function CompanyProfileSection({
 
       setEditingBio(false);
       onBioStatusChange?.('pending_review');
-      showSuccess('Profile submitted for review. You will be notified once approved.');
+      showSuccess(t('manage_profile.bio_submitted_success'));
     } catch (error: any) {
-      showError(error.message || 'Failed to submit profile. Please try again.');
+      showError(error.message || t('manage_profile.bio_submit_failed'));
     } finally {
       setSavingBio(false);
     }
@@ -113,7 +115,7 @@ export default function CompanyProfileSection({
 
       const user = auth.currentUser;
       if (!user) {
-        showError('You must be logged in to save a draft.');
+        showError(t('manage_profile.login_required_draft'));
         return;
       }
 
@@ -138,9 +140,9 @@ export default function CompanyProfileSection({
       }
 
       onBioStatusChange?.('draft');
-      showInfo('Draft saved successfully.');
+      showInfo(t('manage_profile.draft_saved'));
     } catch (error: any) {
-      showError(error.message || 'Failed to save draft. Please try again.');
+      showError(error.message || t('manage_profile.draft_save_failed'));
     } finally {
       setSavingBio(false);
     }
@@ -151,13 +153,13 @@ export default function CompanyProfileSection({
 
     switch (status) {
       case 'pending_review':
-        return <span className="text-sm text-gray-600">Submitted</span>;
+        return <span className="text-sm text-gray-600">{t('manage_profile.bio_status_submitted')}</span>;
       case 'approved':
-        return <span className="text-sm text-green-600">Approved</span>;
+        return <span className="text-sm text-green-600">{t('manage_profile.bio_status_approved')}</span>;
       case 'rejected':
-        return <span className="text-sm text-red-600">Rejected</span>;
+        return <span className="text-sm text-red-600">{t('manage_profile.bio_status_rejected')}</span>;
       default:
-        return <span className="text-sm text-gray-500">Draft</span>;
+        return <span className="text-sm text-gray-500">{t('manage_profile.bio_status_draft')}</span>;
     }
   };
 
@@ -167,7 +169,7 @@ export default function CompanyProfileSection({
 
       const user = auth.currentUser;
       if (!user) {
-        showError('You must be logged in to save website.');
+        showError(t('manage_profile.login_required_website'));
         return;
       }
 
@@ -193,9 +195,9 @@ export default function CompanyProfileSection({
 
       setWebsiteUrl(result.website || '');
       setEditingWebsite(false);
-      showSuccess('Website URL saved successfully.');
+      showSuccess(t('manage_profile.website_saved'));
     } catch (error: any) {
-      showError(error.message || 'Failed to save website URL. Please try again.');
+      showError(error.message || t('manage_profile.website_save_failed'));
     } finally {
       setSavingWebsite(false);
     }
@@ -205,8 +207,8 @@ export default function CompanyProfileSection({
     <div className="space-y-8">
       {/* Company Information */}
       <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Company Profile</h2>
-        
+        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">{t('manage_profile.company_profile')}</h2>
+
         <div className="text-sm text-gray-600 mb-4">
           {company.organizationName} • {company.organizationType}
         </div>
@@ -229,11 +231,11 @@ export default function CompanyProfileSection({
               </div>
             )}
           </div>
-          
+
           {/* Bio */}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-900">Company Bio</span>
+              <span className="text-sm font-medium text-gray-900">{t('manage_profile.company_bio')}</span>
               <div className="flex items-center gap-2">
                 {getBioStatusText()}
                 {(bioStatus === 'approved' || bioStatus === 'pending_review') && !editingBio && (
@@ -242,7 +244,7 @@ export default function CompanyProfileSection({
                     variant="secondary"
                     size="small"
                   >
-                    Edit
+                    {t('manage_profile.edit')}
                   </Button>
                 )}
               </div>
@@ -251,9 +253,9 @@ export default function CompanyProfileSection({
             {/* Read-only view for approved or pending bios */}
             {!editingBio && (bioStatus === 'approved' || bioStatus === 'pending_review') ? (
               <div className="text-sm text-gray-700 leading-relaxed">
-                {bioText || <span className="text-gray-400 italic">No bio set</span>}
+                {bioText || <span className="text-gray-400 italic">{t('manage_profile.bio_no_set')}</span>}
                 {bioStatus === 'pending_review' && (
-                  <p className="mt-2 text-xs text-gray-500 italic">Your bio is awaiting review. You can still edit and resubmit if needed.</p>
+                  <p className="mt-2 text-xs text-gray-500 italic">{t('manage_profile.bio_pending_review')}</p>
                 )}
               </div>
             ) : (
@@ -261,7 +263,7 @@ export default function CompanyProfileSection({
                 <textarea
                   value={bioText}
                   onChange={(e) => setBioText(e.target.value)}
-                  placeholder="Describe your company for the directory (subject to translation)..."
+                  placeholder={t('manage_profile.bio_placeholder')}
                   rows={4}
                   maxLength={500}
                   className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy resize-none text-sm mb-2"
@@ -274,7 +276,7 @@ export default function CompanyProfileSection({
                 {/* Error message */}
                 {bioStatus === 'rejected' && organizationAccount.companySummary?.rejectionReason && (
                   <div className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 mb-3">
-                    <strong>Rejected:</strong> {organizationAccount.companySummary.rejectionReason}
+                    <strong>{t('manage_profile.bio_rejected_label')}:</strong> {organizationAccount.companySummary.rejectionReason}
                   </div>
                 )}
 
@@ -286,7 +288,7 @@ export default function CompanyProfileSection({
                     variant="primary"
                     size="small"
                   >
-                    {savingBio ? 'Submitting...' : 'Submit for Review'}
+                    {savingBio ? t('manage_profile.submitting') : t('manage_profile.submit_for_review')}
                   </Button>
                   <Button
                     onClick={handleSaveBioDraft}
@@ -294,7 +296,7 @@ export default function CompanyProfileSection({
                     variant="secondary"
                     size="small"
                   >
-                    Save Draft
+                    {t('manage_profile.save_draft')}
                   </Button>
                   {(bioStatus === 'approved' || bioStatus === 'pending_review') && (
                     <Button
@@ -306,7 +308,7 @@ export default function CompanyProfileSection({
                       variant="secondary"
                       size="small"
                     >
-                      Cancel
+                      {t('manage_profile.cancel')}
                     </Button>
                   )}
                 </div>
@@ -318,9 +320,9 @@ export default function CompanyProfileSection({
 
       {/* Website URL */}
       <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">Company Website</h2>
+        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">{t('manage_profile.company_website')}</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Add your company website to be displayed in the member directory.
+          {t('manage_profile.website_description')}
         </p>
 
         {editingWebsite ? (
@@ -329,7 +331,7 @@ export default function CompanyProfileSection({
               type="url"
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="www.yourcompany.com"
+              placeholder={t('manage_profile.website_placeholder')}
               className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy text-sm"
             />
             <div className="flex space-x-2">
@@ -339,7 +341,7 @@ export default function CompanyProfileSection({
                 variant="primary"
                 size="small"
               >
-                {savingWebsite ? 'Saving...' : 'Save'}
+                {savingWebsite ? t('manage_profile.saving') : t('manage_profile.save')}
               </Button>
               <Button
                 onClick={() => {
@@ -350,7 +352,7 @@ export default function CompanyProfileSection({
                 variant="secondary"
                 size="small"
               >
-                Cancel
+                {t('manage_profile.cancel')}
               </Button>
             </div>
           </div>
@@ -367,7 +369,7 @@ export default function CompanyProfileSection({
                   {websiteUrl}
                 </a>
               ) : (
-                <span className="text-gray-400 italic">Not set</span>
+                <span className="text-gray-400 italic">{t('manage_profile.website_not_set')}</span>
               )}
             </div>
             <Button
@@ -375,7 +377,7 @@ export default function CompanyProfileSection({
               variant="secondary"
               size="small"
             >
-              {websiteUrl ? 'Edit' : 'Add'}
+              {websiteUrl ? t('manage_profile.edit') : t('manage_profile.add')}
             </Button>
           </div>
         )}
@@ -383,34 +385,34 @@ export default function CompanyProfileSection({
 
       {/* Directory Settings */}
       <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">Directory Settings</h2>
-        
+        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">{t('manage_profile.directory_settings')}</h2>
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-gray-700">Include in Directory</span>
-              <p className="text-xs text-gray-500">Show your company in the public membership directory</p>
+              <span className="text-sm font-medium text-gray-700">{t('manage_profile.include_in_directory')}</span>
+              <p className="text-xs text-gray-500">{t('manage_profile.include_in_directory_desc')}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
+              <input
+                type="checkbox"
+                className="sr-only peer"
                 checked={directoryInclusion}
                 onChange={(e) => setDirectoryInclusion(e.target.checked)}
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-gray-700">Public Contact Information</span>
-              <p className="text-xs text-gray-500">Allow directory visitors to see your contact details</p>
+              <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact_info')}</span>
+              <p className="text-xs text-gray-500">{t('manage_profile.public_contact_info_desc')}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
+              <input
+                type="checkbox"
+                className="sr-only peer"
                 checked={publicContact}
                 onChange={(e) => setPublicContact(e.target.checked)}
               />
