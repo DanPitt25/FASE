@@ -63,7 +63,7 @@ function ChartModal({
           />
         </div>
         <div className="px-5 py-3 bg-gray-50 text-xs text-gray-500 border-t border-gray-100">
-          Source: Lloyd's
+          Source: Lloyd&apos;s
         </div>
       </div>
     </div>
@@ -150,7 +150,7 @@ export default function LloydsEuropeArticle() {
         <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
           <Image
             src="/earlyMorning.jpg"
-            alt="Lloyd's of London"
+            alt="Lloyd&apos;s of London"
             fill
             className="object-cover"
             priority
@@ -169,7 +169,7 @@ export default function LloydsEuropeArticle() {
               </Link>
               <p className="text-fase-gold text-xs font-semibold uppercase tracking-widest mb-3">Feature</p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-noto-serif font-bold text-white leading-tight max-w-3xl">
-                Lloyd's in Europe: Coverholder Business Growing Fast After 123 Years
+                Lloyd&apos;s in Europe: Coverholder Business Growing Fast After 123 Years
               </h1>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function LloydsEuropeArticle() {
           {/* Lead */}
           <div className="py-10 border-b border-gray-100">
             <p className="text-xl text-gray-800 leading-relaxed max-w-3xl">
-              Ever since the pioneering Lloyd's underwriter, Cuthbert Heath, first granted a binding authority to his agent in Amsterdam, Alfred Schroder, in 1903, Lloyd's has played a key role in the development of Europe's delegated authority market.
+              Ever since the pioneering Lloyd&apos;s underwriter, Cuthbert Heath, first granted a binding authority to his agent in Amsterdam, Alfred Schroder, in 1903, Lloyd&apos;s has played a key role in the development of Europe&apos;s delegated authority market.
             </p>
           </div>
 
@@ -190,14 +190,14 @@ export default function LloydsEuropeArticle() {
             <div className="lg:grid lg:grid-cols-5 lg:gap-12">
               <div className="lg:col-span-3 text-gray-700 leading-relaxed">
                 <p>
-                  Today, Lloyd's writes approximately <strong className="text-fase-navy">28% of its total premiums</strong> (€1,685m out of €5,939m) from the European Economic Area plus Switzerland on a delegated authority basis. Five hundred and thirty-two Lloyd's coverholders, including many of the region's leading MGAs, underwrite a wide array of business backed by Lloyd's binding authorities.
+                  Today, Lloyd&apos;s writes approximately <strong className="text-fase-navy">28% of its total premiums</strong> (€1,685m out of €5,939m) from the European Economic Area plus Switzerland on a delegated authority basis. Five hundred and thirty-two Lloyd&apos;s coverholders, including many of the region&apos;s leading MGAs, underwrite a wide array of business backed by Lloyd&apos;s binding authorities.
                 </p>
               </div>
               <div className="lg:col-span-2 mt-6 lg:mt-0">
                 <ChartFigure
                   src="/bulletin/feb-2026/lloyds-pie-chart.png"
-                  alt="Lloyd's Binder Business breakdown by class"
-                  title="Lloyd's Binder Business, EEA + Switzerland, 2025"
+                  alt="Lloyd&apos;s Binder Business breakdown by class"
+                  title="Lloyd&apos;s Binder Business, EEA + Switzerland, 2025"
                   caption="Binder business by class. Total: €1.685bn"
                 />
               </div>
@@ -209,14 +209,14 @@ export default function LloydsEuropeArticle() {
             <div className="lg:grid lg:grid-cols-5 lg:gap-12">
               <div className="lg:col-span-3 text-gray-700 leading-relaxed">
                 <p>
-                  In recent years, Lloyd's managing agents' delegated authority business in Europe has surged, growing by <strong className="text-fase-navy">15% annually</strong> between 2023 and 2025. The share of coverholder business in national markets varies widely. In Italy, Lloyd's 88 coverholders generated 61% of the market's total premium in 2025; in France the coverholder proportion was 43%; in Ireland, 28%; in Germany, 20%; and in Switzerland just 8%.
+                  In recent years, Lloyd&apos;s managing agents&apos; delegated authority business in Europe has surged, growing by <strong className="text-fase-navy">15% annually</strong> between 2023 and 2025. The share of coverholder business in national markets varies widely. In Italy, Lloyd&apos;s 88 coverholders generated 61% of the market&apos;s total premium in 2025; in France the coverholder proportion was 43%; in Ireland, 28%; in Germany, 20%; and in Switzerland just 8%.
                 </p>
               </div>
               <div className="lg:col-span-2 mt-6 lg:mt-0">
                 <ChartFigure
                   src="/bulletin/feb-2026/lloyds-coverholder-count.png"
-                  alt="Number of Lloyd's coverholders by country"
-                  title="Accredited Lloyd's Coverholders by Country, 2025"
+                  alt="Number of Lloyd&apos;s coverholders by country"
+                  title="Accredited Lloyd&apos;s Coverholders by Country, 2025"
                   caption="Number of accredited coverholders by market"
                 />
               </div>
@@ -228,10 +228,10 @@ export default function LloydsEuropeArticle() {
             <div className="lg:grid lg:grid-cols-5 lg:gap-12">
               <div className="lg:col-span-3 text-gray-700 leading-relaxed space-y-4">
                 <p>
-                  The overall figures are boosted by Lloyd's broad definition of what constitutes a coverholder, which includes 61 service companies owned and operated by Lloyd's managing agents. Coverholder business also includes business underwritten by consortia of Lloyd's syndicates, under which the lead syndicate operates with delegated authority from following syndicates.
+                  The overall figures are boosted by Lloyd&apos;s broad definition of what constitutes a coverholder, which includes 61 service companies owned and operated by Lloyd&apos;s managing agents. Coverholder business also includes business underwritten by consortia of Lloyd&apos;s syndicates, under which the lead syndicate operates with delegated authority from following syndicates.
                 </p>
                 <p>
-                  Many Lloyd's coverholders are brokers with tightly worded binding authorities for particular classes of business. They operate as an efficient distribution channel for Lloyd's products but have little or no underwriting autonomy. But in common with insurance and reinsurance companies around the world, Lloyd's syndicates have also been increasing their capacity allocations to MGAs.
+                  Many Lloyd&apos;s coverholders are brokers with tightly worded binding authorities for particular classes of business. They operate as an efficient distribution channel for Lloyd&apos;s products but have little or no underwriting autonomy. But in common with insurance and reinsurance companies around the world, Lloyd&apos;s syndicates have also been increasing their capacity allocations to MGAs.
                 </p>
               </div>
               <div className="lg:col-span-2 mt-6 lg:mt-0">
@@ -251,7 +251,7 @@ export default function LloydsEuropeArticle() {
               <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy">No Longer Short-Termist</h2>
 
               <p>
-                Lloyd's capacity was historically tendered on a short-term – and often opportunistic - basis. But since 2016 Lloyd's managing agencies have been permitted to enter into multi-year binding authority agreements that can run for up to three years. And this year, Lloyd's plans to offer the option for continuous contracts that run indefinitely until termination.
+                Lloyd&apos;s capacity was historically tendered on a short-term – and often opportunistic - basis. But since 2016 Lloyd&apos;s managing agencies have been permitted to enter into multi-year binding authority agreements that can run for up to three years. And this year, Lloyd&apos;s plans to offer the option for continuous contracts that run indefinitely until termination.
               </p>
 
               <p>
@@ -261,27 +261,27 @@ export default function LloydsEuropeArticle() {
               <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Streamlined Accreditation</h2>
 
               <p>
-                Another widely held preconception is that Lloyd's coverholder accreditation is a lengthy and complex process. It need not be so. The delegated authorities team at Lloyd's can process coverholder applications within a few days. The due diligence performed by the Lloyd's managing agent may take much longer, but this is not fundamentally different from the process an insurance company would require.
+                Another widely held preconception is that Lloyd&apos;s coverholder accreditation is a lengthy and complex process. It need not be so. The delegated authorities team at Lloyd&apos;s can process coverholder applications within a few days. The due diligence performed by the Lloyd&apos;s managing agent may take much longer, but this is not fundamentally different from the process an insurance company would require.
               </p>
 
               <p>
-                For FASE members, Lloyd's has provided two valuable guides:
+                For FASE members, Lloyd&apos;s has provided two valuable guides:
               </p>
 
               <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                <li>The first charts the scale, composition and growth rate of Lloyd's coverholder business across nine European markets.</li>
-                <li>The second explains the benefits of becoming a Lloyd's coverholder and how they are remunerated and regulated.</li>
+                <li>The first charts the scale, composition and growth rate of Lloyd&apos;s coverholder business across nine European markets.</li>
+                <li>The second explains the benefits of becoming a Lloyd&apos;s coverholder and how they are remunerated and regulated.</li>
               </ul>
 
               <p>
-                One hundred and twenty-three years after Cuthbert Heath first lent his pen to his trusted agent in Amsterdam, Lloyd's delegated authority business is still driven by the same motivation. In the words of Lloyd's guide, it permits access to "business that otherwise would not be seen or could not be written economically at the box." But the relationship between Lloyd's managing agencies and modern MGAs is today more balanced and the delegation of authority is, often, much broader.
+                One hundred and twenty-three years after Cuthbert Heath first lent his pen to his trusted agent in Amsterdam, Lloyd&apos;s delegated authority business is still driven by the same motivation. In the words of Lloyd&apos;s guide, it permits access to "business that otherwise would not be seen or could not be written economically at the box." But the relationship between Lloyd&apos;s managing agencies and modern MGAs is today more balanced and the delegation of authority is, often, much broader.
               </p>
             </div>
 
             {/* Footer note */}
             <div className="mt-10 pt-6 border-t border-gray-100">
               <p className="text-sm text-gray-500 italic">
-                Future issues will include interviews with chief underwriting officers at Lloyd's. Callum Alexander, director of delegated authority at Lloyd's, will be attending the MGA Rendezvous in May.
+                Future issues will include interviews with chief underwriting officers at Lloyd&apos;s. Callum Alexander, director of delegated authority at Lloyd&apos;s, will be attending the MGA Rendezvous in May.
               </p>
             </div>
           </div>
