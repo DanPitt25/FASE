@@ -37,18 +37,18 @@ async function convertCurrency(eurAmount: number, targetCurrency: string) {
   if (targetCurrency === 'EUR') {
     return { convertedCurrency: 'EUR', roundedAmount: eurAmount, exchangeRate: 1 };
   }
-  try {
-    const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
-    const data = await response.json();
-    const rate = data.rates[targetCurrency] || 1;
-    const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
-    return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
-  } catch {
-    const fallbackRates: Record<string, number> = { 'EUR': 1, 'USD': 1.10, 'GBP': 0.85 };
-    const rate = fallbackRates[targetCurrency] || 1;
-    const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
-    return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
+
+  const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+  if (!response.ok) {
+    throw new Error(`Failed to fetch exchange rates: ${response.status}`);
   }
+  const data = await response.json();
+  const rate = data.rates[targetCurrency];
+  if (!rate) {
+    throw new Error(`No exchange rate found for currency: ${targetCurrency}`);
+  }
+  const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
+  return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
 }
 
 interface RegistrationData {

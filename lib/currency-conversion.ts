@@ -141,24 +141,14 @@ export function getWiseBankDetails(currency: string): {
  * Fetch live exchange rates from ExchangeRate-API
  */
 export async function fetchExchangeRates(): Promise<Record<string, number>> {
-  try {
-    const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
-    
-    if (!response.ok) {
-      throw new Error(`Exchange rate API error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.rates;
-  } catch (error) {
-    console.error('Failed to fetch exchange rates:', error);
-    // Fallback rates (approximate)
-    return {
-      'EUR': 1,
-      'USD': 1.10,
-      'GBP': 0.85
-    };
+  const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+
+  if (!response.ok) {
+    throw new Error(`Exchange rate API error: ${response.status}`);
   }
+
+  const data = await response.json();
+  return data.rates;
 }
 
 /**

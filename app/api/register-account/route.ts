@@ -111,10 +111,10 @@ export async function POST(request: NextRequest) {
         },
         ...(formData.organizationType === 'MGA' && {
           portfolio: {
-            grossWrittenPremiums: getGWPBand(convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)),
+            grossWrittenPremiums: getGWPBand(await convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)),
             grossWrittenPremiumsValue: parseFloat(formData.grossWrittenPremiums) || 0,
             grossWrittenPremiumsCurrency: formData.gwpCurrency,
-            grossWrittenPremiumsEUR: convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency),
+            grossWrittenPremiumsEUR: await convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency),
             linesOfBusiness: formData.selectedLinesOfBusiness,
             otherLinesOfBusiness: {
               other1: formData.otherLineOfBusiness1?.trim() || '',

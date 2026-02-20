@@ -1,13 +1,17 @@
 'use client';
 
-// Currency conversion rates (base: EUR)
+// APPROXIMATE conversion rates for CLIENT-SIDE DISPLAY ONLY
+// These are used to show estimated fees in the registration form.
+// Actual invoices use live exchange rates fetched at invoice generation time.
+// WARNING: Keep these reasonably current - they affect which fee band is displayed.
+// Last updated: 20 Feb 2026
 const exchangeRates = {
-  'USD': 0.92,
-  'GBP': 1.17,
+  'USD': 0.85,  // 1 USD = 0.85 EUR (1 EUR = 1.18 USD)
+  'GBP': 1.14,  // 1 GBP = 1.14 EUR (1 EUR = 0.874 GBP)
   'EUR': 1.0
 };
 
-// Convert currency to EUR
+// Convert currency to EUR (approximate, for display only)
 export const convertToEUR = (amount: number, fromCurrency: string): number => {
   const rate = exchangeRates[fromCurrency as keyof typeof exchangeRates] || 1;
   return amount * rate;
