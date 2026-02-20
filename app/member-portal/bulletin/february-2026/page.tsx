@@ -39,16 +39,14 @@ export default function February2026Edition() {
       <main className="min-h-screen bg-white">
         {/* Banner */}
         <div className="bg-fase-navy">
-          <div className="max-w-6xl mx-auto">
-            <Image
-              src="/bulletin/feb-2026/Bulletin-with-text.png"
-              alt="The Entrepreneurial Underwriter - February 2026"
-              width={1200}
-              height={400}
-              className="w-full h-auto"
-              priority
-            />
-          </div>
+          <Image
+            src="/bulletin/feb-2026/Bulletin-with-text.png"
+            alt="The Entrepreneurial Underwriter - February 2026"
+            width={1200}
+            height={400}
+            className="w-full h-auto"
+            priority
+          />
         </div>
 
         {/* Content */}
