@@ -3,6 +3,7 @@
 import { useUnifiedAuth } from "../../contexts/UnifiedAuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Button from "../../components/Button";
 import DashboardLayout from "../../components/DashboardLayout";
 import ManageProfile from "../../components/ManageProfile";
@@ -496,6 +497,56 @@ export default function MemberContent() {
               ))}
             </div>
           )}
+        </div>
+      )
+    },
+    {
+      id: 'bulletin',
+      title: 'The Entrepreneurial Underwriter',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      ),
+      content: (
+        <div className="space-y-6">
+          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+            <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">The Entrepreneurial Underwriter</h2>
+            <p className="text-fase-black mb-6">
+              FASE's monthly bulletin for the European delegated underwriting community, featuring market insights, member news, and industry analysis.
+            </p>
+
+            {/* Latest Edition */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-fase-navy p-4">
+                <h3 className="text-lg font-semibold text-white">Latest Edition</h3>
+              </div>
+              <div className="p-6">
+                <Link
+                  href="/member-portal/bulletin/february-2026"
+                  className="block group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-20 h-20 bg-fase-navy rounded flex items-center justify-center">
+                      <span className="text-fase-gold font-noto-serif text-2xl font-bold">Feb</span>
+                    </div>
+                    <div className="flex-grow">
+                      <p className="text-sm text-gray-500 mb-1">February 2026</p>
+                      <h4 className="text-lg font-semibold text-fase-navy group-hover:underline mb-2">
+                        Inaugural Edition
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Lloyd's coverholder business in Europe, captive strategies for MGAs, MGA Rendezvous update, and FASE by the numbers.
+                      </p>
+                    </div>
+                    <svg className="w-5 h-5 text-fase-navy flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       )
     },
