@@ -57,6 +57,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
+  const [rendezvousRegistration, setRendezvousRegistration] = useState<any>(null);
 
   // Form data - initialized from memberData
   const [formData, setFormData] = useState({
@@ -119,6 +120,27 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     }
   }, [memberData]);
 
+  // Fetch rendezvous registration by matching email/company
+  useEffect(() => {
+    const fetchRendezvousRegistration = async () => {
+      if (!memberData?.email && !memberData?.organizationName) return;
+
+      try {
+        const response = await fetch(`/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.registration) {
+            setRendezvousRegistration(data.registration);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch rendezvous registration:', error);
+      }
+    };
+
+    fetchRendezvousRegistration();
+  }, [memberData?.email, memberData?.organizationName]);
+
   // Calculate pricing
   const calculateOriginalAmount = () => {
     if (formData.organizationType === 'MGA') {
@@ -143,15 +165,52 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   const originalAmount = calculateOriginalAmount();
   const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
 
-  // Calculate rendezvous total from first principles - don't trust stored passTotal
+  // Calculate rendezvous total - check both account field and fetched registration
   const getRendezvousTotal = () => {
+    // First check account-level reservation (legacy)
     const passData = memberData?.rendezvousPassReservation;
-    if (!passData?.reserved && !passData?.passCount) return 0;
-    const passOrgType = passData.organizationType || formData.organizationType;
-    const passCount = passData.passCount || 1;
-    const isFaseMember = passData.isFaseMember !== false;
-    const isAsaseMember = passData.isAsaseMember || false;
-    return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+    if (passData?.reserved || passData?.passCount) {
+      const passOrgType = passData.organizationType || formData.organizationType;
+      const passCount = passData.passCount || 1;
+      const isFaseMember = passData.isFaseMember !== false;
+      const isAsaseMember = passData.isAsaseMember || false;
+      return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+    }
+    // Then check fetched registration from rendezvous-registrations collection
+    if (rendezvousRegistration && rendezvousRegistration.status !== 'confirmed' && rendezvousRegistration.paymentStatus !== 'paid') {
+      const passOrgType = rendezvousRegistration.billingInfo?.organizationType || formData.organizationType;
+      const passCount = rendezvousRegistration.numberOfAttendees || 1;
+      const isFaseMember = rendezvousRegistration.companyIsFaseMember !== false;
+      const isAsaseMember = rendezvousRegistration.isAsaseMember || false;
+      return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+    }
+    return 0;
+  };
+
+  // Get pass data for invoice line items (from either source)
+  const getRendezvousPassData = () => {
+    const passData = memberData?.rendezvousPassReservation;
+    if (passData?.reserved || passData?.passCount) {
+      return {
+        reserved: true,
+        passCount: passData.passCount || 1,
+        organizationType: passData.organizationType || formData.organizationType,
+        isFaseMember: passData.isFaseMember !== false,
+        isAsaseMember: passData.isAsaseMember || false,
+        attendees: passData.attendees || []
+      };
+    }
+    if (rendezvousRegistration && rendezvousRegistration.status !== 'confirmed' && rendezvousRegistration.paymentStatus !== 'paid') {
+      return {
+        reserved: true,
+        passCount: rendezvousRegistration.numberOfAttendees || 1,
+        organizationType: rendezvousRegistration.billingInfo?.organizationType || formData.organizationType,
+        isFaseMember: rendezvousRegistration.companyIsFaseMember !== false,
+        isAsaseMember: rendezvousRegistration.isAsaseMember || false,
+        attendees: rendezvousRegistration.attendees || []
+      };
+    }
+    return null;
   };
   const rendezvousTotal = getRendezvousTotal();
   const customLineItemTotal = formData.customLineItem.enabled ? formData.customLineItem.amount : 0;
@@ -161,11 +220,12 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     if (!selectedAction) return null;
     const config = actionConfig[selectedAction];
 
+    const rendezvousPassData = getRendezvousPassData();
     const payload: any = {
       preview: isPreview,
       ...formData,
       greeting: formData.greeting || formData.fullName,
-      ...(memberData?.rendezvousPassReservation && { rendezvousPassReservation: memberData.rendezvousPassReservation })
+      ...(rendezvousPassData && { rendezvousPassReservation: rendezvousPassData })
     };
 
     if (selectedAction === 'rendezvous') {
@@ -200,12 +260,11 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
       }
 
-      if (memberData?.rendezvousPassReservation?.reserved || memberData?.rendezvousPassReservation?.passCount > 0) {
-        const passData = memberData.rendezvousPassReservation;
-        const passOrgType = passData.organizationType || formData.organizationType;
-        const passCount = passData.passCount || 1;
-        const isFaseMember = passData.isFaseMember !== false;
-        const isAsaseMember = passData.isAsaseMember || false;
+      if (rendezvousPassData) {
+        const passOrgType = rendezvousPassData.organizationType || formData.organizationType;
+        const passCount = rendezvousPassData.passCount || 1;
+        const isFaseMember = rendezvousPassData.isFaseMember !== false;
+        const isAsaseMember = rendezvousPassData.isAsaseMember || false;
         const calculatedTotal = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
         const passLabel = getOrgTypeLabel(passOrgType);
 
