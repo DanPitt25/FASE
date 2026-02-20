@@ -70,10 +70,10 @@ export default function February2026Edition() {
           {/* Introduction */}
           <div className="py-10 border-b border-gray-100">
             <p className="text-xl text-gray-800 leading-relaxed max-w-3xl">
-              Welcome to the first edition of <strong>The Entrepreneurial Underwriter</strong>, FASE's bulletin for the European delegated underwriting community.
+              Welcome to the first edition of <strong>The Entrepreneurial Underwriter</strong>, FASE&apos;s bulletin for the European delegated underwriting community.
             </p>
             <p className="text-gray-600 mt-4 max-w-3xl">
-              In this issue: a closer look at delegated authority at Lloyd's Europe, captive strategies for MGAs, and a snapshot of how FASE's community is growing.
+              In this issue: a closer look at delegated authority at Lloyd&apos;s Europe, captive strategies for MGAs, and a snapshot of how FASE&apos;s community is growing.
             </p>
           </div>
 
@@ -90,17 +90,17 @@ export default function February2026Edition() {
                 <div className="relative aspect-[16/9] mb-4 overflow-hidden rounded-lg">
                   <Image
                     src="/earlyMorning.jpg"
-                    alt="Lloyd's of London"
+                    alt="Lloyd&apos;s of London"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-2">Feature</p>
                 <h3 className="text-2xl font-noto-serif font-semibold text-fase-navy group-hover:text-fase-navy/80 transition-colors mb-3">
-                  Lloyd's in Europe: Coverholder Business Growing Fast After 123 Years
+                  Lloyd&apos;s in Europe: Coverholder Business Growing Fast After 123 Years
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Lloyd's EEA and Swiss coverholder business now accounts for 28% of Lloyd's total premium from the region. We separate myth from reality with Lloyd's own data.
+                  Lloyd&apos;s EEA and Swiss coverholder business now accounts for 28% of Lloyd&apos;s total premium from the region. We separate myth from reality with Lloyd&apos;s own data.
                 </p>
               </Link>
 

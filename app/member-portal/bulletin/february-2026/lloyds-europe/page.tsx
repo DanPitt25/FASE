@@ -274,7 +274,7 @@ export default function LloydsEuropeArticle() {
               </ul>
 
               <p>
-                One hundred and twenty-three years after Cuthbert Heath first lent his pen to his trusted agent in Amsterdam, Lloyd&apos;s delegated authority business is still driven by the same motivation. In the words of Lloyd&apos;s guide, it permits access to "business that otherwise would not be seen or could not be written economically at the box." But the relationship between Lloyd&apos;s managing agencies and modern MGAs is today more balanced and the delegation of authority is, often, much broader.
+                One hundred and twenty-three years after Cuthbert Heath first lent his pen to his trusted agent in Amsterdam, Lloyd&apos;s delegated authority business is still driven by the same motivation. In the words of Lloyd&apos;s guide, it permits access to &quot;business that otherwise would not be seen or could not be written economically at the box.&quot; But the relationship between Lloyd&apos;s managing agencies and modern MGAs is today more balanced and the delegation of authority is, often, much broader.
               </p>
             </div>
 
