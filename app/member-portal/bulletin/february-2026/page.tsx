@@ -129,25 +129,28 @@ export default function February2026Edition() {
 
           {/* FASE by the Numbers */}
           <div className="py-10 border-t border-gray-100">
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-8">FASE by the Numbers</h2>
+            <div className="flex items-baseline gap-3 mb-6">
+              <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy">FASE by the Numbers</h2>
+              <span className="text-gray-400 text-sm">February 2026</span>
+            </div>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-fase-navy rounded-lg p-8 text-center">
-                <p className="text-5xl font-noto-serif text-fase-gold mb-2">68</p>
-                <p className="text-white/80 text-sm uppercase tracking-wider">Members</p>
+            <div className="flex flex-wrap items-baseline gap-x-12 gap-y-4 mb-6">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">68</span>
+                <span className="text-gray-500">members</span>
               </div>
-              <div className="bg-fase-navy rounded-lg p-8 text-center">
-                <p className="text-5xl font-noto-serif text-fase-gold mb-2">14</p>
-                <p className="text-white/80 text-sm uppercase tracking-wider">Countries</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">14</span>
+                <span className="text-gray-500">countries</span>
               </div>
-              <div className="bg-fase-navy rounded-lg p-8 text-center">
-                <p className="text-5xl font-noto-serif text-fase-gold mb-2">12</p>
-                <p className="text-white/80 text-sm uppercase tracking-wider">Lines of Business</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">12</span>
+                <span className="text-gray-500">lines of business</span>
               </div>
             </div>
 
             <p className="text-gray-600 leading-relaxed max-w-3xl">
-              FASE&apos;s membership continues to grow across Europe. Our members now write business across property, casualty, marine, aviation, cyber, professional indemnity, D&O, surety, legal expenses, construction, motor, and specialty lines.
+              Our members write business across property, casualty, marine, aviation, cyber, professional indemnity, D&O, surety, legal expenses, construction, motor, and specialty lines.
             </p>
           </div>
 
