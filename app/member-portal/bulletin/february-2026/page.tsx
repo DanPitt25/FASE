@@ -149,7 +149,7 @@ export default function February2026Edition() {
             </div>
 
             <p className="text-gray-600 leading-relaxed max-w-3xl">
-              FASE's membership continues to grow across Europe. Our members now write business across property, casualty, marine, aviation, cyber, professional indemnity, D&O, surety, legal expenses, construction, motor, and specialty lines.
+              FASE&apos;s membership continues to grow across Europe. Our members now write business across property, casualty, marine, aviation, cyber, professional indemnity, D&O, surety, legal expenses, construction, motor, and specialty lines.
             </p>
           </div>
 

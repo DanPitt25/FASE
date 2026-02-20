@@ -513,7 +513,7 @@ export default function MemberContent() {
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
             <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">The Entrepreneurial Underwriter</h2>
             <p className="text-fase-black mb-6">
-              FASE's monthly bulletin for the European delegated underwriting community, featuring market insights, member news, and industry analysis.
+              FASE&apos;s monthly bulletin for the European delegated underwriting community, featuring market insights, member news, and industry analysis.
             </p>
 
             {/* Latest Edition */}
@@ -536,7 +536,7 @@ export default function MemberContent() {
                         Inaugural Edition
                       </h4>
                       <p className="text-sm text-gray-600">
-                        Lloyd's coverholder business in Europe, captive strategies for MGAs, MGA Rendezvous update, and FASE by the numbers.
+                        Lloyd&apos;s coverholder business in Europe, captive strategies for MGAs, MGA Rendezvous update, and FASE by the numbers.
                       </p>
                     </div>
                     <svg className="w-5 h-5 text-fase-navy flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -93,12 +93,12 @@ export default function CaptivesArticle() {
 
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">3. Alignment of Underwriting Incentives</h2>
             <p>
-              Retention enforces stronger underwriting discipline by directly linking portfolio performance to the MGA's own capital at risk.
+              Retention enforces stronger underwriting discipline by directly linking portfolio performance to the MGA&apos;s own capital at risk.
             </p>
 
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">4. Improved Negotiating Power with Carriers</h2>
             <p>
-              Demonstrated "skin in the game" strengthens credibility and can lead to better commission terms, profit shares, and long-term capacity agreements. Indeed we have seen some clients who managed to increase commission just by having the captive in place – they didn't even take a retention initially.
+              Demonstrated "skin in the game" strengthens credibility and can lead to better commission terms, profit shares, and long-term capacity agreements. Indeed we have seen some clients who managed to increase commission just by having the captive in place – they didn&apos;t even take a retention initially.
             </p>
 
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">5. Access to Reinsurance Markets on Better Terms</h2>
