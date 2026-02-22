@@ -1,0 +1,54 @@
+
+    <svg width="500" height="328" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="328" fill="#f8f8f8" rx="12" />
+      
+      <g transform="translate(0, 20)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Casualty</text>
+        <rect x="220" y="0" width="220" height="28" fill="#2D5574" rx="4" />
+        <text x="448" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">48%</text>
+      </g>
+    
+      <g transform="translate(0, 56)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Professional Indemnity</text>
+        <rect x="220" y="0" width="220" height="28" fill="#3B7A9E" rx="4" />
+        <text x="448" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">48%</text>
+      </g>
+    
+      <g transform="translate(0, 92)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Property, commercial</text>
+        <rect x="220" y="0" width="192.5" height="28" fill="#4A9BB5" rx="4" />
+        <text x="420.5" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">42%</text>
+      </g>
+    
+      <g transform="translate(0, 128)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Management Liability</text>
+        <rect x="220" y="0" width="174.16666666666666" height="28" fill="#5AABB8" rx="4" />
+        <text x="402.16666666666663" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">38%</text>
+      </g>
+    
+      <g transform="translate(0, 164)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Accident &amp; Health</text>
+        <rect x="220" y="0" width="165" height="28" fill="#6ABFC4" rx="4" />
+        <text x="393" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">36%</text>
+      </g>
+    
+      <g transform="translate(0, 200)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Property, personal</text>
+        <rect x="220" y="0" width="165" height="28" fill="#D4A84B" rx="4" />
+        <text x="393" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">36%</text>
+      </g>
+    
+      <g transform="translate(0, 236)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Cyber</text>
+        <rect x="220" y="0" width="146.66666666666666" height="28" fill="#E2B85A" rx="4" />
+        <text x="374.66666666666663" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">32%</text>
+      </g>
+    
+      <g transform="translate(0, 272)">
+        <text x="212" y="19" text-anchor="end" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Surety</text>
+        <rect x="220" y="0" width="128.33333333333334" height="28" fill="#F0C86A" rx="4" />
+        <text x="356.33333333333337" y="19" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="12" fill="#666666">28%</text>
+      </g>
+    
+    </svg>
+  

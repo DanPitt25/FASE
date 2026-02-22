@@ -316,10 +316,29 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
           </tr>
 
           <tr>
-            <td class="content-pad" style="padding: 16px 40px 32px 40px;">
-              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 15px; line-height: 24px; color: #444444; margin: 0 0 16px 0;">
+            <td class="content-pad" style="padding: 16px 40px 24px 40px;">
+              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 15px; line-height: 24px; color: #444444; margin: 0;">
                 ${t.fase_numbers_summary}
               </p>
+            </td>
+          </tr>
+
+          <!-- Charts -->
+          <tr>
+            <td style="padding: 0 40px 12px 40px;">
+              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #888888; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0;">${t.members_by_country}</p>
+              <img src="https://fasemga.com/bulletin/feb-2026/mga-countries.png" alt="Members by Country" width="500" style="display: block; width: 100%; max-width: 500px;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 40px 24px 40px;">
+              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #888888; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0;">${t.top_lines_of_business}</p>
+              <img src="https://fasemga.com/bulletin/feb-2026/mga-lob.png" alt="Top Lines of Business" width="500" style="display: block; width: 100%; max-width: 500px;">
+            </td>
+          </tr>
+
+          <tr>
+            <td class="content-pad" style="padding: 0 40px 32px 40px;">
               <a href="https://fasemga.com/directory" class="btn btn-gold">${t.view_directory}</a>
             </td>
           </tr>
