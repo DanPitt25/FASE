@@ -277,10 +277,10 @@
   "bulletin_february_2026": {
     "subject": "The Entrepreneurial Underwriter - Febrero 2026",
     "welcome_intro": "Bienvenido a la primera edición de <strong>The Entrepreneurial Underwriter</strong>, el boletín de FASE para la comunidad europea de suscripción delegada.",
-    "welcome_summary": "En este número: una mirada más cercana a la autoridad delegada en Lloyd's Europe, noticias de nuestros miembros y una instantánea del crecimiento de la comunidad FASE.",
+    "welcome_summary": "En este número: una mirada más cercana al negocio de autoridad delegada de Lloyd's en Europa, que está creciendo rápidamente; noticias de nuestros miembros; y una instantánea del crecimiento de la comunidad FASE.",
     "feature": "Artículo Principal",
     "lloyds_title": "Lloyd's en Europa: El Negocio de Coverholders Crece Rápidamente Tras 123 Años",
-    "lloyds_summary": "El negocio de coverholders de Lloyd's en el EEE y Suiza representa ahora el 28% del total de primas de Lloyd's en la región. Pero persisten conceptos erróneos sobre cómo funciona la autoridad delegada en Lloyd's Europe. En este artículo, separamos el mito de la realidad con la ayuda de los propios datos de Lloyd's.",
+    "lloyds_summary": "El negocio de coverholders de Lloyd's en el EEE y Suiza representa ahora el 28% del total de primas de Lloyd's en la región. Pero persisten conceptos erróneos sobre el alcance del negocio de autoridad delegada de Lloyd's y el proceso de acreditación de coverholders. En este artículo, separamos el mito de la realidad con la ayuda de los propios datos de Lloyd's.",
     "read_full_article": "Leer el artículo completo",
     "our_community": "Nuestra Comunidad",
     "fase_numbers_title": "FASE en Números",
@@ -313,7 +313,7 @@
     "rendezvous_title": "Las Inscripciones al MGA Rendezvous Avanzan a Buen Ritmo",
     "rendezvous_summary_1": "Más de 170 delegados se han inscrito hasta ahora para asistir al MGA Rendezvous 2026, representando 35 MGAs, 20 aseguradoras y siete proveedores de servicios. Se espera que la asistencia total a la conferencia, que tendrá lugar en el Hotel Arts de Barcelona los días 11 y 12 de mayo, supere los 500 participantes.",
     "rendezvous_summary_2": "La conferencia será co-organizada este año por FASE y la asociación española de MGAs, ASASE, y patrocinada por Howden. Contará con presentaciones y mesas redondas con líderes empresariales de Europa y Estados Unidos, pero una parte significativa del evento de día y medio se dedicará al networking.",
-    "rendezvous_discount": "<strong>Los miembros de FASE tienen derecho a un 50% de descuento en los pases.</strong> Para una MGA, un pase de conferencia individual costaría por tanto 400€; para una aseguradora o corredor, 550€; y para un proveedor de servicios 700€.",
+    "rendezvous_discount": "<strong>Los miembros de FASE tienen derecho a un 50% de descuento en los pases.</strong>",
     "register_now": "Registrarse ahora"
   }
 }
