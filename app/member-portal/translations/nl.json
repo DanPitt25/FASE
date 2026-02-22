@@ -365,5 +365,39 @@
     "contact_member": "Contact",
     "member": "lid",
     "members": "leden"
+  },
+  "bulletin": {
+    "back_to_portal": "Terug naar Ledenportaal",
+    "february_2026": {
+      "welcome_title": "The Entrepreneurial Underwriter",
+      "welcome_intro": "Welkom bij de eerste editie van <strong>The Entrepreneurial Underwriter</strong>, het FASE-bulletin voor de Europese delegated underwriting-gemeenschap.",
+      "welcome_summary": "In dit nummer: een nadere blik op gedelegeerde bevoegdheid bij Lloyd's Europe, captive-strategieën voor GA's, en een momentopname van de groei van de FASE-gemeenschap.",
+      "in_this_issue": "In Dit Nummer",
+      "feature": "Hoofdartikel",
+      "contributed_article": "Gastbijdrage",
+      "lloyds_title": "Lloyd's in Europa: Coverholder-Business Groeit Snel Na 123 Jaar",
+      "lloyds_summary": "De coverholder-activiteiten van Lloyd's in de EER en Zwitserland zijn nu goed voor 28% van de totale premies van Lloyd's in de regio. We scheiden mythe van werkelijkheid met Lloyd's eigen data.",
+      "captives_title": "Zeven Redenen om een Captive te Overwegen",
+      "captives_author": "Door Mark Elliott, Polo Insurance Managers",
+      "captives_summary": "De rol van herverzekeringscaptives is gegroeid in de capaciteitsstack van GA's. Mark Elliott benadrukt waarom winstgevende GA's zouden moeten overwegen een captive op te richten.",
+      "fase_numbers_title": "FASE in Cijfers",
+      "members": "leden",
+      "countries": "landen",
+      "lines_of_business": "branches",
+      "members_by_country": "Leden per Land",
+      "member_news_title": "Ledennieuw",
+      "lloyds_resources_title": "Lloyd's Bronnen",
+      "lloyds_resources_intro": "Lloyd's heeft de volgende presentaties beschikbaar gesteld voor FASE-leden die een coverholder-relatie met de markt overwegen.",
+      "lloyds_datapoints_title": "Lloyd's Europe Coverholders Datapunten",
+      "lloyds_datapoints_desc": "Landspecifieke uitsplitsing van coverholder-aantallen en GWP in de EER en Zwitserland",
+      "lloyds_da_title": "Gedelegeerde Bevoegdheid bij Lloyd's",
+      "lloyds_da_desc": "Introductie tot het Lloyd's coverholder-model, inclusief goedkeuringscriteria, belangrijke contacten en volgende stappen",
+      "event_update": "Evenement Update",
+      "rendezvous_title": "MGA Rendezvous 2026",
+      "rendezvous_summary": "Meer dan 170 deelnemers hebben zich geregistreerd, die 35 GA's, 20 verzekeraars en zeven dienstverleners vertegenwoordigen. De totale opkomst zal naar verwachting meer dan 500 bedragen.",
+      "rendezvous_location": "Hotel Arts, Barcelona · 11-12 Mei 2026",
+      "rendezvous_discount": "FASE-leden profiteren van 50% korting op passen.",
+      "register_now": "Nu Registreren"
+    }
   }
 }

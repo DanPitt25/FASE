@@ -354,5 +354,39 @@
     "contact_member": "Contatta",
     "member": "membro",
     "members": "membri"
+  },
+  "bulletin": {
+    "back_to_portal": "Torna al Portale Membri",
+    "february_2026": {
+      "welcome_title": "The Entrepreneurial Underwriter",
+      "welcome_intro": "Benvenuti alla prima edizione di <strong>The Entrepreneurial Underwriter</strong>, il bollettino di FASE per la comunità europea dell'underwriting delegato.",
+      "welcome_summary": "In questo numero: uno sguardo approfondito sull'autorità delegata presso Lloyd's Europe, strategie captive per le MGA, e un'istantanea della crescita della comunità FASE.",
+      "in_this_issue": "In Questo Numero",
+      "feature": "Articolo Principale",
+      "contributed_article": "Articolo Contribuito",
+      "lloyds_title": "Lloyd's in Europa: Il Business dei Coverholder in Rapida Crescita Dopo 123 Anni",
+      "lloyds_summary": "Il business dei coverholder di Lloyd's nel SEE e in Svizzera rappresenta ora il 28% del totale dei premi di Lloyd's nella regione. Separiamo il mito dalla realtà con i dati di Lloyd's.",
+      "captives_title": "Sette Motivi per Considerare una Captive",
+      "captives_author": "Di Mark Elliott, Polo Insurance Managers",
+      "captives_summary": "Il ruolo delle captive di riassicurazione è cresciuto nello stack di capacità delle MGA. Mark Elliott evidenzia perché le MGA redditizie dovrebbero considerare la creazione di una captive.",
+      "fase_numbers_title": "FASE in Numeri",
+      "members": "membri",
+      "countries": "paesi",
+      "lines_of_business": "linee di business",
+      "members_by_country": "Membri per Paese",
+      "member_news_title": "Notizie dei Membri",
+      "lloyds_resources_title": "Risorse Lloyd's",
+      "lloyds_resources_intro": "Lloyd's ha fornito le seguenti presentazioni per i membri FASE che stanno considerando una relazione di coverholder con il mercato.",
+      "lloyds_datapoints_title": "Dati sui Coverholder Lloyd's Europe",
+      "lloyds_datapoints_desc": "Ripartizione per paese del numero di coverholder e del GWP nel SEE e in Svizzera",
+      "lloyds_da_title": "Autorità Delegata presso Lloyd's",
+      "lloyds_da_desc": "Introduzione al modello coverholder di Lloyd's, inclusi i criteri di approvazione, i contatti chiave e i prossimi passi",
+      "event_update": "Aggiornamento Evento",
+      "rendezvous_title": "MGA Rendezvous 2026",
+      "rendezvous_summary": "Più di 170 delegati si sono registrati, rappresentando 35 MGA, 20 assicuratori e sette fornitori di servizi. Si prevede che la partecipazione totale superi i 500.",
+      "rendezvous_location": "Hotel Arts, Barcellona · 11-12 Maggio 2026",
+      "rendezvous_discount": "I membri FASE beneficiano di uno sconto del 50% sui pass.",
+      "register_now": "Registrati Ora"
+    }
   }
 }

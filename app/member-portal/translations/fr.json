@@ -354,5 +354,39 @@
     "contact_member": "Contacter",
     "member": "membre",
     "members": "membres"
+  },
+  "bulletin": {
+    "back_to_portal": "Retour au Portail Membres",
+    "february_2026": {
+      "welcome_title": "The Entrepreneurial Underwriter",
+      "welcome_intro": "Bienvenue dans la première édition de <strong>The Entrepreneurial Underwriter</strong>, le bulletin de FASE pour la communauté européenne de la souscription déléguée.",
+      "welcome_summary": "Dans ce numéro : un regard approfondi sur l'autorité déléguée chez Lloyd's Europe, les stratégies de captives pour les agences de souscription, et un aperçu de la croissance de la communauté FASE.",
+      "in_this_issue": "Dans Ce Numéro",
+      "feature": "Article Principal",
+      "contributed_article": "Article Invité",
+      "lloyds_title": "Lloyd's en Europe : L'Activité Coverholder en Forte Croissance Après 123 Ans",
+      "lloyds_summary": "L'activité des coverholders de Lloyd's dans l'EEE et en Suisse représente désormais 28% du total des primes de Lloyd's dans la région. Nous démêlons le mythe de la réalité avec les données de Lloyd's.",
+      "captives_title": "Sept Raisons d'Envisager une Captive",
+      "captives_author": "Par Mark Elliott, Polo Insurance Managers",
+      "captives_summary": "Le rôle des captives de réassurance s'est accru dans la pile de capacité des agences de souscription. Mark Elliott explique pourquoi les agences de souscription rentables devraient envisager de créer une captive.",
+      "fase_numbers_title": "FASE en Chiffres",
+      "members": "membres",
+      "countries": "pays",
+      "lines_of_business": "branches d'activité",
+      "members_by_country": "Membres par Pays",
+      "member_news_title": "Actualités des Membres",
+      "lloyds_resources_title": "Ressources Lloyd's",
+      "lloyds_resources_intro": "Lloyd's a fourni les présentations suivantes pour les membres FASE envisageant une relation de coverholder avec le marché.",
+      "lloyds_datapoints_title": "Données sur les Coverholders Lloyd's Europe",
+      "lloyds_datapoints_desc": "Ventilation par pays du nombre de coverholders et du GWP dans l'EEE et en Suisse",
+      "lloyds_da_title": "L'Autorité Déléguée chez Lloyd's",
+      "lloyds_da_desc": "Introduction au modèle coverholder de Lloyd's, y compris les critères d'approbation, les contacts clés et les prochaines étapes",
+      "event_update": "Actualité Événement",
+      "rendezvous_title": "MGA Rendezvous 2026",
+      "rendezvous_summary": "Plus de 170 délégués se sont inscrits, représentant 35 agences de souscription, 20 porteurs de risques et sept prestataires de services. La participation totale devrait dépasser 500 personnes.",
+      "rendezvous_location": "Hotel Arts, Barcelone · 11-12 Mai 2026",
+      "rendezvous_discount": "Les membres FASE bénéficient d'une réduction de 50% sur les passes.",
+      "register_now": "S'inscrire Maintenant"
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUnifiedAuth } from '../../../../contexts/UnifiedAuthContext';
+import { usePortalTranslations } from '../../hooks/usePortalTranslations';
 import PageLayout from '../../../../components/PageLayout';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -137,8 +138,12 @@ function BarChart({ data, total, maxItems = 8 }: { data: Record<string, number>;
 
 export default function February2026Edition() {
   const { user, loading } = useUnifiedAuth();
+  const { translations, locale, loading: translationsLoading } = usePortalTranslations();
   const router = useRouter();
   const [stats, setStats] = useState<FaseStats | null>(null);
+
+  // Get bulletin translations with fallback
+  const t = translations?.bulletin?.february_2026 || {};
 
   useEffect(() => {
     if (!loading && !user) {
@@ -176,7 +181,7 @@ export default function February2026Edition() {
               mgaCount++;
               if (data.portfolio?.linesOfBusiness) {
                 data.portfolio.linesOfBusiness.forEach((lob: string) => {
-                  const label = getLineOfBusinessDisplay(lob, 'en');
+                  const label = getLineOfBusinessDisplay(lob, locale || 'en');
                   byLinesOfBusiness[label] = (byLinesOfBusiness[label] || 0) + 1;
                 });
               }
@@ -200,7 +205,7 @@ export default function February2026Edition() {
     fetchStats();
   }, []);
 
-  if (loading) {
+  if (loading || translationsLoading) {
     return (
       <PageLayout currentPage="member-portal">
         <div className="min-h-screen bg-white flex items-center justify-center">
@@ -244,23 +249,24 @@ export default function February2026Edition() {
               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Back to Member Portal
+              {translations?.bulletin?.back_to_portal || 'Back to Member Portal'}
             </Link>
           </div>
 
           {/* Introduction */}
           <div className="py-10 border-b border-gray-100">
-            <p className="text-xl text-gray-800 leading-relaxed max-w-3xl">
-              Welcome to the first edition of <strong>The Entrepreneurial Underwriter</strong>, FASE&apos;s bulletin for the European delegated underwriting community.
-            </p>
+            <p
+              className="text-xl text-gray-800 leading-relaxed max-w-3xl"
+              dangerouslySetInnerHTML={{ __html: t.welcome_intro || "Welcome to the first edition of <strong>The Entrepreneurial Underwriter</strong>, FASE's bulletin for the European delegated underwriting community." }}
+            />
             <p className="text-gray-600 mt-4 max-w-3xl">
-              In this issue: a closer look at delegated authority at Lloyd&apos;s Europe, captive strategies for MGAs, and a snapshot of how FASE&apos;s community is growing.
+              {t.welcome_summary || "In this issue: a closer look at delegated authority at Lloyd's Europe, captive strategies for MGAs, and a snapshot of how FASE's community is growing."}
             </p>
           </div>
 
           {/* Articles Grid */}
           <div className="py-10">
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-8">In This Issue</h2>
+            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-8">{t.in_this_issue || 'In This Issue'}</h2>
 
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Lloyd's Article */}
@@ -271,17 +277,17 @@ export default function February2026Edition() {
                 <div className="relative aspect-[16/9] mb-4 overflow-hidden rounded-lg">
                   <Image
                     src="/bulletin/feb-2026/lloyds-building.jpg"
-                    alt="Lloyd&apos;s of London"
+                    alt="Lloyd's of London"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-2">Feature</p>
+                <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-2">{t.feature || 'Feature'}</p>
                 <h3 className="text-2xl font-noto-serif font-semibold text-fase-navy group-hover:text-fase-navy/80 transition-colors mb-3">
-                  Lloyd&apos;s in Europe: Coverholder Business Growing Fast After 123 Years
+                  {t.lloyds_title || "Lloyd's in Europe: Coverholder Business Growing Fast After 123 Years"}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Lloyd&apos;s EEA and Swiss coverholder business now accounts for 28% of Lloyd&apos;s total premium from the region. We separate myth from reality with Lloyd&apos;s own data.
+                  {t.lloyds_summary || "Lloyd's EEA and Swiss coverholder business now accounts for 28% of Lloyd's total premium from the region. We separate myth from reality with Lloyd's own data."}
                 </p>
               </Link>
 
@@ -298,13 +304,13 @@ export default function February2026Edition() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-2">Contributed Article</p>
+                <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-2">{t.contributed_article || 'Contributed Article'}</p>
                 <h3 className="text-2xl font-noto-serif font-semibold text-fase-navy group-hover:text-fase-navy/80 transition-colors mb-2">
-                  Seven Reasons to Consider a Captive
+                  {t.captives_title || 'Seven Reasons to Consider a Captive'}
                 </h3>
-                <p className="text-gray-500 text-sm mb-3">By Mark Elliott, Polo Insurance Managers</p>
+                <p className="text-gray-500 text-sm mb-3">{t.captives_author || 'By Mark Elliott, Polo Insurance Managers'}</p>
                 <p className="text-gray-600 leading-relaxed">
-                  The role of reinsurance captives has been growing in the capacity stack of MGAs. Mark Elliott highlights why profitable MGAs should consider establishing a captive.
+                  {t.captives_summary || 'The role of reinsurance captives has been growing in the capacity stack of MGAs. Mark Elliott highlights why profitable MGAs should consider establishing a captive.'}
                 </p>
               </Link>
             </div>
@@ -313,7 +319,7 @@ export default function February2026Edition() {
           {/* FASE by the Numbers */}
           <div className="py-10 border-t border-gray-100">
             <div className="flex items-baseline gap-3 mb-8">
-              <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy">FASE by the Numbers</h2>
+              <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy">{t.fase_numbers_title || 'FASE by the Numbers'}</h2>
               <span className="text-gray-400 text-sm">February 2026</span>
             </div>
 
@@ -323,19 +329,19 @@ export default function February2026Edition() {
                 <span className="text-4xl font-noto-serif font-bold text-fase-navy">
                   {stats?.memberCount ?? '—'}
                 </span>
-                <span className="text-gray-500">members</span>
+                <span className="text-gray-500">{t.members || 'members'}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-noto-serif font-bold text-fase-navy">
                   {stats?.countryCount ?? '—'}
                 </span>
-                <span className="text-gray-500">countries</span>
+                <span className="text-gray-500">{t.countries || 'countries'}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-noto-serif font-bold text-fase-navy">
                   {stats?.linesOfBusinessCount ?? '—'}
                 </span>
-                <span className="text-gray-500">lines of business</span>
+                <span className="text-gray-500">{t.lines_of_business || 'lines of business'}</span>
               </div>
             </div>
 
@@ -344,13 +350,13 @@ export default function February2026Edition() {
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Members by Country */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Members by Country</h3>
-                  <DonutChart data={stats.byCountry} centerLabel="members" />
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">{t.members_by_country || 'Members by Country'}</h3>
+                  <DonutChart data={stats.byCountry} centerLabel={t.members || 'members'} />
                 </div>
 
                 {/* Lines of Business */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Lines of Business</h3>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">{t.lines_of_business || 'Lines of Business'}</h3>
                   <BarChart data={stats.byLinesOfBusiness} total={stats.mgaCount} maxItems={8} />
                 </div>
               </div>
@@ -359,11 +365,11 @@ export default function February2026Edition() {
 
           {/* Member News */}
           <div className="py-10 border-t border-gray-100">
-            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-8">Member News</h2>
+            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-8">{t.member_news_title || 'Member News'}</h2>
 
             <div className="space-y-3">
               <a
-                href="https://www.theinsurer.com/news/rising-edge-mga-sold-to-k2-insurance-services/"
+                href="https://www.risingedge.co/news/redo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
@@ -371,9 +377,9 @@ export default function February2026Edition() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                      Rising Edge MGA sold to K2 Insurance Services
+                      Rising Edge confirms sale of Rising Edge D&amp;O to K2 International
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">The Insurer</p>
+                    <p className="text-sm text-gray-500 mt-1">Rising Edge</p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -382,7 +388,7 @@ export default function February2026Edition() {
               </a>
 
               <a
-                href="https://www.dualgroup.com/news/dual-europe-appoints-coo-and-head-of-hr"
+                href="https://www.dualgroup.com/news-and-media/dual-europe-strengthens-transactional-liability-team"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
@@ -390,7 +396,7 @@ export default function February2026Edition() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                      DUAL Europe appoints COO and Head of HR
+                      DUAL Europe strengthens Transactional Liability team with strategic leadership appointments
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">DUAL Group</p>
                   </div>
@@ -401,7 +407,7 @@ export default function February2026Edition() {
               </a>
 
               <a
-                href="https://www.insurancetimes.co.uk/news/optio-expands-with-ags-acquisition/1454226.article"
+                href="https://blog.optiogroup.com/news/optio-strengthens-scandinavian-presence-with-ags-forsikring-as-acquisition"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
@@ -409,9 +415,9 @@ export default function February2026Edition() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                      Optio expands with AGS acquisition
+                      Optio strengthens Scandinavian presence with AGS Forsikring AS acquisition
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Insurance Times</p>
+                    <p className="text-sm text-gray-500 mt-1">Optio Group</p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -420,7 +426,7 @@ export default function February2026Edition() {
               </a>
 
               <a
-                href="https://www.insurancetimes.co.uk/news/victor-insurance-uk-expands-property-offering/1454187.article"
+                href="https://www.victorinsurance.com/us/about/media-center/victor-insurance-uk-strengthens-property-offering--expanding-ris.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
@@ -428,9 +434,9 @@ export default function February2026Edition() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                      Victor Insurance UK expands property offering
+                      Victor Insurance UK strengthens property offering, expanding risk appetite for property owners
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Insurance Times</p>
+                    <p className="text-sm text-gray-500 mt-1">Victor Insurance</p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -439,7 +445,7 @@ export default function February2026Edition() {
               </a>
 
               <a
-                href="https://www.theinsurer.com/news/mgaa-and-siriuspoint-launch-lloyds-da-panel-for-london-market-mgas/"
+                href="https://www.siriuspt.com/mgaa-siriuspoint-panel-the-rise-of-delegated-authority-at-lloyds/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
@@ -447,9 +453,9 @@ export default function February2026Edition() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                      MGAA and SiriusPoint launch Lloyd&apos;s DA panel for London market MGAs
+                      MGAA &amp; SiriusPoint Panel: The Rise of Delegated Authority at Lloyd&apos;s
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">The Insurer</p>
+                    <p className="text-sm text-gray-500 mt-1">SiriusPoint</p>
                   </div>
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -461,9 +467,9 @@ export default function February2026Edition() {
 
           {/* Lloyd's Resources */}
           <div className="py-10 border-t border-gray-100">
-            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-3">Lloyd&apos;s Resources</h2>
+            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-3">{t.lloyds_resources_title || "Lloyd's Resources"}</h2>
             <p className="text-gray-600 mb-6">
-              Lloyd&apos;s provides the following materials exclusively for FASE membership.
+              {t.lloyds_resources_intro || "Lloyd's has provided the following slide decks for FASE members considering a coverholder relationship with the market."}
             </p>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -480,10 +486,10 @@ export default function February2026Edition() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                    Lloyd&apos;s Europe Coverholders Datapoints
+                    {t.lloyds_datapoints_title || "Lloyd's Europe Coverholders Datapoints"}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Coverholder statistics by European country, including counts and premium volumes
+                    {t.lloyds_datapoints_desc || 'Country-by-country breakdown of coverholder counts and GWP across the EEA and Switzerland'}
                   </p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -504,10 +510,10 @@ export default function February2026Edition() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
-                    Delegated Authority at Lloyd&apos;s
+                    {t.lloyds_da_title || "Delegated Authority at Lloyd's"}
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Guide to becoming a Lloyd&apos;s coverholder, including requirements and process overview
+                    {t.lloyds_da_desc || "Introduction to the Lloyd's coverholder model, including approval criteria, key contacts and next steps"}
                   </p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -530,16 +536,16 @@ export default function February2026Edition() {
                   />
                 </div>
                 <div className="lg:w-1/2 p-10 lg:p-12 flex flex-col justify-center">
-                  <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-3">Event Update</p>
-                  <h2 className="text-3xl font-noto-serif font-bold text-white mb-4">MGA Rendezvous 2026</h2>
+                  <p className="text-fase-gold text-xs font-medium uppercase tracking-wider mb-3">{t.event_update || 'Event Update'}</p>
+                  <h2 className="text-3xl font-noto-serif font-bold text-white mb-4">{t.rendezvous_title || 'MGA Rendezvous 2026'}</h2>
                   <p className="text-white/80 mb-4">
-                    More than 170 delegates have registered, representing 35 MGAs, 20 carriers and seven service providers. Total attendance is expected to exceed 500.
+                    {t.rendezvous_summary || 'More than 170 delegates have registered, representing 35 MGAs, 20 carriers and seven service providers. Total attendance is expected to exceed 500.'}
                   </p>
                   <p className="text-white font-medium mb-2">
-                    Hotel Arts, Barcelona · 11-12 May 2026
+                    {t.rendezvous_location || 'Hotel Arts, Barcelona · 11-12 May 2026'}
                   </p>
                   <p className="text-white/70 text-sm mb-6">
-                    FASE members benefit from a 50% discount on passes.
+                    {t.rendezvous_discount || 'FASE members benefit from a 50% discount on passes.'}
                   </p>
                   <div>
                     <a
@@ -548,7 +554,7 @@ export default function February2026Edition() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-6 py-3 bg-fase-gold text-fase-navy font-medium rounded hover:bg-fase-gold/90 transition-colors"
                     >
-                      Register Now
+                      {t.register_now || 'Register Now'}
                       <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
