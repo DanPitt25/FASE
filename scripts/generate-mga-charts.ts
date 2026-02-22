@@ -100,7 +100,7 @@ interface MgaStats {
 async function fetchMgaStats(): Promise<MgaStats> {
   console.log('Fetching MGA data from Firestore...');
 
-  const snapshot = await adminDb.collection('accounts').get() as admin.firestore.QuerySnapshot;
+  const snapshot = await adminDb.collection('accounts').get();
 
   const byCountry: Record<string, number> = {};
   const byLinesOfBusiness: Record<string, number> = {};
