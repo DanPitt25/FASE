@@ -149,7 +149,7 @@ export default function LloydsEuropeArticle() {
         {/* Hero */}
         <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
           <Image
-            src="/earlyMorning.jpg"
+            src="/bulletin/feb-2026/lloyds-building.jpg"
             alt="Lloyd&apos;s of London"
             fill
             className="object-cover"

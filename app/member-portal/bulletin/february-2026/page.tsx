@@ -1,21 +1,90 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUnifiedAuth } from '../../../../contexts/UnifiedAuthContext';
 import PageLayout from '../../../../components/PageLayout';
 import Image from 'next/image';
 import Link from 'next/link';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../../lib/firebase';
+import { getLineOfBusinessDisplay } from '../../../../lib/lines-of-business';
+
+// Country code to name mapping
+const countryNames: Record<string, string> = {
+  'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria', 'HR': 'Croatia',
+  'CY': 'Cyprus', 'CZ': 'Czech Republic', 'DK': 'Denmark', 'EE': 'Estonia',
+  'FI': 'Finland', 'FR': 'France', 'DE': 'Germany', 'GR': 'Greece',
+  'HU': 'Hungary', 'IE': 'Ireland', 'IT': 'Italy', 'LV': 'Latvia',
+  'LT': 'Lithuania', 'LU': 'Luxembourg', 'MT': 'Malta', 'NL': 'Netherlands',
+  'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SK': 'Slovakia',
+  'SI': 'Slovenia', 'ES': 'Spain', 'SE': 'Sweden', 'GB': 'United Kingdom',
+  'CH': 'Switzerland', 'NO': 'Norway', 'IS': 'Iceland', 'LI': 'Liechtenstein'
+};
+
+interface FaseStats {
+  memberCount: number;
+  countryCount: number;
+  linesOfBusinessCount: number;
+  linesOfBusiness: string[];
+}
 
 export default function February2026Edition() {
   const { user, loading } = useUnifiedAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<FaseStats | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login?redirect=/member-portal/bulletin/february-2026');
     }
   }, [user, loading, router]);
+
+  // Fetch FASE stats from Firestore
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const accountsRef = collection(db, 'accounts');
+        const snapshot = await getDocs(accountsRef);
+
+        const countries = new Set<string>();
+        const linesOfBusiness = new Set<string>();
+        let memberCount = 0;
+
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          // Only count active members (exclude flagged and rejected)
+          if (data.status !== 'flagged' && data.status !== 'rejected') {
+            memberCount++;
+
+            // Get country
+            const country = data.businessAddress?.country || data.registeredAddress?.country;
+            if (country) {
+              countries.add(countryNames[country] || country);
+            }
+
+            // Get lines of business (only for MGAs)
+            if (data.organizationType === 'MGA' && data.portfolio?.linesOfBusiness) {
+              data.portfolio.linesOfBusiness.forEach((lob: string) => {
+                linesOfBusiness.add(getLineOfBusinessDisplay(lob, 'en'));
+              });
+            }
+          }
+        });
+
+        setStats({
+          memberCount,
+          countryCount: countries.size,
+          linesOfBusinessCount: linesOfBusiness.size,
+          linesOfBusiness: Array.from(linesOfBusiness).sort()
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   if (loading) {
     return (
@@ -87,7 +156,7 @@ export default function February2026Edition() {
               >
                 <div className="relative aspect-[16/9] mb-4 overflow-hidden rounded-lg">
                   <Image
-                    src="/earlyMorning.jpg"
+                    src="/bulletin/feb-2026/lloyds-building.jpg"
                     alt="Lloyd&apos;s of London"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -136,21 +205,31 @@ export default function February2026Edition() {
 
             <div className="flex flex-wrap items-baseline gap-x-12 gap-y-4 mb-6">
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-noto-serif font-bold text-fase-navy">68</span>
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">
+                  {stats?.memberCount ?? '—'}
+                </span>
                 <span className="text-gray-500">members</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-noto-serif font-bold text-fase-navy">14</span>
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">
+                  {stats?.countryCount ?? '—'}
+                </span>
                 <span className="text-gray-500">countries</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-noto-serif font-bold text-fase-navy">12</span>
+                <span className="text-4xl font-noto-serif font-bold text-fase-navy">
+                  {stats?.linesOfBusinessCount ?? '—'}
+                </span>
                 <span className="text-gray-500">lines of business</span>
               </div>
             </div>
 
             <p className="text-gray-600 leading-relaxed max-w-3xl">
-              Our members write business across property, casualty, marine, aviation, cyber, professional indemnity, D&O, surety, legal expenses, construction, motor, and specialty lines.
+              {stats?.linesOfBusiness ? (
+                <>Our members write business across {stats.linesOfBusiness.slice(0, -1).join(', ').toLowerCase()}, and {stats.linesOfBusiness.slice(-1)[0].toLowerCase()}.</>
+              ) : (
+                <>Our members write business across property, casualty, marine, aviation, cyber, professional indemnity, and specialty lines.</>
+              )}
             </p>
           </div>
 
