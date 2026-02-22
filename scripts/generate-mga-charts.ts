@@ -106,7 +106,7 @@ async function fetchMgaStats(): Promise<MgaStats> {
   const byLinesOfBusiness: Record<string, number> = {};
   let mgaCount = 0;
 
-  snapshot.docs.forEach((doc) => {
+  snapshot.docs.forEach((doc: any) => {
     const data = doc.data();
 
     // Only count active MGAs (exclude flagged and rejected)
