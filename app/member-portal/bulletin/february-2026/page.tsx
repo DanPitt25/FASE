@@ -357,6 +357,166 @@ export default function February2026Edition() {
             )}
           </div>
 
+          {/* Member News */}
+          <div className="py-10 border-t border-gray-100">
+            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-8">Member News</h2>
+
+            <div className="space-y-3">
+              <a
+                href="https://www.theinsurer.com/news/rising-edge-mga-sold-to-k2-insurance-services/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                      Rising Edge MGA sold to K2 Insurance Services
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">The Insurer</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+
+              <a
+                href="https://www.dualgroup.com/news/dual-europe-appoints-coo-and-head-of-hr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                      DUAL Europe appoints COO and Head of HR
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">DUAL Group</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+
+              <a
+                href="https://www.insurancetimes.co.uk/news/optio-expands-with-ags-acquisition/1454226.article"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                      Optio expands with AGS acquisition
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Insurance Times</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+
+              <a
+                href="https://www.insurancetimes.co.uk/news/victor-insurance-uk-expands-property-offering/1454187.article"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                      Victor Insurance UK expands property offering
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Insurance Times</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+
+              <a
+                href="https://www.theinsurer.com/news/mgaa-and-siriuspoint-launch-lloyds-da-panel-for-london-market-mgas/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                      MGAA and SiriusPoint launch Lloyd&apos;s DA panel for London market MGAs
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">The Insurer</p>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          {/* Lloyd's Resources */}
+          <div className="py-10 border-t border-gray-100">
+            <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy mb-3">Lloyd&apos;s Resources</h2>
+            <p className="text-gray-600 mb-6">
+              Lloyd&apos;s provides the following materials exclusively for FASE membership.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <a
+                href="/bulletin/feb-2026/lloyds-europe-coverholders-datapoints.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                    Lloyd&apos;s Europe Coverholders Datapoints
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Coverholder statistics by European country, including counts and premium volumes
+                  </p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </a>
+
+              <a
+                href="/bulletin/feb-2026/delegated-authority-at-lloyds.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 bg-gray-50 hover:bg-gray-100 rounded-lg p-5 transition-colors"
+              >
+                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-fase-navy group-hover:text-fase-navy/80">
+                    Delegated Authority at Lloyd&apos;s
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Guide to becoming a Lloyd&apos;s coverholder, including requirements and process overview
+                  </p>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-fase-navy flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
           {/* MGA Rendezvous */}
           <div className="py-10 border-t border-gray-100">
             <div className="bg-fase-navy rounded-xl overflow-hidden">
