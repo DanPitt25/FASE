@@ -339,7 +339,7 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
 
           <tr>
             <td class="content-pad" style="padding: 0 40px 32px 40px;">
-              <a href="https://fasemga.com/member-portal/directory" class="btn btn-gold">${t.view_directory}</a>
+              <a href="https://fasemga.com/member-portal" class="btn btn-gold">${t.view_directory}</a>
             </td>
           </tr>
 
