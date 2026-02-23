@@ -186,7 +186,7 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
                 ${t.captives_title}
               </h2>
               <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 13px; line-height: 20px; color: #888888; margin: 8px 0 0 0;">
-                By Mark Elliott, Polo Insurance Managers
+                ${t.captives_author}
               </p>
             </td>
           </tr>
