@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         totalAmount: invoiceData.totalAmount,
         originalAmount: invoiceData.totalAmount,
         
-        forceCurrency: 'EUR', // Sponsorship invoices are always EUR
+        forceCurrency: requestData.forceCurrency || 'EUR',
         userLocale: locale,
         
         // For sponsorship invoices, use a custom line item with the description
