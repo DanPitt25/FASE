@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllInvoices, updateInvoiceStatus, Invoice, createInvoiceRecord } from '../../../lib/firestore';
+
+interface StorageInvoice {
+  id: string;
+  invoiceNumber: string;
+  organizationName: string;
+  organizationSlug: string;
+  url: string;
+  uploadedAt: string | null;
+  size: number;
+}
 
 interface LineItem {
   id: string;
@@ -50,11 +59,9 @@ const initialFormState: CustomInvoiceForm = {
 };
 
 export default function InvoicesTab() {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState<StorageInvoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingInvoice, setUpdatingInvoice] = useState<string | null>(null);
-  const [showOnlyWithPdf, setShowOnlyWithPdf] = useState(true);
 
   // Custom invoice modal state
   const [showModal, setShowModal] = useState(false);
@@ -69,34 +76,18 @@ export default function InvoicesTab() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const invoiceData = await getAllInvoices();
-      invoiceData.sort((a, b) => {
-        const dateA = a.sentAt?.toDate ? a.sentAt.toDate() : new Date(a.sentAt);
-        const dateB = b.sentAt?.toDate ? b.sentAt.toDate() : new Date(b.sentAt);
-        return dateB.getTime() - dateA.getTime();
-      });
-      setInvoices(invoiceData);
+      const response = await fetch('/api/admin/storage-invoices');
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load invoices');
+      }
+      setInvoices(data.invoices);
       setError(null);
     } catch (err: any) {
       console.error('Failed to load invoices:', err);
-      setError('Failed to load invoices');
+      setError(err.message || 'Failed to load invoices');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = async (invoiceId: string, newStatus: 'sent' | 'paid' | 'overdue') => {
-    try {
-      setUpdatingInvoice(invoiceId);
-      await updateInvoiceStatus(invoiceId, newStatus);
-      setInvoices(invoices.map(invoice =>
-        invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
-      ));
-    } catch (err: any) {
-      console.error('Failed to update invoice status:', err);
-      alert('Failed to update invoice status');
-    } finally {
-      setUpdatingInvoice(null);
     }
   };
 
@@ -189,21 +180,6 @@ export default function InvoicesTab() {
         throw new Error(data.error || 'Failed to generate invoice');
       }
 
-      // Create invoice record in Firestore
-      await createInvoiceRecord({
-        invoiceNumber: data.invoiceNumber,
-        recipientEmail: formData.recipientEmail || '',
-        recipientName: formData.recipientName || formData.organizationName,
-        organizationName: formData.organizationName,
-        amount: data.totalAmount,
-        currency: data.convertedCurrency || 'EUR',
-        type: 'standalone',
-        status: 'sent',
-        sentAt: new Date(),
-        pdfUrl: data.pdfUrl,
-        pdfGenerated: true
-      });
-
       setGeneratedInvoice({
         pdfUrl: data.pdfUrl,
         invoiceNumber: data.invoiceNumber
@@ -225,9 +201,9 @@ export default function InvoicesTab() {
     setGeneratedInvoice(null);
   };
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
@@ -237,40 +213,11 @@ export default function InvoicesTab() {
     });
   };
 
-  const formatAmount = (amount: number, currency: string) => {
-    const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£', 'CHF': 'CHF ' };
-    return `${symbols[currency] || currency + ' '}${amount}`;
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeBadgeColor = (type: string) => {
-    switch (type) {
-      case 'regular': return 'bg-blue-100 text-blue-800';
-      case 'standalone': return 'bg-indigo-100 text-indigo-800';
-      case 'reminder': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'regular': return 'Regular';
-      case 'standalone': return 'Standalone';
-      case 'reminder': return 'Reminder';
-      default: return type;
-    }
-  };
-
-  const filteredInvoices = showOnlyWithPdf ? invoices.filter(i => i.pdfUrl) : invoices;
-  const legacyCount = invoices.filter(i => !i.pdfUrl).length;
 
   if (loading) {
     return (
@@ -296,19 +243,8 @@ export default function InvoicesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Invoice Tracking</h2>
+        <h2 className="text-lg font-semibold">Invoice PDFs ({invoices.length})</h2>
         <div className="flex items-center gap-4">
-          {legacyCount > 0 && (
-            <label className="flex items-center text-sm text-gray-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showOnlyWithPdf}
-                onChange={(e) => setShowOnlyWithPdf(e.target.checked)}
-                className="mr-2"
-              />
-              Hide legacy invoices ({legacyCount})
-            </label>
-          )}
           <button
             onClick={() => setShowModal(true)}
             className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
@@ -584,16 +520,9 @@ export default function InvoicesTab() {
         </div>
       )}
 
-      {filteredInvoices.length === 0 ? (
+      {invoices.length === 0 ? (
         <div className="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
-          <div className="text-gray-600">
-            {invoices.length === 0 ? 'No invoices found' : 'No invoices with PDFs found'}
-          </div>
-          <div className="text-gray-500 text-sm mt-1">
-            {invoices.length === 0
-              ? 'Invoices will appear here after being sent from the Emails tab'
-              : 'Uncheck "Hide legacy invoices" to see all invoices'}
-          </div>
+          <div className="text-gray-600">No invoice PDFs found in storage</div>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -602,90 +531,37 @@ export default function InvoicesTab() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PDF</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredInvoices.map((invoice) => (
+                {invoices.map((invoice) => (
                   <tr key={invoice.id} className="hover:bg-gray-50">
                     <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{invoice.invoiceNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(invoice.sentAt)}</td>
-                    <td className="px-3 py-4 text-sm text-gray-900">
-                      <div className="font-medium">{invoice.recipientName}</div>
-                      <div className="text-gray-500">{invoice.recipientEmail}</div>
-                    </td>
                     <td className="px-3 py-4 text-sm text-gray-900">{invoice.organizationName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{formatAmount(invoice.amount, invoice.currency)}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeColor(invoice.type)}`}>
-                        {getTypeLabel(invoice.type)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(invoice.status)}`}>
-                        {invoice.status}
-                      </span>
-                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(invoice.uploadedAt)}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{formatSize(invoice.size)}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      {invoice.pdfUrl ? (
-                        <a
-                          href={invoice.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                          title="Download PDF"
-                        >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Download
-                        </a>
-                      ) : invoice.pdfGenerated ? (
-                        <span className="text-gray-400 text-xs">Legacy</span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      <select
-                        value={invoice.status}
-                        onChange={(e) => handleStatusUpdate(invoice.id, e.target.value as any)}
-                        disabled={updatingInvoice === invoice.id}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                      <a
+                        href={invoice.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800"
+                        title="Download PDF"
                       >
-                        <option value="sent">Sent</option>
-                        <option value="paid">Paid</option>
-                        <option value="overdue">Overdue</option>
-                      </select>
-                      {updatingInvoice === invoice.id && (
-                        <div className="inline-block ml-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        </div>
-                      )}
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download
+                      </a>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-            <div className="text-sm text-gray-700">
-              Showing: <span className="font-medium">{filteredInvoices.length}</span> of {invoices.length} invoices
-              <span className="mx-2">|</span>
-              Sent: <span className="font-medium">{filteredInvoices.filter(i => i.status === 'sent').length}</span>
-              <span className="mx-2">|</span>
-              Paid: <span className="font-medium">{filteredInvoices.filter(i => i.status === 'paid').length}</span>
-              <span className="mx-2">|</span>
-              Overdue: <span className="font-medium">{filteredInvoices.filter(i => i.status === 'overdue').length}</span>
-            </div>
           </div>
         </div>
       )}
