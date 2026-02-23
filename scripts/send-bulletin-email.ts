@@ -297,17 +297,17 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td class="stat-cell" width="32%" align="center" valign="top" style="padding: 16px 8px; background-color: #14252f;">
-                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">83</p>
+                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">82</p>
                     <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 1.5px; margin: 6px 0 0 0;">${t.members}</p>
                   </td>
                   <td width="2%" style="background-color: #ffffff;">&nbsp;</td>
                   <td class="stat-cell" width="32%" align="center" valign="top" style="padding: 16px 8px; background-color: #14252f;">
-                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">16</p>
+                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">13</p>
                     <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 1.5px; margin: 6px 0 0 0;">${t.countries}</p>
                   </td>
                   <td width="2%" style="background-color: #ffffff;">&nbsp;</td>
                   <td class="stat-cell" width="32%" align="center" valign="top" style="padding: 16px 8px; background-color: #14252f;">
-                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">27</p>
+                    <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; color: #dcbe73; margin: 0; line-height: 42px;">24</p>
                     <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 1.5px; margin: 6px 0 0 0;">${t.lines_of_business}</p>
                   </td>
                 </tr>
@@ -332,14 +332,14 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
           </tr>
           <tr>
             <td style="padding: 12px 40px 24px 40px;">
-              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #888888; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0;">${t.top_lines_of_business}</p>
+              <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #888888; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px 0;">TOP LINES OF BUSINESS (BY % OF FASE MEMBER MGAs WRITING)</p>
               <img src="https://fasemga.com/bulletin/feb-2026/mga-lob.png" alt="Top Lines of Business" width="500" style="display: block; width: 100%; max-width: 500px;">
             </td>
           </tr>
 
           <tr>
             <td class="content-pad" style="padding: 0 40px 32px 40px;">
-              <a href="https://fasemga.com/directory" class="btn btn-gold">${t.view_directory}</a>
+              <a href="https://fasemga.com/member-portal/directory" class="btn btn-gold">${t.view_directory}</a>
             </td>
           </tr>
 

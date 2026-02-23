@@ -224,8 +224,16 @@ export default function LloydsEuropeArticle() {
                 </p>
 
                 <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                  <li>The first charts the scale, composition and growth rate of Lloyd&apos;s coverholder business across nine European markets.</li>
-                  <li>The second explains the benefits of becoming a Lloyd&apos;s coverholder and how they are remunerated and regulated.</li>
+                  <li>
+                    <a href="/bulletin/feb-2026/lloyds-europe-coverholders-datapoints.pdf" target="_blank" rel="noopener noreferrer" className="text-fase-navy hover:text-fase-gold underline">
+                      Lloyd&apos;s Europe Coverholders Datapoints
+                    </a> — charts the scale, composition and growth rate of Lloyd&apos;s coverholder business across nine European markets.
+                  </li>
+                  <li>
+                    <a href="/bulletin/feb-2026/delegated-authority-at-lloyds.pdf" target="_blank" rel="noopener noreferrer" className="text-fase-navy hover:text-fase-gold underline">
+                      Delegated Authority at Lloyd&apos;s
+                    </a> — explains the benefits of becoming a Lloyd&apos;s coverholder and how they are remunerated and regulated.
+                  </li>
                 </ul>
 
                 <p>

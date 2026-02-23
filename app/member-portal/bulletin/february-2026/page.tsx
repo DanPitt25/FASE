@@ -165,24 +165,26 @@ export default function February2026Edition() {
 
         snapshot.docs.forEach((doc) => {
           const data = doc.data();
-          // Only count active members (exclude flagged and rejected)
-          if (data.status !== 'flagged' && data.status !== 'rejected') {
+          // Only count active members (exclude flagged, rejected, and admin accounts)
+          if (data.status !== 'flagged' && data.status !== 'rejected' && data.status !== 'admin') {
             memberCount++;
 
-            // Get country
-            const country = data.businessAddress?.country || data.registeredAddress?.country;
-            if (country) {
-              const countryName = countryNames[country] || country;
-              byCountry[countryName] = (byCountry[countryName] || 0) + 1;
-            }
-
-            // Get lines of business (only for MGAs)
+            // Get country (only for MGAs for the country chart)
             if (data.organizationType === 'MGA') {
+              const country = data.businessAddress?.country || data.registeredAddress?.country;
+              if (country) {
+                const countryName = countryNames[country] || country;
+                byCountry[countryName] = (byCountry[countryName] || 0) + 1;
+              }
+
               mgaCount++;
               if (data.portfolio?.linesOfBusiness) {
                 data.portfolio.linesOfBusiness.forEach((lob: string) => {
-                  const label = getLineOfBusinessDisplay(lob, locale || 'en');
-                  byLinesOfBusiness[label] = (byLinesOfBusiness[label] || 0) + 1;
+                  // Exclude "other" categories from LOB count
+                  if (lob !== 'other' && lob !== 'other_2' && lob !== 'other_3') {
+                    const label = getLineOfBusinessDisplay(lob, locale || 'en');
+                    byLinesOfBusiness[label] = (byLinesOfBusiness[label] || 0) + 1;
+                  }
                 });
               }
             }
@@ -356,7 +358,7 @@ export default function February2026Edition() {
 
                 {/* Lines of Business */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">{t.lines_of_business || 'Lines of Business'}</h3>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Top Lines of Business (by % of FASE member MGAs writing)</h3>
                   <BarChart data={stats.byLinesOfBusiness} total={stats.mgaCount} maxItems={8} />
                 </div>
               </div>

@@ -120,11 +120,13 @@ async function fetchMgaStats(): Promise<MgaStats> {
         byCountry[countryName] = (byCountry[countryName] || 0) + 1;
       }
 
-      // Get lines of business
+      // Get lines of business (exclude "other" categories)
       if (data.portfolio?.linesOfBusiness) {
         data.portfolio.linesOfBusiness.forEach((lob: string) => {
-          const label = getLineOfBusinessDisplay(lob);
-          byLinesOfBusiness[label] = (byLinesOfBusiness[label] || 0) + 1;
+          if (lob !== 'other' && lob !== 'other_2' && lob !== 'other_3') {
+            const label = getLineOfBusinessDisplay(lob);
+            byLinesOfBusiness[label] = (byLinesOfBusiness[label] || 0) + 1;
+          }
         });
       }
     }
