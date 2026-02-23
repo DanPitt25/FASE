@@ -9,7 +9,6 @@ import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Resend } from 'resend';
 
 export async function POST() {
   try {
@@ -341,34 +340,45 @@ export async function POST() {
 
     console.log('PDF generated, size:', pdfBytes.length);
 
-    // Send email
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    // Send email via Resend API
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not configured');
+    }
 
-    const result = await resend.emails.send({
-      from: 'FASE <admin@fasemga.com>',
-      to: 'danielhpitt@gmail.com',
-      subject: `Reissued Invoice ${invoiceNumber} - BRIT Group Services LTD`,
-      html: `
-        <p>Hi Daniel,</p>
-        <p>Here is the reissued invoice for BRIT Group Services LTD with the FASE business address added.</p>
-        <p>Invoice details:</p>
-        <ul>
-          <li>Invoice #: ${invoiceNumber}</li>
-          <li>Date: ${invoiceDate}</li>
-          <li>Organization: ${organizationName}</li>
-          <li>Base Amount: €${baseAmountEUR.toLocaleString()}</li>
-          <li>Total Due: £${totalAmountGBP.toLocaleString()}</li>
-        </ul>
-        <p>The PDF is attached.</p>
-      `,
-      attachments: [
-        {
-          filename: `${invoiceNumber}.pdf`,
-          content: pdfBase64,
-        }
-      ]
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'FASE <admin@fasemga.com>',
+        to: 'danielhpitt@gmail.com',
+        subject: `Reissued Invoice ${invoiceNumber} - BRIT Group Services LTD`,
+        html: `
+          <p>Hi Daniel,</p>
+          <p>Here is the reissued invoice for BRIT Group Services LTD with the FASE business address added.</p>
+          <p>Invoice details:</p>
+          <ul>
+            <li>Invoice #: ${invoiceNumber}</li>
+            <li>Date: ${invoiceDate}</li>
+            <li>Organization: ${organizationName}</li>
+            <li>Base Amount: €${baseAmountEUR.toLocaleString()}</li>
+            <li>Total Due: £${totalAmountGBP.toLocaleString()}</li>
+          </ul>
+          <p>The PDF is attached.</p>
+        `,
+        attachments: [
+          {
+            filename: `${invoiceNumber}.pdf`,
+            content: pdfBase64,
+          }
+        ]
+      })
     });
 
+    const result = await emailResponse.json();
     console.log('Email sent:', result);
 
     return NextResponse.json({
