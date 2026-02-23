@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../lib/firebase';
 
-export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+let admin: any;
+let db: FirebaseFirestore.Firestore;
+
+const initializeFirebase = async () => {
+  if (!admin) {
+    admin = await import('firebase-admin');
+
+    if (admin.apps.length === 0) {
+      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    }
+
+    db = admin.firestore();
+  }
+
+  return { admin, db };
+};
 
 /**
  * Check if an email exists as an unconfirmed member in any account
@@ -9,6 +34,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
+    const { db } = await initializeFirebase();
     const { email, sendInvite } = await request.json();
 
     if (!email) {
