@@ -143,7 +143,7 @@ async function fetchMgaStats(): Promise<MgaStats> {
 
 function generateDonutChartSVG(data: Record<string, number>, centerLabel: string, size = 300): string {
   const total = Object.values(data).reduce((a, b) => a + b, 0);
-  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]); // Show ALL countries
 
   if (sorted.length === 0 || total === 0) {
     return '<svg></svg>';
@@ -156,6 +156,13 @@ function generateDonutChartSVG(data: Record<string, number>, centerLabel: string
   let currentAngle = -90;
   const segments: string[] = [];
   const legend: string[] = [];
+
+  // Extended color palette for all 13 countries
+  const extendedColors = [
+    '#2D5574', '#3B7A9E', '#4A9BB5', '#5AABB8', '#6ABFC4',
+    '#D4A84B', '#E2B85A', '#F0C86A', '#F5D87A', '#F8E8A0',
+    '#8B7355', '#A08060', '#B59070'
+  ];
 
   sorted.forEach(([label, count], index) => {
     const percentage = (count / total) * 100;
@@ -177,7 +184,7 @@ function generateDonutChartSVG(data: Record<string, number>, centerLabel: string
     const y4 = center + innerRadius * Math.sin(startRad);
 
     const largeArc = angle > 180 ? 1 : 0;
-    const color = CHART_COLORS[index % CHART_COLORS.length];
+    const color = extendedColors[index % extendedColors.length];
 
     segments.push(`
       <path
@@ -186,20 +193,22 @@ function generateDonutChartSVG(data: Record<string, number>, centerLabel: string
       />
     `);
 
-    // Legend item
+    // Legend item - smaller font size to fit all
     legend.push(`
-      <g transform="translate(${size + 20}, ${30 + index * 28})">
-        <rect width="16" height="16" fill="${color}" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">${escapeXml(label)} (${count})</text>
+      <g transform="translate(${size + 20}, ${20 + index * 22})">
+        <rect width="14" height="14" fill="${color}" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">${escapeXml(label)} (${count})</text>
       </g>
     `);
   });
 
+  const legendHeight = 20 + sorted.length * 22;
+  const chartHeight = Math.max(size, legendHeight);
   const totalWidth = size + 200;
 
   return `
-    <svg width="${totalWidth}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${totalWidth}" height="${size}" fill="#f8f8f8" rx="12" />
+    <svg width="${totalWidth}" height="${chartHeight}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${totalWidth}" height="${chartHeight}" fill="#f8f8f8" rx="12" />
       ${segments.join('')}
       <text x="${center}" y="${center - 8}" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="bold" fill="#14252f">${total}</text>
       <text x="${center}" y="${center + 18}" text-anchor="middle" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="14" fill="#666666">${centerLabel}</text>

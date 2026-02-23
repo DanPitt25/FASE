@@ -1,6 +1,6 @@
 
-    <svg width="500" height="300" xmlns="http://www.w3.org/2000/svg">
-      <rect width="500" height="300" fill="#f8f8f8" rx="12" />
+    <svg width="500" height="306" xmlns="http://www.w3.org/2000/svg">
+      <rect width="500" height="306" fill="#f8f8f8" rx="12" />
       
       <path
         d="M 150 20 A 130 130 0 0 1 277.69734259472955 125.64042910385581 L 226.61840555683773 135.38425746231349 A 78 78 0 0 0 150 72 Z"
@@ -42,47 +42,97 @@
         fill="#F0C86A"
       />
     
+      <path
+        d="M 73.58791720197837 44.82779073125691 A 130 130 0 0 1 87.37202236677692 36.0801315942978 L 112.42321342006615 81.64807895657867 A 78 78 0 0 0 104.15275032118703 86.89667443875416 Z"
+        fill="#F5D87A"
+      />
+    
+      <path
+        d="M 87.37202236677692 36.0801315942978 A 130 130 0 0 1 102.14380815099167 29.129056834527404 L 121.286284890595 77.47743410071644 A 78 78 0 0 0 112.42321342006615 81.64807895657867 Z"
+        fill="#F8E8A0"
+      />
+    
+      <path
+        d="M 102.14380815099167 29.129056834527404 A 130 130 0 0 1 117.6703146685687 24.08418905327801 L 130.6021888011412 74.4505134319668 A 78 78 0 0 0 121.286284890595 77.47743410071644 Z"
+        fill="#8B7355"
+      />
+    
+      <path
+        d="M 117.6703146685687 24.08418905327801 A 130 130 0 0 1 133.70667963664027 21.02508882911789 L 140.22400778198417 72.61505329747074 A 78 78 0 0 0 130.6021888011412 74.4505134319668 Z"
+        fill="#A08060"
+      />
+    
+      <path
+        d="M 133.70667963664027 21.02508882911789 A 130 130 0 0 1 149.99999999999986 20 L 149.99999999999991 72 A 78 78 0 0 0 140.22400778198417 72.61505329747074 Z"
+        fill="#B59070"
+      />
+    
       <text x="150" y="142" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="bold" fill="#14252f">50</text>
       <text x="150" y="168" text-anchor="middle" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="14" fill="#666666">MGAs</text>
       
-      <g transform="translate(320, 30)">
-        <rect width="16" height="16" fill="#2D5574" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Germany (11)</text>
+      <g transform="translate(320, 20)">
+        <rect width="14" height="14" fill="#2D5574" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Germany (11)</text>
       </g>
     
-      <g transform="translate(320, 58)">
-        <rect width="16" height="16" fill="#3B7A9E" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">United Kingdom (10)</text>
+      <g transform="translate(320, 42)">
+        <rect width="14" height="14" fill="#3B7A9E" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">United Kingdom (10)</text>
+      </g>
+    
+      <g transform="translate(320, 64)">
+        <rect width="14" height="14" fill="#4A9BB5" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Italy (6)</text>
       </g>
     
       <g transform="translate(320, 86)">
-        <rect width="16" height="16" fill="#4A9BB5" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Italy (6)</text>
+        <rect width="14" height="14" fill="#5AABB8" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Netherlands (6)</text>
       </g>
     
-      <g transform="translate(320, 114)">
-        <rect width="16" height="16" fill="#5AABB8" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Netherlands (6)</text>
+      <g transform="translate(320, 108)">
+        <rect width="14" height="14" fill="#6ABFC4" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Spain (6)</text>
       </g>
     
-      <g transform="translate(320, 142)">
-        <rect width="16" height="16" fill="#6ABFC4" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Spain (6)</text>
+      <g transform="translate(320, 130)">
+        <rect width="14" height="14" fill="#D4A84B" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Ireland (3)</text>
       </g>
     
-      <g transform="translate(320, 170)">
-        <rect width="16" height="16" fill="#D4A84B" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Ireland (3)</text>
+      <g transform="translate(320, 152)">
+        <rect width="14" height="14" fill="#E2B85A" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">France (2)</text>
       </g>
     
-      <g transform="translate(320, 198)">
-        <rect width="16" height="16" fill="#E2B85A" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">France (2)</text>
+      <g transform="translate(320, 174)">
+        <rect width="14" height="14" fill="#F0C86A" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Portugal (1)</text>
       </g>
     
-      <g transform="translate(320, 226)">
-        <rect width="16" height="16" fill="#F0C86A" rx="2" />
-        <text x="24" y="13" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="13" fill="#444444">Portugal (1)</text>
+      <g transform="translate(320, 196)">
+        <rect width="14" height="14" fill="#F5D87A" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Austria (1)</text>
+      </g>
+    
+      <g transform="translate(320, 218)">
+        <rect width="14" height="14" fill="#F8E8A0" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Cyprus (1)</text>
+      </g>
+    
+      <g transform="translate(320, 240)">
+        <rect width="14" height="14" fill="#8B7355" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Greece (1)</text>
+      </g>
+    
+      <g transform="translate(320, 262)">
+        <rect width="14" height="14" fill="#A08060" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Sweden (1)</text>
+      </g>
+    
+      <g transform="translate(320, 284)">
+        <rect width="14" height="14" fill="#B59070" rx="2" />
+        <text x="20" y="11" font-family="'Trebuchet MS', Helvetica, sans-serif" font-size="11" fill="#444444">Romania (1)</text>
       </g>
     
     </svg>

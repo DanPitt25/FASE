@@ -38,10 +38,17 @@ const CHART_COLORS = [
   '#D4A84B', '#E2B85A', '#F0C86A', '#F5D87A', '#F8E8A0',
 ];
 
+// Extended color palette for all countries
+const EXTENDED_COLORS = [
+  '#2D5574', '#3B7A9E', '#4A9BB5', '#5AABB8', '#6ABFC4',
+  '#D4A84B', '#E2B85A', '#F0C86A', '#F5D87A', '#F8E8A0',
+  '#8B7355', '#A08060', '#B59070'
+];
+
 // Donut Chart Component
 function DonutChart({ data, centerLabel, size = 160 }: { data: Record<string, number>; centerLabel: string; size?: number }) {
   const total = Object.values(data).reduce((a, b) => a + b, 0);
-  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]); // Show ALL countries
   if (sorted.length === 0 || total === 0) return null;
 
   const radius = size / 2 - 8;
@@ -72,11 +79,11 @@ function DonutChart({ data, centerLabel, size = 160 }: { data: Record<string, nu
     const largeArc = angle > 180 ? 1 : 0;
     const path = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x1Inner} ${y1Inner} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x2Inner} ${y2Inner} Z`;
 
-    return { path, color: CHART_COLORS[index % CHART_COLORS.length], label, count, percentage };
+    return { path, color: EXTENDED_COLORS[index % EXTENDED_COLORS.length], label, count, percentage };
   });
 
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-start gap-6">
       <svg width={size} height={size} className="flex-shrink-0">
         {segments.map((seg, i) => (
           <path key={i} d={seg.path} fill={seg.color} className="hover:opacity-80 transition-opacity">
@@ -86,17 +93,14 @@ function DonutChart({ data, centerLabel, size = 160 }: { data: Record<string, nu
         <text x={center} y={center - 4} textAnchor="middle" className="text-xl font-bold" fill="#1a365d">{total}</text>
         <text x={center} y={center + 12} textAnchor="middle" className="text-[10px]" fill="#6b7280">{centerLabel}</text>
       </svg>
-      <div className="flex-1 space-y-1.5">
-        {segments.slice(0, 5).map((seg, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm">
-            <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: seg.color }} />
+      <div className="flex-1 space-y-1">
+        {segments.map((seg, i) => (
+          <div key={i} className="flex items-center gap-2 text-xs">
+            <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: seg.color }} />
             <span className="text-gray-600 truncate">{seg.label}</span>
-            <span className="ml-auto text-gray-800 font-medium">{seg.percentage.toFixed(0)}%</span>
+            <span className="ml-auto text-gray-800 font-medium">{seg.count}</span>
           </div>
         ))}
-        {sorted.length > 5 && (
-          <div className="text-xs text-gray-400 pl-4">+{sorted.length - 5} more</div>
-        )}
       </div>
     </div>
   );
@@ -129,9 +133,6 @@ function BarChart({ data, total, maxItems = 8 }: { data: Record<string, number>;
           </div>
         );
       })}
-      {Object.keys(data).length > maxItems && (
-        <div className="text-xs text-gray-400 text-center pt-1">+{Object.keys(data).length - maxItems} more lines</div>
-      )}
     </div>
   );
 }
