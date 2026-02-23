@@ -30,7 +30,8 @@
     },
     "matching": {
       "title": "Kapazitäts- und Vertriebsabgleich",
-      "description_1": "Über die FASE-Plattform können MGAs und Kapazitätsanbieter Informationen über Spezialisierungsbereiche (MGAs) und Risikoappetit (Kapazitätsanbieter) austauschen. Makler können auch auf die FASE-Plattform zugreifen, um lokal von MGAs geschriebene Produkte zu identifizieren."
+      "description_1": "Im ersten Quartal 2026 werden wir ein Tool im Portal einführen, um die Verteilung der Geschäftssparten innerhalb unserer MGA-Population anzuzeigen. Ein Versicherer oder Makler, der sehen möchte, welche europäischen MGAs Garantie- und Entschädigungsversicherungen oder Tierversicherungen zeichnen, wird dies sofort tun können.",
+      "description_2": "Vor dem MGA Rendezvous 2026 im Mai werden wir auch teilnehmende FASE-Mitglieds-MGAs und Versicherer einladen, ihren Risikofokus bzw. ihren Risikoappetit detailliert zu beschreiben, damit sie produktive und effiziente Meetings beim Rendezvous abhalten können. Die aus dieser Übung gewonnenen Informationen werden - vorbehaltlich der Zustimmung der Mitglieder - im Mitgliederportal aufbewahrt, um den Kapazitäts- und Vertriebsabgleich während und nach dem Rendezvous zu unterstützen."
     },
     "data": {
       "title": "Daten und Erkenntnisse",
@@ -38,7 +39,7 @@
       "regulatory": {
         "title": "Regulatorische Analyse",
         "description_1": "Die Vorschriften, die MGAs in Europa betreffen, sind oft schlecht an das MGA-Geschäftsmodell angepasst und variieren stark zwischen den europäischen Gerichtsbarkeiten. Durch ein Panel von Rechtsexperten koordiniert FASE die Bereitstellung hochwertiger regulatorischer Beratung für Mitglieder in verschiedenen Märkten.",
-        "description_2": "Ab Anfang nächsten Jahres wird dieses Portal eine interaktive Karte der europäischen Staaten beherbergen, die die wichtigsten Vorschriften widerspiegelt, die MGAs in diesen Ländern betreffen. Eine detailliertere Analyse regulatorischer Fragen wird auch in The Entrepreneurial Underwriter, der monatlichen Online-Publikation der Föderation, ab Januar 2026 bereitgestellt."
+        "description_2": "Ab dem ersten Quartal 2026 wird dieses Portal eine interaktive Karte der europäischen Staaten beherbergen, die die wichtigsten Vorschriften widerspiegelt, die MGAs in diesen Ländern betreffen. Eine detailliertere Analyse regulatorischer Fragen wird auch in The Entrepreneurial Underwriter, der monatlichen Online-Publikation der Föderation, bereitgestellt."
       },
       "report": {
         "title": "Jährlicher Marktbericht",

@@ -30,7 +30,8 @@
     },
     "matching": {
       "title": "Abbinamento di capacità e distribuzione",
-      "description_1": "Attraverso la piattaforma FASE, gli MGA e i fornitori di capacità possono condividere informazioni sulle aree di specializzazione (MGA) e appetito per il rischio (fornitori di capacità). Anche i broker possono accedere alla piattaforma FASE per identificare prodotti scritti localmente dagli MGA."
+      "description_1": "Nel primo trimestre 2026, lanceremo uno strumento nel portale per mostrare la distribuzione delle linee di business nella nostra popolazione di agenzie di sottoscrizione. Un assicuratore o broker membro che desidera vedere quali agenzie di sottoscrizione europee stanno sottoscrivendo assicurazioni di garanzia e indennizzo o assicurazioni per animali domestici potrà farlo istantaneamente.",
+      "description_2": "Prima del MGA Rendezvous 2026 a maggio, inviteremo anche le agenzie di sottoscrizione e gli assicuratori membri FASE partecipanti a descrivere, rispettivamente, il loro focus di rischio e il loro appetito per il rischio in dettaglio, in modo che possano tenere incontri produttivi ed efficienti al Rendezvous. Le informazioni ottenute da questo esercizio saranno conservate - previa autorizzazione dei membri - sul portale dei membri per supportare l'abbinamento di capacità e distribuzione durante e dopo il Rendezvous."
     },
     "data": {
       "title": "Dati e insights",
@@ -38,7 +39,7 @@
       "regulatory": {
         "title": "Analisi normativa",
         "description_1": "Le normative che interessano gli MGA in Europa sono spesso poco adatte al modello di business MGA e variano ampiamente tra le giurisdizioni europee. Attraverso un panel di consulenti legali esperti, FASE sta coordinando la fornitura di orientamenti normativi di alta qualità per i membri in diversi mercati.",
-        "description_2": "Dall'inizio del prossimo anno, questo portale ospiterà una mappa interattiva degli stati europei, riflettendo le principali normative che impattano gli MGA in quei paesi. Un'analisi più dettagliata delle questioni normative sarà anche fornita in The Entrepreneurial Underwriter, la pubblicazione mensile online della federazione, a partire da gennaio 2026."
+        "description_2": "A partire dal primo trimestre 2026, questo portale ospiterà una mappa interattiva degli stati europei, riflettendo le principali normative che impattano le agenzie di sottoscrizione in quei paesi. Un'analisi più dettagliata delle questioni normative sarà anche fornita in The Entrepreneurial Underwriter, la pubblicazione mensile online della federazione."
       },
       "report": {
         "title": "Rapporto annuale del mercato",

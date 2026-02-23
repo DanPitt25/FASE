@@ -30,7 +30,8 @@
     },
     "matching": {
       "title": "Correspondance de capacité et de distribution",
-      "description_1": "Grâce à la plateforme FASE, les MGA et les fournisseurs de capacité peuvent partager des informations sur les domaines de spécialisation (MGA) et l'appétit pour le risque (fournisseurs de capacité). Les courtiers peuvent également accéder à la plateforme FASE pour identifier les produits rédigés localement par les MGA."
+      "description_1": "Au premier trimestre 2026, nous lancerons un outil dans le portail pour montrer la répartition des lignes de métier au sein de notre population d'agences de souscription. Un assureur ou courtier membre souhaitant voir quelles agences de souscription européennes écrivent de l'assurance garantie et indemnité ou de l'assurance pour animaux de compagnie pourra le faire instantanément.",
+      "description_2": "Avant le MGA Rendezvous 2026 en mai, nous inviterons également les agences de souscription et assureurs membres FASE participants à décrire, respectivement, leur focus de risque et leur appétit pour le risque en détail afin qu'ils puissent tenir des réunions productives et efficaces lors du Rendezvous. Les informations obtenues de cet exercice seront conservées - sous réserve de l'autorisation des membres - sur le portail des membres pour soutenir la correspondance de capacité et de distribution pendant et après le Rendezvous."
     },
     "data": {
       "title": "Données et insights",
@@ -38,7 +39,7 @@
       "regulatory": {
         "title": "Analyse réglementaire",
         "description_1": "Les réglementations affectant les MGA en Europe sont souvent mal adaptées au modèle commercial MGA et varient largement selon les juridictions européennes. Grâce à un panel de conseillers juridiques experts, FASE coordonne la fourniture de conseils réglementaires de haute qualité pour les membres dans différents marchés.",
-        "description_2": "Dès le début de l'année prochaine, ce portail abritera une carte interactive des États européens, reflétant les principales réglementations impactant les MGA dans ces pays. Une analyse plus détaillée des questions réglementaires sera également fournie dans The Entrepreneurial Underwriter, la publication mensuelle en ligne de la fédération, à partir de janvier 2026."
+        "description_2": "À partir du premier trimestre 2026, ce portail abritera une carte interactive des États européens, reflétant les principales réglementations impactant les agences de souscription dans ces pays. Une analyse plus détaillée des questions réglementaires sera également fournie dans The Entrepreneurial Underwriter, la publication mensuelle en ligne de la fédération."
       },
       "report": {
         "title": "Rapport de marché annuel",

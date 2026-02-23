@@ -30,7 +30,8 @@
     },
     "matching": {
       "title": "Emparejamiento de capacidad y distribución",
-      "description_1": "A través de la plataforma FASE, MGAs y proveedores de capacidad pueden compartir información sobre áreas de especialización (MGAs) y apetito de riesgo (proveedores de capacidad). Los corredores también pueden acceder a la plataforma FASE para identificar productos escritos localmente por MGAs."
+      "description_1": "En el primer trimestre de 2026, lanzaremos una herramienta en el portal para mostrar la distribución de líneas de negocio en nuestra población de agencias de suscripción. Una aseguradora o corredor miembro que desee ver qué agencias de suscripción europeas están suscribiendo seguros de garantía e indemnización o seguros de mascotas podrá hacerlo instantáneamente.",
+      "description_2": "Antes del MGA Rendezvous 2026 en mayo, también invitaremos a las agencias de suscripción y aseguradoras miembros de FASE participantes a describir, respectivamente, su enfoque de riesgo y su apetito de riesgo en detalle para que puedan celebrar reuniones productivas y eficientes en el Rendezvous. La información obtenida de este ejercicio se conservará - sujeta al permiso de los miembros - en el portal de miembros para apoyar el emparejamiento de capacidad y distribución durante y después del Rendezvous."
     },
     "data": {
       "title": "Datos y perspectivas",
@@ -38,7 +39,7 @@
       "regulatory": {
         "title": "Análisis regulatorio",
         "description_1": "Las regulaciones que afectan a los MGAs en Europa a menudo están mal adaptadas al modelo de negocio MGA y varían ampliamente entre las jurisdicciones europeas. A través de un panel de asesores legales expertos, FASE está coordinando la provisión de orientación regulatoria de alta calidad para miembros en diferentes mercados.",
-        "description_2": "Desde principios del próximo año, este portal albergará un mapa interactivo de estados europeos, reflejando las principales regulaciones que impactan a los MGAs en esos países. Un análisis más detallado de cuestiones regulatorias también se proporcionará en The Entrepreneurial Underwriter, la publicación mensual en línea de la federación, comenzando en enero de 2026."
+        "description_2": "A partir del primer trimestre de 2026, este portal albergará un mapa interactivo de estados europeos, reflejando las principales regulaciones que impactan a las agencias de suscripción en esos países. Un análisis más detallado de cuestiones regulatorias también se proporcionará en The Entrepreneurial Underwriter, la publicación mensual en línea de la federación."
       },
       "report": {
         "title": "Informe anual del mercado",
