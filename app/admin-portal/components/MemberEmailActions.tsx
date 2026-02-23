@@ -11,6 +11,15 @@ interface MemberEmailActionsProps {
   onEmailSent?: () => void;
 }
 
+interface SubcollectionMember {
+  id: string;
+  email: string;
+  personalName: string;
+  jobTitle?: string;
+  isPrimaryContact?: boolean;
+  isAccountAdministrator?: boolean;
+}
+
 type EmailAction = 'invoice' | 'standalone_invoice' | 'welcome' | 'reminder' | 'rendezvous' | 'bulletin' | null;
 
 const actionConfig = {
@@ -65,6 +74,11 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
   const [rendezvousRegistration, setRendezvousRegistration] = useState<any>(null);
+
+  // Recipient selection state
+  const [subcollectionMembers, setSubcollectionMembers] = useState<SubcollectionMember[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set(['account_admin']));
 
   // Form data - initialized from memberData
   const [formData, setFormData] = useState({
@@ -147,6 +161,111 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
 
     fetchRendezvousRegistration();
   }, [memberData?.email, memberData?.organizationName]);
+
+  // Fetch subcollection members for recipient selection
+  useEffect(() => {
+    const fetchSubcollectionMembers = async () => {
+      if (!companyId) return;
+
+      setLoadingMembers(true);
+      try {
+        const response = await fetch(`/api/admin/company-members?companyId=${companyId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.members) {
+            setSubcollectionMembers(data.members);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch subcollection members:', error);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchSubcollectionMembers();
+  }, [companyId]);
+
+  // Build list of all available recipients
+  const getAllRecipients = () => {
+    const recipients: { id: string; email: string; name: string; role?: string; isAdmin?: boolean }[] = [];
+
+    // Account administrator
+    if (memberData?.email) {
+      recipients.push({
+        id: 'account_admin',
+        email: memberData.email,
+        name: memberData.accountAdministrator?.name || memberData.personalName || memberData.fullName || 'Account Admin',
+        role: memberData.accountAdministrator?.role || memberData.jobTitle,
+        isAdmin: true
+      });
+    }
+
+    // Subcollection members (exclude if same email as account admin)
+    subcollectionMembers.forEach(member => {
+      if (member.email !== memberData?.email) {
+        recipients.push({
+          id: member.id,
+          email: member.email,
+          name: member.personalName,
+          role: member.jobTitle
+        });
+      }
+    });
+
+    return recipients;
+  };
+
+  const allRecipients = getAllRecipients();
+
+  // Toggle recipient selection
+  const toggleRecipient = (id: string) => {
+    setSelectedRecipientIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Select all recipients
+  const selectAllRecipients = () => {
+    setSelectedRecipientIds(new Set(allRecipients.map(r => r.id)));
+  };
+
+  // Deselect all recipients
+  const deselectAllRecipients = () => {
+    setSelectedRecipientIds(new Set());
+  };
+
+  // Get selected emails for sending
+  const getSelectedEmails = () => {
+    return allRecipients
+      .filter(r => selectedRecipientIds.has(r.id))
+      .map(r => r.email);
+  };
+
+  // Update form email field based on selection (for preview/display)
+  useEffect(() => {
+    const selectedEmails = getSelectedEmails();
+    if (selectedEmails.length === 1) {
+      const selected = allRecipients.find(r => selectedRecipientIds.has(r.id));
+      setFormData(prev => ({
+        ...prev,
+        email: selected?.email || '',
+        fullName: selected?.name || ''
+      }));
+    } else if (selectedEmails.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        email: selectedEmails.join(', '),
+        fullName: `${selectedEmails.length} recipients`
+      }));
+    }
+  }, [selectedRecipientIds, subcollectionMembers, memberData]);
 
   // Calculate pricing
   const calculateOriginalAmount = () => {
@@ -361,48 +480,115 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
 
     try {
       const config = actionConfig[selectedAction];
-      let payload = buildPayload(isPreview);
 
-      if (selectedAction === 'reminder' && formData.reminderAttachment) {
-        payload = await handleReminderAttachment(payload);
-      }
-
-      const response = await fetch(config.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
+      // For preview, just use the first selected recipient
       if (isPreview) {
+        let payload = buildPayload(true);
+
+        if (selectedAction === 'reminder' && formData.reminderAttachment) {
+          payload = await handleReminderAttachment(payload);
+        }
+
+        const response = await fetch(config.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
         setPreview(data);
       } else {
-        setResult(data);
+        // For sending, loop through all selected recipients
+        const selectedEmails = getSelectedEmails();
+        const selectedNames = allRecipients
+          .filter(r => selectedRecipientIds.has(r.id))
+          .map(r => r.name);
 
-        // Track invoice in Firestore
-        if (data.success && (selectedAction === 'standalone_invoice' || selectedAction === 'invoice' || selectedAction === 'reminder')) {
+        let successCount = 0;
+        let failCount = 0;
+        const errors: string[] = [];
+
+        for (let i = 0; i < selectedEmails.length; i++) {
+          const email = selectedEmails[i];
+          const name = selectedNames[i];
+
+          // Build payload for this specific recipient
+          let payload = buildPayload(false);
+          payload.email = email;
+          payload.fullName = name;
+
+          if (selectedAction === 'reminder' && formData.reminderAttachment) {
+            payload = await handleReminderAttachment(payload);
+          }
+
           try {
-            await createInvoiceRecord({
-              invoiceNumber: data.invoiceNumber || payload.invoiceNumber,
-              recipientEmail: formData.email,
-              recipientName: formData.fullName || formData.greeting || 'Client',
-              organizationName: formData.organizationName,
-              amount: parseFloat(payload.totalAmount) || 0,
-              currency: payload.forceCurrency || 'EUR',
-              type: selectedAction === 'reminder' ? 'reminder' : (selectedAction === 'standalone_invoice' ? 'standalone' : 'regular'),
-              status: 'sent',
-              sentAt: new Date(),
-              pdfUrl: data.pdfUrl,
-              pdfGenerated: !!data.pdfUrl
+            const response = await fetch(config.apiEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
             });
-          } catch (trackingError) {
-            console.error('Failed to track invoice:', trackingError);
+
+            const data = await response.json();
+
+            if (data.success || response.ok) {
+              successCount++;
+
+              // Track invoice in Firestore
+              if (selectedAction === 'standalone_invoice' || selectedAction === 'invoice' || selectedAction === 'reminder') {
+                try {
+                  await createInvoiceRecord({
+                    invoiceNumber: data.invoiceNumber || payload.invoiceNumber,
+                    recipientEmail: email,
+                    recipientName: name || 'Client',
+                    organizationName: formData.organizationName,
+                    amount: parseFloat(payload.totalAmount) || 0,
+                    currency: payload.forceCurrency || 'EUR',
+                    type: selectedAction === 'reminder' ? 'reminder' : (selectedAction === 'standalone_invoice' ? 'standalone' : 'regular'),
+                    status: 'sent',
+                    sentAt: new Date(),
+                    pdfUrl: data.pdfUrl,
+                    pdfGenerated: !!data.pdfUrl
+                  });
+                } catch (trackingError) {
+                  console.error('Failed to track invoice:', trackingError);
+                }
+              }
+            } else {
+              failCount++;
+              errors.push(`${email}: ${data.error || 'Unknown error'}`);
+            }
+
+            // Rate limiting - wait 500ms between sends
+            if (i < selectedEmails.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          } catch (err: any) {
+            failCount++;
+            errors.push(`${email}: ${err.message}`);
           }
         }
 
+        // Set result summary
+        if (failCount === 0) {
+          setResult({
+            success: true,
+            message: `Successfully sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}`
+          });
+        } else if (successCount === 0) {
+          setResult({
+            error: `Failed to send to all ${failCount} recipient${failCount !== 1 ? 's' : ''}`,
+            details: errors
+          });
+        } else {
+          setResult({
+            success: true,
+            message: `Sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}, ${failCount} failed`,
+            details: errors
+          });
+        }
+
         // Log activity to timeline
-        if (data.success && companyId) {
+        if (successCount > 0 && companyId) {
           try {
             await fetch('/api/admin/activities', {
               method: 'POST',
@@ -411,7 +597,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
                 accountId: companyId,
                 type: 'email_sent',
                 title: `${config.title} Sent`,
-                description: `${config.title} sent to ${formData.email}`,
+                description: `${config.title} sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}`,
                 performedBy: 'admin',
                 performedByName: 'Admin'
               })
@@ -515,12 +701,67 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         </div>
       </div>
 
-      {/* Email Recipients */}
+      {/* Recipient Selection */}
+      {allRecipients.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">Select Recipients</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={selectAllRecipients}
+                className="text-xs text-fase-navy hover:underline"
+              >
+                Select All
+              </button>
+              <span className="text-gray-300">|</span>
+              <button
+                type="button"
+                onClick={deselectAllRecipients}
+                className="text-xs text-gray-500 hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          {loadingMembers ? (
+            <div className="text-sm text-gray-500">Loading members...</div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {allRecipients.map((recipient) => (
+                <button
+                  key={recipient.id}
+                  type="button"
+                  onClick={() => toggleRecipient(recipient.id)}
+                  className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                    selectedRecipientIds.has(recipient.id)
+                      ? 'bg-fase-navy text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {recipient.name}
+                  {recipient.isAdmin && <span className="ml-1 opacity-70">(Admin)</span>}
+                  {recipient.role && !recipient.isAdmin && (
+                    <span className="ml-1 opacity-70">({recipient.role})</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+          {selectedRecipientIds.size > 0 && (
+            <div className="mt-2 text-xs text-gray-500">
+              {selectedRecipientIds.size} recipient{selectedRecipientIds.size !== 1 ? 's' : ''} selected
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Email Recipients - Manual Override */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Email *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Recipient Email{selectedRecipientIds.size > 1 ? 's' : ''} *</label>
           <input
-            type="email"
+            type={selectedRecipientIds.size > 1 ? 'text' : 'email'}
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
