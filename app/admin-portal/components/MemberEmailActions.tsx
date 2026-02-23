@@ -11,7 +11,7 @@ interface MemberEmailActionsProps {
   onEmailSent?: () => void;
 }
 
-type EmailAction = 'invoice' | 'standalone_invoice' | 'welcome' | 'reminder' | 'rendezvous' | null;
+type EmailAction = 'invoice' | 'standalone_invoice' | 'welcome' | 'reminder' | 'rendezvous' | 'bulletin' | null;
 
 const actionConfig = {
   invoice: {
@@ -47,6 +47,13 @@ const actionConfig = {
     description: 'MGA Rendezvous ticket confirmation',
     icon: '🎫',
     apiEndpoint: '/api/send-rendezvous-confirmation',
+    requiresPricing: false
+  },
+  bulletin: {
+    title: 'Bulletin Email',
+    description: 'February 2026 Entrepreneurial Underwriter',
+    icon: '📰',
+    apiEndpoint: '/api/send-bulletin-email',
     requiresPricing: false
   }
 };
@@ -243,6 +250,15 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         isFaseMember: formData.rendezvous.isFaseMember,
         isComplimentary: formData.rendezvous.isComplimentary,
         specialRequests: formData.rendezvous.specialRequests
+      };
+    }
+
+    if (selectedAction === 'bulletin') {
+      return {
+        preview: isPreview,
+        email: formData.email,
+        cc: formData.cc,
+        userLocale: formData.userLocale
       };
     }
 
