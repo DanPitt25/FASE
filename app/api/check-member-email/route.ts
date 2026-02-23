@@ -129,18 +129,18 @@ export async function POST(request: NextRequest) {
 
       const inviteUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com'}/invite/${token}`;
 
-      // Send invite email via Firebase Function
+      // Send invite email via internal API route
       try {
-        const response = await fetch('https://us-central1-fase-site.cloudfunctions.net/sendInviteEmail', {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com';
+        const response = await fetch(`${baseUrl}/api/send-invite`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            data: {
-              email: normalizedEmail,
-              name: foundMember.memberName,
-              companyName: foundMember.companyName,
-              inviteUrl: inviteUrl
-            }
+            email: normalizedEmail,
+            name: foundMember.memberName,
+            companyName: foundMember.companyName,
+            inviteUrl: inviteUrl,
+            inviterName: 'FASE'
           })
         });
 
