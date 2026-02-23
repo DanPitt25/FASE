@@ -46,8 +46,12 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Search all accounts for this email in their members subcollection
-    const accountsSnapshot = await db.collection('accounts').get();
+    // Use collection group query to search all members subcollections at once
+    const membersSnapshot = await db
+      .collectionGroup('members')
+      .where('email', '==', normalizedEmail)
+      .limit(1)
+      .get();
 
     let foundMember: {
       memberId: string;
@@ -58,28 +62,26 @@ export async function POST(request: NextRequest) {
       accountStatus: string;
     } | null = null;
 
-    for (const accountDoc of accountsSnapshot.docs) {
-      const accountData = accountDoc.data();
-      const membersSnapshot = await db
-        .collection('accounts')
-        .doc(accountDoc.id)
-        .collection('members')
-        .where('email', '==', normalizedEmail)
-        .get();
+    if (!membersSnapshot.empty) {
+      const memberDoc = membersSnapshot.docs[0];
+      const memberData = memberDoc.data();
 
-      if (!membersSnapshot.empty) {
-        const memberDoc = membersSnapshot.docs[0];
-        const memberData = memberDoc.data();
+      // Get the parent account ID from the document path (accounts/{accountId}/members/{memberId})
+      const companyId = memberDoc.ref.parent.parent?.id;
+
+      if (companyId) {
+        // Fetch the account data to get company name and status
+        const accountDoc = await db.collection('accounts').doc(companyId).get();
+        const accountData = accountDoc.data();
 
         foundMember = {
           memberId: memberDoc.id,
-          companyId: accountDoc.id,
-          companyName: accountData.organizationName || 'Unknown Company',
+          companyId: companyId,
+          companyName: accountData?.organizationName || 'Unknown Company',
           memberName: memberData.personalName || memberData.fullName || '',
           accountConfirmed: memberData.accountConfirmed === true,
-          accountStatus: accountData.status || 'unknown'
+          accountStatus: accountData?.status || 'unknown'
         };
-        break;
       }
     }
 
