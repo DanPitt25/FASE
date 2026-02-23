@@ -498,19 +498,37 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         const data = await response.json();
         setPreview(data);
       } else {
-        // For sending, loop through all selected recipients
-        const selectedEmails = getSelectedEmails();
-        const selectedNames = allRecipients
-          .filter(r => selectedRecipientIds.has(r.id))
-          .map(r => r.name);
+        // For sending, determine recipients
+        // Check if user manually edited the email field
+        const selectedFromPills = getSelectedEmails();
+        const formEmailList = formData.email.split(',').map(e => e.trim()).filter(Boolean);
+
+        // If formData.email differs from what would be auto-generated from pills, use form values
+        const expectedFromPills = selectedFromPills.join(', ');
+        const isManuallyEdited = formData.email !== expectedFromPills && formData.email.trim() !== '';
+
+        let emailsToSend: string[];
+        let namesToSend: string[];
+
+        if (isManuallyEdited) {
+          // User manually edited - use form values
+          emailsToSend = formEmailList;
+          namesToSend = formEmailList.map(() => formData.fullName);
+        } else {
+          // Use selected pills
+          emailsToSend = selectedFromPills;
+          namesToSend = allRecipients
+            .filter(r => selectedRecipientIds.has(r.id))
+            .map(r => r.name);
+        }
 
         let successCount = 0;
         let failCount = 0;
         const errors: string[] = [];
 
-        for (let i = 0; i < selectedEmails.length; i++) {
-          const email = selectedEmails[i];
-          const name = selectedNames[i];
+        for (let i = 0; i < emailsToSend.length; i++) {
+          const email = emailsToSend[i];
+          const name = namesToSend[i];
 
           // Build payload for this specific recipient
           let payload = buildPayload(false);
@@ -559,7 +577,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             }
 
             // Rate limiting - wait 500ms between sends
-            if (i < selectedEmails.length - 1) {
+            if (i < emailsToSend.length - 1) {
               await new Promise(resolve => setTimeout(resolve, 500));
             }
           } catch (err: any) {
