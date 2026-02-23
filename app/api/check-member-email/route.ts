@@ -186,14 +186,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Error checking member email:', error);
-    console.error('Full error:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      {
-        error: 'An error occurred. Please try again.',
-        details: error.message || String(error),
-        code: error.code,
-        fullError: JSON.stringify(error)
-      },
+      { error: 'An error occurred. Please try again.' },
       { status: 500 }
     );
   }
