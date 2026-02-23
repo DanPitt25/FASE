@@ -51,11 +51,11 @@ export async function GET() {
     });
 
     const invoices: StorageInvoice[] = files
-      .filter(file => {
+      .filter((file: any) => {
         const parts = file.name.split('/');
         return parts.length >= 3 && parts[2].endsWith('.pdf');
       })
-      .map(file => {
+      .map((file: any) => {
         const parts = file.name.split('/');
         const orgSlug = parts[1];
         const invoiceNumber = parts[2].replace('.pdf', '');
