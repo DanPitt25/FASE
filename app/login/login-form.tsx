@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useLocale } from '../../contexts/LocaleContext';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 import { signIn, sendPasswordReset } from '../../lib/auth';
@@ -208,6 +209,18 @@ export default function LoginForm() {
         >
           {resetLoading ? t('sending') : t('forgot_password')}
         </button>
+      </div>
+
+      <div className="mt-6 pt-6 border-t border-fase-light-gold">
+        <p className="text-sm text-gray-600 text-center">
+          {t('first_time_member')}{' '}
+          <Link
+            href="/setup-account"
+            className="text-fase-navy hover:text-fase-gold transition-colors underline font-medium"
+          >
+            {t('setup_account_link')}
+          </Link>
+        </p>
       </div>
     </form>
   );
