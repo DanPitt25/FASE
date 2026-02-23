@@ -1,15 +1,116 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { marked } from 'marked';
 import { useUnifiedAuth } from '../../../../../contexts/UnifiedAuthContext';
 import PageLayout from '../../../../../components/PageLayout';
 import Image from 'next/image';
 import Link from 'next/link';
 
+interface ArticleMetadata {
+  title: string;
+  category: string;
+  author: string;
+}
+
+interface ArticleContent {
+  metadata: ArticleMetadata;
+  html: string;
+}
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  it: 'Italiano',
+  nl: 'Nederlands'
+};
+
+async function loadArticle(locale: string): Promise<ArticleContent | null> {
+  const slug = locale === 'en' ? 'captives' : `captives-${locale}`;
+
+  try {
+    const response = await fetch(`/bulletin/feb-2026/articles/${slug}.md`);
+    if (!response.ok) {
+      // Fall back to English
+      if (locale !== 'en') {
+        const enResponse = await fetch('/bulletin/feb-2026/articles/captives.md');
+        if (!enResponse.ok) return null;
+        const text = await enResponse.text();
+        return parseMarkdown(text);
+      }
+      return null;
+    }
+    const text = await response.text();
+    return parseMarkdown(text);
+  } catch {
+    return null;
+  }
+}
+
+function parseMarkdown(text: string): ArticleContent {
+  const lines = text.split('\n');
+  const metadata: Record<string, string> = {};
+  let metadataEnd = 0;
+
+  if (lines[0] === '---') {
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i] === '---') {
+        metadataEnd = i + 1;
+        break;
+      }
+      const colonIndex = lines[i].indexOf(':');
+      if (colonIndex > 0) {
+        const key = lines[i].slice(0, colonIndex).trim();
+        const value = lines[i].slice(colonIndex + 1).trim().replace(/^["']|["']$/g, '');
+        metadata[key] = value;
+      }
+    }
+  }
+
+  const content = lines.slice(metadataEnd).join('\n');
+  const html = marked(content) as string;
+
+  return {
+    metadata: {
+      title: metadata.title || '',
+      category: metadata.category || 'Contributed Article',
+      author: metadata.author || 'Mark Elliott, Polo Insurance Managers'
+    },
+    html
+  };
+}
+
+async function getAvailableLanguages(): Promise<string[]> {
+  const languages = ['en', 'fr', 'de', 'es', 'it', 'nl'];
+  const available: string[] = [];
+
+  for (const lang of languages) {
+    const slug = lang === 'en' ? 'captives' : `captives-${lang}`;
+    try {
+      const response = await fetch(`/bulletin/feb-2026/articles/${slug}.md`);
+      if (response.ok) {
+        available.push(lang);
+      }
+    } catch {
+      // Not available
+    }
+  }
+
+  return available;
+}
+
 export default function CaptivesArticle() {
   const { user, loading } = useUnifiedAuth();
   const router = useRouter();
+  const locale = useLocale();
+  const [article, setArticle] = useState<ArticleContent | null>(null);
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
+  const [currentLocale, setCurrentLocale] = useState(locale);
+  const [articleLoading, setArticleLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -17,7 +118,25 @@ export default function CaptivesArticle() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  useEffect(() => {
+    async function load() {
+      setArticleLoading(true);
+      const [content, languages] = await Promise.all([
+        loadArticle(locale),
+        getAvailableLanguages()
+      ]);
+      setArticle(content);
+      setAvailableLanguages(languages);
+      setCurrentLocale(locale);
+      setArticleLoading(false);
+    }
+
+    if (user) {
+      load();
+    }
+  }, [locale, user]);
+
+  if (loading || articleLoading) {
     return (
       <PageLayout currentPage="member-portal">
         <div className="min-h-screen bg-white flex items-center justify-center">
@@ -58,71 +177,76 @@ export default function CaptivesArticle() {
                 </svg>
                 February 2026 Edition
               </Link>
-              <p className="text-fase-gold text-xs font-semibold uppercase tracking-widest mb-3">Contributed Article</p>
+              <p className="text-fase-gold text-xs font-semibold uppercase tracking-widest mb-3">
+                {article?.metadata.category || 'Contributed Article'}
+              </p>
               <h1 className="text-3xl md:text-4xl font-noto-serif font-bold text-white leading-snug mb-3">
-                Seven Reasons to Consider a Captive
+                {article?.metadata.title || 'Seven Reasons to Consider a Captive'}
               </h1>
-              <p className="text-white/70">By Mark Elliott, Polo Insurance Managers</p>
+              <p className="text-white/70">By {article?.metadata.author || 'Mark Elliott, Polo Insurance Managers'}</p>
             </div>
           </div>
         </div>
 
+        {/* Language Selector */}
+        {availableLanguages.length > 1 && (
+          <div className="bg-gray-50 border-b border-gray-200 py-4">
+            <div className="max-w-4xl mx-auto px-6">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span className="font-medium">Also available in:</span>
+                <div className="flex items-center space-x-3">
+                  {availableLanguages.map((lang, index) => (
+                    <div key={lang} className="flex items-center space-x-3">
+                      <button
+                        onClick={() => {
+                          loadArticle(lang).then(content => {
+                            if (content) {
+                              setArticle(content);
+                              setCurrentLocale(lang);
+                            }
+                          });
+                        }}
+                        className={`hover:underline ${
+                          lang === currentLocale
+                            ? 'text-fase-navy font-semibold'
+                            : 'text-fase-navy'
+                        }`}
+                      >
+                        {LANGUAGE_NAMES[lang]}
+                      </button>
+                      {index < availableLanguages.length - 1 && (
+                        <span className="text-gray-300">•</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Article Content */}
         <article className="max-w-4xl mx-auto px-6 py-10">
-
-          {/* Lead paragraph */}
-          <p className="text-lg text-gray-800 leading-relaxed mb-8">
-            The role of reinsurance captives has been growing in the capacity stack of MGAs in the United States and United Kingdom. In the first of a series of monthly articles on captive management issues, Mark Elliott, CEO of Guernsey-based Polo Insurance Managers, highlights the top seven reasons why profitable MGAs of all sizes across Europe should consider establishing a captive.
-          </p>
-
-          {/* Body */}
-          <div className="text-base text-gray-700 leading-relaxed space-y-5">
-            <p>
-              It is estimated that there are over 300 MGAs in the UK retaining some of their own risk. But in continental Europe, MGAs have generally been slower to retain risk through captives. For MGAs that can demonstrate a profitable track record, there are seven good reasons to consider retaining risk through a captive.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">1. Enhanced Margin Capture</h2>
-            <p>
-              Retaining a portion of the risk allows the MGA to participate directly in underwriting profits rather than ceding all value to capacity providers.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">2. Greater Control Over Capacity</h2>
-            <p>
-              A captive reduces dependence on third-party insurers and reinsurers, improving resilience during hard markets or sudden capacity withdrawals.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">3. Alignment of Underwriting Incentives</h2>
-            <p>
-              Retention enforces stronger underwriting discipline by directly linking portfolio performance to the MGA&apos;s own capital at risk.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">4. Improved Negotiating Power with Carriers</h2>
-            <p>
-              Demonstrated &quot;skin in the game&quot; strengthens credibility and can lead to better commission terms, profit shares, and long-term capacity agreements. Indeed we have seen some clients who managed to increase commission just by having the captive in place – they didn&apos;t even take a retention initially.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">5. Access to Reinsurance Markets on Better Terms</h2>
-            <p>
-              A captive can access quota share or excess-of-loss reinsurance directly, often at more efficient pricing than through fronted arrangements alone. There is still an insurance / reinsurance pricing arbitrage which we often see – especially when the incumbent insurer has been on the programme for many years.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">6. Portfolio Diversification and Capital Efficiency</h2>
-            <p>
-              Well-structured captives (often domiciled in EU-friendly jurisdictions) allow optimized capital usage across lines, geographies, and cycles. Traditionally Malta is an excellent location for direct EU access, but requires scale. Guernsey can operate using a fronting insurer and can sometimes be more cost-effective from a cost and capital perspective for smaller programmes.
-            </p>
-
-            <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">7. Strategic Optionality and Scalability</h2>
-            <p>
-              Captives enable controlled experimentation with new products, niches, or geographies without full reliance on external carriers. We need many new start-ups and the incubation of new products in their own captive helps collect data and demonstrates to insurers a positive alignment of interest.
-            </p>
-          </div>
-
-          {/* Footer note */}
-          <div className="mt-10 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500 italic leading-relaxed">
-              In the March issue, we will dig further into the practicalities of captive establishment – and the merits of different domiciles – for European MGAs.
-            </p>
-          </div>
+          {article?.html ? (
+            <div
+              className="prose prose-lg max-w-none
+                prose-headings:font-noto-serif prose-headings:text-fase-navy
+                prose-h2:text-xl prose-h2:font-semibold prose-h2:pt-6 prose-h2:pb-2
+                prose-p:text-gray-700 prose-p:leading-relaxed
+                prose-strong:text-fase-navy
+                prose-a:text-fase-navy prose-a:hover:text-fase-gold
+                prose-ul:text-gray-600 prose-ul:space-y-2
+                prose-li:text-gray-600
+                prose-hr:border-gray-200 prose-hr:my-10"
+              dangerouslySetInnerHTML={{ __html: article.html }}
+            />
+          ) : (
+            <div className="text-gray-700 leading-relaxed space-y-6">
+              <p className="text-lg text-gray-800">
+                Loading article content...
+              </p>
+            </div>
+          )}
 
           {/* Back link */}
           <div className="mt-8">

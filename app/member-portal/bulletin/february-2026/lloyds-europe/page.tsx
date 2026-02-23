@@ -2,10 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { marked } from 'marked';
 import { useUnifiedAuth } from '../../../../../contexts/UnifiedAuthContext';
 import PageLayout from '../../../../../components/PageLayout';
 import Image from 'next/image';
 import Link from 'next/link';
+
+interface ArticleMetadata {
+  title: string;
+  category: string;
+}
+
+interface ArticleContent {
+  metadata: ArticleMetadata;
+  html: string;
+}
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  it: 'Italiano',
+  nl: 'Nederlands'
+};
 
 function ChartModal({
   isOpen,
@@ -116,9 +137,87 @@ function ChartFigure({
   );
 }
 
+async function loadArticle(locale: string): Promise<ArticleContent | null> {
+  const slug = locale === 'en' ? 'lloyds-europe' : `lloyds-europe-${locale}`;
+
+  try {
+    const response = await fetch(`/bulletin/feb-2026/articles/${slug}.md`);
+    if (!response.ok) {
+      // Fall back to English
+      if (locale !== 'en') {
+        const enResponse = await fetch('/bulletin/feb-2026/articles/lloyds-europe.md');
+        if (!enResponse.ok) return null;
+        const text = await enResponse.text();
+        return parseMarkdown(text);
+      }
+      return null;
+    }
+    const text = await response.text();
+    return parseMarkdown(text);
+  } catch {
+    return null;
+  }
+}
+
+function parseMarkdown(text: string): ArticleContent {
+  const lines = text.split('\n');
+  const metadata: Record<string, string> = {};
+  let metadataEnd = 0;
+
+  if (lines[0] === '---') {
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i] === '---') {
+        metadataEnd = i + 1;
+        break;
+      }
+      const colonIndex = lines[i].indexOf(':');
+      if (colonIndex > 0) {
+        const key = lines[i].slice(0, colonIndex).trim();
+        const value = lines[i].slice(colonIndex + 1).trim().replace(/^["']|["']$/g, '');
+        metadata[key] = value;
+      }
+    }
+  }
+
+  const content = lines.slice(metadataEnd).join('\n');
+  const html = marked(content) as string;
+
+  return {
+    metadata: {
+      title: metadata.title || '',
+      category: metadata.category || 'Feature'
+    },
+    html
+  };
+}
+
+async function getAvailableLanguages(): Promise<string[]> {
+  const languages = ['en', 'fr', 'de', 'es', 'it', 'nl'];
+  const available: string[] = [];
+
+  for (const lang of languages) {
+    const slug = lang === 'en' ? 'lloyds-europe' : `lloyds-europe-${lang}`;
+    try {
+      const response = await fetch(`/bulletin/feb-2026/articles/${slug}.md`);
+      if (response.ok) {
+        available.push(lang);
+      }
+    } catch {
+      // Not available
+    }
+  }
+
+  return available;
+}
+
 export default function LloydsEuropeArticle() {
   const { user, loading } = useUnifiedAuth();
   const router = useRouter();
+  const locale = useLocale();
+  const [article, setArticle] = useState<ArticleContent | null>(null);
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
+  const [currentLocale, setCurrentLocale] = useState(locale);
+  const [articleLoading, setArticleLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -126,7 +225,25 @@ export default function LloydsEuropeArticle() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  useEffect(() => {
+    async function load() {
+      setArticleLoading(true);
+      const [content, languages] = await Promise.all([
+        loadArticle(locale),
+        getAvailableLanguages()
+      ]);
+      setArticle(content);
+      setAvailableLanguages(languages);
+      setCurrentLocale(locale);
+      setArticleLoading(false);
+    }
+
+    if (user) {
+      load();
+    }
+  }, [locale, user]);
+
+  if (loading || articleLoading) {
     return (
       <PageLayout currentPage="member-portal">
         <div className="min-h-screen bg-white flex items-center justify-center">
@@ -150,7 +267,7 @@ export default function LloydsEuropeArticle() {
         <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
           <Image
             src="/bulletin/feb-2026/lloyds-building.jpg"
-            alt="Lloyd&apos;s of London"
+            alt="Lloyd's of London"
             fill
             className="object-cover"
             priority
@@ -167,13 +284,52 @@ export default function LloydsEuropeArticle() {
                 </svg>
                 February 2026
               </Link>
-              <p className="text-fase-gold text-xs font-semibold uppercase tracking-widest mb-3">Feature</p>
+              <p className="text-fase-gold text-xs font-semibold uppercase tracking-widest mb-3">
+                {article?.metadata.category || 'Feature'}
+              </p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-noto-serif font-bold text-white leading-tight max-w-3xl">
-                Lloyd&apos;s in Europe: Coverholder Business Growing Fast After 123 Years
+                {article?.metadata.title || "Lloyd's in Europe: Coverholder Business Growing Fast After 123 Years"}
               </h1>
             </div>
           </div>
         </div>
+
+        {/* Language Selector */}
+        {availableLanguages.length > 1 && (
+          <div className="bg-gray-50 border-b border-gray-200 py-4">
+            <div className="max-w-5xl mx-auto px-6">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span className="font-medium">Also available in:</span>
+                <div className="flex items-center space-x-3">
+                  {availableLanguages.map((lang, index) => (
+                    <div key={lang} className="flex items-center space-x-3">
+                      <button
+                        onClick={() => {
+                          loadArticle(lang).then(content => {
+                            if (content) {
+                              setArticle(content);
+                              setCurrentLocale(lang);
+                            }
+                          });
+                        }}
+                        className={`hover:underline ${
+                          lang === currentLocale
+                            ? 'text-fase-navy font-semibold'
+                            : 'text-fase-navy'
+                        }`}
+                      >
+                        {LANGUAGE_NAMES[lang]}
+                      </button>
+                      {index < availableLanguages.length - 1 && (
+                        <span className="text-gray-300">•</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Article Content */}
         <article className="max-w-5xl mx-auto px-6">
@@ -182,84 +338,41 @@ export default function LloydsEuropeArticle() {
           <div className="py-10">
             <div className="lg:grid lg:grid-cols-5 lg:gap-16">
               {/* Text column */}
-              <div className="lg:col-span-3 text-gray-700 leading-relaxed space-y-6">
-                <p className="text-xl text-gray-800">
-                  Ever since the pioneering Lloyd&apos;s underwriter, Cuthbert Heath, first granted a binding authority to his agent in Amsterdam, Alfred Schroder, in 1903, Lloyd&apos;s has played a key role in the development of Europe&apos;s delegated authority market.
-                </p>
-
-                <p>
-                  Today, Lloyd&apos;s writes approximately <strong className="text-fase-navy">28% of its total premiums</strong> (€1,685m out of €5,939m) from the European Economic Area plus Switzerland on a delegated authority basis. Five hundred and thirty-two Lloyd&apos;s coverholders, including many of the region&apos;s leading MGAs, underwrite a wide array of business backed by Lloyd&apos;s binding authorities.
-                </p>
-
-                <p>
-                  In recent years, Lloyd&apos;s managing agents&apos; delegated authority business in Europe has surged, growing by <strong className="text-fase-navy">15% annually</strong> between 2023 and 2025. The share of coverholder business in national markets varies widely. In Italy, Lloyd&apos;s 88 coverholders generated 61% of the market&apos;s total premium in 2025; in France the coverholder proportion was 43%; in Ireland, 28%; in Germany, 20%; and in Switzerland just 8%.
-                </p>
-
-                <p>
-                  The overall figures are boosted by Lloyd&apos;s broad definition of what constitutes a coverholder, which includes 61 service companies owned and operated by Lloyd&apos;s managing agents. Coverholder business also includes business underwritten by consortia of Lloyd&apos;s syndicates, under which the lead syndicate operates with delegated authority from following syndicates.
-                </p>
-
-                <p>
-                  Many Lloyd&apos;s coverholders are brokers with tightly worded binding authorities for particular classes of business. They operate as an efficient distribution channel for Lloyd&apos;s products but have little or no underwriting autonomy. But in common with insurance and reinsurance companies around the world, Lloyd&apos;s syndicates have also been increasing their capacity allocations to MGAs.
-                </p>
-
-                <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">No Longer Short-Termist</h2>
-
-                <p>
-                  Lloyd&apos;s capacity was historically tendered on a short-term – and often opportunistic - basis. But since 2016 Lloyd&apos;s managing agencies have been permitted to enter into multi-year binding authority agreements that can run for up to three years. And this year, Lloyd&apos;s plans to offer the option for continuous contracts that run indefinitely until termination.
-                </p>
-
-                <p>
-                  This aligns with the broader market for capacity, in which larger MGAs in particular have been able to negotiate longer term capacity arrangements with carriers.
-                </p>
-
-                <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Streamlined Accreditation</h2>
-
-                <p>
-                  Another widely held preconception is that Lloyd&apos;s coverholder accreditation is a lengthy and complex process. It need not be so. The delegated authorities team at Lloyd&apos;s can process coverholder applications within a few days. The due diligence performed by the Lloyd&apos;s managing agent may take much longer, but this is not fundamentally different from the process an insurance company would require.
-                </p>
-
-                <p>
-                  For FASE members, Lloyd&apos;s has provided two valuable guides:
-                </p>
-
-                <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                  <li>
-                    <a href="/bulletin/feb-2026/lloyds-europe-coverholders-datapoints.pdf" target="_blank" rel="noopener noreferrer" className="text-fase-navy hover:text-fase-gold underline">
-                      Lloyd&apos;s Europe Coverholders Datapoints
-                    </a> — charts the scale, composition and growth rate of Lloyd&apos;s coverholder business across nine European markets.
-                  </li>
-                  <li>
-                    <a href="/bulletin/feb-2026/delegated-authority-at-lloyds.pdf" target="_blank" rel="noopener noreferrer" className="text-fase-navy hover:text-fase-gold underline">
-                      Delegated Authority at Lloyd&apos;s
-                    </a> — explains the benefits of becoming a Lloyd&apos;s coverholder and how they are remunerated and regulated.
-                  </li>
-                </ul>
-
-                <p>
-                  One hundred and twenty-three years after Cuthbert Heath first lent his pen to his trusted agent in Amsterdam, Lloyd&apos;s delegated authority business is still driven by the same motivation. In the words of Lloyd&apos;s guide, it permits access to &quot;business that otherwise would not be seen or could not be written economically at the box.&quot; But the relationship between Lloyd&apos;s managing agencies and modern MGAs is today more balanced and the delegation of authority is, often, much broader.
-                </p>
-
-                {/* Footer note */}
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <p className="text-sm text-gray-500 italic">
-                    Future issues will include interviews with chief underwriting officers at Lloyd&apos;s. Callum Alexander, director of delegated authority at Lloyd&apos;s, will be attending the MGA Rendezvous in May.
-                  </p>
-                </div>
+              <div className="lg:col-span-3">
+                {article?.html ? (
+                  <div
+                    className="prose prose-lg max-w-none
+                      prose-headings:font-noto-serif prose-headings:text-fase-navy
+                      prose-h2:text-2xl prose-h2:font-semibold prose-h2:pt-4
+                      prose-p:text-gray-700 prose-p:leading-relaxed
+                      prose-strong:text-fase-navy
+                      prose-a:text-fase-navy prose-a:hover:text-fase-gold
+                      prose-ul:text-gray-600 prose-ul:space-y-2
+                      prose-li:text-gray-600
+                      prose-hr:border-gray-100 prose-hr:my-6"
+                    dangerouslySetInnerHTML={{ __html: article.html }}
+                  />
+                ) : (
+                  <div className="text-gray-700 leading-relaxed space-y-6">
+                    <p className="text-xl text-gray-800">
+                      Loading article content...
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Charts column */}
               <div className="lg:col-span-2 mt-10 lg:mt-0 space-y-8">
                 <ChartFigure
                   src="/bulletin/feb-2026/lloyds-pie-chart.png"
-                  alt="Lloyd&apos;s Binder Business breakdown by class"
-                  title="Lloyd&apos;s Binder Business, EEA + Switzerland, 2025"
+                  alt="Lloyd's Binder Business breakdown by class"
+                  title="Lloyd's Binder Business, EEA + Switzerland, 2025"
                   caption="Binder business by class. Total: €1.685bn"
                 />
                 <ChartFigure
                   src="/bulletin/feb-2026/lloyds-coverholder-count.png"
-                  alt="Number of Lloyd&apos;s coverholders by country"
-                  title="Accredited Lloyd&apos;s Coverholders by Country, 2025"
+                  alt="Number of Lloyd's coverholders by country"
+                  title="Accredited Lloyd's Coverholders by Country, 2025"
                   caption="Number of accredited coverholders by market"
                 />
                 <ChartFigure
