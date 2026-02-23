@@ -57,7 +57,8 @@ export default function InvitePage({ params }: PageProps) {
       }
 
       setInviteData(decodedData);
-      setStep('check-existing');
+      // Skip check-existing step - go directly to create password
+      setStep('create-password');
     } catch (err) {
       setValidationError(err instanceof Error ? err.message : 'Invalid invitation link');
     } finally {
