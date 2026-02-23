@@ -46,12 +46,8 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Use collection group query to search all members subcollections at once
-    const membersSnapshot = await db
-      .collectionGroup('members')
-      .where('email', '==', normalizedEmail)
-      .limit(1)
-      .get();
+    // Get all accounts and query their members subcollections in parallel
+    const accountsSnapshot = await db.collection('accounts').get();
 
     let foundMember: {
       memberId: string;
@@ -62,28 +58,34 @@ export async function POST(request: NextRequest) {
       accountStatus: string;
     } | null = null;
 
-    if (!membersSnapshot.empty) {
-      const memberDoc = membersSnapshot.docs[0];
-      const memberData = memberDoc.data();
+    // Query all accounts' members subcollections in parallel
+    const memberQueries = accountsSnapshot.docs.map(async (accountDoc) => {
+      const accountData = accountDoc.data();
+      const membersSnapshot = await db
+        .collection('accounts')
+        .doc(accountDoc.id)
+        .collection('members')
+        .where('email', '==', normalizedEmail)
+        .limit(1)
+        .get();
 
-      // Get the parent account ID from the document path (accounts/{accountId}/members/{memberId})
-      const companyId = memberDoc.ref.parent.parent?.id;
-
-      if (companyId) {
-        // Fetch the account data to get company name and status
-        const accountDoc = await db.collection('accounts').doc(companyId).get();
-        const accountData = accountDoc.data();
-
-        foundMember = {
+      if (!membersSnapshot.empty) {
+        const memberDoc = membersSnapshot.docs[0];
+        const memberData = memberDoc.data();
+        return {
           memberId: memberDoc.id,
-          companyId: companyId,
+          companyId: accountDoc.id,
           companyName: accountData?.organizationName || 'Unknown Company',
           memberName: memberData.personalName || memberData.fullName || '',
           accountConfirmed: memberData.accountConfirmed === true,
           accountStatus: accountData?.status || 'unknown'
         };
       }
-    }
+      return null;
+    });
+
+    const results = await Promise.all(memberQueries);
+    foundMember = results.find(r => r !== null) || null;
 
     if (!foundMember) {
       return NextResponse.json({
