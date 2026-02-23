@@ -298,7 +298,7 @@ const translations: Record<string, {
     author: 'Door Mark Elliott, Polo Insurance Managers',
     lead: (
       <p className="text-lg text-gray-800 leading-relaxed mb-8">
-        De rol van herverzekeringsvcaptives is gegroeid in de capaciteitsstructuur van gevolmachtigd agenten in de Verenigde Staten en het Verenigd Koninkrijk. In het eerste van een reeks maandelijkse artikelen over captive management-kwesties benadrukt Mark Elliott, CEO van Polo Insurance Managers, gevestigd in Guernsey, de zeven belangrijkste redenen waarom winstgevende gevolmachtigd agenten van alle groottes in Europa zouden moeten overwegen een captive op te richten.
+        De rol van herverzekeringscaptives is gegroeid in de capaciteitsstructuur van gevolmachtigd agenten in de Verenigde Staten en het Verenigd Koninkrijk. In het eerste van een reeks maandelijkse artikelen over captive management-kwesties benadrukt Mark Elliott, CEO van Polo Insurance Managers, gevestigd in Guernsey, de zeven belangrijkste redenen waarom winstgevende gevolmachtigd agenten van alle groottes in Europa zouden moeten overwegen een captive op te richten.
       </p>
     ),
     content: (
