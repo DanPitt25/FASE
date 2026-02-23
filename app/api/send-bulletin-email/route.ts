@@ -393,7 +393,7 @@ function generateLocalizedHtml(locale: SupportedLocale): string {
               </p>
               <p style="font-family: 'Trebuchet MS', Helvetica, sans-serif; font-size: 11px; line-height: 16px; color: #4a6a7a; margin: 16px 0 0 0;">
                 © 2026 FASE B.V. All rights reserved.<br>
-                <a href="#" style="color: #4a6a7a; text-decoration: underline;">Unsubscribe</a> &nbsp;|&nbsp; <a href="https://fasemga.com/privacy-policy" style="color: #4a6a7a; text-decoration: underline;">Privacy Policy</a>
+                <a href="https://fasemga.com/privacy-policy" style="color: #4a6a7a; text-decoration: underline;">Privacy Policy</a>
               </p>
             </td>
           </tr>
