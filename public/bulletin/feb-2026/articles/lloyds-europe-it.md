@@ -16,7 +16,7 @@ Oggi, Lloyd's sottoscrive circa il **28% dei suoi premi totali** (1.685 milioni 
 
 Negli ultimi anni, il business di autorità delegata dei managing agent di Lloyd's in Europa è cresciuto rapidamente, con una crescita annuale del **15%** tra il 2023 e il 2025. La quota del business dei coverholder nei mercati nazionali varia ampiamente. In Italia, gli 88 coverholder di Lloyd's hanno generato il 61% dei premi totali del mercato nel 2025; in Francia la proporzione dei coverholder era del 43%; in Irlanda del 28%; in Germania del 20%; e in Svizzera solo dell'8%.
 
-Le cifre complessive sono amplificate dalla definizione ampia che Lloyd's dà di coverholder, che include 61 società di servizi possedute e gestite dai managing agent di Lloyd's. Il business dei coverholder include anche affari sottoscritti da consorzi di sindacati Lloyd's, in cui il sindacato capofila opera con autorità delegata dai sindacati follower.
+I dati complessivi sono amplificati dalla definizione ampia che Lloyd's dà di coverholder, che include 61 società di servizi possedute e gestite dai managing agent di Lloyd's. Il business dei coverholder include anche affari sottoscritti da consorzi di sindacati Lloyd's, in cui il sindacato capofila opera con autorità delegata dai sindacati partecipanti.
 
 Molti coverholder di Lloyd's sono broker con autorità di sottoscrizione strettamente definite per particolari classi di affari. Operano come un canale di distribuzione efficiente per i prodotti Lloyd's ma hanno poca o nessuna autonomia di sottoscrizione. Tuttavia, come le compagnie di assicurazione e riassicurazione di tutto il mondo, anche i sindacati Lloyd's hanno aumentato le loro allocazioni di capacità alle agenzie di sottoscrizione.
 
