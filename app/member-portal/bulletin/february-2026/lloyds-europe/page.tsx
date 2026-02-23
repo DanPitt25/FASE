@@ -224,7 +224,7 @@ const translations: Record<string, {
         </ul>
 
         <p>
-          Einhundertdreiundzwanzig Jahre nachdem Cuthbert Heath erstmals seinen Stift seinem vertrauten Agenten in Amsterdam lieh, wird das Geschäft mit delegierter Autorität von Lloyd&apos;s immer noch von der gleichen Motivation angetrieben. In den Worten des Lloyd&apos;s-Leitfadens ermöglicht es den Zugang zu „Geschäft, das sonst nicht gesehen würde oder nicht wirtschaftlich am Box gezeichnet werden könnte." Aber die Beziehung zwischen Lloyd&apos;s Managing Agencies und modernen MGAs ist heute ausgewogener und die Delegation der Autorität ist oft viel breiter.
+          Einhundertdreiundzwanzig Jahre nachdem Cuthbert Heath erstmals seinen Stift seinem vertrauten Agenten in Amsterdam lieh, wird das Geschäft mit delegierter Autorität von Lloyd&apos;s immer noch von der gleichen Motivation angetrieben. In den Worten des Lloyd&apos;s-Leitfadens ermöglicht es den Zugang zu &bdquo;Geschäft, das sonst nicht gesehen würde oder nicht wirtschaftlich am Box gezeichnet werden könnte.&ldquo; Aber die Beziehung zwischen Lloyd&apos;s Managing Agencies und modernen MGAs ist heute ausgewogener und die Delegation der Autorität ist oft viel breiter.
         </p>
 
         <div className="mt-6 pt-6 border-t border-gray-100">

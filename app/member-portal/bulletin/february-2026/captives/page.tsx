@@ -165,7 +165,7 @@ const translations: Record<string, {
 
         <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">4. Verbesserte Verhandlungsposition gegenüber Risikoträgern</h2>
         <p>
-          Nachgewiesenes „Skin in the Game" stärkt die Glaubwürdigkeit und kann zu besseren Provisionskonditionen, Gewinnbeteiligungen und langfristigen Kapazitätsvereinbarungen führen. Tatsächlich haben wir Kunden erlebt, die ihre Provision allein durch die Einrichtung einer Captive erhöhen konnten – sie haben anfangs nicht einmal eine Retention übernommen.
+          Nachgewiesenes &bdquo;Skin in the Game&ldquo; stärkt die Glaubwürdigkeit und kann zu besseren Provisionskonditionen, Gewinnbeteiligungen und langfristigen Kapazitätsvereinbarungen führen. Tatsächlich haben wir Kunden erlebt, die ihre Provision allein durch die Einrichtung einer Captive erhöhen konnten – sie haben anfangs nicht einmal eine Retention übernommen.
         </p>
 
         <h2 className="text-xl font-noto-serif font-semibold text-fase-navy pt-6 pb-2">5. Zugang zu Rückversicherungsmärkten zu besseren Konditionen</h2>
