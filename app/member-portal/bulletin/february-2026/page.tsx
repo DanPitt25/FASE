@@ -10,18 +10,15 @@ import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../lib/firebase';
 import { getLineOfBusinessDisplay } from '../../../../lib/lines-of-business';
+import countries from 'i18n-iso-countries';
 
-// Country code to name mapping
-const countryNames: Record<string, string> = {
-  'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria', 'HR': 'Croatia',
-  'CY': 'Cyprus', 'CZ': 'Czech Republic', 'DK': 'Denmark', 'EE': 'Estonia',
-  'FI': 'Finland', 'FR': 'France', 'DE': 'Germany', 'GR': 'Greece',
-  'HU': 'Hungary', 'IE': 'Ireland', 'IT': 'Italy', 'LV': 'Latvia',
-  'LT': 'Lithuania', 'LU': 'Luxembourg', 'MT': 'Malta', 'NL': 'Netherlands',
-  'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SK': 'Slovakia',
-  'SI': 'Slovenia', 'ES': 'Spain', 'SE': 'Sweden', 'GB': 'United Kingdom',
-  'CH': 'Switzerland', 'NO': 'Norway', 'IS': 'Iceland', 'LI': 'Liechtenstein'
-};
+// Register country name locales
+countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/de.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/fr.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/es.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/it.json'));
+countries.registerLocale(require('i18n-iso-countries/langs/nl.json'));
 
 interface FaseStats {
   memberCount: number;
@@ -174,7 +171,7 @@ export default function February2026Edition() {
             if (data.organizationType === 'MGA') {
               const country = data.businessAddress?.country || data.registeredAddress?.country;
               if (country) {
-                const countryName = countryNames[country] || country;
+                const countryName = countries.getName(country, locale || 'en') || countries.getName(country, 'en') || country;
                 byCountry[countryName] = (byCountry[countryName] || 0) + 1;
               }
 
@@ -206,7 +203,7 @@ export default function February2026Edition() {
     };
 
     fetchStats();
-  }, []);
+  }, [locale]);
 
   if (loading || translationsLoading) {
     return (
@@ -359,7 +356,7 @@ export default function February2026Edition() {
 
                 {/* Lines of Business */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Top Lines of Business (by % of FASE member MGAs writing)</h3>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">{t.top_lines_of_business || 'Top Lines of Business'}</h3>
                   <BarChart data={stats.byLinesOfBusiness} total={stats.mgaCount} maxItems={8} />
                 </div>
               </div>
