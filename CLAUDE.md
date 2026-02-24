@@ -22,10 +22,20 @@
 This project uses the Firebase Admin SDK (server-side) with the `FIREBASE_SERVICE_ACCOUNT_KEY` environment variable. This means:
 
 - **All Firestore operations go through API routes** - The Admin SDK only works server-side
-- **lib/firebase.ts** uses `firebase-admin` package, NOT the client SDK
-- **API routes** use `import { db } from '../../../lib/firebase'` and call `db.collection('name').add(data)` etc.
 - **Client components** call API routes via `fetch('/api/...')` to interact with Firestore
 - **Environment variable**: `FIREBASE_SERVICE_ACCOUNT_KEY` must be set in Vercel with the JSON service account credentials
+
+### API Route Firebase Usage - IMPORTANT
+**ALWAYS use the shared Firebase Admin exports from `lib/firebase-admin.ts`:**
+```typescript
+import { adminDb, adminAuth, adminStorage, FieldValue } from '../../../lib/firebase-admin';
+
+// Then use directly:
+const db = adminDb;
+await db.collection('accounts').doc(id).update({ ... });
+```
+
+**NEVER create your own `initializeAdmin()` function or call `admin.initializeApp()` in API routes.** The shared module uses a named app (`fase-admin`), and custom initialization will conflict with it, causing "The default Firebase app does not exist" errors.
 
 ## MGA Rendezvous Subsite
 - Located at `mga-rendezvous/` - a separate git repo within this project
