@@ -1,30 +1,7 @@
 import { NextResponse } from 'next/server';
+import { adminStorage } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`
-      });
-    }
-  }
-
-  return admin;
-};
 
 export interface StorageInvoice {
   id: string;
@@ -41,8 +18,9 @@ export interface StorageInvoice {
  */
 export async function GET() {
   try {
-    const admin = await initializeFirebase();
-    const bucket = admin.storage().bucket();
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
+    const bucket = adminStorage.bucket(bucketName);
 
     // Get all files with metadata in a single call
     const [files] = await bucket.getFiles({
