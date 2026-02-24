@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
         const memberRecord = {
           id: memberId,
-          email: member.email,
+          email: member.email?.toLowerCase().trim(),
           personalName: member.name,
           jobTitle: member.jobTitle,
           isAccountAdministrator: member.isPrimaryContact,

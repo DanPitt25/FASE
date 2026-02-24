@@ -33,21 +33,25 @@ export async function POST(request: NextRequest) {
     } | null = null;
 
     // Query all accounts' members subcollections in parallel
+    // Note: Firestore queries are case-sensitive, so we fetch all members and compare in code
     const memberQueries = accountsSnapshot.docs.map(async (accountDoc) => {
       const accountData = accountDoc.data();
       const membersSnapshot = await adminDb
         .collection('accounts')
         .doc(accountDoc.id)
         .collection('members')
-        .where('email', '==', normalizedEmail)
-        .limit(1)
         .get();
 
-      if (!membersSnapshot.empty) {
-        const memberDoc = membersSnapshot.docs[0];
-        const memberData = memberDoc.data();
+      // Find member with case-insensitive email match
+      const matchingMember = membersSnapshot.docs.find(doc => {
+        const memberEmail = doc.data().email;
+        return memberEmail && memberEmail.toLowerCase() === normalizedEmail;
+      });
+
+      if (matchingMember) {
+        const memberData = matchingMember.data();
         return {
-          memberId: memberDoc.id,
+          memberId: matchingMember.id,
           companyId: accountDoc.id,
           companyName: accountData?.organizationName || 'Unknown Company',
           memberName: memberData.personalName || memberData.fullName || '',
