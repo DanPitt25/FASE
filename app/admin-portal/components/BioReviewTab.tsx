@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
-import { db, auth } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
 import { OrganizationAccount, CompanySummary } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
@@ -84,51 +83,22 @@ export default function BioReviewTab() {
     try {
       setLoading(true);
 
-      // Query all organization accounts
-      const accountsRef = collection(db, 'accounts');
-      const accountsSnapshot = await getDocs(accountsRef);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setLoading(false);
+        return;
+      }
 
-      const companiesWithPendingContent: CompanyWithPendingContent[] = [];
-
-      accountsSnapshot.docs.forEach(docSnap => {
-        const data = docSnap.data() as OrganizationAccount;
-
-        const hasPendingBio = data.companySummary?.status === 'pending_review';
-        const hasPendingLogo = data.logoStatus?.status === 'pending_review';
-        // Also show logos that exist but have never been reviewed (no logoStatus or no status set)
-        const hasUnreviewedLogo = !!(data.logoURL && (!data.logoStatus || !data.logoStatus.status));
-
-        // Include if either bio or logo is pending, or has an unreviewed logo
-        if (hasPendingBio || hasPendingLogo || hasUnreviewedLogo) {
-          companiesWithPendingContent.push({
-            ...data,
-            id: docSnap.id,
-            hasPendingBio,
-            hasPendingLogo: hasPendingLogo || hasUnreviewedLogo,
-            bioStatus: data.companySummary?.status,
-            bioText: data.companySummary?.text,
-            bioSubmittedAt: data.companySummary?.submittedAt,
-            // Use pendingURL if available, otherwise fall back to existing logoURL for unreviewed logos
-            pendingLogoURL: data.logoStatus?.pendingURL || (hasUnreviewedLogo ? data.logoURL : undefined),
-            logoSubmittedAt: data.logoStatus?.submittedAt
-          });
-        }
+      const response = await fetch('/api/admin/bio-review?type=pending', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      // Sort by most recent submission (either bio or logo)
-      companiesWithPendingContent.sort((a, b) => {
-        const aTime = Math.max(
-          a.bioSubmittedAt?.toDate?.()?.getTime() || 0,
-          a.logoSubmittedAt?.toDate?.()?.getTime() || 0
-        );
-        const bTime = Math.max(
-          b.bioSubmittedAt?.toDate?.()?.getTime() || 0,
-          b.logoSubmittedAt?.toDate?.()?.getTime() || 0
-        );
-        return bTime - aTime;
-      });
-
-      setPendingItems(companiesWithPendingContent);
+      const data = await response.json();
+      if (data.success) {
+        setPendingItems(data.pendingItems);
+      }
     } catch (error) {
       console.error('Error loading pending items:', error);
     } finally {
@@ -142,38 +112,34 @@ export default function BioReviewTab() {
     try {
       setProcessingReview(true);
 
-      const accountRef = doc(db, 'accounts', companyId);
-      let updateData: any = {
-        'companySummary.reviewedAt': serverTimestamp(),
-        'companySummary.reviewedBy': user.uid,
-        updatedAt: serverTimestamp()
-      };
-
-      if (action === 'edit') {
-        // Update bio text and translations, keep status as approved
-        updateData['companySummary.text'] = editedBioText;
-        updateData['companySummary.status'] = 'approved';
-
-        // Add translations if provided
-        const bioTranslations: any = {};
-        Object.entries(translations).forEach(([lang, text]) => {
-          if (text.trim()) {
-            bioTranslations[lang] = text;
-          }
-        });
-
-        if (Object.keys(bioTranslations).length > 0) {
-          updateData['companySummary.translations'] = bioTranslations;
-        }
-      } else {
-        updateData['companySummary.status'] = action === 'approve' ? 'approved' : 'rejected';
-
-        if (action === 'reject' && reason) {
-          updateData['companySummary.rejectionReason'] = reason;
-        }
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setProcessingReview(false);
+        return;
       }
 
-      await updateDoc(accountRef, updateData);
+      const response = await fetch('/api/admin/bio-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'review_bio',
+          companyId,
+          reviewAction: action,
+          reason,
+          editedBioText: action === 'edit' ? editedBioText : undefined,
+          translations: action === 'edit' ? translations : undefined
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to review bio');
+      }
 
       // Update local state - remove bio from pending, keep if logo still pending
       setPendingItems(prev => prev.map(item => {
@@ -198,26 +164,35 @@ export default function BioReviewTab() {
     try {
       setProcessingReview(true);
 
-      const accountRef = doc(db, 'accounts', companyId);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setProcessingReview(false);
+        return;
+      }
+
       const item = pendingItems.find(i => i.id === companyId);
 
-      let updateData: any = {
-        'logoStatus.reviewedAt': serverTimestamp(),
-        'logoStatus.reviewedBy': user.uid,
-        'logoStatus.status': action === 'approve' ? 'approved' : 'rejected',
-        updatedAt: serverTimestamp()
-      };
+      const response = await fetch('/api/admin/bio-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'review_logo',
+          companyId,
+          reviewAction: action,
+          reason,
+          pendingLogoURL: item?.pendingLogoURL
+        })
+      });
 
-      if (action === 'approve' && item?.pendingLogoURL) {
-        // Move pending logo to approved logoURL
-        updateData['logoURL'] = item.pendingLogoURL;
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to review logo');
       }
-
-      if (action === 'reject' && reason) {
-        updateData['logoStatus.rejectionReason'] = reason;
-      }
-
-      await updateDoc(accountRef, updateData);
 
       // Update local state - remove logo from pending, keep if bio still pending
       setPendingItems(prev => prev.map(i => {
@@ -282,16 +257,18 @@ export default function BioReviewTab() {
     // Load all accounts if not already loaded
     if (allAccounts.length === 0) {
       try {
-        const accountsRef = collection(db, 'accounts');
-        const accountsSnapshot = await getDocs(accountsRef);
-        const accounts: OrganizationAccount[] = [];
-        accountsSnapshot.docs.forEach(docSnap => {
-          const data = docSnap.data() as OrganizationAccount;
-          accounts.push({ ...data, id: docSnap.id });
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) return;
+
+        const response = await fetch('/api/admin/bio-review?type=all', {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-        // Sort alphabetically by organization name
-        accounts.sort((a, b) => (a.organizationName || '').localeCompare(b.organizationName || ''));
-        setAllAccounts(accounts);
+
+        const data = await response.json();
+        if (data.success) {
+          setAllAccounts(data.accounts);
+        }
       } catch (error) {
         console.error('Error loading accounts:', error);
       }
@@ -333,73 +310,63 @@ export default function BioReviewTab() {
     try {
       setSavingNewBio(true);
 
-      const accountRef = doc(db, 'accounts', selectedAccount.id);
-      const updateData: any = {
-        updatedAt: serverTimestamp()
-      };
-
-      // Handle bio if provided
-      if (newBioText.trim()) {
-        const bioTranslations: any = {};
-        Object.entries(newBioTranslations).forEach(([lang, text]) => {
-          if (text.trim()) {
-            bioTranslations[lang] = text;
-          }
-        });
-
-        updateData['companySummary.text'] = newBioText.trim();
-        updateData['companySummary.status'] = 'approved';
-        updateData['companySummary.reviewedAt'] = serverTimestamp();
-        updateData['companySummary.reviewedBy'] = user.uid;
-        updateData['companySummary.submittedAt'] = serverTimestamp();
-
-        if (Object.keys(bioTranslations).length > 0) {
-          updateData['companySummary.translations'] = bioTranslations;
-        }
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setSavingNewBio(false);
+        return;
       }
+
+      let logoURL: string | undefined;
 
       // Handle logo upload if provided
       if (newLogoFile) {
         setUploadingLogo(true);
-
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) {
-          console.error('Not authenticated');
-          setUploadingLogo(false);
-          return;
-        }
 
         const formData = new FormData();
         formData.append('file', newLogoFile);
         formData.append('identifier', selectedAccount.id);
         formData.append('organizationName', selectedAccount.organizationName || '');
 
-        const response = await fetch('/api/upload-logo', {
+        const uploadResponse = await fetch('/api/upload-logo', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
           body: formData,
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          // Directly approve the logo (skip pending review)
-          updateData['logoURL'] = result.downloadURL;
-          updateData['logoStatus.status'] = 'approved';
-          updateData['logoStatus.pendingURL'] = null;
-          updateData['logoStatus.reviewedAt'] = serverTimestamp();
-          updateData['logoStatus.reviewedBy'] = user.uid;
-          updateData['logoStatus.submittedAt'] = serverTimestamp();
+        if (uploadResponse.ok) {
+          const result = await uploadResponse.json();
+          logoURL = result.downloadURL;
         } else {
-          const errorData = await response.json().catch(() => ({}));
+          const errorData = await uploadResponse.json().catch(() => ({}));
           console.error('Logo upload failed:', errorData);
         }
 
         setUploadingLogo(false);
       }
 
-      await updateDoc(accountRef, updateData);
+      // Save bio and logo status via API
+      const response = await fetch('/api/admin/bio-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'save_new',
+          companyId: selectedAccount.id,
+          bioText: newBioText.trim(),
+          translations: newBioTranslations,
+          logoURL
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to save');
+      }
+
       closeWriteNewModal();
     } catch (error) {
       console.error('Error saving new bio:', error);
@@ -413,15 +380,18 @@ export default function BioReviewTab() {
   const loadAccountsIfNeeded = async () => {
     if (allAccounts.length === 0) {
       try {
-        const accountsRef = collection(db, 'accounts');
-        const accountsSnapshot = await getDocs(accountsRef);
-        const accounts: OrganizationAccount[] = [];
-        accountsSnapshot.docs.forEach(docSnap => {
-          const data = docSnap.data() as OrganizationAccount;
-          accounts.push({ ...data, id: docSnap.id });
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) return;
+
+        const response = await fetch('/api/admin/bio-review?type=all', {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-        accounts.sort((a, b) => (a.organizationName || '').localeCompare(b.organizationName || ''));
-        setAllAccounts(accounts);
+
+        const data = await response.json();
+        if (data.success) {
+          setAllAccounts(data.accounts);
+        }
       } catch (error) {
         console.error('Error loading accounts:', error);
       }
@@ -472,73 +442,71 @@ export default function BioReviewTab() {
     try {
       setSavingEdit(true);
 
-      const accountRef = doc(db, 'accounts', editSelectedAccount.id);
-      const updateData: any = {
-        updatedAt: serverTimestamp()
-      };
-
-      // Always update bio (even if empty, to allow clearing)
-      const bioTranslations: any = {};
-      Object.entries(editBioTranslations).forEach(([lang, text]) => {
-        if (text.trim()) {
-          bioTranslations[lang] = text;
-        }
-      });
-
-      if (editBioText.trim()) {
-        updateData['companySummary.text'] = editBioText.trim();
-        updateData['companySummary.status'] = 'approved';
-        updateData['companySummary.reviewedAt'] = serverTimestamp();
-        updateData['companySummary.reviewedBy'] = user.uid;
-
-        if (Object.keys(bioTranslations).length > 0) {
-          updateData['companySummary.translations'] = bioTranslations;
-        }
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setSavingEdit(false);
+        return;
       }
+
+      let logoURL: string | undefined;
 
       // Handle logo upload if provided
       if (editLogoFile) {
         setUploadingEditLogo(true);
-
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) {
-          console.error('Not authenticated');
-          setUploadingEditLogo(false);
-          return;
-        }
 
         const formData = new FormData();
         formData.append('file', editLogoFile);
         formData.append('identifier', editSelectedAccount.id);
         formData.append('organizationName', editSelectedAccount.organizationName || '');
 
-        const response = await fetch('/api/upload-logo', {
+        const uploadResponse = await fetch('/api/upload-logo', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
           body: formData,
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          updateData['logoURL'] = result.downloadURL;
-          updateData['logoStatus.status'] = 'approved';
-          updateData['logoStatus.pendingURL'] = null;
-          updateData['logoStatus.reviewedAt'] = serverTimestamp();
-          updateData['logoStatus.reviewedBy'] = user.uid;
-          updateData['logoStatus.submittedAt'] = serverTimestamp();
+        if (uploadResponse.ok) {
+          const result = await uploadResponse.json();
+          logoURL = result.downloadURL;
         } else {
-          const errorData = await response.json().catch(() => ({}));
+          const errorData = await uploadResponse.json().catch(() => ({}));
           console.error('Logo upload failed:', errorData);
         }
 
         setUploadingEditLogo(false);
       }
 
-      await updateDoc(accountRef, updateData);
+      // Save via API
+      const response = await fetch('/api/admin/bio-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'save_edit',
+          companyId: editSelectedAccount.id,
+          bioText: editBioText.trim(),
+          translations: editBioTranslations,
+          logoURL
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to save');
+      }
 
       // Update local allAccounts state to reflect changes
+      const bioTranslations: Record<string, string> = {};
+      Object.entries(editBioTranslations).forEach(([lang, text]) => {
+        if (text.trim()) {
+          bioTranslations[lang] = text;
+        }
+      });
+
       setAllAccounts(prev => prev.map(acc => {
         if (acc.id !== editSelectedAccount.id) return acc;
         return {
@@ -549,7 +517,7 @@ export default function BioReviewTab() {
             status: 'approved' as const,
             translations: Object.keys(bioTranslations).length > 0 ? bioTranslations : acc.companySummary?.translations
           } : acc.companySummary,
-          logoURL: editLogoFile ? updateData['logoURL'] : acc.logoURL
+          logoURL: logoURL || acc.logoURL
         };
       }));
 

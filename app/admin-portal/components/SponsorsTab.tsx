@@ -2,9 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
-import { db } from '../../../lib/firebase';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { auth } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import Image from 'next/image';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
@@ -60,32 +58,28 @@ export default function SponsorsTab() {
   
   const [currentLanguage, setCurrentLanguage] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
 
-  // Load sponsors from Firestore
+  // Load sponsors from API
   const loadSponsors = async () => {
     if (!user?.uid) return;
-    
+
     setLoading(true);
     try {
-      const sponsorsRef = collection(db, 'sponsors');
-      const querySnapshot = await getDocs(sponsorsRef);
-      const sponsorsData: Sponsor[] = [];
-      
-      querySnapshot.forEach((doc) => {
-        sponsorsData.push({
-          id: doc.id,
-          ...doc.data()
-        } as Sponsor);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch('/api/admin/sponsors', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      
-      // Sort by tier priority and order
-      const tierOrder = { platinum: 1, gold: 2, silver: 3 };
-      sponsorsData.sort((a, b) => {
-        const tierDiff = tierOrder[a.tier] - tierOrder[b.tier];
-        if (tierDiff !== 0) return tierDiff;
-        return a.order - b.order;
-      });
-      
-      setSponsors(sponsorsData);
+
+      const data = await response.json();
+      if (data.success) {
+        setSponsors(data.sponsors);
+      }
     } catch (error) {
       console.error('Error loading sponsors:', error);
     } finally {
@@ -95,6 +89,7 @@ export default function SponsorsTab() {
 
   // Upload logo via API route (uses Firebase Admin SDK)
   const uploadLogo = async (file: File, sponsorName: string): Promise<string> => {
+    const auth = getAuth();
     const token = await auth.currentUser?.getIdToken();
     if (!token) {
       throw new Error('Not authenticated');
@@ -130,8 +125,16 @@ export default function SponsorsTab() {
 
     setUploading(true);
     try {
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        alert('Not authenticated');
+        setUploading(false);
+        return;
+      }
+
       let logoUrl = editingSponsor?.logoUrl || '';
-      
+
       // Upload new logo if provided
       if (formData.logoFile) {
         logoUrl = await uploadLogo(formData.logoFile, formData.name);
@@ -144,27 +147,45 @@ export default function SponsorsTab() {
         websiteUrl: formData.websiteUrl,
         bio: formData.bio,
         order: formData.order,
-        isActive: formData.isActive,
-        updatedAt: new Date()
+        isActive: formData.isActive
       };
 
       if (editingSponsor) {
         // Update existing sponsor
-        await updateDoc(doc(db, 'sponsors', editingSponsor.id), sponsorData);
-        setSponsors(prev => prev.map(s => 
+        const response = await fetch('/api/admin/sponsors', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ sponsorId: editingSponsor.id, ...sponsorData })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to update sponsor');
+        }
+
+        setSponsors(prev => prev.map(s =>
           s.id === editingSponsor.id ? { ...s, ...sponsorData } : s
         ));
       } else {
         // Create new sponsor
-        const docRef = await addDoc(collection(db, 'sponsors'), {
-          ...sponsorData,
-          createdAt: new Date()
+        const response = await fetch('/api/admin/sponsors', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(sponsorData)
         });
-        setSponsors(prev => [...prev, { 
-          id: docRef.id, 
-          ...sponsorData,
-          createdAt: new Date()
-        } as Sponsor]);
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to create sponsor');
+        }
+
+        setSponsors(prev => [...prev, data.sponsor as Sponsor]);
       }
 
       // Reset form and close modal
@@ -180,7 +201,7 @@ export default function SponsorsTab() {
       setEditingSponsor(null);
       setShowCreateModal(false);
       setCurrentLanguage('en');
-      
+
       // Reload to ensure proper sorting
       await loadSponsors();
     } catch (error) {
@@ -196,8 +217,23 @@ export default function SponsorsTab() {
     if (!confirm(`Are you sure you want to delete ${sponsor.name}?`)) return;
 
     try {
-      // Delete from Firestore
-      await deleteDoc(doc(db, 'sponsors', sponsor.id));
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        alert('Not authenticated');
+        return;
+      }
+
+      const response = await fetch(`/api/admin/sponsors?sponsorId=${encodeURIComponent(sponsor.id)}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to delete sponsor');
+      }
+
       setSponsors(prev => prev.filter(s => s.id !== sponsor.id));
     } catch (error) {
       console.error('Error deleting sponsor:', error);

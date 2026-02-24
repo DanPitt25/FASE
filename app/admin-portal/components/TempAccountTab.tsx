@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import Button from '../../../components/Button';
 import CountrySelector from '../../../components/CountrySelector';
 
@@ -39,35 +38,35 @@ export default function TempAccountTab() {
     setSubmitStatus('idle');
 
     try {
-      // Generate a unique ID for the temporary account
-      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const tempAccountRef = doc(db, 'accounts', tempId);
-      
-      // Create minimal account document with temp flag
-      const tempAccountData = {
-        id: tempId,
-        organizationName: formData.organizationName,
-        personalName: formData.personalName || formData.organizationName,
-        organizationType: formData.organizationType,
-        status: 'approved', // Make visible in directory
-        registeredAddress: {
-          country: formData.country
-        },
-        website: formData.website || undefined,
-        ...(formData.organizationType === 'carrier' && formData.carrierType && {
-          carrierInfo: {
-            organizationType: formData.carrierType
-          }
-        }),
-        isTemporaryAccount: true, // Flag to identify temp accounts
-        tempAccountNote: 'Temporary directory entry - not a full member account',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        alert('Not authenticated');
+        setIsSubmitting(false);
+        return;
+      }
 
-      await setDoc(tempAccountRef, tempAccountData);
-      
+      const response = await fetch('/api/admin/temp-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          organizationName: formData.organizationName,
+          personalName: formData.personalName,
+          organizationType: formData.organizationType,
+          carrierType: formData.carrierType,
+          country: formData.country,
+          website: formData.website
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to create account');
+      }
+
       setSubmitStatus('success');
       // Reset form
       setFormData({

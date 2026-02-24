@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import Button from '../Button';
 import ConfirmModal from '../ConfirmModal';
 import { usePortalTranslations } from '../../app/member-portal/hooks/usePortalTranslations';
@@ -122,18 +121,37 @@ export default function TeamManagementSection({
     try {
       setSaving(true);
 
-      const memberRef = doc(db, 'accounts', member.organizationId, 'members', editingMember.id);
-      await updateDoc(memberRef, {
-        personalName: editingMember.personalName,
-        jobTitle: editingMember.jobTitle,
-        isAccountAdministrator: editingMember.isAccountAdministrator,
-        updatedAt: serverTimestamp()
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        showError(t('manage_profile.errors.update_member_failed'));
+        return;
+      }
+
+      const response = await fetch('/api/team-members', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          organizationId: member.organizationId,
+          memberId: editingMember.id,
+          personalName: editingMember.personalName,
+          jobTitle: editingMember.jobTitle,
+          isAccountAdministrator: editingMember.isAccountAdministrator
+        })
       });
 
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update member');
+      }
+
       // Update local state
-      onMembersChange(members.map(m => 
-        m.id === editingMember.id 
-          ? { ...m, ...editingMember } 
+      onMembersChange(members.map(m =>
+        m.id === editingMember.id
+          ? { ...m, ...editingMember }
           : m
       ));
 
@@ -169,8 +187,28 @@ export default function TeamManagementSection({
     }
 
     try {
-      const memberRef = doc(db, 'accounts', member.organizationId, 'members', memberToRemove.id);
-      await deleteDoc(memberRef);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        showError(t('manage_profile.errors.remove_member_failed'));
+        hideConfirmation();
+        return;
+      }
+
+      const response = await fetch(
+        `/api/team-members?organizationId=${encodeURIComponent(member.organizationId)}&memberId=${encodeURIComponent(memberToRemove.id)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to remove member');
+      }
 
       onMembersChange(members.filter(m => m.id !== memberToRemove.id));
       showSuccess(t('manage_profile.member_removed', { name: memberToRemove.personalName }));
@@ -237,27 +275,43 @@ export default function TeamManagementSection({
     try {
       setAdding(true);
 
-      const memberId = `member_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-      const memberRef = doc(db, 'accounts', member.organizationId, 'members', memberId);
-      const memberData = {
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        showError(t('manage_profile.errors.add_member_failed'));
+        return;
+      }
+
+      const response = await fetch('/api/team-members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          organizationId: member.organizationId,
+          email: newMember.email,
+          personalName: newMember.personalName,
+          jobTitle: newMember.jobTitle
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to add member');
+      }
+
+      const memberId = data.member.id;
+
+      // Add to local state
+      const newMemberForState: Member = {
         id: memberId,
         email: newMember.email.toLowerCase().trim(),
         personalName: newMember.personalName.trim(),
         jobTitle: newMember.jobTitle.trim() || '',
         isAccountAdministrator: false,
-        isRegistrant: false,
         accountConfirmed: false,
         addedBy: user.uid,
-        joinedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      await setDoc(memberRef, memberData);
-
-      // Add to local state
-      const newMemberForState: Member = {
-        ...memberData,
         joinedAt: { toDate: () => new Date() },
         createdAt: { toDate: () => new Date() },
         updatedAt: { toDate: () => new Date() }

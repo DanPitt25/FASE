@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import Image from 'next/image';
 import Button from '../../../components/Button';
 
@@ -48,19 +47,31 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
 
       try {
         setLoading(true);
-        const accountRef = doc(db, 'accounts', companyId);
-        const accountSnap = await getDoc(accountRef);
 
-        if (accountSnap.exists()) {
-          const data = accountSnap.data();
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) {
+          console.error('Not authenticated');
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/admin/company-details?companyId=${encodeURIComponent(companyId)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
           setCompanyDetails({
-            website: data.website || '',
-            logoURL: data.logoURL,
-            logoStatus: data.logoStatus,
-            companySummary: data.companySummary
+            website: data.companyDetails.website || '',
+            logoURL: data.companyDetails.logoURL,
+            logoStatus: data.companyDetails.logoStatus,
+            companySummary: data.companyDetails.companySummary
           });
-          setWebsite(data.website || '');
-          setBioText(data.companySummary?.text || '');
+          setWebsite(data.companyDetails.website || '');
+          setBioText(data.companyDetails.companySummary?.text || '');
         }
       } catch (error) {
         console.error('Error loading company details:', error);
@@ -142,7 +153,13 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
 
     setSaving(true);
     try {
-      const accountRef = doc(db, 'accounts', companyId);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        alert('Not authenticated');
+        setSaving(false);
+        return;
+      }
 
       // Normalize website URL
       let normalizedWebsite = website.trim();
@@ -150,19 +167,23 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
         normalizedWebsite = 'https://' + normalizedWebsite;
       }
 
-      const updateData: any = {
-        website: normalizedWebsite || null,
-        updatedAt: serverTimestamp()
-      };
+      const response = await fetch('/api/admin/company-details', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          companyId,
+          website: normalizedWebsite || null,
+          bioText: bioText !== companyDetails.companySummary?.text ? bioText : undefined
+        })
+      });
 
-      // Update bio if changed
-      if (bioText !== companyDetails.companySummary?.text) {
-        updateData['companySummary.text'] = bioText;
-        updateData['companySummary.status'] = 'approved'; // Admin edits are auto-approved
-        updateData['companySummary.updatedAt'] = serverTimestamp();
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to save changes');
       }
-
-      await updateDoc(accountRef, updateData);
 
       setCompanyDetails(prev => ({
         ...prev,
