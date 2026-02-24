@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initAdmin } from '../../../../lib/firebase-admin';
+import { adminAuth, adminDb, FieldValue } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +13,7 @@ async function verifyAdminAccess(request: NextRequest) {
   const token = authHeader.split('Bearer ')[1];
 
   try {
-    initAdmin();
-    const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await adminAuth.verifyIdToken(token);
     return { userId: decodedToken.uid };
   } catch (error) {
     console.error('Auth verification error:', error);
@@ -36,7 +32,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'pending';
 
-    const db = getFirestore();
+    const db = adminDb;
     const accountsSnapshot = await db.collection('accounts').get();
 
     if (type === 'all') {
@@ -104,7 +100,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
     const accountRef = db.collection('accounts').doc(companyId);
 
     if (action === 'review_bio') {

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initAdmin } from '../../../../lib/firebase-admin';
+import { adminAuth, adminDb, FieldValue } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +13,7 @@ async function verifyAdminAccess(request: NextRequest) {
   const token = authHeader.split('Bearer ')[1];
 
   try {
-    initAdmin();
-    const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await adminAuth.verifyIdToken(token);
     return { userId: decodedToken.uid };
   } catch (error) {
     console.error('Auth verification error:', error);
@@ -48,7 +44,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
 
     // Generate a unique ID for the temporary account
     const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initAdmin } from '../../../lib/firebase-admin';
+import { adminAuth, adminDb, FieldValue } from '../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,15 +13,11 @@ async function verifyUserAccess(request: NextRequest, organizationId: string) {
   const token = authHeader.split('Bearer ')[1];
 
   try {
-    initAdmin();
-    const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await adminAuth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    const db = getFirestore();
-
     // Check if user is a member of this organization
-    const memberDoc = await db
+    const memberDoc = await adminDb
       .collection('accounts')
       .doc(organizationId)
       .collection('members')
@@ -59,7 +53,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
     const membersSnapshot = await db
       .collection('accounts')
       .doc(organizationId)
@@ -99,7 +93,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only administrators can add members' }, { status: 403 });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
 
     // Check member count
     const membersSnapshot = await db
@@ -173,7 +167,7 @@ export async function PATCH(request: NextRequest) {
       }, { status: 403 });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
 
     const updateData: Record<string, any> = {
       updatedAt: FieldValue.serverTimestamp()
@@ -232,7 +226,7 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
 
     await db
       .collection('accounts')

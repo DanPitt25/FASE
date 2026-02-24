@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initAdmin } from '../../../../lib/firebase-admin';
+import { adminAuth, adminDb, FieldValue } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,15 +13,11 @@ async function verifyAdminAccess(request: NextRequest) {
   const token = authHeader.split('Bearer ')[1];
 
   try {
-    initAdmin();
-    const auth = getAuth();
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await adminAuth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    const db = getFirestore();
-
     // Check if user is an admin (check in accounts collection for admin status)
-    const adminDoc = await db.collection('accounts').doc(userId).get();
+    const adminDoc = await adminDb.collection('accounts').doc(userId).get();
     if (adminDoc.exists) {
       const adminData = adminDoc.data();
       if (adminData?.status === 'admin' || adminData?.isAdmin === true) {
@@ -55,7 +49,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
     const accountDoc = await db.collection('accounts').doc(companyId).get();
 
     if (!accountDoc.exists) {
@@ -93,7 +87,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const db = getFirestore();
+    const db = adminDb;
 
     // Normalize website URL
     let normalizedWebsite = website?.trim() || null;
