@@ -314,113 +314,73 @@ export default function CompanyProfileSection({
                 </div>
               </>
             )}
-          </div>
-        </div>
-      </div>
 
-      {/* Website URL */}
-      <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">{t('manage_profile.company_website')}</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          {t('manage_profile.website_description')}
-        </p>
-
-        {editingWebsite ? (
-          <div className="space-y-3">
-            <input
-              type="url"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder={t('manage_profile.website_placeholder')}
-              className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy text-sm"
-            />
-            <div className="flex space-x-2">
-              <Button
-                onClick={handleSaveWebsite}
-                disabled={savingWebsite}
-                variant="primary"
-                size="small"
-              >
-                {savingWebsite ? t('manage_profile.saving') : t('manage_profile.save')}
-              </Button>
-              <Button
-                onClick={() => {
-                  setWebsiteUrl((organizationAccount as any).website || '');
-                  setEditingWebsite(false);
-                }}
-                disabled={savingWebsite}
-                variant="secondary"
-                size="small"
-              >
-                {t('manage_profile.cancel')}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              {websiteUrl ? (
-                <a
-                  href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-fase-navy hover:underline"
-                >
-                  {websiteUrl}
-                </a>
+            {/* Website */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-900">{t('manage_profile.company_website')}</span>
+              </div>
+              {editingWebsite ? (
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder={t('manage_profile.website_placeholder')}
+                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy text-sm"
+                  />
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={handleSaveWebsite}
+                      disabled={savingWebsite}
+                      variant="primary"
+                      size="small"
+                    >
+                      {savingWebsite ? t('manage_profile.saving') : t('manage_profile.save')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setWebsiteUrl((organizationAccount as any).website || '');
+                        setEditingWebsite(false);
+                      }}
+                      disabled={savingWebsite}
+                      variant="secondary"
+                      size="small"
+                    >
+                      {t('manage_profile.cancel')}
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <span className="text-gray-400 italic">{t('manage_profile.website_not_set')}</span>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    {websiteUrl ? (
+                      <a
+                        href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-fase-navy hover:underline"
+                      >
+                        {websiteUrl}
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 italic">{t('manage_profile.website_not_set')}</span>
+                    )}
+                  </div>
+                  <Button
+                    onClick={() => setEditingWebsite(true)}
+                    variant="secondary"
+                    size="small"
+                  >
+                    {websiteUrl ? t('manage_profile.edit') : t('manage_profile.add')}
+                  </Button>
+                </div>
               )}
             </div>
-            <Button
-              onClick={() => setEditingWebsite(true)}
-              variant="secondary"
-              size="small"
-            >
-              {websiteUrl ? t('manage_profile.edit') : t('manage_profile.add')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Directory Settings */}
-      <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">{t('manage_profile.directory_settings')}</h2>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium text-gray-700">{t('manage_profile.include_in_directory')}</span>
-              <p className="text-xs text-gray-500">{t('manage_profile.include_in_directory_desc')}</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={directoryInclusion}
-                onChange={(e) => setDirectoryInclusion(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-medium text-gray-700">{t('manage_profile.public_contact_info')}</span>
-              <p className="text-xs text-gray-500">{t('manage_profile.public_contact_info_desc')}</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={publicContact}
-                onChange={(e) => setPublicContact(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
           </div>
         </div>
       </div>
+
     </div>
   );
 }
