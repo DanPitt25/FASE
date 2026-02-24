@@ -51,9 +51,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const accountData = accountDoc.data();
-      const isOwner = accountData?.users?.some((u: any) => u.uid === userUid);
-      if (!isOwner) {
+      // Check if user is a member of this account
+      const memberDoc = await db.collection('accounts').doc(accountId).collection('members').doc(userUid).get();
+      if (!memberDoc.exists) {
         return NextResponse.json(
           { error: 'Not authorized to update this account' },
           { status: 403 }
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const accountData = accountDoc.data();
-    const isOwner = accountData?.users?.some((u: any) => u.uid === userUid);
-    if (!isOwner) {
+    // Check if user is a member of this account
+    const memberDoc = await db.collection('accounts').doc(accountId).collection('members').doc(userUid).get();
+    if (!memberDoc.exists) {
       await logSecurityEvent({
         type: 'auth_failure',
         userId: userUid,
