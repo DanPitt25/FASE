@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import Button from '../Button';
 import ConfirmModal from '../ConfirmModal';
@@ -86,6 +86,20 @@ export default function TeamManagementSection({
     message: '',
     onConfirm: () => {}
   });
+
+  // Inline message state for showing within the section
+  const [inlineMessage, setInlineMessage] = useState<{
+    type: 'success' | 'error' | 'info';
+    text: string;
+  } | null>(null);
+
+  // Auto-dismiss inline messages after 5 seconds
+  useEffect(() => {
+    if (inlineMessage) {
+      const timer = setTimeout(() => setInlineMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [inlineMessage]);
 
   // Helper function to check if member needs an invite
   // A member needs an invite if they haven't confirmed their account yet
@@ -338,7 +352,10 @@ export default function TeamManagementSection({
       // Reset form
       setNewMember({ email: '', personalName: '', jobTitle: '' });
       setShowAddForm(false);
-      showSuccess(t('manage_profile.member_added_success', { name: newMember.personalName }));
+      setInlineMessage({
+        type: 'success',
+        text: t('manage_profile.member_added_success', { name: newMember.personalName })
+      });
     } catch (err) {
       showError(t('manage_profile.errors.add_member_failed'));
     } finally {
@@ -369,6 +386,46 @@ export default function TeamManagementSection({
           )}
         </div>
       </div>
+
+      {/* Inline Message */}
+      {inlineMessage && (
+        <div className={`px-6 py-4 border-b border-fase-light-gold ${
+          inlineMessage.type === 'success' ? 'bg-green-50' :
+          inlineMessage.type === 'error' ? 'bg-red-50' : 'bg-blue-50'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {inlineMessage.type === 'success' && (
+                <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              {inlineMessage.type === 'error' && (
+                <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              {inlineMessage.type === 'info' && (
+                <svg className="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              <span className={`text-sm ${
+                inlineMessage.type === 'success' ? 'text-green-800' :
+                inlineMessage.type === 'error' ? 'text-red-800' : 'text-blue-800'
+              }`}>{inlineMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setInlineMessage(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Add Member Form */}
       {showAddForm && (
