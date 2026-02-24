@@ -1,46 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminDb, adminStorage, FieldValue } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
 import { DatabaseMonitor } from '../../../lib/monitoring';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
 
-// Initialize Firebase Admin using service account key
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-
-    // Use explicit bucket name or construct from project ID (new Firebase Storage format)
-    const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
-
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket,
-    });
-  }
-  
-  return {
-    auth: admin.auth(),
-    storage: admin.storage(),
-    firestore: admin.firestore()
-  };
-};
-
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
-  
+
   try {
     // Verify authentication first
     const authResult = await verifyAuthToken(request);
     const userUid = authResult.uid;
-    
+
     const formData = await request.formData();
     const logoFile = formData.get('logo') as File | null;
     const bio = formData.get('bio') as string | null;
@@ -72,7 +45,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { storage, firestore } = await initializeAdmin();
     let logoDownloadURL = null;
 
     // Handle logo upload if provided
@@ -105,7 +77,7 @@ export async function POST(request: NextRequest) {
       // Upload to Firebase Storage - explicitly specify bucket name
       const bucketToUse = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
         || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;
-      const bucket = storage.bucket(bucketToUse);
+      const bucket = adminStorage.bucket(bucketToUse);
       const fileRef = bucket.file(filePath);
 
       await fileRef.save(buffer, {
@@ -127,13 +99,13 @@ export async function POST(request: NextRequest) {
       bio: bio || null,
       logoURL: logoDownloadURL,
       usageConsent: true,
-      consentTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-      uploadedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      consentTimestamp: FieldValue.serverTimestamp(),
+      uploadedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     // Save to Firestore
-    await firestore.collection('memberProfiles').doc(userUid).set(profileData, { merge: true });
+    await adminDb.collection('memberProfiles').doc(userUid).set(profileData, { merge: true });
 
     // Send email notification to admin
     try {
@@ -148,14 +120,14 @@ export async function POST(request: NextRequest) {
       console.error('Failed to send admin notification:', emailError);
       // Don't fail the entire request if email fails
     }
-    
+
     // Log successful upload
     await logSecurityEvent({
       type: 'auth_success',
       userId: userUid,
       email: authResult.email,
-      details: { 
-        action: 'profile_uploaded', 
+      details: {
+        action: 'profile_uploaded',
         hasLogo: !!logoFile,
         hasBio: !!bio,
         logoSize: logoFile?.size || 0
@@ -163,7 +135,7 @@ export async function POST(request: NextRequest) {
       severity: 'low',
       ...clientInfo
     });
-    
+
     await DatabaseMonitor.logDatabaseOperation({
       type: 'write',
       collection: 'memberProfiles',
@@ -217,7 +189,7 @@ async function sendAdminNotification(data: {
   uploadedBy: string;
 }) {
   const resendApiKey = process.env.RESEND_API_KEY;
-  
+
   if (!resendApiKey) {
     throw new Error('RESEND_API_KEY environment variable is not configured');
   }
@@ -225,7 +197,7 @@ async function sendAdminNotification(data: {
   const emailContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #2D5574;">New Member Profile Submission</h2>
-      
+
       <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
         <h3 style="margin: 0 0 15px 0; color: #2D5574;">Organization Details</h3>
         <p><strong>Organization:</strong> ${data.organizationName}</p>

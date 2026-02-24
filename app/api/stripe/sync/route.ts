@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { adminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
 let stripe: Stripe;
-let admin: any;
-let db: FirebaseFirestore.Firestore;
 
-const initializeServices = async () => {
+const initializeStripe = () => {
   if (!stripe) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
@@ -17,27 +16,7 @@ const initializeServices = async () => {
       apiVersion: '2025-08-27.basil',
     });
   }
-
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { stripe, admin, db };
+  return stripe;
 };
 
 /**
@@ -46,13 +25,13 @@ const initializeServices = async () => {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { stripe, admin, db } = await initializeServices();
+    const stripeClient = initializeStripe();
 
     const body = await request.json();
     const { accountId, syncAll = false } = body;
 
     // Get all Firestore invoices that need syncing
-    let invoicesQuery = db.collection('invoices').where('status', '!=', 'paid');
+    let invoicesQuery = adminDb.collection('invoices').where('status', '!=', 'paid');
 
     if (accountId) {
       invoicesQuery = invoicesQuery.where('accountId', '==', accountId);
@@ -79,7 +58,7 @@ export async function POST(request: NextRequest) {
         if (!invoiceNumber) continue;
 
         // Search payment intents with this invoice number
-        const paymentIntents = await stripe.paymentIntents.search({
+        const paymentIntents = await stripeClient.paymentIntents.search({
           query: `metadata["invoice_number"]:"${invoiceNumber}"`,
           limit: 5,
         });
@@ -93,13 +72,13 @@ export async function POST(request: NextRequest) {
           syncResults.matched++;
 
           // Update the Firestore invoice
-          await db.collection('invoices').doc(invoice.id).update({
+          await adminDb.collection('invoices').doc(invoice.id).update({
             status: 'paid',
             paymentMethod: 'stripe',
             paymentId: successfulPayment.id,
             stripePaymentIntentId: successfulPayment.id,
-            paidAt: admin.firestore.Timestamp.fromMillis(successfulPayment.created * 1000),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            paidAt: Timestamp.fromMillis(successfulPayment.created * 1000),
+            updatedAt: FieldValue.serverTimestamp(),
           });
 
           syncResults.updated++;
@@ -126,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Also sync checkout sessions (for direct checkout payments)
     if (syncAll) {
-      const recentSessions = await stripe.checkout.sessions.list({
+      const recentSessions = await stripeClient.checkout.sessions.list({
         limit: 100,
         expand: ['data.payment_intent'],
       });
@@ -139,7 +118,7 @@ export async function POST(request: NextRequest) {
 
         try {
           // Find matching Firestore invoice
-          const matchingInvoices = await db
+          const matchingInvoices = await adminDb
             .collection('invoices')
             .where('invoiceNumber', '==', invoiceNumber)
             .where('status', '!=', 'paid')
@@ -156,8 +135,8 @@ export async function POST(request: NextRequest) {
                 typeof session.payment_intent === 'string'
                   ? session.payment_intent
                   : session.payment_intent?.id,
-              paidAt: admin.firestore.Timestamp.fromMillis(session.created * 1000),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              paidAt: Timestamp.fromMillis(session.created * 1000),
+              updatedAt: FieldValue.serverTimestamp(),
             });
             syncResults.matched++;
             syncResults.updated++;
@@ -187,17 +166,17 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { stripe, db } = await initializeServices();
+    const stripeClient = initializeStripe();
 
     // Get recent successful payments from Stripe
-    const recentPayments = await stripe.paymentIntents.list({
+    const recentPayments = await stripeClient.paymentIntents.list({
       limit: 20,
     });
 
     const successfulPayments = recentPayments.data.filter((pi) => pi.status === 'succeeded');
 
     // Get unpaid invoices from Firestore
-    const unpaidInvoices = await db.collection('invoices').where('status', '!=', 'paid').get();
+    const unpaidInvoices = await adminDb.collection('invoices').where('status', '!=', 'paid').get();
 
     // Calculate potential matches
     const potentialMatches: any[] = [];

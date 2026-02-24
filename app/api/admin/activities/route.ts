@@ -1,41 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '../../../../lib/firebase-admin';
 import { logManualEntry } from '../../../../lib/activity-logger';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
 
 /**
  * GET: List activities for an account
  */
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
     const limit = parseInt(searchParams.get('limit') || '50', 10);
@@ -46,7 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Account ID is required' }, { status: 400 });
     }
 
-    let query = db
+    let query = adminDb
       .collection('accounts')
       .doc(accountId)
       .collection('activities')
@@ -58,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (startAfter) {
-      const startAfterDoc = await db
+      const startAfterDoc = await adminDb
         .collection('accounts')
         .doc(accountId)
         .collection('activities')

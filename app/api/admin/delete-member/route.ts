@@ -1,29 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminDb, adminAuth } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
-
-const APP_NAME = 'delete-member';
-
-// Initialize Firebase Admin with a named app to avoid conflicts
-const initAdmin = () => {
-  let app = admin.apps.find(a => a?.name === APP_NAME);
-
-  if (!app) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    }, APP_NAME);
-  }
-
-  return {
-    db: admin.firestore(app),
-    auth: admin.auth(app)
-  };
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,10 +22,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { db, auth } = initAdmin();
-
     // Get the account document first to gather info
-    const accountDoc = await db.collection('accounts').doc(accountId).get();
+    const accountDoc = await adminDb.collection('accounts').doc(accountId).get();
 
     if (!accountDoc.exists) {
       return NextResponse.json(
@@ -65,7 +41,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Get all members in the subcollection
-    const membersSnapshot = await db.collection('accounts').doc(accountId).collection('members').get();
+    const membersSnapshot = await adminDb.collection('accounts').doc(accountId).collection('members').get();
 
     // Delete each member's Auth account (if exists) and their member document
     for (const memberDoc of membersSnapshot.docs) {
@@ -76,7 +52,7 @@ export async function POST(request: NextRequest) {
       // Only attempt if the ID looks like a Firebase Auth UID (not a member_ prefixed ID)
       if (!memberId.startsWith('member_')) {
         try {
-          await auth.deleteUser(memberId);
+          await adminAuth.deleteUser(memberId);
           deletedInfo.authUsersDeleted++;
           console.log(`Deleted Auth user: ${memberId}`);
         } catch (authError: any) {
@@ -94,13 +70,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete any join_requests subcollection
-    const joinRequestsSnapshot = await db.collection('accounts').doc(accountId).collection('join_requests').get();
+    const joinRequestsSnapshot = await adminDb.collection('accounts').doc(accountId).collection('join_requests').get();
     for (const requestDoc of joinRequestsSnapshot.docs) {
       await requestDoc.ref.delete();
     }
 
     // Finally, delete the account document itself
-    await db.collection('accounts').doc(accountId).delete();
+    await adminDb.collection('accounts').doc(accountId).delete();
     console.log(`Deleted account document: ${accountId}`);
 
     return NextResponse.json({

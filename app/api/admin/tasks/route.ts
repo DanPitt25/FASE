@@ -1,34 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 import { logTaskCreated, logTaskCompleted } from '../../../../lib/activity-logger';
 import { Task, TaskStatus, TaskPriority } from '../../../../lib/firestore';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
 
 /**
  * GET: List tasks
@@ -37,8 +12,6 @@ const initializeFirebase = async () => {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
     const status = searchParams.get('status') as TaskStatus | null;
@@ -47,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // General admin tasks (no accountId) - from top-level tasks collection
     if (!accountId) {
-      let query: FirebaseFirestore.Query = db.collection('tasks').orderBy('createdAt', 'desc');
+      let query: FirebaseFirestore.Query = adminDb.collection('tasks').orderBy('createdAt', 'desc');
 
       if (status) {
         query = query.where('status', '==', status);
@@ -77,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Account-specific tasks (legacy) - from accounts subcollection
-    let query: FirebaseFirestore.Query = db
+    let query: FirebaseFirestore.Query = adminDb
       .collection('accounts')
       .doc(accountId)
       .collection('tasks')
@@ -123,8 +96,6 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { admin, db } = await initializeFirebase();
-
     const body = await request.json();
     const {
       accountId,
@@ -150,13 +121,13 @@ export async function POST(request: NextRequest) {
       description: description || '',
       status: 'pending',
       priority: priority || 'medium',
-      dueDate: dueDate ? admin.firestore.Timestamp.fromDate(new Date(dueDate)) : null,
+      dueDate: dueDate ? Timestamp.fromDate(new Date(dueDate)) : null,
       assignedTo: assignedTo || null,
       assignedToName: assignedToName || null,
       createdBy: createdBy || 'unknown',
       createdByName: createdByName || 'Unknown',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     // Remove null values
@@ -168,15 +139,15 @@ export async function POST(request: NextRequest) {
 
     if (accountId) {
       // Account-specific task (legacy)
-      const accountDoc = await db.collection('accounts').doc(accountId).get();
+      const accountDoc = await adminDb.collection('accounts').doc(accountId).get();
       cleanTask.accountId = accountId;
       cleanTask.accountName = accountDoc.data()?.organizationName || 'Unknown';
-      taskRef = db.collection('accounts').doc(accountId).collection('tasks').doc();
+      taskRef = adminDb.collection('accounts').doc(accountId).collection('tasks').doc();
       await taskRef.set(cleanTask);
       await logTaskCreated(accountId, title, taskRef.id, createdBy, createdByName);
     } else {
       // General admin task
-      taskRef = db.collection('tasks').doc();
+      taskRef = adminDb.collection('tasks').doc();
       await taskRef.set(cleanTask);
     }
 
@@ -201,8 +172,6 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const { admin, db } = await initializeFirebase();
-
     const body = await request.json();
     const {
       accountId,
@@ -227,8 +196,8 @@ export async function PATCH(request: NextRequest) {
 
     // Determine which collection to use
     const taskRef = accountId
-      ? db.collection('accounts').doc(accountId).collection('tasks').doc(taskId)
-      : db.collection('tasks').doc(taskId);
+      ? adminDb.collection('accounts').doc(accountId).collection('tasks').doc(taskId)
+      : adminDb.collection('tasks').doc(taskId);
 
     const taskDoc = await taskRef.get();
 
@@ -238,7 +207,7 @@ export async function PATCH(request: NextRequest) {
 
     const currentData = taskDoc.data();
     const updates: any = {
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     if (title !== undefined) updates.title = title;
@@ -249,7 +218,7 @@ export async function PATCH(request: NextRequest) {
 
     if (dueDate !== undefined) {
       updates.dueDate = dueDate
-        ? admin.firestore.Timestamp.fromDate(new Date(dueDate))
+        ? Timestamp.fromDate(new Date(dueDate))
         : null;
     }
 
@@ -258,7 +227,7 @@ export async function PATCH(request: NextRequest) {
       updates.status = status;
 
       if (status === 'completed') {
-        updates.completedAt = admin.firestore.FieldValue.serverTimestamp();
+        updates.completedAt = FieldValue.serverTimestamp();
 
         // Only log activity for account-specific tasks
         if (accountId) {
@@ -295,8 +264,6 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
     const taskId = searchParams.get('task_id');
@@ -310,8 +277,8 @@ export async function DELETE(request: NextRequest) {
 
     // Determine which collection to use
     const taskRef = accountId
-      ? db.collection('accounts').doc(accountId).collection('tasks').doc(taskId)
-      : db.collection('tasks').doc(taskId);
+      ? adminDb.collection('accounts').doc(accountId).collection('tasks').doc(taskId)
+      : adminDb.collection('tasks').doc(taskId);
 
     const taskDoc = await taskRef.get();
 

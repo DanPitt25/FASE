@@ -1,56 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminDb, adminAuth, FieldValue } from '../../../lib/firebase-admin';
 import { getGWPBand, convertToEUR } from '../../../lib/registration-utils-server';
-
-// Initialize Firebase Admin using service account key from environment variable
-const initializeAdmin = async () => {
-  if (!admin.apps.find(app => app?.name === 'register-account')) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    
-    try {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      }, 'register-account');
-    } catch (parseError) {
-      throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ' + parseError);
-    }
-  }
-  
-  const app = admin.apps.find(app => app?.name === 'register-account') || admin.app();
-  return {
-    auth: admin.auth(app),
-    db: admin.firestore(app)
-  };
-};
 
 export async function POST(request: NextRequest) {
   let createdUserId: string | null = null;
 
   try {
     console.log('Register account API called');
-    console.log('Environment variable check:', {
-      hasKey: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-      keyLength: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.length || 0,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    });
-    
+
     const formData = await request.json();
     console.log('Form data received:', { email: formData.email, organizationType: formData.organizationType });
-    
+
     if (!formData.email || !formData.password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
       );
     }
-
-    console.log('Initializing Firebase Admin...');
-    const { auth, db } = await initializeAdmin();
-    console.log('Firebase Admin initialized');
 
     // Step 1: Create Firebase Auth account
     const fullName = `${formData.firstName} ${formData.surname}`.trim();
@@ -60,7 +26,7 @@ export async function POST(request: NextRequest) {
       : fullName;
 
     console.log('Creating Firebase Auth user...');
-    const userRecord = await auth.createUser({
+    const userRecord = await adminAuth.createUser({
       email: formData.email,
       password: formData.password,
       displayName: displayName,
@@ -71,19 +37,19 @@ export async function POST(request: NextRequest) {
     createdUserId = userRecord.uid;
 
     // Step 2: Create Firestore documents using Admin SDK (no permission issues!)
-    const batch = db.batch();
+    const batch = adminDb.batch();
 
     // All memberships are corporate
     const companyId = userRecord.uid;
-    
+
     // Find primary contact
     const primaryContactMember = formData.members.find((m: any) => m.isPrimaryContact);
     if (!primaryContactMember) {
       throw new Error("No account administrator designated");
     }
-      
+
     // Create company document
-    const companyRef = db.collection('accounts').doc(companyId);
+    const companyRef = adminDb.collection('accounts').doc(companyId);
     const companyRecord = {
         id: companyId,
         email: userRecord.email,
@@ -144,17 +110,17 @@ export async function POST(request: NextRequest) {
           servicesProvided: formData.servicesProvided
         }),
         logoUrl: null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
       };
-      
+
       batch.set(companyRef, companyRecord);
-      
+
       // Create member documents
       for (const member of formData.members) {
         const memberId = member.id === 'registrant' ? userRecord.uid : member.id;
-        const memberRef = db.collection('accounts').doc(companyId).collection('members').doc(memberId);
-        
+        const memberRef = adminDb.collection('accounts').doc(companyId).collection('members').doc(memberId);
+
         const memberRecord = {
           id: memberId,
           email: member.email,
@@ -163,18 +129,18 @@ export async function POST(request: NextRequest) {
           isAccountAdministrator: member.isPrimaryContact,
           isRegistrant: member.id === 'registrant',
           accountConfirmed: member.id === 'registrant',
-          joinedAt: admin.firestore.FieldValue.serverTimestamp(),
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          joinedAt: FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
         };
-        
+
         batch.set(memberRef, memberRecord);
       }
 
       // Create MGA Rendezvous registration (unified collection for all sources)
       if (formData.reserveRendezvousPasses) {
         const registrationId = `mga_reg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const reservationRef = db.collection('rendezvous-registrations').doc(registrationId);
+        const reservationRef = adminDb.collection('rendezvous-registrations').doc(registrationId);
         const reservationRecord = {
           registrationId,
           accountId: companyId,
@@ -205,8 +171,8 @@ export async function POST(request: NextRequest) {
           paymentStatus: formData.rendezvousIsAsaseMember ? 'complimentary' : 'pending',
           status: formData.rendezvousIsAsaseMember ? 'confirmed' : 'pending_payment',
           source: 'fase_registration',
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
         };
         batch.set(reservationRef, reservationRecord);
       }
@@ -222,28 +188,27 @@ export async function POST(request: NextRequest) {
       userId: userRecord.uid,
       email: userRecord.email
     });
-    
+
   } catch (error: any) {
     console.error('Registration error details:', {
       message: error.message,
       code: error.code,
       stack: error.stack
     });
-    
+
     // Cleanup if user was created but Firestore failed
     if (createdUserId) {
       try {
         console.log('Cleaning up created user:', createdUserId);
-        const { auth, db } = await initializeAdmin();
-        await auth.deleteUser(createdUserId);
+        await adminAuth.deleteUser(createdUserId);
         // Also try to delete any partial Firestore data
-        await db.collection('accounts').doc(createdUserId).delete();
+        await adminDb.collection('accounts').doc(createdUserId).delete();
         console.log('Cleanup completed');
       } catch (cleanupError) {
         console.error('Cleanup error:', cleanupError);
       }
     }
-    
+
     // Return specific error messages
     if (error.code === 'auth/email-already-exists') {
       return NextResponse.json(
@@ -251,21 +216,21 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     if (error.code === 'auth/invalid-password') {
       return NextResponse.json(
         { error: 'Password does not meet security requirements' },
         { status: 400 }
       );
     }
-    
+
     if (error.message?.includes('FIREBASE_SERVICE_ACCOUNT_KEY')) {
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
     }
-    
+
     return NextResponse.json(
       { error: error.message || 'Failed to create account' },
       { status: 500 }

@@ -1,33 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 import { logPaymentReceived, logInvoicePaid } from '../../../../lib/activity-logger';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
 
 /**
  * POST: Match a Wise transfer to an invoice
@@ -35,8 +10,6 @@ const initializeFirebase = async () => {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { admin, db } = await initializeFirebase();
-
     const body = await request.json();
     const { invoiceId, wiseReference, amount, currency, senderName, transactionDate } = body;
 
@@ -45,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the invoice
-    const invoiceRef = db.collection('invoices').doc(invoiceId);
+    const invoiceRef = adminDb.collection('invoices').doc(invoiceId);
     const invoiceDoc = await invoiceRef.get();
 
     if (!invoiceDoc.exists) {
@@ -67,9 +40,9 @@ export async function POST(request: NextRequest) {
       paymentMethod: 'wise',
       wiseReference: wiseReference || null,
       paidAt: transactionDate
-        ? admin.firestore.Timestamp.fromDate(new Date(transactionDate))
-        : admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ? Timestamp.fromDate(new Date(transactionDate))
+        : FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
 
     // Log activity if we have an account ID
@@ -117,10 +90,8 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     // Get all unpaid invoices
-    const unpaidInvoices = await db
+    const unpaidInvoices = await adminDb
       .collection('invoices')
       .where('status', '!=', 'paid')
       .get();

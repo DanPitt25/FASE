@@ -1,49 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
-
-// Initialize Firebase Admin
-const initializeAdmin = async () => {
-  if (!admin.apps.find(app => app?.name === 'log-error')) {
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is missing');
-    }
-    
-    try {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      }, 'log-error');
-    } catch (parseError) {
-      throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY: ' + parseError);
-    }
-  }
-  
-  const app = admin.apps.find(app => app?.name === 'log-error') || admin.app();
-  return {
-    db: admin.firestore(app)
-  };
-};
+import { adminDb, FieldValue } from '../../../lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
     console.log('Logging registration error...');
     const errorDetails = await request.json();
     console.log('Error details received:', errorDetails);
-    
+
     // Add server-side information
     const enrichedError = {
       ...errorDetails,
-      serverTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+      serverTimestamp: FieldValue.serverTimestamp(),
       ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       referer: request.headers.get('referer') || 'none',
       origin: request.headers.get('origin') || 'none'
     };
-    
+
     // Store in Firestore for analysis
-    const { db } = await initializeAdmin();
-    await db.collection('registration_errors').add(enrichedError);
-    
+    await adminDb.collection('registration_errors').add(enrichedError);
+
     // Also send email notification for immediate attention
     const emailContent = `
 <!DOCTYPE html>
@@ -59,7 +34,7 @@ export async function POST(request: NextRequest) {
 </head>
 <body>
     <h2>⚠️ Registration Error Alert</h2>
-    
+
     <div class="error-box">
         <h3>Error Details:</h3>
         <p><strong>Message:</strong> ${errorDetails.message || 'Unknown error'}</p>
@@ -69,16 +44,16 @@ export async function POST(request: NextRequest) {
         <p><strong>Timestamp:</strong> ${errorDetails.timestamp}</p>
         <p><strong>User Agent:</strong> ${errorDetails.userAgent || 'Unknown'}</p>
     </div>
-    
+
     <h3>Stack Trace:</h3>
     <div class="details">
         <pre>${errorDetails.stack || 'No stack trace available'}</pre>
     </div>
-    
+
     <p><em>This error has been logged to Firestore under the 'registration_errors' collection for further analysis.</em></p>
 </body>
 </html>`;
-    
+
     try {
       // Send email notification using Firebase Function
       const emailResponse = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail`, {
@@ -96,16 +71,16 @@ export async function POST(request: NextRequest) {
           }
         }),
       });
-      
+
       if (!emailResponse.ok) {
         console.error('Failed to send error notification email');
       }
     } catch (emailError) {
       console.error('Email notification failed:', emailError);
     }
-    
+
     return NextResponse.json({ success: true });
-    
+
   } catch (error: any) {
     console.error('Failed to log registration error:', {
       message: error.message,

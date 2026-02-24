@@ -1,32 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
 
 /**
  * Check if an email exists as an unconfirmed member in any account
@@ -34,7 +9,6 @@ const initializeFirebase = async () => {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
     const { email, sendInvite } = await request.json();
 
     if (!email) {
@@ -47,7 +21,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Get all accounts and query their members subcollections in parallel
-    const accountsSnapshot = await db.collection('accounts').get();
+    const accountsSnapshot = await adminDb.collection('accounts').get();
 
     let foundMember: {
       memberId: string;
@@ -61,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Query all accounts' members subcollections in parallel
     const memberQueries = accountsSnapshot.docs.map(async (accountDoc) => {
       const accountData = accountDoc.data();
-      const membersSnapshot = await db
+      const membersSnapshot = await adminDb
         .collection('accounts')
         .doc(accountDoc.id)
         .collection('members')

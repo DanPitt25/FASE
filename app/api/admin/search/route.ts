@@ -1,32 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
-
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
 
 interface SearchFilters {
   organizationType?: string[];
@@ -42,8 +17,6 @@ interface SearchFilters {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const body = await request.json();
     const { query, filters, limit = 50 } = body as {
       query?: string;
@@ -54,7 +27,7 @@ export async function POST(request: NextRequest) {
     const searchQuery = query?.toLowerCase().trim() || '';
 
     // Get all accounts
-    const accountsSnapshot = await db.collection('accounts').get();
+    const accountsSnapshot = await adminDb.collection('accounts').get();
 
     const results: any[] = [];
 
@@ -135,7 +108,7 @@ export async function POST(request: NextRequest) {
       // Check for unpaid invoices if filter is set
       let hasUnpaidInvoice = false;
       if (filters?.hasUnpaidInvoice !== undefined) {
-        const invoicesSnapshot = await db
+        const invoicesSnapshot = await adminDb
           .collection('invoices')
           .where('accountId', '==', accountDoc.id)
           .where('status', '!=', 'paid')
@@ -156,7 +129,7 @@ export async function POST(request: NextRequest) {
       const membersSnapshot = await accountDoc.ref.collection('members').get();
 
       // Get invoice stats
-      const invoicesSnapshot = await db
+      const invoicesSnapshot = await adminDb
         .collection('invoices')
         .where('accountId', '==', accountDoc.id)
         .get();
@@ -222,8 +195,6 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.toLowerCase().trim() || '';
     const limit = parseInt(searchParams.get('limit') || '20', 10);
@@ -236,7 +207,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const accountsSnapshot = await db.collection('accounts').get();
+    const accountsSnapshot = await adminDb.collection('accounts').get();
 
     const results: any[] = [];
 

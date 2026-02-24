@@ -1,34 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminDb, adminAuth } from '../../../../lib/firebase-admin';
 import { checkRateLimit, logSecurityEvent, getClientInfo, RateLimitError } from '../../../../lib/auth-security';
-
-// Initialize Firebase Admin using service account key
-const initializeAdmin = async () => {
-  if (admin.apps.length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : undefined;
-
-    admin.initializeApp({
-      credential: serviceAccount 
-        ? admin.credential.cert(serviceAccount)
-        : admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  }
-  
-  return {
-    auth: admin.auth(),
-    db: admin.firestore()
-  };
-};
 
 export async function POST(request: NextRequest) {
   const clientInfo = getClientInfo(request);
-  
+
   try {
     const { email, code } = await request.json();
-    
+
     // Rate limiting by IP and email
     await checkRateLimit(`ip:${clientInfo.ip}`, 10, 15 * 60 * 1000); // 10 attempts per IP per 15 min
     await checkRateLimit(`email:${email}`, 5, 15 * 60 * 1000); // 5 attempts per email per 15 min
@@ -48,11 +27,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { auth, db } = await initializeAdmin();
-
     // Get verification code from Firestore
-    const doc = await db.collection('verification_codes').doc(email).get();
-    
+    const doc = await adminDb.collection('verification_codes').doc(email).get();
+
     if (!doc.exists) {
       return NextResponse.json(
         { error: 'No verification code found' },
@@ -61,14 +38,14 @@ export async function POST(request: NextRequest) {
     }
 
     const data = doc.data();
-    
+
     if (!data) {
       return NextResponse.json(
         { error: 'Invalid verification code' },
         { status: 400 }
       );
     }
-    
+
     // Check if code matches
     if (data.code !== code) {
       await logSecurityEvent({
@@ -78,7 +55,7 @@ export async function POST(request: NextRequest) {
         severity: 'medium',
         ...clientInfo
       });
-      
+
       return NextResponse.json(
         { error: 'Invalid verification code' },
         { status: 400 }
@@ -94,7 +71,7 @@ export async function POST(request: NextRequest) {
         severity: 'low',
         ...clientInfo
       });
-      
+
       return NextResponse.json(
         { error: 'Verification code expired' },
         { status: 400 }
@@ -110,8 +87,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark as used (delete the document)
-    await db.collection('verification_codes').doc(email).delete();
-    
+    await adminDb.collection('verification_codes').doc(email).delete();
+
     // Log successful verification
     await logSecurityEvent({
       type: 'auth_success',
@@ -138,13 +115,13 @@ export async function POST(request: NextRequest) {
         severity: 'high',
         ...clientInfo
       });
-      
+
       return NextResponse.json(
         { error: error.message },
         { status: 429 }
       );
     }
-    
+
     console.error('Verify code error:', error);
     await logSecurityEvent({
       type: 'auth_failure',
@@ -152,7 +129,7 @@ export async function POST(request: NextRequest) {
       severity: 'medium',
       ...clientInfo
     });
-    
+
     return NextResponse.json(
       { error: 'Failed to verify code' },
       { status: 500 }

@@ -1,37 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '../../../../lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
-let admin: any;
-let db: FirebaseFirestore.Firestore;
-
-const initializeFirebase = async () => {
-  if (!admin) {
-    admin = await import('firebase-admin');
-
-    if (admin.apps.length === 0) {
-      const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      if (!serviceAccountKey) {
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-      }
-
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-
-    db = admin.firestore();
-  }
-
-  return { admin, db };
-};
-
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await initializeFirebase();
-
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -40,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch members from the subcollection
-    const membersRef = db.collection('accounts').doc(companyId).collection('members');
+    const membersRef = adminDb.collection('accounts').doc(companyId).collection('members');
     const membersSnapshot = await membersRef.get();
 
     const members = membersSnapshot.docs.map((doc: any) => {
