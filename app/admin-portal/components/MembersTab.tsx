@@ -54,6 +54,7 @@ export default function MembersTab({
       case 'pending_payment': return 'bg-blue-100 text-blue-800';
       case 'approved': return 'bg-green-100 text-green-800';
       case 'invoice_sent': return 'bg-purple-100 text-purple-800';
+      case 'internal': return 'bg-cyan-100 text-cyan-800';
       case 'admin': return 'bg-red-100 text-red-800';
       case 'guest': return 'bg-gray-100 text-gray-800';
       case 'flagged': return 'bg-red-100 text-red-800';

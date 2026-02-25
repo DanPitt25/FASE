@@ -243,6 +243,7 @@ export default function CompanyMembersModal({
       case 'pending_payment': return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'approved': return 'bg-green-100 text-green-800 border-green-300';
       case 'invoice_sent': return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'internal': return 'bg-cyan-100 text-cyan-800 border-cyan-300';
       case 'admin': return 'bg-red-100 text-red-800 border-red-300';
       case 'flagged': return 'bg-red-100 text-red-800 border-red-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
@@ -258,6 +259,7 @@ export default function CompanyMembersModal({
     { value: 'pending_invoice', label: 'Pending Invoice' },
     { value: 'invoice_sent', label: 'Invoice Sent' },
     { value: 'approved', label: 'Approved' },
+    { value: 'internal', label: 'Internal' },
     { value: 'flagged', label: 'Flagged' },
     { value: 'admin', label: 'Admin' },
   ];
