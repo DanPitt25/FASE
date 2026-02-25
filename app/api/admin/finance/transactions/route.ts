@@ -24,8 +24,27 @@ interface Transaction {
   date: string;
   amount: number;
   currency: string;
+  amountEur: number; // Converted to EUR for sorting/filtering
   reference: string;
   senderName?: string;
+}
+
+// Approximate exchange rates - updated periodically
+// For display purposes only, not financial calculations
+async function getExchangeRates(): Promise<Record<string, number>> {
+  try {
+    const { fetchExchangeRates } = await import('../../../../../lib/currency-conversion');
+    const rates = await fetchExchangeRates();
+    // rates are EUR -> X, we need X -> EUR (inverse)
+    return {
+      EUR: 1,
+      GBP: 1 / (rates['GBP'] || 0.85),
+      USD: 1 / (rates['USD'] || 1.08),
+    };
+  } catch {
+    // Fallback rates if API fails
+    return { EUR: 1, GBP: 1.18, USD: 0.92 };
+  }
 }
 
 /**
@@ -45,6 +64,9 @@ export async function GET(request: NextRequest) {
 
     const transactions: Transaction[] = [];
     const errors: string[] = [];
+
+    // Get exchange rates for EUR conversion
+    const exchangeRates = await getExchangeRates();
 
     // Fetch Stripe transactions
     if (source === 'all' || source === 'stripe') {
@@ -79,12 +101,17 @@ export async function GET(request: NextRequest) {
                 senderName = charge.billing_details?.name || '';
               }
 
+              const amount = pi.amount / 100;
+              const currency = pi.currency.toUpperCase();
+              const amountEur = amount * (exchangeRates[currency] || 1);
+
               transactions.push({
                 id: pi.id,
                 source: 'stripe',
                 date: new Date(pi.created * 1000).toISOString(),
-                amount: pi.amount / 100,
-                currency: pi.currency.toUpperCase(),
+                amount,
+                currency,
+                amountEur,
                 reference: pi.metadata?.invoice_number || pi.description || '',
                 senderName,
               });
@@ -111,33 +138,23 @@ export async function GET(request: NextRequest) {
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
         const wiseFrom = from || oneYearAgo;
 
-        // Test that we can get balances first
-        const balances = await wiseClient.getBalances();
-        if (balances.length === 0) {
-          errors.push('Wise: No currency balances found');
-        } else {
-          errors.push(`Wise: Found balances for ${balances.map(b => b.currency).join(', ')}`);
-        }
-
         const wiseResult = await wiseClient.getIncomingPayments({
           from: wiseFrom.toISOString(),
           to: to.toISOString(),
         });
 
-        // Add debug info
-        errors.push(...wiseResult.debug);
-
-        if (wiseResult.transactions.length === 0) {
-          errors.push(`Wise: No incoming transactions found`);
-        }
-
         for (const wiseTx of wiseResult.transactions) {
+          const amount = wiseTx.amount.value;
+          const currency = wiseTx.amount.currency;
+          const amountEur = amount * (exchangeRates[currency] || 1);
+
           transactions.push({
             id: wiseTx.referenceNumber,
             source: 'wise',
             date: wiseTx.date,
-            amount: wiseTx.amount.value,
-            currency: wiseTx.amount.currency,
+            amount,
+            currency,
+            amountEur,
             reference: wiseTx.details.paymentReference || wiseTx.details.description || '',
             senderName: wiseTx.details.senderName || '',
           });
@@ -147,16 +164,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Filter out small transactions (under €10 equivalent)
+    const filteredTransactions = transactions.filter((t) => t.amountEur >= 10);
+
     // Sort by date descending
-    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    filteredTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return NextResponse.json({
       success: true,
-      transactions,
+      transactions: filteredTransactions,
       summary: {
-        total: transactions.length,
-        stripeCount: transactions.filter((t) => t.source === 'stripe').length,
-        wiseCount: transactions.filter((t) => t.source === 'wise').length,
+        total: filteredTransactions.length,
+        stripeCount: filteredTransactions.filter((t) => t.source === 'stripe').length,
+        wiseCount: filteredTransactions.filter((t) => t.source === 'wise').length,
+        totalEur: filteredTransactions.reduce((sum, t) => sum + t.amountEur, 0),
       },
       errors: errors.length > 0 ? errors : undefined,
     });

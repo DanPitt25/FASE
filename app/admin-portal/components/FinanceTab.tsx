@@ -8,14 +8,15 @@ interface Transaction {
   date: string;
   amount: number;
   currency: string;
+  amountEur: number;
   reference: string;
   senderName?: string;
-  description?: string;
-  status?: string;
 }
 
 type FilterSource = 'all' | 'stripe' | 'wise';
 type DateRange = 'all' | '30' | '90' | '180' | '365';
+type SortField = 'date' | 'amount';
+type SortDirection = 'asc' | 'desc';
 
 export default function FinanceTab() {
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,8 @@ export default function FinanceTab() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [sourceFilter, setSourceFilter] = useState<FilterSource>('all');
   const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // API status
   const [stripeConfigured, setStripeConfigured] = useState(false);
@@ -80,13 +83,33 @@ export default function FinanceTab() {
     });
   };
 
-  // Calculate totals
+  // Calculate totals (in EUR)
   const stripeTotal = transactions
     .filter((t) => t.source === 'stripe')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + t.amountEur, 0);
   const wiseTotal = transactions
     .filter((t) => t.source === 'wise')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + t.amountEur, 0);
+
+  // Sort transactions
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    if (sortField === 'date') {
+      const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      return sortDirection === 'asc' ? diff : -diff;
+    } else {
+      const diff = a.amountEur - b.amountEur;
+      return sortDirection === 'asc' ? diff : -diff;
+    }
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
 
   if (loading) {
     return (
@@ -232,22 +255,32 @@ export default function FinanceTab() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('date')}
+                >
+                  Date {sortField === 'date' && (sortDirection === 'desc' ? '↓' : '↑')}
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('amount')}
+                >
+                  Amount {sortField === 'amount' && (sortDirection === 'desc' ? '↓' : '↑')}
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.length === 0 ? (
+              {sortedTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                     No payments found
                   </td>
                 </tr>
               ) : (
-                transactions.map((tx) => (
+                sortedTransactions.map((tx) => (
                   <tr key={`${tx.source}-${tx.id}`} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(tx.date)}
