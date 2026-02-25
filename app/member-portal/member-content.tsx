@@ -127,8 +127,8 @@ export default function MemberContent() {
   // Get active alert count
   const unreadAlerts = alerts.filter(alert => !alert.isRead);
 
-  // Dashboard sections
-  const dashboardSections = [
+  // Dashboard sections - filter out profile section for internal users
+  const allDashboardSections = [
     {
       id: 'overview',
       title: t('sections.overview'),
@@ -593,6 +593,11 @@ export default function MemberContent() {
       )
     }
   ];
+
+  // Filter out profile section for internal users
+  const dashboardSections = member?.status === 'internal'
+    ? allDashboardSections.filter(section => section.id !== 'profile')
+    : allDashboardSections;
 
   // Construct title with personal name and company name (if applicable)
   const getWelcomeTitle = () => {
