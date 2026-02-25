@@ -40,9 +40,15 @@ export default function MembersTab({
   }
 
   // Filter members based on status
-  const filteredMembers = statusFilter === 'all' 
-    ? memberApplications 
+  const filteredMembers = statusFilter === 'all'
+    ? memberApplications
     : memberApplications.filter(member => member.status === statusFilter);
+
+  // Count for header excludes internal accounts (they're not really "member applications")
+  const memberApplicationCount = memberApplications.filter(m => m.status !== 'internal').length;
+  const filteredMemberCount = statusFilter === 'all'
+    ? memberApplicationCount
+    : filteredMembers.length;
 
   // Get unique statuses for filter dropdown
   const statuses = Array.from(new Set(memberApplications.map(member => member.status)));
@@ -131,7 +137,7 @@ export default function MembersTab({
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            Member Applications ({filteredMembers.length})
+            Member Applications ({filteredMemberCount})
           </h3>
           <div className="flex gap-2">
             <select
@@ -139,7 +145,7 @@ export default function MembersTab({
               onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
               className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
             >
-              <option value="all">All Statuses ({memberApplications.length})</option>
+              <option value="all">All Statuses ({memberApplicationCount})</option>
               {statuses.map(status => (
                 <option key={status} value={status}>
                   {formatStatus(status)} ({memberApplications.filter(m => m.status === status).length})

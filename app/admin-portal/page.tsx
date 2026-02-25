@@ -51,13 +51,14 @@ export default function AdminPortalPage() {
 
     try {
       setLoading(prev => ({ ...prev, members: true }));
-      const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts] = await Promise.all([
+      const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts, internalAccounts] = await Promise.all([
         getAccountsByStatus('pending'),
         getAccountsByStatus('pending_invoice'),
         getAccountsByStatus('approved'),
         getAccountsByStatus('admin'),
         getAccountsByStatus('invoice_sent'),
-        getAccountsByStatus('flagged')
+        getAccountsByStatus('flagged'),
+        getAccountsByStatus('internal')
       ]);
 
       const membersData = [
@@ -66,7 +67,8 @@ export default function AdminPortalPage() {
         ...approvedAccounts,
         ...adminAccounts,
         ...invoiceSentAccounts,
-        ...flaggedAccounts
+        ...flaggedAccounts,
+        ...internalAccounts
       ];
 
       setMemberApplications(membersData);
