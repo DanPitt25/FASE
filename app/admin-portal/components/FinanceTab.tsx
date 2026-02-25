@@ -80,6 +80,13 @@ export default function FinanceTab() {
   const [invoiceOrganization, setInvoiceOrganization] = useState('');
   const [invoiceDescription, setInvoiceDescription] = useState('FASE Annual Membership');
   const [invoiceCurrency, setInvoiceCurrency] = useState('EUR');
+  const [invoiceContactName, setInvoiceContactName] = useState('');
+  const [invoiceAddressLine1, setInvoiceAddressLine1] = useState('');
+  const [invoiceAddressLine2, setInvoiceAddressLine2] = useState('');
+  const [invoiceCity, setInvoiceCity] = useState('');
+  const [invoicePostcode, setInvoicePostcode] = useState('');
+  const [invoiceCountry, setInvoiceCountry] = useState('');
+  const [invoiceAmount, setInvoiceAmount] = useState(0);
 
   // Member search state
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -87,6 +94,7 @@ export default function FinanceTab() {
   const [selectedMember, setSelectedMember] = useState<MemberSearchResult | null>(null);
   const [searchingMembers, setSearchingMembers] = useState(false);
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
+  const [loadingMemberDetails, setLoadingMemberDetails] = useState(false);
 
   // Note form state
   const [newNote, setNewNote] = useState('');
@@ -156,6 +164,13 @@ export default function FinanceTab() {
     setInvoiceOrganization(tx.senderName || '');
     setInvoiceDescription('FASE Annual Membership');
     setInvoiceCurrency(tx.currency);
+    setInvoiceAmount(tx.amount);
+    setInvoiceContactName('');
+    setInvoiceAddressLine1('');
+    setInvoiceAddressLine2('');
+    setInvoiceCity('');
+    setInvoicePostcode('');
+    setInvoiceCountry('');
     setSelectedMember(null);
     setMemberSearchQuery('');
     setMemberSearchResults([]);
@@ -170,6 +185,12 @@ export default function FinanceTab() {
     setSelectedMember(null);
     setMemberSearchQuery('');
     setMemberSearchResults([]);
+    setInvoiceContactName('');
+    setInvoiceAddressLine1('');
+    setInvoiceAddressLine2('');
+    setInvoiceCity('');
+    setInvoicePostcode('');
+    setInvoiceCountry('');
   };
 
   // Member search function
@@ -209,17 +230,47 @@ export default function FinanceTab() {
     return () => clearTimeout(timer);
   }, [memberSearchQuery, searchMembers]);
 
-  const selectMember = (member: MemberSearchResult) => {
+  const selectMember = async (member: MemberSearchResult) => {
     setSelectedMember(member);
     setInvoiceOrganization(member.organizationName);
     setMemberSearchQuery(member.organizationName);
     setShowMemberDropdown(false);
+
+    // Fetch full member details to get address
+    setLoadingMemberDetails(true);
+    try {
+      const response = await fetch(`/api/admin/account/${member.id}`);
+      const data = await response.json();
+
+      if (data.success && data.account) {
+        const account = data.account;
+        const address = account.registeredAddress || account.businessAddress || {};
+        const contactName = account.primaryContact?.name || account.accountAdministrator?.name || '';
+
+        setInvoiceContactName(contactName);
+        setInvoiceAddressLine1(address.line1 || '');
+        setInvoiceAddressLine2(address.line2 || '');
+        setInvoiceCity(address.city || '');
+        setInvoicePostcode(address.postcode || '');
+        setInvoiceCountry(address.country || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch member details:', err);
+    } finally {
+      setLoadingMemberDetails(false);
+    }
   };
 
   const clearSelectedMember = () => {
     setSelectedMember(null);
     setMemberSearchQuery('');
     setInvoiceOrganization('');
+    setInvoiceContactName('');
+    setInvoiceAddressLine1('');
+    setInvoiceAddressLine2('');
+    setInvoiceCity('');
+    setInvoicePostcode('');
+    setInvoiceCountry('');
   };
 
   const handleGeneratePaidInvoice = async () => {
@@ -235,14 +286,22 @@ export default function FinanceTab() {
           source: selectedTransaction.source,
           organizationName: invoiceOrganization,
           description: invoiceDescription,
-          amount: selectedTransaction.amount,
+          amount: invoiceAmount,
           currency: invoiceCurrency,
           paidAt: selectedTransaction.date,
           paymentMethod: selectedTransaction.source,
           email: selectedMember?.primaryContact?.email || selectedTransaction.email,
           reference: selectedTransaction.reference,
-          // Include accountId if a member was selected
           accountId: selectedMember?.id || null,
+          // Send editable address fields
+          contactName: invoiceContactName,
+          address: {
+            line1: invoiceAddressLine1,
+            line2: invoiceAddressLine2,
+            city: invoiceCity,
+            postcode: invoicePostcode,
+            country: invoiceCountry,
+          },
         }),
       });
 
@@ -810,73 +869,163 @@ export default function FinanceTab() {
                       </p>
                     </div>
 
-                    {/* Manual organization name (fallback) */}
-                    {!selectedMember && (
+                    {/* Loading indicator when fetching member details */}
+                    {loadingMemberDetails && (
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-fase-navy"></div>
+                        Loading member details...
+                      </div>
+                    )}
+
+                    {/* Bill To Section - Editable fields */}
+                    <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                      <div className="text-sm font-medium text-gray-700 border-b pb-2">Bill To (Editable)</div>
+
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Or Enter Organization Name Manually
-                        </label>
+                        <label className="block text-xs text-gray-500 mb-1">Organization Name *</label>
                         <input
                           type="text"
                           value={invoiceOrganization}
                           onChange={(e) => setInvoiceOrganization(e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="Enter organization name"
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Organization name"
                         />
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        value={invoiceDescription}
-                        onChange={(e) => setInvoiceDescription(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        placeholder="e.g., FASE Annual Membership"
-                      />
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Contact Name</label>
+                        <input
+                          type="text"
+                          value={invoiceContactName}
+                          onChange={(e) => setInvoiceContactName(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Contact name"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Address Line 1</label>
+                        <input
+                          type="text"
+                          value={invoiceAddressLine1}
+                          onChange={(e) => setInvoiceAddressLine1(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Street address"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Address Line 2</label>
+                        <input
+                          type="text"
+                          value={invoiceAddressLine2}
+                          onChange={(e) => setInvoiceAddressLine2(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Suite, floor, etc. (optional)"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">City</label>
+                          <input
+                            type="text"
+                            value={invoiceCity}
+                            onChange={(e) => setInvoiceCity(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            placeholder="City"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Postcode</label>
+                          <input
+                            type="text"
+                            value={invoicePostcode}
+                            onChange={(e) => setInvoicePostcode(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            placeholder="Postcode"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Country</label>
+                        <input
+                          type="text"
+                          value={invoiceCountry}
+                          onChange={(e) => setInvoiceCountry(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Country"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Invoice Currency
-                      </label>
-                      <select
-                        value={invoiceCurrency}
-                        onChange={(e) => setInvoiceCurrency(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      >
-                        <option value="EUR">EUR (Euro)</option>
-                        <option value="GBP">GBP (British Pound)</option>
-                        <option value="USD">USD (US Dollar)</option>
-                      </select>
-                    </div>
+                    {/* Invoice Details Section */}
+                    <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                      <div className="text-sm font-medium text-gray-700 border-b pb-2">Invoice Details</div>
 
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-500 mb-2">Invoice Preview</div>
-                      <div className="space-y-1 text-sm">
-                        <div><strong>Organization:</strong> {invoiceOrganization || '(not set)'}</div>
-                        {selectedMember && (
-                          <>
-                            <div><strong>Member Type:</strong> {selectedMember.organizationType}</div>
-                            {selectedMember.primaryContact?.email && (
-                              <div><strong>Email:</strong> {selectedMember.primaryContact.email}</div>
-                            )}
-                          </>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Line Item Description</label>
+                        <input
+                          type="text"
+                          value={invoiceDescription}
+                          onChange={(e) => setInvoiceDescription(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="e.g., FASE Annual Membership"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Amount</label>
+                          <input
+                            type="number"
+                            value={invoiceAmount}
+                            onChange={(e) => setInvoiceAmount(parseFloat(e.target.value) || 0)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            step="0.01"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Currency</label>
+                          <select
+                            value={invoiceCurrency}
+                            onChange={(e) => setInvoiceCurrency(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          >
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="USD">USD</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 bg-gray-50 rounded p-3">
+                        <div>
+                          <span className="text-gray-500">Payment Date:</span>{' '}
+                          {formatDate(selectedTransaction.date)}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Payment Method:</span>{' '}
+                          <span className="capitalize">{selectedTransaction.source}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Status:</span>{' '}
+                          <span className="text-green-600 font-medium">PAID</span>
+                        </div>
+                        {selectedTransaction.reference && (
+                          <div>
+                            <span className="text-gray-500">Reference:</span>{' '}
+                            {selectedTransaction.reference}
+                          </div>
                         )}
-                        <div><strong>Amount:</strong> {formatCurrency(selectedTransaction.amount, invoiceCurrency)}</div>
-                        <div><strong>Payment Date:</strong> {formatDate(selectedTransaction.date)}</div>
-                        <div><strong>Payment Method:</strong> {selectedTransaction.source}</div>
-                        <div><strong>Status:</strong> <span className="text-green-600 font-medium">PAID</span></div>
                       </div>
                     </div>
 
                     <Button
                       variant="primary"
                       onClick={handleGeneratePaidInvoice}
-                      disabled={!invoiceOrganization.trim() || generatingInvoice}
+                      disabled={!invoiceOrganization.trim() || generatingInvoice || loadingMemberDetails}
                       className="w-full"
                     >
                       {generatingInvoice ? 'Generating...' : 'Generate & Download PAID Invoice'}
