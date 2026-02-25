@@ -321,8 +321,6 @@ export default function FinanceTab() {
 
       // Reload CRM data to show new activity
       loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
-
-      alert(`Invoice ${data.invoiceNumber} generated successfully!`);
     } catch (err: any) {
       console.error('Failed to generate invoice:', err);
       alert(`Error: ${err.message}`);
