@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     const to = toDate ? new Date(toDate) : now;
 
     const transactions: Transaction[] = [];
+    const errors: string[] = [];
 
     // Fetch Stripe transactions
     if (source === 'all' || source === 'stripe') {
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
           while (hasMore) {
             const listParams: Stripe.PaymentIntentListParams = {
               limit: 100,
+              expand: ['data.latest_charge'],
               ...(startingAfter && { starting_after: startingAfter }),
             };
 
@@ -70,6 +72,13 @@ export async function GET(request: NextRequest) {
             for (const pi of paymentIntents.data) {
               if (pi.status !== 'succeeded') continue;
 
+              // Try to get sender name from various sources
+              let senderName = pi.metadata?.organization_name || '';
+              if (!senderName && pi.latest_charge && typeof pi.latest_charge !== 'string') {
+                const charge = pi.latest_charge as Stripe.Charge;
+                senderName = charge.billing_details?.name || '';
+              }
+
               transactions.push({
                 id: pi.id,
                 source: 'stripe',
@@ -77,7 +86,7 @@ export async function GET(request: NextRequest) {
                 amount: pi.amount / 100,
                 currency: pi.currency.toUpperCase(),
                 reference: pi.metadata?.invoice_number || pi.description || '',
-                senderName: pi.metadata?.organization_name || '',
+                senderName,
               });
             }
 
@@ -86,8 +95,8 @@ export async function GET(request: NextRequest) {
               startingAfter = paymentIntents.data[paymentIntents.data.length - 1].id;
             }
           }
-        } catch (stripeError) {
-          console.error('Failed to fetch Stripe transactions:', stripeError);
+        } catch (stripeError: any) {
+          errors.push(`Stripe error: ${stripeError.message}`);
         }
       }
     }
@@ -97,9 +106,10 @@ export async function GET(request: NextRequest) {
       try {
         const { getWiseClient } = await import('../../../../../lib/wise-api');
         const wiseClient = getWiseClient();
+        const wiseFrom = from || new Date('2020-01-01');
         const wiseTransactions = await wiseClient.getIncomingPayments({
-          ...(from && { from: from.toISOString() }),
-          ...(to && { to: to.toISOString() }),
+          from: wiseFrom.toISOString(),
+          to: to.toISOString(),
         });
 
         for (const wiseTx of wiseTransactions) {
@@ -114,9 +124,7 @@ export async function GET(request: NextRequest) {
           });
         }
       } catch (wiseError: any) {
-        if (!wiseError.message?.includes('environment variable')) {
-          console.error('Failed to fetch Wise transactions:', wiseError);
-        }
+        errors.push(`Wise error: ${wiseError.message}`);
       }
     }
 
@@ -131,6 +139,7 @@ export async function GET(request: NextRequest) {
         stripeCount: transactions.filter((t) => t.source === 'stripe').length,
         wiseCount: transactions.filter((t) => t.source === 'wise').length,
       },
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error: any) {
     console.error('Error fetching transactions:', error);

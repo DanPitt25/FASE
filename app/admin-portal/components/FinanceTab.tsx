@@ -27,6 +27,7 @@ export default function FinanceTab() {
   // API status
   const [stripeConfigured, setStripeConfigured] = useState(false);
   const [wiseConfigured, setWiseConfigured] = useState(false);
+  const [apiErrors, setApiErrors] = useState<string[]>([]);
 
   useEffect(() => {
     loadData();
@@ -53,6 +54,7 @@ export default function FinanceTab() {
 
       setTransactions(data.transactions || []);
       setStripeConfigured(data.summary?.stripeCount !== undefined);
+      setApiErrors(data.errors || []);
       setWiseConfigured(data.summary?.wiseCount !== undefined);
     } catch (err: any) {
       console.error('Failed to load finance data:', err);
@@ -158,6 +160,18 @@ export default function FinanceTab() {
           </div>
         </div>
       </div>
+
+      {/* API Errors */}
+      {apiErrors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-sm font-medium text-red-800 mb-2">API Errors</div>
+          <div className="text-sm text-red-700 space-y-1">
+            {apiErrors.map((err, i) => (
+              <div key={i}>{err}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* API Setup Info */}
       {(!stripeConfigured || !wiseConfigured) && (
