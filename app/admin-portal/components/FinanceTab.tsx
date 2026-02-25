@@ -37,6 +37,17 @@ interface PaymentNote {
   isPinned?: boolean;
 }
 
+interface MemberSearchResult {
+  id: string;
+  organizationName: string;
+  organizationType: string;
+  status: string;
+  primaryContact?: {
+    name?: string;
+    email?: string;
+  };
+}
+
 type FilterSource = 'all' | 'stripe' | 'wise';
 type DateRange = 'all' | '30' | '90' | '180' | '365';
 type SortField = 'date' | 'amount';
@@ -69,6 +80,13 @@ export default function FinanceTab() {
   const [invoiceOrganization, setInvoiceOrganization] = useState('');
   const [invoiceDescription, setInvoiceDescription] = useState('FASE Annual Membership');
   const [invoiceCurrency, setInvoiceCurrency] = useState('EUR');
+
+  // Member search state
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState<MemberSearchResult[]>([]);
+  const [selectedMember, setSelectedMember] = useState<MemberSearchResult | null>(null);
+  const [searchingMembers, setSearchingMembers] = useState(false);
+  const [showMemberDropdown, setShowMemberDropdown] = useState(false);
 
   // Note form state
   const [newNote, setNewNote] = useState('');
@@ -138,6 +156,9 @@ export default function FinanceTab() {
     setInvoiceOrganization(tx.senderName || '');
     setInvoiceDescription('FASE Annual Membership');
     setInvoiceCurrency(tx.currency);
+    setSelectedMember(null);
+    setMemberSearchQuery('');
+    setMemberSearchResults([]);
     loadPaymentCrmData(tx.id, tx.source);
   };
 
@@ -146,6 +167,59 @@ export default function FinanceTab() {
     setActivities([]);
     setNotes([]);
     setNewNote('');
+    setSelectedMember(null);
+    setMemberSearchQuery('');
+    setMemberSearchResults([]);
+  };
+
+  // Member search function
+  const searchMembers = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setMemberSearchResults([]);
+      return;
+    }
+
+    setSearchingMembers(true);
+    try {
+      const response = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`);
+      const data = await response.json();
+
+      if (data.success && data.results) {
+        setMemberSearchResults(data.results);
+        setShowMemberDropdown(true);
+      }
+    } catch (err) {
+      console.error('Failed to search members:', err);
+    } finally {
+      setSearchingMembers(false);
+    }
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (memberSearchQuery.length >= 2) {
+        searchMembers(memberSearchQuery);
+      } else {
+        setMemberSearchResults([]);
+        setShowMemberDropdown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [memberSearchQuery, searchMembers]);
+
+  const selectMember = (member: MemberSearchResult) => {
+    setSelectedMember(member);
+    setInvoiceOrganization(member.organizationName);
+    setMemberSearchQuery(member.organizationName);
+    setShowMemberDropdown(false);
+  };
+
+  const clearSelectedMember = () => {
+    setSelectedMember(null);
+    setMemberSearchQuery('');
+    setInvoiceOrganization('');
   };
 
   const handleGeneratePaidInvoice = async () => {
@@ -162,11 +236,13 @@ export default function FinanceTab() {
           organizationName: invoiceOrganization,
           description: invoiceDescription,
           amount: selectedTransaction.amount,
-          currency: selectedTransaction.currency,
+          currency: invoiceCurrency,
           paidAt: selectedTransaction.date,
           paymentMethod: selectedTransaction.source,
-          email: selectedTransaction.email,
+          email: selectedMember?.primaryContact?.email || selectedTransaction.email,
           reference: selectedTransaction.reference,
+          // Include accountId if a member was selected
+          accountId: selectedMember?.id || null,
         }),
       });
 
@@ -662,23 +738,93 @@ export default function FinanceTab() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="text-sm font-medium text-blue-800 mb-2">Generate PAID Invoice</div>
                     <p className="text-sm text-blue-700">
-                      Create a payment confirmation invoice for this transaction. The invoice will be marked as PAID with the payment details.
+                      Create a payment confirmation invoice for this transaction. Search for an existing member or enter organization details manually.
                     </p>
                   </div>
 
                   <div className="space-y-4">
+                    {/* Member Search */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Organization Name *
+                        Search Member *
                       </label>
-                      <input
-                        type="text"
-                        value={invoiceOrganization}
-                        onChange={(e) => setInvoiceOrganization(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        placeholder="Enter organization name"
-                      />
+                      <div className="relative">
+                        {selectedMember ? (
+                          <div className="flex items-center justify-between border border-green-300 bg-green-50 rounded-lg p-3">
+                            <div>
+                              <div className="font-medium text-gray-900">{selectedMember.organizationName}</div>
+                              <div className="text-sm text-gray-500">
+                                {selectedMember.organizationType} • {selectedMember.primaryContact?.email || 'No email'}
+                              </div>
+                            </div>
+                            <button
+                              onClick={clearSelectedMember}
+                              className="text-gray-400 hover:text-red-500 p-1"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="text"
+                              value={memberSearchQuery}
+                              onChange={(e) => setMemberSearchQuery(e.target.value)}
+                              onFocus={() => memberSearchResults.length > 0 && setShowMemberDropdown(true)}
+                              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                              placeholder="Search by organization name, email, or contact..."
+                            />
+                            {searchingMembers && (
+                              <div className="absolute right-3 top-2.5">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-fase-navy"></div>
+                              </div>
+                            )}
+                            {showMemberDropdown && memberSearchResults.length > 0 && (
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {memberSearchResults.map((member) => (
+                                  <button
+                                    key={member.id}
+                                    onClick={() => selectMember(member)}
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                  >
+                                    <div className="font-medium text-gray-900">{member.organizationName}</div>
+                                    <div className="text-sm text-gray-500">
+                                      <span className={`inline-flex px-1.5 py-0.5 text-xs rounded mr-2 ${
+                                        member.organizationType === 'MGA' ? 'bg-blue-100 text-blue-700' :
+                                        member.organizationType === 'carrier' ? 'bg-purple-100 text-purple-700' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {member.organizationType}
+                                      </span>
+                                      {member.primaryContact?.email || member.primaryContact?.name || 'No contact'}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Search for a member to auto-fill their details, or enter manually below
+                      </p>
                     </div>
+
+                    {/* Manual organization name (fallback) */}
+                    {!selectedMember && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Or Enter Organization Name Manually
+                        </label>
+                        <input
+                          type="text"
+                          value={invoiceOrganization}
+                          onChange={(e) => setInvoiceOrganization(e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          placeholder="Enter organization name"
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -712,7 +858,15 @@ export default function FinanceTab() {
                       <div className="text-sm text-gray-500 mb-2">Invoice Preview</div>
                       <div className="space-y-1 text-sm">
                         <div><strong>Organization:</strong> {invoiceOrganization || '(not set)'}</div>
-                        <div><strong>Amount:</strong> {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</div>
+                        {selectedMember && (
+                          <>
+                            <div><strong>Member Type:</strong> {selectedMember.organizationType}</div>
+                            {selectedMember.primaryContact?.email && (
+                              <div><strong>Email:</strong> {selectedMember.primaryContact.email}</div>
+                            )}
+                          </>
+                        )}
+                        <div><strong>Amount:</strong> {formatCurrency(selectedTransaction.amount, invoiceCurrency)}</div>
                         <div><strong>Payment Date:</strong> {formatDate(selectedTransaction.date)}</div>
                         <div><strong>Payment Method:</strong> {selectedTransaction.source}</div>
                         <div><strong>Status:</strong> <span className="text-green-600 font-medium">PAID</span></div>

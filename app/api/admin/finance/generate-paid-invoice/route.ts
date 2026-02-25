@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       email,
       reference,
+      accountId, // Optional: if provided, fetch member data
     } = body;
 
     if (!transactionId || !source || !organizationName || !amount) {
@@ -27,6 +28,19 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields: transactionId, source, organizationName, amount' },
         { status: 400 }
       );
+    }
+
+    // Fetch member data if accountId is provided
+    let memberData: any = null;
+    if (accountId) {
+      try {
+        const accountDoc = await adminDb.collection('accounts').doc(accountId).get();
+        if (accountDoc.exists) {
+          memberData = accountDoc.data();
+        }
+      } catch (err) {
+        console.warn('Failed to fetch member data:', err);
+      }
     }
 
     // Generate invoice number
@@ -51,15 +65,27 @@ export async function POST(request: NextRequest) {
     // Generate PDF using the existing invoice generator
     const { generatePaidInvoicePDF } = await import('@/lib/paid-invoice-generator');
 
+    // Use member data for address if available
+    const address = memberData?.registeredAddress || memberData?.businessAddress;
+    const contactName = memberData?.primaryContact?.name || memberData?.accountAdministrator?.name;
+
     const pdfResult = await generatePaidInvoicePDF({
       invoiceNumber: invoiceNumber!,
-      organizationName,
+      organizationName: memberData?.organizationName || organizationName,
       description: description || 'FASE Annual Membership',
       amount,
       currency: currency || 'EUR',
       paidAt: paidAt || new Date().toISOString(),
       paymentMethod: paymentMethod || source,
       reference: reference || transactionId,
+      contactName,
+      address: address ? {
+        line1: address.line1,
+        line2: address.line2,
+        city: address.city,
+        postcode: address.postcode,
+        country: address.country,
+      } : undefined,
     });
 
     // Store invoice record in Firestore
@@ -70,14 +96,15 @@ export async function POST(request: NextRequest) {
       paymentKey,
       transactionId,
       source,
-      organizationName,
+      organizationName: memberData?.organizationName || organizationName,
       description: description || 'FASE Annual Membership',
       amount,
       currency: currency || 'EUR',
       paidAt,
       paymentMethod: paymentMethod || source,
-      email: email || null,
+      email: memberData?.primaryContact?.email || email || null,
       reference: reference || null,
+      accountId: accountId || null,
       generatedAt: FieldValue.serverTimestamp(),
       generatedBy: 'admin',
     });

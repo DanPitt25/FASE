@@ -11,6 +11,15 @@ export interface PaidInvoiceData {
   paidAt: string;
   paymentMethod: string;
   reference?: string;
+  // Optional address info (from member data)
+  contactName?: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    postcode?: string;
+    country?: string;
+  };
 }
 
 export interface PaidInvoiceResult {
@@ -102,19 +111,32 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
 
     currentY -= 20;
 
-    firstPage.drawText(data.organizationName, {
-      x: margins.left,
-      y: currentY,
-      size: 11,
-      font: boldFont,
-      color: faseBlack,
+    // Build address lines
+    const addressLines = [
+      data.organizationName,
+      data.contactName,
+      data.address?.line1,
+      data.address?.line2,
+      [data.address?.city, data.address?.postcode].filter(Boolean).join(' '),
+      data.address?.country,
+    ].filter(line => line && line.trim() !== '');
+
+    // Draw address lines
+    addressLines.forEach((line, index) => {
+      firstPage.drawText(line!, {
+        x: margins.left,
+        y: currentY - (index * standardLineHeight),
+        size: index === 0 ? 11 : 10,
+        font: index === 0 ? boldFont : bodyFont,
+        color: faseBlack,
+      });
     });
 
     // Invoice details (right-aligned)
     const invoiceDetailsX = width - margins.right - 150;
     firstPage.drawText(`Invoice #: ${data.invoiceNumber}`, {
       x: invoiceDetailsX,
-      y: currentY + 20,
+      y: currentY,
       size: 11,
       font: boldFont,
       color: faseBlack,
@@ -122,14 +144,14 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
 
     firstPage.drawText(`Date: ${currentDate}`, {
       x: invoiceDetailsX,
-      y: currentY + 4,
+      y: currentY - 16,
       size: 10,
       font: bodyFont,
       color: faseBlack,
     });
 
-    // Move down for table
-    currentY -= 60;
+    // Move down for table (account for address lines)
+    currentY -= Math.max(60, addressLines.length * standardLineHeight + 20);
 
     // Table setup
     const tableY = currentY;
