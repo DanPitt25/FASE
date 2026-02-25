@@ -170,7 +170,7 @@ class WiseClient {
   constructor() {
     const apiKey = process.env.WISE_API_KEY;
     const profileId = process.env.WISE_PROFILE_ID;
-    const environment = process.env.WISE_ENVIRONMENT || 'sandbox';
+    const environment = process.env.WISE_ENVIRONMENT || 'production';
 
     if (!apiKey) {
       throw new Error('WISE_API_KEY environment variable is not set');
