@@ -44,8 +44,8 @@ export default function MembersTab({
     ? memberApplications
     : memberApplications.filter(member => member.status === statusFilter);
 
-  // Count for header excludes internal accounts (they're not really "member applications")
-  const memberApplicationCount = memberApplications.filter(m => m.status !== 'internal').length;
+  // Count for header only includes approved and invoice_sent (actual members)
+  const memberApplicationCount = memberApplications.filter(m => m.status === 'approved' || m.status === 'invoice_sent').length;
   const filteredMemberCount = statusFilter === 'all'
     ? memberApplicationCount
     : filteredMembers.length;
