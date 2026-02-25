@@ -3,6 +3,12 @@ import { adminDb, FieldValue } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
+interface LineItemInput {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 /**
  * POST: Generate a PAID invoice PDF for a payment transaction
  */
@@ -13,25 +19,33 @@ export async function POST(request: NextRequest) {
       transactionId,
       source,
       organizationName,
-      description,
-      amount,
+      lineItems,
       currency,
       paidAt,
       paymentMethod,
       email,
       reference,
       accountId,
-      // Editable address fields (take precedence over fetched data)
-      contactName: providedContactName,
-      address: providedAddress,
+      contactName,
+      address,
     } = body;
 
-    if (!transactionId || !source || !organizationName || !amount) {
+    if (!transactionId || !source || !organizationName || !lineItems || lineItems.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: transactionId, source, organizationName, amount' },
+        { error: 'Missing required fields: transactionId, source, organizationName, lineItems' },
         { status: 400 }
       );
     }
+
+    // Calculate total from line items
+    const processedLineItems = (lineItems as LineItemInput[]).map(item => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      total: item.quantity * item.unitPrice,
+    }));
+
+    const totalAmount = processedLineItems.reduce((sum, item) => sum + item.total, 0);
 
     // Generate invoice number
     const year = new Date().getFullYear();
@@ -52,21 +66,19 @@ export async function POST(request: NextRequest) {
       invoiceNumber = `FASE-PAID-${year}-${String(currentCount).padStart(4, '0')}`;
     });
 
-    // Generate PDF using the existing invoice generator
+    // Generate PDF using the paid invoice generator
     const { generatePaidInvoicePDF } = await import('@/lib/paid-invoice-generator');
 
-    // Use provided address fields (from the editable form)
     const pdfResult = await generatePaidInvoicePDF({
       invoiceNumber: invoiceNumber!,
       organizationName,
-      description: description || 'FASE Annual Membership',
-      amount,
+      contactName: contactName || '',
+      address: address || undefined,
+      lineItems: processedLineItems,
       currency: currency || 'EUR',
       paidAt: paidAt || new Date().toISOString(),
       paymentMethod: paymentMethod || source,
       reference: reference || transactionId,
-      contactName: providedContactName || '',
-      address: providedAddress || undefined,
     });
 
     // Store invoice record in Firestore
@@ -78,16 +90,16 @@ export async function POST(request: NextRequest) {
       transactionId,
       source,
       organizationName,
-      description: description || 'FASE Annual Membership',
-      amount,
+      lineItems: processedLineItems,
+      totalAmount,
       currency: currency || 'EUR',
       paidAt,
       paymentMethod: paymentMethod || source,
       email: email || null,
       reference: reference || null,
       accountId: accountId || null,
-      contactName: providedContactName || null,
-      address: providedAddress || null,
+      contactName: contactName || null,
+      address: address || null,
       generatedAt: FieldValue.serverTimestamp(),
       generatedBy: 'admin',
     });
@@ -105,8 +117,9 @@ export async function POST(request: NextRequest) {
       metadata: {
         invoiceId: invoiceDoc.id,
         invoiceNumber: invoiceNumber!,
-        amount,
+        totalAmount,
         currency: currency || 'EUR',
+        lineItemCount: processedLineItems.length,
       },
       createdAt: FieldValue.serverTimestamp(),
     });

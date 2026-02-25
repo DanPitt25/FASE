@@ -2,15 +2,16 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface PaidInvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
 export interface PaidInvoiceData {
   invoiceNumber: string;
   organizationName: string;
-  description: string;
-  amount: number;
-  currency: string;
-  paidAt: string;
-  paymentMethod: string;
-  reference?: string;
   contactName?: string;
   address?: {
     line1?: string;
@@ -19,6 +20,11 @@ export interface PaidInvoiceData {
     postcode?: string;
     country?: string;
   };
+  lineItems: PaidInvoiceLineItem[];
+  currency: string;
+  paidAt: string;
+  paymentMethod: string;
+  reference?: string;
 }
 
 export interface PaidInvoiceResult {
@@ -44,13 +50,12 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
     const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // FASE Brand Colors (matching regular invoice)
+    // FASE Brand Colors - EXACTLY matching regular invoice
     const faseNavy = rgb(0.176, 0.333, 0.455);      // #2D5574
     const faseBlack = rgb(0.137, 0.122, 0.125);     // #231F20
     const faseCream = rgb(0.922, 0.910, 0.894);     // #EBE8E4
-    const paidGreen = rgb(0.133, 0.545, 0.133);     // Green for PAID status
 
-    // Layout settings (matching regular invoice)
+    // Layout settings - EXACTLY matching regular invoice
     const margins = { left: 50, right: 50, top: 150, bottom: 80 };
     const contentWidth = width - margins.left - margins.right;
     const standardLineHeight = 18;
@@ -59,7 +64,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
     // Currency formatting
     const formatCurrency = (amount: number, currency: string) => {
       const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
-      return `${symbols[currency] || currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+      return `${symbols[currency] || currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     // Format dates
@@ -75,13 +80,16 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       year: 'numeric',
     });
 
+    // Calculate total from line items
+    const totalAmount = data.lineItems.reduce((sum, item) => sum + item.total, 0);
+
     // Format payment method
     const paymentMethodDisplay = data.paymentMethod.charAt(0).toUpperCase() + data.paymentMethod.slice(1);
 
     // Start drawing content
     let currentY = height - margins.top;
 
-    // BILL TO and INVOICE DETAILS on same line (matching regular invoice)
+    // BILL TO and INVOICE DETAILS on same line - matching regular invoice
     firstPage.drawText('Bill To:', {
       x: margins.left,
       y: currentY,
@@ -108,13 +116,13 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       color: faseBlack,
     });
 
-    // Status: PAID (instead of "Terms: Payment upon receipt")
+    // Status: PAID instead of "Terms: Payment upon receipt"
     firstPage.drawText('Status: PAID', {
       x: invoiceDetailsX,
       y: currentY - 32,
       size: 10,
       font: boldFont,
-      color: paidGreen,
+      color: faseNavy,
     });
 
     firstPage.drawText('VAT Number Pending', {
@@ -147,10 +155,10 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       });
     });
 
-    // Move down for table (matching regular invoice)
+    // Move down for table - matching regular invoice
     currentY -= (billToLines.length * standardLineHeight) + sectionGap + 20;
 
-    // Table setup (matching regular invoice - Description, Qty, Unit Price, Total)
+    // Table setup - EXACTLY matching regular invoice (Description, Qty, Unit Price, Total)
     const tableY = currentY;
     const colWidths = [250, 50, 100, 100];
     const colX = [
@@ -160,7 +168,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       margins.left + colWidths[0] + colWidths[1] + colWidths[2]
     ];
 
-    // Table header background
+    // Table header background - matching regular invoice
     firstPage.drawRectangle({
       x: margins.left,
       y: tableY - 35,
@@ -169,7 +177,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       color: faseCream,
     });
 
-    // Table headers
+    // Table headers - matching regular invoice
     const headers = ['Description', 'Qty', 'Unit Price', 'Total'];
     headers.forEach((header, i) => {
       firstPage.drawText(header, {
@@ -183,42 +191,46 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
 
     currentY = tableY - 40;
 
-    // Line item (single row for the payment)
-    firstPage.drawText(data.description, {
-      x: colX[0] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
+    // Render all line items - matching regular invoice format
+    data.lineItems.forEach((item) => {
+      firstPage.drawText(item.description, {
+        x: colX[0] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+
+      firstPage.drawText(item.quantity.toString(), {
+        x: colX[1] + 25,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+
+      firstPage.drawText(formatCurrency(item.unitPrice, data.currency), {
+        x: colX[2] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+
+      firstPage.drawText(formatCurrency(item.total, data.currency), {
+        x: colX[3] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+
+      currentY -= 30;
     });
 
-    firstPage.drawText('1', {
-      x: colX[1] + 25,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
+    currentY -= 20;
 
-    firstPage.drawText(formatCurrency(data.amount, data.currency), {
-      x: colX[2] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-
-    firstPage.drawText(formatCurrency(data.amount, data.currency), {
-      x: colX[3] + 10,
-      y: currentY - 15,
-      size: 10,
-      font: bodyFont,
-      color: faseBlack,
-    });
-
-    currentY -= 50;
-
-    // Total section (matching regular invoice style)
+    // Total section - matching regular invoice style
     const totalSectionWidth = 320;
     const totalX = width - margins.right - totalSectionWidth;
     const sectionHeight = 35;
@@ -228,7 +240,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       y: currentY - sectionHeight,
       width: totalSectionWidth,
       height: sectionHeight,
-      borderColor: paidGreen,
+      borderColor: faseNavy,
       borderWidth: 2,
     });
 
@@ -242,12 +254,13 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       color: faseNavy,
     });
 
-    firstPage.drawText(formatCurrency(data.amount, data.currency), {
-      x: labelX + 100,
+    const textWidth = boldFont.widthOfTextAtSize('Total Paid:', 12);
+    firstPage.drawText(formatCurrency(totalAmount, data.currency), {
+      x: labelX + textWidth + 15,
       y: currentY - 22,
       size: 13,
       font: boldFont,
-      color: paidGreen,
+      color: faseNavy,
     });
 
     // Payment Confirmation section (instead of Payment Instructions)

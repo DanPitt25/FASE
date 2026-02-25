@@ -78,7 +78,6 @@ export default function FinanceTab() {
   // Invoice generation state
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [invoiceOrganization, setInvoiceOrganization] = useState('');
-  const [invoiceDescription, setInvoiceDescription] = useState('FASE Annual Membership');
   const [invoiceCurrency, setInvoiceCurrency] = useState('EUR');
   const [invoiceContactName, setInvoiceContactName] = useState('');
   const [invoiceAddressLine1, setInvoiceAddressLine1] = useState('');
@@ -86,7 +85,9 @@ export default function FinanceTab() {
   const [invoiceCity, setInvoiceCity] = useState('');
   const [invoicePostcode, setInvoicePostcode] = useState('');
   const [invoiceCountry, setInvoiceCountry] = useState('');
-  const [invoiceAmount, setInvoiceAmount] = useState(0);
+  const [invoiceLineItems, setInvoiceLineItems] = useState<{ description: string; quantity: number; unitPrice: number }[]>([
+    { description: 'FASE Annual Membership', quantity: 1, unitPrice: 0 }
+  ]);
 
   // Member search state
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -162,9 +163,8 @@ export default function FinanceTab() {
     setSelectedTransaction(tx);
     setModalTab('details');
     setInvoiceOrganization(tx.senderName || '');
-    setInvoiceDescription('FASE Annual Membership');
     setInvoiceCurrency(tx.currency);
-    setInvoiceAmount(tx.amount);
+    setInvoiceLineItems([{ description: 'FASE Annual Membership', quantity: 1, unitPrice: tx.amount }]);
     setInvoiceContactName('');
     setInvoiceAddressLine1('');
     setInvoiceAddressLine2('');
@@ -244,8 +244,9 @@ export default function FinanceTab() {
 
       if (data.success && data.account) {
         const account = data.account;
-        const address = account.registeredAddress || account.businessAddress || {};
-        const contactName = account.primaryContact?.name || account.accountAdministrator?.name || '';
+        // businessAddress is the primary address field in account documents
+        const address = account.businessAddress || account.registeredAddress || {};
+        const contactName = account.accountAdministrator?.name || account.primaryContact?.name || '';
 
         setInvoiceContactName(contactName);
         setInvoiceAddressLine1(address.line1 || '');
@@ -275,6 +276,7 @@ export default function FinanceTab() {
 
   const handleGeneratePaidInvoice = async () => {
     if (!selectedTransaction || !invoiceOrganization.trim()) return;
+    if (invoiceLineItems.length === 0 || invoiceLineItems.every(item => !item.description.trim())) return;
 
     setGeneratingInvoice(true);
     try {
@@ -285,15 +287,13 @@ export default function FinanceTab() {
           transactionId: selectedTransaction.id,
           source: selectedTransaction.source,
           organizationName: invoiceOrganization,
-          description: invoiceDescription,
-          amount: invoiceAmount,
+          lineItems: invoiceLineItems.filter(item => item.description.trim()),
           currency: invoiceCurrency,
           paidAt: selectedTransaction.date,
           paymentMethod: selectedTransaction.source,
           email: selectedMember?.primaryContact?.email || selectedTransaction.email,
           reference: selectedTransaction.reference,
           accountId: selectedMember?.id || null,
-          // Send editable address fields
           contactName: invoiceContactName,
           address: {
             line1: invoiceAddressLine1,
@@ -960,38 +960,16 @@ export default function FinanceTab() {
                       </div>
                     </div>
 
-                    {/* Invoice Details Section */}
+                    {/* Line Items Section */}
                     <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-                      <div className="text-sm font-medium text-gray-700 border-b pb-2">Invoice Details</div>
-
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Line Item Description</label>
-                        <input
-                          type="text"
-                          value={invoiceDescription}
-                          onChange={(e) => setInvoiceDescription(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="e.g., FASE Annual Membership"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <div className="text-sm font-medium text-gray-700">Line Items</div>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Amount</label>
-                          <input
-                            type="number"
-                            value={invoiceAmount}
-                            onChange={(e) => setInvoiceAmount(parseFloat(e.target.value) || 0)}
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                            step="0.01"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Currency</label>
+                          <label className="text-xs text-gray-500 mr-2">Currency:</label>
                           <select
                             value={invoiceCurrency}
                             onChange={(e) => setInvoiceCurrency(e.target.value)}
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                            className="border border-gray-300 rounded px-2 py-1 text-sm"
                           >
                             <option value="EUR">EUR</option>
                             <option value="GBP">GBP</option>
@@ -1000,32 +978,117 @@ export default function FinanceTab() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 bg-gray-50 rounded p-3">
-                        <div>
-                          <span className="text-gray-500">Payment Date:</span>{' '}
-                          {formatDate(selectedTransaction.date)}
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Payment Method:</span>{' '}
-                          <span className="capitalize">{selectedTransaction.source}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Status:</span>{' '}
-                          <span className="text-green-600 font-medium">PAID</span>
-                        </div>
-                        {selectedTransaction.reference && (
-                          <div>
-                            <span className="text-gray-500">Reference:</span>{' '}
-                            {selectedTransaction.reference}
-                          </div>
-                        )}
+                      {/* Line items table header */}
+                      <div className="grid grid-cols-12 gap-2 text-xs text-gray-500 font-medium">
+                        <div className="col-span-6">Description</div>
+                        <div className="col-span-2 text-center">Qty</div>
+                        <div className="col-span-3 text-right">Unit Price</div>
+                        <div className="col-span-1"></div>
                       </div>
+
+                      {/* Line items */}
+                      {invoiceLineItems.map((item, index) => (
+                        <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                          <div className="col-span-6">
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(e) => {
+                                const newItems = [...invoiceLineItems];
+                                newItems[index].description = e.target.value;
+                                setInvoiceLineItems(newItems);
+                              }}
+                              className="w-full border border-gray-300 rounded p-2 text-sm"
+                              placeholder="Description"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const newItems = [...invoiceLineItems];
+                                newItems[index].quantity = parseInt(e.target.value) || 1;
+                                setInvoiceLineItems(newItems);
+                              }}
+                              className="w-full border border-gray-300 rounded p-2 text-sm text-center"
+                              min="1"
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <input
+                              type="number"
+                              value={item.unitPrice}
+                              onChange={(e) => {
+                                const newItems = [...invoiceLineItems];
+                                newItems[index].unitPrice = parseFloat(e.target.value) || 0;
+                                setInvoiceLineItems(newItems);
+                              }}
+                              className="w-full border border-gray-300 rounded p-2 text-sm text-right"
+                              step="0.01"
+                            />
+                          </div>
+                          <div className="col-span-1 text-center">
+                            {invoiceLineItems.length > 1 && (
+                              <button
+                                onClick={() => {
+                                  setInvoiceLineItems(invoiceLineItems.filter((_, i) => i !== index));
+                                }}
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add line item button */}
+                      <button
+                        onClick={() => {
+                          setInvoiceLineItems([...invoiceLineItems, { description: '', quantity: 1, unitPrice: 0 }]);
+                        }}
+                        className="text-sm text-fase-navy hover:text-fase-navy/80 font-medium"
+                      >
+                        + Add Line Item
+                      </button>
+
+                      {/* Total */}
+                      <div className="border-t pt-3 flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Total:</span>
+                        <span className="text-lg font-bold text-fase-navy">
+                          {invoiceCurrency === 'EUR' ? '€' : invoiceCurrency === 'GBP' ? '£' : '$'}
+                          {invoiceLineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Payment Info (read-only) */}
+                    <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 bg-gray-50 rounded p-3">
+                      <div>
+                        <span className="text-gray-500">Payment Date:</span>{' '}
+                        {formatDate(selectedTransaction.date)}
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Payment Method:</span>{' '}
+                        <span className="capitalize">{selectedTransaction.source}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Status:</span>{' '}
+                        <span className="text-fase-navy font-medium">PAID</span>
+                      </div>
+                      {selectedTransaction.reference && (
+                        <div>
+                          <span className="text-gray-500">Reference:</span>{' '}
+                          {selectedTransaction.reference}
+                        </div>
+                      )}
                     </div>
 
                     <Button
                       variant="primary"
                       onClick={handleGeneratePaidInvoice}
-                      disabled={!invoiceOrganization.trim() || generatingInvoice || loadingMemberDetails}
+                      disabled={!invoiceOrganization.trim() || generatingInvoice || loadingMemberDetails || invoiceLineItems.every(item => !item.description.trim())}
                       className="w-full"
                     >
                       {generatingInvoice ? 'Generating...' : 'Generate & Download PAID Invoice'}
