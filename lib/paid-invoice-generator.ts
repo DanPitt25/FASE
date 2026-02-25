@@ -298,6 +298,42 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       });
     });
 
+    // FASE Address (right side, below payment details)
+    const addressX = width - margins.right - 180;
+    const addressY = currentY - 50;
+
+    firstPage.drawText('FASE B.V.', {
+      x: addressX,
+      y: addressY,
+      size: 10,
+      font: boldFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Herengracht 124-128', {
+      x: addressX,
+      y: addressY - 14,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('1015 BT Amsterdam', {
+      x: addressX,
+      y: addressY - 28,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Netherlands', {
+      x: addressX,
+      y: addressY - 42,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
     // Thank you message
     currentY -= 50 + (paymentDetails.length * standardLineHeight) + 30;
 
