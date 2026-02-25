@@ -15,11 +15,12 @@ export async function GET(request: NextRequest) {
     const wiseClient = getWiseClient();
 
     // Get incoming payments
-    const transactions = await wiseClient.getIncomingPayments({
+    const wiseResult = await wiseClient.getIncomingPayments({
       currency: currency || undefined,
       from: from || undefined,
       to: to || undefined,
     });
+    const transactions = wiseResult.transactions;
 
     // If matching is requested, get unpaid invoices from Firestore
     let invoiceMatches: Record<string, string> = {};

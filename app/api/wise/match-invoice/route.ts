@@ -108,7 +108,8 @@ export async function GET(request: NextRequest) {
     // Get Wise transactions
     const { getWiseClient } = await import('../../../../lib/wise-api');
     const wiseClient = getWiseClient();
-    const transactions = await wiseClient.getIncomingPayments();
+    const wiseResult = await wiseClient.getIncomingPayments();
+    const transactions = wiseResult.transactions;
 
     const matches: any[] = [];
     const unmatched: any[] = [];
