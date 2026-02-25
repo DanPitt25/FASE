@@ -4,8 +4,6 @@ import Stripe from 'stripe';
 import { adminDb, FieldValue } from '../../../lib/firebase-admin';
 import { safeDocExists, safeDocData } from '../../../lib/firebase-helpers';
 import { logStripePayment, logPaymentReceived, logInvoicePaid } from '../../../lib/activity-logger';
-import { generatePaidInvoicePDF, InvoiceGenerationData, PaymentInfo } from '../../../lib/invoice-pdf-generator';
-import { uploadInvoicePDF } from '../../../lib/invoice-storage';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -23,80 +21,6 @@ const initializeStripe = () => {
 
   if (!endpointSecret) {
     endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  }
-};
-
-// Generate and store a PAID invoice PDF
-const generateAndStorePaidInvoice = async (
-  invoiceNumber: string,
-  organizationName: string,
-  amount: number,
-  currency: string,
-  paymentId: string,
-  invoiceId?: string
-): Promise<string | null> => {
-  try {
-    console.log(`📄 Auto-generating PAID invoice PDF for ${invoiceNumber}`);
-
-    // Try to get more invoice details from Firestore if we have an invoiceId
-    let invoiceData: InvoiceGenerationData = {
-      invoiceNumber,
-      organizationName,
-      totalAmount: amount,
-      email: '',
-      forceCurrency: currency.toUpperCase(),
-    };
-
-    if (invoiceId) {
-      const invoiceDoc = await adminDb.collection('invoices').doc(invoiceId).get();
-      if (invoiceDoc.exists) {
-        const firestoreData = invoiceDoc.data()!;
-        invoiceData = {
-          ...invoiceData,
-          email: firestoreData.recipientEmail || firestoreData.email || '',
-          fullName: firestoreData.recipientName || firestoreData.fullName || '',
-          address: firestoreData.address,
-          originalAmount: firestoreData.originalAmount,
-          discountAmount: firestoreData.discountAmount,
-          discountReason: firestoreData.discountReason,
-          organizationType: firestoreData.organizationType,
-          userLocale: firestoreData.locale || 'en',
-        };
-      }
-    }
-
-    const paymentInfo: PaymentInfo = {
-      paidAt: new Date(),
-      paymentMethod: 'stripe',
-      paymentReference: paymentId,
-      amountPaid: amount,
-      currency: currency.toUpperCase(),
-    };
-
-    // Generate the PDF
-    const result = await generatePaidInvoicePDF(invoiceData, paymentInfo);
-
-    // Upload to Firebase Storage
-    const uploadResult = await uploadInvoicePDF(
-      result.pdfBase64,
-      `${invoiceNumber}-PAID`,
-      organizationName
-    );
-
-    console.log(`✅ PAID invoice PDF stored: ${uploadResult.downloadURL}`);
-
-    // Update Firestore invoice with paid PDF URL
-    if (invoiceId) {
-      await adminDb.collection('invoices').doc(invoiceId).update({
-        paidPdfUrl: uploadResult.downloadURL,
-        paidPdfGeneratedAt: FieldValue.serverTimestamp(),
-      });
-    }
-
-    return uploadResult.downloadURL;
-  } catch (error) {
-    console.error('Failed to generate/store PAID invoice PDF:', error);
-    return null;
   }
 };
 
@@ -213,17 +137,6 @@ export async function POST(request: NextRequest) {
                 updatedAt: FieldValue.serverTimestamp(),
               });
             }
-
-            // Auto-generate PAID invoice PDF
-            const organizationName = session.metadata.organization_name || 'Unknown Organization';
-            await generateAndStorePaidInvoice(
-              session.metadata.invoice_number,
-              organizationName,
-              (session.amount_total || 0) / 100,
-              (session.currency || 'eur').toUpperCase(),
-              session.id,
-              session.metadata.invoice_id
-            );
           }
         } catch (error) {
           console.error('Failed to update member application:', error);

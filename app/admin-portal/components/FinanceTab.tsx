@@ -160,7 +160,7 @@ export default function FinanceTab() {
             )}
             {!wiseConfigured && (
               <div>
-                <strong>Wise:</strong> Set <code className="bg-yellow-100 px-1 rounded">WISE_API_TOKEN</code> and <code className="bg-yellow-100 px-1 rounded">WISE_PROFILE_ID</code> in environment variables
+                <strong>Wise:</strong> Set <code className="bg-yellow-100 px-1 rounded">WISE_API_KEY</code> and <code className="bg-yellow-100 px-1 rounded">WISE_PROFILE_ID</code> in environment variables
               </div>
             )}
           </div>

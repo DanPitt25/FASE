@@ -1,70 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 import { logPaymentReceived, logInvoicePaid } from '../../../../lib/activity-logger';
-import { generatePaidInvoicePDF, InvoiceGenerationData, PaymentInfo } from '../../../../lib/invoice-pdf-generator';
-import { uploadInvoicePDF } from '../../../../lib/invoice-storage';
 
 export const dynamic = 'force-dynamic';
-
-// Generate and store a PAID invoice PDF for Wise payments
-const generateAndStorePaidInvoice = async (
-  invoiceData: any,
-  invoiceId: string,
-  amount: number,
-  currency: string,
-  wiseReference?: string,
-  transactionDate?: Date
-): Promise<string | null> => {
-  try {
-    console.log(`📄 Auto-generating PAID invoice PDF for ${invoiceData.invoiceNumber} (Wise payment)`);
-
-    const pdfInvoiceData: InvoiceGenerationData = {
-      invoiceNumber: invoiceData.invoiceNumber,
-      organizationName: invoiceData.organizationName,
-      totalAmount: amount || invoiceData.amount,
-      email: invoiceData.recipientEmail || invoiceData.email || '',
-      fullName: invoiceData.recipientName || invoiceData.fullName || '',
-      address: invoiceData.address,
-      originalAmount: invoiceData.originalAmount,
-      discountAmount: invoiceData.discountAmount,
-      discountReason: invoiceData.discountReason,
-      organizationType: invoiceData.organizationType,
-      userLocale: invoiceData.locale || 'en',
-      forceCurrency: (currency || invoiceData.currency || 'EUR').toUpperCase(),
-    };
-
-    const paymentInfo: PaymentInfo = {
-      paidAt: transactionDate || new Date(),
-      paymentMethod: 'wise',
-      paymentReference: wiseReference,
-      amountPaid: amount || invoiceData.amount,
-      currency: (currency || invoiceData.currency || 'EUR').toUpperCase(),
-    };
-
-    // Generate the PDF
-    const result = await generatePaidInvoicePDF(pdfInvoiceData, paymentInfo);
-
-    // Upload to Firebase Storage
-    const uploadResult = await uploadInvoicePDF(
-      result.pdfBase64,
-      `${invoiceData.invoiceNumber}-PAID`,
-      invoiceData.organizationName
-    );
-
-    console.log(`✅ PAID invoice PDF stored: ${uploadResult.downloadURL}`);
-
-    // Update Firestore invoice with paid PDF URL
-    await adminDb.collection('invoices').doc(invoiceId).update({
-      paidPdfUrl: uploadResult.downloadURL,
-      paidPdfGeneratedAt: FieldValue.serverTimestamp(),
-    });
-
-    return uploadResult.downloadURL;
-  } catch (error) {
-    console.error('Failed to generate/store PAID invoice PDF (Wise):', error);
-    return null;
-  }
-};
 
 /**
  * POST: Match a Wise transfer to an invoice
@@ -127,16 +65,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Auto-generate PAID invoice PDF
-    const paidPdfUrl = await generateAndStorePaidInvoice(
-      invoiceData,
-      invoiceId,
-      amount || invoiceData.amount,
-      currency || invoiceData.currency,
-      wiseReference,
-      transactionDate ? new Date(transactionDate) : undefined
-    );
-
     return NextResponse.json({
       success: true,
       message: 'Invoice matched and marked as paid',
@@ -146,7 +74,6 @@ export async function POST(request: NextRequest) {
         status: 'paid',
         paymentMethod: 'wise',
         wiseReference,
-        paidPdfUrl,
       },
     });
   } catch (error: any) {
