@@ -332,15 +332,34 @@ class WiseClient {
 
       const allTransactions: WiseTransaction[] = [];
 
+      // Log first few activity types to understand the data
+      const activityTypes = (activities?.activities || []).slice(0, 5).map((a: any) =>
+        `${a.type}: ${a.title} (${a.primaryAmount?.value} ${a.primaryAmount?.currency})`
+      );
+      if (activityTypes.length > 0) {
+        debug.push(`Sample activities: ${activityTypes.join(' | ')}`);
+      }
+
       // Convert activities to our transaction format
+      // Include all activities that represent money coming IN
       for (const activity of activities?.activities || []) {
-        // Filter for money received (MONEY_ADDED type or positive amounts)
-        if (activity.type === 'MONEY_ADDED' || activity.primaryAmount?.value > 0) {
+        // Include: deposits, incoming transfers, received payments
+        // Look for positive indicator or specific types
+        const isIncoming =
+          activity.type?.includes('DEPOSIT') ||
+          activity.type?.includes('RECEIVED') ||
+          activity.type?.includes('MONEY_ADDED') ||
+          activity.type?.includes('TOP_UP') ||
+          activity.type?.includes('INCOMING') ||
+          activity.indicator === 'positive' ||
+          (activity.primaryAmount?.value > 0 && !activity.type?.includes('CONVERSION'));
+
+        if (isIncoming) {
           const tx: WiseTransaction = {
             type: activity.type,
             date: activity.createdOn,
             amount: {
-              value: activity.primaryAmount?.value || 0,
+              value: Math.abs(activity.primaryAmount?.value || 0),
               currency: activity.primaryAmount?.currency || 'EUR',
             },
             totalFees: { value: 0, currency: 'EUR' },
