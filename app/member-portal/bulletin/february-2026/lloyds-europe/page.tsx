@@ -39,7 +39,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          In recent years, Lloyd&apos;s managing agents&apos; delegated authority business in Europe has surged, growing by <strong className="text-fase-navy">15% annually</strong> between 2023 and 2025. The share of coverholder business in national markets varies widely. In Italy, Lloyd&apos;s 88 coverholders generated 61% of the market&apos;s total premium in 2025; in France the coverholder proportion was 43%; in Ireland, 28%; in Germany, 20%; and in Switzerland just 8%.
+          In recent years, Lloyd&apos;s managing agents&apos; delegated authority business in Europe has surged, growing by <strong className="text-fase-navy">15% annually</strong> between 2023 and 2025. The share of coverholder business in national markets varies widely. In Italy, Lloyd&apos;s 88 coverholders generated 61% of the local market&apos;s total premium in 2025; in France the coverholder proportion was 43%; in Ireland, 28%; in Germany, 20%; and in Switzerland just 8%.
         </p>
 
         <p>
@@ -50,20 +50,16 @@ const translations: Record<string, {
           Many Lloyd&apos;s coverholders are brokers with tightly worded binding authorities for particular classes of business. They operate as an efficient distribution channel for Lloyd&apos;s products but have little or no underwriting autonomy. But in common with insurance and reinsurance companies around the world, Lloyd&apos;s syndicates have also been increasing their capacity allocations to MGAs.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">No Longer Short-Termist</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Beyond Annual Policies</h2>
 
         <p>
-          Lloyd&apos;s capacity was historically tendered on a short-term – and often opportunistic - basis. But since 2016 Lloyd&apos;s managing agencies have been permitted to enter into multi-year binding authority agreements that can run for up to three years. And this year, Lloyd&apos;s plans to offer the option for continuous contracts that run indefinitely until termination.
-        </p>
-
-        <p>
-          This aligns with the broader market for capacity, in which larger MGAs in particular have been able to negotiate longer term capacity arrangements with carriers.
+          Lloyd&apos;s capacity has historically been provided on an annual agreement basis. However, solutions for long-term agreements provide viable alternatives to annual agreements. Since 2016, managing agents have been able to use multi-year binding authority agreements of up to three years. Continuous agreements were introduced for singleton arrangements in 2023 and Lloyd&apos;s plans to extend this model (subject to market readiness and regulatory consideration) to all delegated agreements in 2026, with the option for contracts to run indefinitely until terminated. The appropriate contract duration remains a commercial decision between the contracting parties.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Streamlined Accreditation</h2>
 
         <p>
-          Another widely held preconception is that Lloyd&apos;s coverholder accreditation is a lengthy and complex process. It need not be so. The delegated authorities team at Lloyd&apos;s can process coverholder applications within a few days. The due diligence performed by the Lloyd&apos;s managing agent may take much longer, but this is not fundamentally different from the process an insurance company would require.
+          Another widely held preconception is that Lloyd&apos;s coverholder accreditation is a lengthy and complex process. In practice, most of the due diligence work is carried out by the Lloyd&apos;s managing agent which is broadly similar to the review an insurance company would undertake. Once the managing agent has completed its assessment, the Lloyd&apos;s delegated authorities team can progress the application promptly and is on hand to support with any queries.
         </p>
 
         <p>
@@ -109,7 +105,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          Ces dernières années, l&apos;activité d&apos;autorité déléguée des managing agents de Lloyd&apos;s en Europe a connu une forte progression, avec une croissance annuelle de <strong className="text-fase-navy">15 %</strong> entre 2023 et 2025. La part des affaires des coverholders dans les marchés nationaux varie considérablement. En Italie, les 88 coverholders de Lloyd&apos;s ont généré 61 % des primes totales du marché en 2025 ; en France, la proportion des coverholders était de 43 % ; en Irlande, 28 % ; en Allemagne, 20 % ; et en Suisse seulement 8 %.
+          Ces dernières années, l&apos;activité d&apos;autorité déléguée des managing agents de Lloyd&apos;s en Europe a connu une forte progression, avec une croissance annuelle de <strong className="text-fase-navy">15 %</strong> entre 2023 et 2025. La part des affaires des coverholders dans les marchés nationaux varie considérablement. En Italie, les 88 coverholders de Lloyd&apos;s ont généré 61 % des primes totales du marché local en 2025 ; en France, la proportion des coverholders était de 43 % ; en Irlande, 28 % ; en Allemagne, 20 % ; et en Suisse seulement 8 %.
         </p>
 
         <p>
@@ -120,20 +116,16 @@ const translations: Record<string, {
           De nombreux coverholders Lloyd&apos;s sont des courtiers disposant d&apos;autorités de souscription très encadrées pour des classes d&apos;affaires particulières. Ils fonctionnent comme un canal de distribution efficace pour les produits Lloyd&apos;s mais disposent de peu ou pas d&apos;autonomie de souscription. Cependant, à l&apos;instar des compagnies d&apos;assurance et de réassurance du monde entier, les syndicats Lloyd&apos;s ont également augmenté leurs allocations de capacité aux agences de souscription.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Fini le court-termisme</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Au-delà des polices annuelles</h2>
 
         <p>
-          Historiquement, la capacité Lloyd&apos;s était proposée sur une base à court terme – et souvent opportuniste. Mais depuis 2016, les managing agencies de Lloyd&apos;s sont autorisées à conclure des accords de binding authority pluriannuels pouvant aller jusqu&apos;à trois ans. Et cette année, Lloyd&apos;s prévoit d&apos;offrir l&apos;option de contrats continus qui se poursuivent indéfiniment jusqu&apos;à leur résiliation.
-        </p>
-
-        <p>
-          Cela s&apos;aligne sur le marché plus large de la capacité, dans lequel les grandes agences de souscription en particulier ont pu négocier des arrangements de capacité à plus long terme avec les porteurs de risques.
+          Historiquement, la capacité Lloyd&apos;s était fournie sur la base d&apos;accords annuels. Cependant, des solutions d&apos;accords à long terme offrent des alternatives viables aux accords annuels. Depuis 2016, les managing agents peuvent utiliser des accords de binding authority pluriannuels pouvant aller jusqu&apos;à trois ans. Les accords continus ont été introduits pour les arrangements singleton en 2023 et Lloyd&apos;s prévoit d&apos;étendre ce modèle (sous réserve de la maturité du marché et des considérations réglementaires) à tous les accords délégués en 2026, avec la possibilité de contrats se poursuivant indéfiniment jusqu&apos;à leur résiliation. La durée appropriée du contrat reste une décision commerciale entre les parties contractantes.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Accréditation simplifiée</h2>
 
         <p>
-          Une autre idée reçue largement répandue est que l&apos;accréditation de coverholder Lloyd&apos;s est un processus long et complexe. Il n&apos;en est rien. L&apos;équipe des autorités déléguées de Lloyd&apos;s peut traiter les demandes de coverholder en quelques jours. La due diligence effectuée par le managing agent de Lloyd&apos;s peut prendre plus de temps, mais cela n&apos;est pas fondamentalement différent du processus qu&apos;exigerait une compagnie d&apos;assurance.
+          Une autre idée reçue largement répandue est que l&apos;accréditation de coverholder Lloyd&apos;s est un processus long et complexe. En pratique, la majeure partie du travail de due diligence est effectuée par le managing agent de Lloyd&apos;s, ce qui est globalement similaire à l&apos;examen qu&apos;une compagnie d&apos;assurance entreprendrait. Une fois que le managing agent a terminé son évaluation, l&apos;équipe des autorités déléguées de Lloyd&apos;s peut faire avancer la demande rapidement et reste disponible pour répondre à toute question.
         </p>
 
         <p>
@@ -179,7 +171,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          In den letzten Jahren ist das Geschäft mit delegierter Autorität der Lloyd&apos;s Managing Agents in Europa stark gewachsen – mit einem jährlichen Wachstum von <strong className="text-fase-navy">15 %</strong> zwischen 2023 und 2025. Der Anteil des Coverholder-Geschäfts an den nationalen Märkten variiert erheblich. In Italien erwirtschafteten die 88 Lloyd&apos;s-Coverholder 2025 61 % der Gesamtprämien des Marktes; in Frankreich betrug der Coverholder-Anteil 43 %; in Irland 28 %; in Deutschland 20 %; und in der Schweiz nur 8 %.
+          In den letzten Jahren ist das Geschäft mit delegierter Autorität der Lloyd&apos;s Managing Agents in Europa stark gewachsen – mit einem jährlichen Wachstum von <strong className="text-fase-navy">15 %</strong> zwischen 2023 und 2025. Der Anteil des Coverholder-Geschäfts an den nationalen Märkten variiert erheblich. In Italien erwirtschafteten die 88 Lloyd&apos;s-Coverholder 2025 61 % der Gesamtprämien des lokalen Marktes; in Frankreich betrug der Coverholder-Anteil 43 %; in Irland 28 %; in Deutschland 20 %; und in der Schweiz nur 8 %.
         </p>
 
         <p>
@@ -190,20 +182,16 @@ const translations: Record<string, {
           Viele Lloyd&apos;s-Coverholder sind Makler mit eng gefassten Zeichnungsvollmachten für bestimmte Geschäftssparten. Sie fungieren als effizienter Vertriebskanal für Lloyd&apos;s-Produkte, haben aber wenig oder keine Underwriting-Autonomie. Aber wie Versicherungs- und Rückversicherungsunternehmen weltweit haben auch Lloyd&apos;s-Syndikate ihre Kapazitätszuweisungen an MGAs erhöht.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Nicht mehr kurzfristig orientiert</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Über Jahresverträge hinaus</h2>
 
         <p>
-          Lloyd&apos;s-Kapazität wurde historisch auf kurzfristiger – und oft opportunistischer – Basis angeboten. Aber seit 2016 ist es Lloyd&apos;s Managing Agencies erlaubt, mehrjährige Binding-Authority-Vereinbarungen abzuschließen, die bis zu drei Jahre laufen können. Und in diesem Jahr plant Lloyd&apos;s, die Option für Dauerverträge anzubieten, die unbefristet bis zur Kündigung laufen.
-        </p>
-
-        <p>
-          Dies entspricht dem breiteren Kapazitätsmarkt, in dem insbesondere größere MGAs längerfristige Kapazitätsvereinbarungen mit Risikoträgern aushandeln konnten.
+          Lloyd&apos;s-Kapazität wurde historisch auf Basis jährlicher Vereinbarungen bereitgestellt. Jedoch bieten Lösungen für langfristige Vereinbarungen tragfähige Alternativen zu Jahresverträgen. Seit 2016 können Managing Agents mehrjährige Binding-Authority-Vereinbarungen von bis zu drei Jahren nutzen. Dauervereinbarungen wurden 2023 für Singleton-Arrangements eingeführt und Lloyd&apos;s plant, dieses Modell (vorbehaltlich der Marktreife und regulatorischer Überlegungen) 2026 auf alle delegierten Vereinbarungen auszuweiten, mit der Option für Verträge, die unbefristet bis zur Kündigung laufen. Die angemessene Vertragslaufzeit bleibt eine kommerzielle Entscheidung zwischen den Vertragsparteien.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Vereinfachte Akkreditierung</h2>
 
         <p>
-          Eine weitere weit verbreitete Vorstellung ist, dass die Lloyd&apos;s-Coverholder-Akkreditierung ein langwieriger und komplexer Prozess sei. Das muss nicht so sein. Das Team für delegierte Autoritäten bei Lloyd&apos;s kann Coverholder-Anträge innerhalb weniger Tage bearbeiten. Die vom Lloyd&apos;s Managing Agent durchgeführte Due Diligence kann länger dauern, aber dies unterscheidet sich grundsätzlich nicht von dem Prozess, den ein Versicherungsunternehmen verlangen würde.
+          Eine weitere weit verbreitete Vorstellung ist, dass die Lloyd&apos;s-Coverholder-Akkreditierung ein langwieriger und komplexer Prozess sei. In der Praxis wird der Großteil der Due-Diligence-Arbeit vom Lloyd&apos;s Managing Agent durchgeführt, was im Wesentlichen der Prüfung entspricht, die ein Versicherungsunternehmen durchführen würde. Sobald der Managing Agent seine Bewertung abgeschlossen hat, kann das Team für delegierte Autoritäten bei Lloyd&apos;s den Antrag zügig vorantreiben und steht für etwaige Fragen zur Verfügung.
         </p>
 
         <p>
@@ -249,7 +237,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          En los últimos años, el negocio de autoridad delegada de los managing agents de Lloyd&apos;s en Europa ha experimentado un fuerte crecimiento, aumentando un <strong className="text-fase-navy">15% anual</strong> entre 2023 y 2025. La cuota del negocio de coverholders en los mercados nacionales varía ampliamente. En Italia, los 88 coverholders de Lloyd&apos;s generaron el 61% de las primas totales del mercado en 2025; en Francia, la proporción de coverholders fue del 43%; en Irlanda, del 28%; en Alemania, del 20%; y en Suiza, solo del 8%.
+          En los últimos años, el negocio de autoridad delegada de los managing agents de Lloyd&apos;s en Europa ha experimentado un fuerte crecimiento, aumentando un <strong className="text-fase-navy">15% anual</strong> entre 2023 y 2025. La cuota del negocio de coverholders en los mercados nacionales varía ampliamente. En Italia, los 88 coverholders de Lloyd&apos;s generaron el 61% de las primas totales del mercado local en 2025; en Francia, la proporción de coverholders fue del 43%; en Irlanda, del 28%; en Alemania, del 20%; y en Suiza, solo del 8%.
         </p>
 
         <p>
@@ -260,20 +248,16 @@ const translations: Record<string, {
           Muchos coverholders de Lloyd&apos;s son corredores con autoridades de suscripción muy específicas para clases particulares de negocio. Funcionan como un canal de distribución eficiente para los productos de Lloyd&apos;s, pero tienen poca o ninguna autonomía de suscripción. Sin embargo, al igual que las compañías de seguros y reaseguros de todo el mundo, los sindicatos de Lloyd&apos;s también han aumentado sus asignaciones de capacidad a las agencias de suscripción.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Adiós al cortoplacismo</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Más allá de las pólizas anuales</h2>
 
         <p>
-          Históricamente, la capacidad de Lloyd&apos;s se ofrecía a corto plazo, y a menudo de forma oportunista. Pero desde 2016, las managing agencies de Lloyd&apos;s están autorizadas a celebrar acuerdos de binding authority plurianuales que pueden extenderse hasta tres años. Y este año, Lloyd&apos;s planea ofrecer la opción de contratos continuos que se extienden indefinidamente hasta su terminación.
-        </p>
-
-        <p>
-          Esto se alinea con el mercado más amplio de capacidad, en el que las agencias de suscripción más grandes en particular han podido negociar acuerdos de capacidad a más largo plazo con los portadores de riesgo.
+          Históricamente, la capacidad de Lloyd&apos;s se proporcionaba sobre la base de acuerdos anuales. Sin embargo, las soluciones para acuerdos a largo plazo ofrecen alternativas viables a los acuerdos anuales. Desde 2016, los managing agents pueden utilizar acuerdos de binding authority plurianuales de hasta tres años. Los acuerdos continuos se introdujeron para los acuerdos con un único sindicato en 2023 y Lloyd&apos;s planea extender este modelo (sujeto a la madurez del mercado y consideraciones regulatorias) a todos los acuerdos delegados en 2026, con la opción de contratos que se extiendan indefinidamente hasta su terminación. La duración apropiada del contrato sigue siendo una decisión comercial entre las partes contratantes.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Acreditación simplificada</h2>
 
         <p>
-          Otra idea preconcebida muy extendida es que la acreditación de coverholder de Lloyd&apos;s es un proceso largo y complejo. No tiene por qué serlo. El equipo de autoridades delegadas de Lloyd&apos;s puede procesar las solicitudes de coverholder en pocos días. La debida diligencia realizada por el managing agent de Lloyd&apos;s puede llevar más tiempo, pero esto no es fundamentalmente diferente del proceso que requeriría una compañía de seguros.
+          Otra idea preconcebida muy extendida es que la acreditación de coverholder de Lloyd&apos;s es un proceso largo y complejo. En la práctica, la mayor parte del trabajo de debida diligencia lo realiza el managing agent de Lloyd&apos;s, lo cual es ampliamente similar a la revisión que realizaría una compañía de seguros. Una vez que el managing agent ha completado su evaluación, el equipo de autoridades delegadas de Lloyd&apos;s puede avanzar con la solicitud rápidamente y está disponible para ayudar con cualquier consulta.
         </p>
 
         <p>
@@ -319,7 +303,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          Negli ultimi anni, il business di autorità delegata dei managing agent di Lloyd&apos;s in Europa è cresciuto rapidamente, con una crescita annuale del <strong className="text-fase-navy">15%</strong> tra il 2023 e il 2025. La quota del business dei coverholder nei mercati nazionali varia ampiamente. In Italia, gli 88 coverholder di Lloyd&apos;s hanno generato il 61% dei premi totali del mercato nel 2025; in Francia la proporzione dei coverholder era del 43%; in Irlanda del 28%; in Germania del 20%; e in Svizzera solo dell&apos;8%.
+          Negli ultimi anni, il business di autorità delegata dei managing agent di Lloyd&apos;s in Europa è cresciuto rapidamente, con una crescita annuale del <strong className="text-fase-navy">15%</strong> tra il 2023 e il 2025. La quota del business dei coverholder nei mercati nazionali varia ampiamente. In Italia, gli 88 coverholder di Lloyd&apos;s hanno generato il 61% dei premi totali del mercato locale nel 2025; in Francia la proporzione dei coverholder era del 43%; in Irlanda del 28%; in Germania del 20%; e in Svizzera solo dell&apos;8%.
         </p>
 
         <p>
@@ -330,20 +314,16 @@ const translations: Record<string, {
           Molti coverholder di Lloyd&apos;s sono broker con autorità di sottoscrizione strettamente definite per particolari classi di affari. Operano come un canale di distribuzione efficiente per i prodotti Lloyd&apos;s ma hanno poca o nessuna autonomia di sottoscrizione. Tuttavia, come le compagnie di assicurazione e riassicurazione di tutto il mondo, anche i sindacati Lloyd&apos;s hanno aumentato le loro allocazioni di capacità alle agenzie di sottoscrizione.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Non più a breve termine</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Oltre le polizze annuali</h2>
 
         <p>
-          Storicamente, la capacità di Lloyd&apos;s veniva offerta su base a breve termine – e spesso opportunistica. Ma dal 2016, alle managing agency di Lloyd&apos;s è permesso stipulare accordi di binding authority pluriennali che possono durare fino a tre anni. E quest&apos;anno, Lloyd&apos;s prevede di offrire l&apos;opzione di contratti continuativi che si estendono a tempo indeterminato fino alla cessazione.
-        </p>
-
-        <p>
-          Questo si allinea con il più ampio mercato della capacità, in cui le agenzie di sottoscrizione più grandi in particolare sono state in grado di negoziare accordi di capacità a più lungo termine con i carrier.
+          Storicamente, la capacità di Lloyd&apos;s veniva fornita su base di accordi annuali. Tuttavia, soluzioni per accordi a lungo termine offrono alternative valide agli accordi annuali. Dal 2016, i managing agent possono utilizzare accordi di binding authority pluriennali fino a tre anni. Gli accordi continuativi sono stati introdotti per gli accordi con un unico sindacato nel 2023 e Lloyd&apos;s prevede di estendere questo modello (subordinatamente alla maturità del mercato e alle considerazioni normative) a tutti gli accordi delegati nel 2026, con l&apos;opzione di contratti che si estendono a tempo indeterminato fino alla cessazione. La durata appropriata del contratto rimane una decisione commerciale tra le parti contraenti.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Accreditamento semplificato</h2>
 
         <p>
-          Un altro preconcetto diffuso è che l&apos;accreditamento come coverholder Lloyd&apos;s sia un processo lungo e complesso. Non è necessariamente così. Il team delle autorità delegate di Lloyd&apos;s può elaborare le domande dei coverholder in pochi giorni. La due diligence eseguita dal managing agent di Lloyd&apos;s può richiedere più tempo, ma questo non è fondamentalmente diverso dal processo che richiederebbe una compagnia di assicurazione.
+          Un altro preconcetto diffuso è che l&apos;accreditamento come coverholder Lloyd&apos;s sia un processo lungo e complesso. In pratica, la maggior parte del lavoro di due diligence viene svolto dal managing agent di Lloyd&apos;s, il che è sostanzialmente simile alla verifica che una compagnia di assicurazione effettuerebbe. Una volta che il managing agent ha completato la sua valutazione, il team delle autorità delegate di Lloyd&apos;s può far avanzare la domanda tempestivamente ed è a disposizione per supportare eventuali quesiti.
         </p>
 
         <p>
@@ -389,7 +369,7 @@ const translations: Record<string, {
         </p>
 
         <p>
-          In de afgelopen jaren is de gedelegeerde autoriteit-activiteit van Lloyd&apos;s managing agents in Europa sterk gegroeid, met een jaarlijkse groei van <strong className="text-fase-navy">15%</strong> tussen 2023 en 2025. Het aandeel van coverholder-activiteiten in nationale markten varieert sterk. In Italië genereerden de 88 Lloyd&apos;s coverholders 61% van de totale marktpremie in 2025; in Frankrijk was het coverholder-aandeel 43%; in Ierland 28%; in Duitsland 20%; en in Zwitserland slechts 8%.
+          In de afgelopen jaren is de gedelegeerde autoriteit-activiteit van Lloyd&apos;s managing agents in Europa sterk gegroeid, met een jaarlijkse groei van <strong className="text-fase-navy">15%</strong> tussen 2023 en 2025. Het aandeel van coverholder-activiteiten in nationale markten varieert sterk. In Italië genereerden de 88 Lloyd&apos;s coverholders 61% van de totale lokale marktpremie in 2025; in Frankrijk was het coverholder-aandeel 43%; in Ierland 28%; in Duitsland 20%; en in Zwitserland slechts 8%.
         </p>
 
         <p>
@@ -400,20 +380,16 @@ const translations: Record<string, {
           Veel Lloyd&apos;s coverholders zijn makelaars met strikt geformuleerde volmachten voor bepaalde productklassen. Zij fungeren als een efficiënt distributiekanaal voor Lloyd&apos;s producten maar hebben weinig tot geen acceptatie-autonomie. Maar net als verzekerings- en herverzekeringsmaatschappijen wereldwijd hebben Lloyd&apos;s syndicaten ook hun capaciteitstoewijzingen aan gevolmachtigd agenten verhoogd.
         </p>
 
-        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Niet langer kortetermijngericht</h2>
+        <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Voorbij jaarlijkse polissen</h2>
 
         <p>
-          Lloyd&apos;s capaciteit werd historisch gezien op korte termijn – en vaak opportunistisch – aangeboden. Maar sinds 2016 mogen Lloyd&apos;s managing agencies meerjarige binding authority-overeenkomsten aangaan die tot drie jaar kunnen lopen. En dit jaar is Lloyd&apos;s van plan de optie aan te bieden voor doorlopende contracten die onbeperkt doorlopen tot beëindiging.
-        </p>
-
-        <p>
-          Dit sluit aan bij de bredere capaciteitsmarkt, waarin met name grotere gevolmachtigd agenten langere termijn capaciteitsafspraken met verzekeraars hebben kunnen onderhandelen.
+          Lloyd&apos;s capaciteit werd historisch gezien verstrekt op basis van jaarlijkse overeenkomsten. Oplossingen voor langetermijnovereenkomsten bieden echter levensvatbare alternatieven voor jaarlijkse overeenkomsten. Sinds 2016 kunnen managing agents meerjarige binding authority-overeenkomsten van maximaal drie jaar gebruiken. Doorlopende overeenkomsten werden in 2023 geïntroduceerd voor singleton-arrangementen en Lloyd&apos;s is van plan dit model (onder voorbehoud van marktgereedheid en regelgevingsoverwegingen) in 2026 uit te breiden naar alle gedelegeerde overeenkomsten, met de optie voor contracten die onbeperkt doorlopen tot beëindiging. De passende contractduur blijft een commerciële beslissing tussen de contracterende partijen.
         </p>
 
         <h2 className="text-2xl font-noto-serif font-semibold text-fase-navy pt-4">Gestroomlijnde accreditatie</h2>
 
         <p>
-          Een andere wijdverspreide misvatting is dat Lloyd&apos;s coverholder-accreditatie een langdurig en complex proces is. Dat hoeft niet zo te zijn. Het team voor gedelegeerde autoriteiten bij Lloyd&apos;s kan coverholder-aanvragen binnen enkele dagen verwerken. De due diligence uitgevoerd door de Lloyd&apos;s managing agent kan langer duren, maar dit verschilt niet fundamenteel van het proces dat een verzekeringsmaatschappij zou vereisen.
+          Een andere wijdverspreide misvatting is dat Lloyd&apos;s coverholder-accreditatie een langdurig en complex proces is. In de praktijk wordt het meeste due diligence-werk uitgevoerd door de Lloyd&apos;s managing agent, wat grotendeels vergelijkbaar is met de beoordeling die een verzekeringsmaatschappij zou uitvoeren. Zodra de managing agent zijn beoordeling heeft afgerond, kan het team voor gedelegeerde autoriteiten bij Lloyd&apos;s de aanvraag snel vooruithelpen en staat klaar om te ondersteunen bij eventuele vragen.
         </p>
 
         <p>
