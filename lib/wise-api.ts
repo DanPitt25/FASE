@@ -269,14 +269,14 @@ class WiseClient {
   }
 
   // ==========================================
-  // STATEMENTS
+  // STATEMENTS (requires balance statement scope)
   // ==========================================
 
   async getStatement(params: {
     currency: string;
     intervalStart: string;
     intervalEnd: string;
-    balanceId: number; // Now required - caller must provide
+    balanceId: number;
   }): Promise<WiseStatement> {
     const queryParams = new URLSearchParams();
     queryParams.set('currency', params.currency);
@@ -287,6 +287,24 @@ class WiseClient {
     const url = `/v1/profiles/${this.profileId}/balance-statements/${params.balanceId}/statement.json?${queryParams.toString()}`;
 
     return this.request<WiseStatement>(url);
+  }
+
+  // ==========================================
+  // ACTIVITIES (works with read-only tokens)
+  // ==========================================
+
+  async getActivities(params?: {
+    since?: string;
+    until?: string;
+    size?: number;
+  }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.since) queryParams.set('since', params.since);
+    if (params?.until) queryParams.set('until', params.until);
+    queryParams.set('size', String(params?.size || 100));
+
+    const url = `/v1/profiles/${this.profileId}/activities?${queryParams.toString()}`;
+    return this.request<any>(url);
   }
 
   // ==========================================
@@ -302,68 +320,92 @@ class WiseClient {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get balances ONCE upfront
-    const balances = await this.getBalances();
-    debug.push(`Got ${balances.length} balances: ${balances.map(b => `${b.currency}(id:${b.id})`).join(', ')}`);
+    const since = params?.from || thirtyDaysAgo.toISOString();
+    const until = params?.to || now.toISOString();
 
-    const currencies = params?.currency
-      ? [params.currency]
-      : ['EUR', 'GBP', 'USD'];
+    debug.push(`Querying activities from ${since.split('T')[0]} to ${until.split('T')[0]}`);
 
-    const intervalStart = params?.from || thirtyDaysAgo.toISOString();
-    const intervalEnd = params?.to || now.toISOString();
+    try {
+      // Try the activities endpoint first (works with read-only tokens)
+      const activities = await this.getActivities({ since, until, size: 100 });
+      debug.push(`Got ${activities?.activities?.length || 0} activities`);
 
-    // Query all currencies in parallel
-    const results = await Promise.allSettled(
-      currencies.map(async (currency) => {
-        const balance = balances.find((b) => b.currency === currency);
-        if (!balance) {
-          return { currency, error: `No balance for ${currency}` };
+      const allTransactions: WiseTransaction[] = [];
+
+      // Convert activities to our transaction format
+      for (const activity of activities?.activities || []) {
+        // Filter for money received (MONEY_ADDED type or positive amounts)
+        if (activity.type === 'MONEY_ADDED' || activity.primaryAmount?.value > 0) {
+          const tx: WiseTransaction = {
+            type: activity.type,
+            date: activity.createdOn,
+            amount: {
+              value: activity.primaryAmount?.value || 0,
+              currency: activity.primaryAmount?.currency || 'EUR',
+            },
+            totalFees: { value: 0, currency: 'EUR' },
+            details: {
+              type: activity.type,
+              description: activity.title || '',
+              senderName: activity.description || '',
+              paymentReference: activity.resource?.id?.toString() || '',
+            },
+            runningBalance: { value: 0, currency: 'EUR' },
+            referenceNumber: activity.resource?.id?.toString() || activity.id,
+          };
+          allTransactions.push(tx);
         }
-
-        debug.push(`${currency}: Querying ${intervalStart.split('T')[0]} to ${intervalEnd.split('T')[0]}`);
-
-        const statement = await this.getStatement({
-          currency,
-          intervalStart,
-          intervalEnd,
-          balanceId: balance.id,
-        });
-
-        return { currency, statement };
-      })
-    );
-
-    const allTransactions: WiseTransaction[] = [];
-
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        debug.push(`Error: ${result.reason}`);
-        continue;
       }
 
-      const { currency, statement, error } = result.value as any;
-      if (error) {
-        debug.push(error);
-        continue;
-      }
+      debug.push(`Found ${allTransactions.length} incoming payments`);
 
-      debug.push(`${currency}: ${statement.transactions.length} total, ${statement.transactions.filter((t: any) => t.amount.value > 0).length} incoming`);
-
-      // Filter for incoming payments (positive amounts)
-      const incoming = statement.transactions.filter(
-        (t: WiseTransaction) => t.amount.value > 0
+      // Sort by date descending
+      const sorted = allTransactions.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      allTransactions.push(...incoming);
+      return { transactions: sorted, debug };
+    } catch (activitiesError: any) {
+      debug.push(`Activities API failed: ${activitiesError.message}`);
+
+      // Fall back to trying balance statements
+      try {
+        const balances = await this.getBalances();
+        debug.push(`Fallback: Got ${balances.length} balances`);
+
+        const currencies = params?.currency ? [params.currency] : ['EUR', 'GBP', 'USD'];
+        const allTransactions: WiseTransaction[] = [];
+
+        for (const currency of currencies) {
+          const balance = balances.find((b) => b.currency === currency);
+          if (!balance) continue;
+
+          try {
+            const statement = await this.getStatement({
+              currency,
+              intervalStart: since,
+              intervalEnd: until,
+              balanceId: balance.id,
+            });
+
+            const incoming = statement.transactions.filter((t) => t.amount.value > 0);
+            debug.push(`${currency}: ${incoming.length} incoming`);
+            allTransactions.push(...incoming);
+          } catch (stmtError: any) {
+            debug.push(`${currency} statement failed: ${stmtError.message}`);
+          }
+        }
+
+        const sorted = allTransactions.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        return { transactions: sorted, debug };
+      } catch (fallbackError: any) {
+        debug.push(`Fallback also failed: ${fallbackError.message}`);
+        return { transactions: [], debug };
+      }
     }
-
-    // Sort by date descending
-    const sorted = allTransactions.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-
-    return { transactions: sorted, debug };
   }
 }
 
