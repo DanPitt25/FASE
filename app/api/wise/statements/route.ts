@@ -19,10 +19,21 @@ export async function GET(request: NextRequest) {
 
     const wiseClient = getWiseClient();
 
+    // Get balance ID for this currency
+    const balances = await wiseClient.getBalances();
+    const balance = balances.find((b) => b.currency === currency);
+    if (!balance) {
+      return NextResponse.json(
+        { error: `No balance found for currency: ${currency}` },
+        { status: 404 }
+      );
+    }
+
     const statement = await wiseClient.getStatement({
       currency,
       intervalStart,
       intervalEnd,
+      balanceId: balance.id,
     });
 
     // Format for response
