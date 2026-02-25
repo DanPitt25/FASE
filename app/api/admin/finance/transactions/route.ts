@@ -107,10 +107,23 @@ export async function GET(request: NextRequest) {
         const { getWiseClient } = await import('../../../../../lib/wise-api');
         const wiseClient = getWiseClient();
         const wiseFrom = from || new Date('2020-01-01');
+
+        // Test that we can get balances first
+        const balances = await wiseClient.getBalances();
+        if (balances.length === 0) {
+          errors.push('Wise: No currency balances found');
+        } else {
+          errors.push(`Wise: Found balances for ${balances.map(b => b.currency).join(', ')}`);
+        }
+
         const wiseTransactions = await wiseClient.getIncomingPayments({
           from: wiseFrom.toISOString(),
           to: to.toISOString(),
         });
+
+        if (wiseTransactions.length === 0) {
+          errors.push(`Wise: No transactions found from ${wiseFrom.toISOString().split('T')[0]} to ${to.toISOString().split('T')[0]}`);
+        }
 
         for (const wiseTx of wiseTransactions) {
           transactions.push({
