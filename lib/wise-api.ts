@@ -311,6 +311,36 @@ class WiseClient {
   // INCOMING PAYMENTS (for matching)
   // ==========================================
 
+  /**
+   * Parse Wise's formatted amount string like "1,500.00 EUR" or "150 JPY"
+   * Returns { value: number, currency: string }
+   */
+  private parseAmountString(amountStr: string | undefined): { value: number; currency: string } | null {
+    if (!amountStr || typeof amountStr !== 'string') return null;
+
+    // Match pattern: optional negative, numbers with optional commas/dots, then currency code
+    // Examples: "1,500.00 EUR", "150 JPY", "-500.00 GBP", "1.234,56 EUR" (European format)
+    const match = amountStr.match(/^(-?)([0-9.,]+)\s*([A-Z]{3})$/);
+    if (!match) return null;
+
+    const [, negative, numPart, currency] = match;
+
+    // Handle both US (1,234.56) and European (1.234,56) number formats
+    let cleanNum = numPart;
+    // If there's a comma after a dot, it's European format (1.234,56)
+    if (numPart.includes('.') && numPart.includes(',') && numPart.lastIndexOf(',') > numPart.lastIndexOf('.')) {
+      cleanNum = numPart.replace(/\./g, '').replace(',', '.');
+    } else {
+      // US format or simple number - just remove commas
+      cleanNum = numPart.replace(/,/g, '');
+    }
+
+    const value = parseFloat(cleanNum);
+    if (isNaN(value)) return null;
+
+    return { value: negative ? -value : value, currency };
+  }
+
   async getIncomingPayments(params?: {
     currency?: string;
     from?: string;
@@ -332,51 +362,48 @@ class WiseClient {
 
       const allTransactions: WiseTransaction[] = [];
 
-      // Log first few activity types to understand the data
-      const activityTypes = (activities?.activities || []).slice(0, 5).map((a: any) =>
-        `${a.type}: ${a.title} (${a.primaryAmount?.value} ${a.primaryAmount?.currency})`
+      // Log first few activities to understand the data structure
+      const sampleActivities = (activities?.activities || []).slice(0, 3).map((a: any) =>
+        `${a.type}: "${a.primaryAmount}" (title: ${a.title?.substring(0, 30)})`
       );
-      if (activityTypes.length > 0) {
-        debug.push(`Sample activities: ${activityTypes.join(' | ')}`);
+      if (sampleActivities.length > 0) {
+        debug.push(`Samples: ${sampleActivities.join(' | ')}`);
       }
 
       // Convert activities to our transaction format
-      // Include all activities that represent money coming IN
+      // TRANSFER type = incoming bank transfers
       for (const activity of activities?.activities || []) {
-        // Include: deposits, incoming transfers, received payments
-        // Look for positive indicator or specific types
-        const isIncoming =
-          activity.type?.includes('DEPOSIT') ||
-          activity.type?.includes('RECEIVED') ||
-          activity.type?.includes('MONEY_ADDED') ||
-          activity.type?.includes('TOP_UP') ||
-          activity.type?.includes('INCOMING') ||
-          activity.indicator === 'positive' ||
-          (activity.primaryAmount?.value > 0 && !activity.type?.includes('CONVERSION'));
+        // Include TRANSFER types (incoming bank transfers)
+        if (activity.type === 'TRANSFER') {
+          const parsed = this.parseAmountString(activity.primaryAmount);
 
-        if (isIncoming) {
-          const tx: WiseTransaction = {
-            type: activity.type,
-            date: activity.createdOn,
-            amount: {
-              value: Math.abs(activity.primaryAmount?.value || 0),
-              currency: activity.primaryAmount?.currency || 'EUR',
-            },
-            totalFees: { value: 0, currency: 'EUR' },
-            details: {
+          if (parsed && parsed.value > 0) {
+            // Strip HTML tags from title for sender name
+            const senderName = (activity.title || '').replace(/<[^>]*>/g, '').trim();
+
+            const tx: WiseTransaction = {
               type: activity.type,
-              description: activity.title || '',
-              senderName: activity.description || '',
-              paymentReference: activity.resource?.id?.toString() || '',
-            },
-            runningBalance: { value: 0, currency: 'EUR' },
-            referenceNumber: activity.resource?.id?.toString() || activity.id,
-          };
-          allTransactions.push(tx);
+              date: activity.createdOn,
+              amount: {
+                value: parsed.value,
+                currency: parsed.currency,
+              },
+              totalFees: { value: 0, currency: parsed.currency },
+              details: {
+                type: activity.type,
+                description: activity.description || '',
+                senderName: senderName,
+                paymentReference: activity.resource?.id?.toString() || '',
+              },
+              runningBalance: { value: 0, currency: parsed.currency },
+              referenceNumber: activity.resource?.id?.toString() || activity.id,
+            };
+            allTransactions.push(tx);
+          }
         }
       }
 
-      debug.push(`Found ${allTransactions.length} incoming payments`);
+      debug.push(`Found ${allTransactions.length} incoming TRANSFER payments`);
 
       // Sort by date descending
       const sorted = allTransactions.sort(
