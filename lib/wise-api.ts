@@ -304,8 +304,8 @@ class WiseClient {
     currency?: string;
     from?: string;
     to?: string;
-  }): Promise<WiseTransaction[]> {
-    // Use statements to get incoming payments
+  }): Promise<{ transactions: WiseTransaction[]; debug: string[] }> {
+    const debug: string[] = [];
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -317,28 +317,41 @@ class WiseClient {
 
     for (const currency of currencies) {
       try {
+        const intervalStart = params?.from || thirtyDaysAgo.toISOString();
+        const intervalEnd = params?.to || now.toISOString();
+        debug.push(`${currency}: Querying ${intervalStart} to ${intervalEnd}`);
+
         const statement = await this.getStatement({
           currency,
-          intervalStart: params?.from || thirtyDaysAgo.toISOString(),
-          intervalEnd: params?.to || now.toISOString(),
+          intervalStart,
+          intervalEnd,
         });
+
+        debug.push(`${currency}: Got ${statement.transactions.length} total transactions`);
+
+        // Log transaction types for debugging
+        const types = [...new Set(statement.transactions.map(t => t.type))];
+        debug.push(`${currency}: Transaction types found: ${types.join(', ') || 'none'}`);
 
         // Filter for incoming payments (positive amounts)
         const incoming = statement.transactions.filter(
-          (t) => t.amount.value > 0 && t.type === 'CREDIT'
+          (t) => t.amount.value > 0
         );
 
+        debug.push(`${currency}: ${incoming.length} with positive amounts`);
+
         allTransactions.push(...incoming);
-      } catch (error) {
-        // Currency balance may not exist
-        console.log(`No balance for ${currency}, skipping...`);
+      } catch (error: any) {
+        debug.push(`${currency}: Error - ${error.message}`);
       }
     }
 
     // Sort by date descending
-    return allTransactions.sort(
+    const sorted = allTransactions.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
+
+    return { transactions: sorted, debug };
   }
 }
 

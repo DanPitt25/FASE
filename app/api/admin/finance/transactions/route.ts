@@ -116,16 +116,19 @@ export async function GET(request: NextRequest) {
           errors.push(`Wise: Found balances for ${balances.map(b => b.currency).join(', ')}`);
         }
 
-        const wiseTransactions = await wiseClient.getIncomingPayments({
+        const wiseResult = await wiseClient.getIncomingPayments({
           from: wiseFrom.toISOString(),
           to: to.toISOString(),
         });
 
-        if (wiseTransactions.length === 0) {
-          errors.push(`Wise: No transactions found from ${wiseFrom.toISOString().split('T')[0]} to ${to.toISOString().split('T')[0]}`);
+        // Add debug info
+        errors.push(...wiseResult.debug);
+
+        if (wiseResult.transactions.length === 0) {
+          errors.push(`Wise: No incoming transactions found`);
         }
 
-        for (const wiseTx of wiseTransactions) {
+        for (const wiseTx of wiseResult.transactions) {
           transactions.push({
             id: wiseTx.referenceNumber,
             source: 'wise',
