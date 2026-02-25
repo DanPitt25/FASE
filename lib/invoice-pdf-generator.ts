@@ -24,7 +24,7 @@ export interface InvoiceGenerationData {
   invoiceNumber: string;
   invoiceType?: 'regular' | 'lost_invoice' | 'reminder' | 'followup' | 'sponsorship';
   isLostInvoice?: boolean;
-  
+
   // Recipient information
   email: string;
   fullName?: string;
@@ -38,35 +38,50 @@ export interface InvoiceGenerationData {
     postcode?: string;
     country?: string;
   };
-  
+
   // Financial details
   totalAmount: number;
   originalAmount?: number;
   discountAmount?: number;
   discountReason?: string;
   hasOtherAssociations?: boolean;
-  
+
   // Membership details
   organizationType?: 'MGA' | 'carrier' | 'provider';
   grossWrittenPremiums?: string;
   userId?: string;
-  
+
   // Currency and conversion
   forceCurrency?: string;
   userLocale?: string;
-  
+
   // Custom line items
   customLineItem?: {
     enabled: boolean;
     description: string;
     amount: number;
   } | null;
-  
+
   // Admin context
   adminUserId?: string;
   adminUserEmail?: string;
   generationSource?: 'admin_portal' | 'customer_request' | 'system';
   isPreview?: boolean;
+
+  // Payment status (for paid invoices)
+  invoiceStatus?: 'unpaid' | 'paid';
+  paidAt?: Date | string;
+  paymentMethod?: 'stripe' | 'wise' | 'bank_transfer' | 'manual';
+  paymentReference?: string;
+}
+
+// Payment info for generating paid invoice from existing invoice data
+export interface PaymentInfo {
+  paidAt: Date | string;
+  paymentMethod: 'stripe' | 'wise' | 'bank_transfer' | 'manual';
+  paymentReference?: string;
+  amountPaid?: number;
+  currency?: string;
 }
 
 export interface InvoiceGenerationResult {
@@ -1054,6 +1069,408 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
 
   } catch (error: any) {
     console.error('❌ Failed to generate invoice from line items:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate a PAID invoice PDF
+ * Takes original invoice data and payment information to generate a receipt-style PDF
+ */
+export async function generatePaidInvoicePDF(
+  data: InvoiceGenerationData,
+  paymentInfo: PaymentInfo
+): Promise<InvoiceGenerationResult> {
+  console.log(`🧾 Generating PAID invoice PDF: ${data.invoiceNumber}`);
+
+  try {
+    // Validate required fields
+    if (!data.organizationName || !data.invoiceNumber) {
+      throw new Error('Missing required fields: organizationName or invoiceNumber');
+    }
+
+    // Set defaults
+    const fullName = data.fullName || data.greeting || '';
+    const address = data.address || {
+      line1: 'Not provided',
+      line2: '',
+      city: 'Not provided',
+      postcode: 'Not provided',
+      country: 'Netherlands'
+    };
+
+    // Language setup
+    const userLocale = data.userLocale || 'en';
+    const supportedLocales = ['en', 'fr', 'de', 'es', 'it', 'nl'];
+    const locale = supportedLocales.includes(userLocale) ? userLocale : 'en';
+
+    // Currency setup
+    const baseCurrency = 'EUR';
+    const targetCurrency = data.forceCurrency || paymentInfo.currency || baseCurrency;
+
+    // Calculate total from line items or use provided amount
+    const calculatedTotal = data.totalAmount || paymentInfo.amountPaid || 0;
+
+    // Currency conversion if needed
+    let currencyConversion = {
+      convertedCurrency: baseCurrency,
+      roundedAmount: calculatedTotal,
+      exchangeRate: 1
+    };
+
+    if (targetCurrency !== baseCurrency) {
+      currencyConversion = await convertCurrency(calculatedTotal, '', targetCurrency);
+    }
+
+    // Load PDF template
+    const letterheadPath = path.join(process.cwd(), 'cleanedpdf.pdf');
+    const letterheadBytes = fs.readFileSync(letterheadPath);
+    const pdfDoc = await PDFDocument.load(letterheadBytes);
+
+    const pages = pdfDoc.getPages();
+    const firstPage = pages[0];
+    const { width, height } = firstPage.getSize();
+
+    // Embed fonts
+    const bodyFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // FASE Brand Colors
+    const faseNavy = rgb(0.176, 0.333, 0.455);
+    const faseBlack = rgb(0.137, 0.122, 0.125);
+    const faseCream = rgb(0.922, 0.910, 0.894);
+    const faseGreen = rgb(0.0, 0.5, 0.25); // Green for PAID status
+
+    // Layout settings
+    const margins = { left: 50, right: 50, top: 150, bottom: 80 };
+    const contentWidth = width - margins.left - margins.right;
+    const standardLineHeight = 18;
+    const sectionGap = 25;
+
+    // Currency formatting
+    const formatEuro = (amount: number) => `€ ${amount.toLocaleString()}`;
+    const formatCurrency = (amount: number, currency: string) => {
+      const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
+      return `${symbols[currency] || currency} ${amount.toLocaleString()}`;
+    };
+
+    // Load PDF text translations
+    const translations = loadEmailTranslations(locale);
+    const pdfTexts = {
+      invoice: 'INVOICE',
+      billTo: translations.pdf_invoice?.bill_to || 'Bill To:',
+      invoiceNumber: translations.pdf_invoice?.invoice_number || 'Invoice #:',
+      date: translations.pdf_invoice?.date || 'Date:',
+      description: translations.pdf_invoice?.description || 'Description',
+      quantity: translations.pdf_invoice?.quantity || 'Qty',
+      unitPrice: translations.pdf_invoice?.unit_price || 'Unit Price',
+      total: translations.pdf_invoice?.total || 'Total',
+      totalAmountPaid: translations.pdf_invoice?.total_amount_paid || 'Total Amount Paid:'
+    };
+
+    // Date formatting
+    const dateLocales: Record<string, string> = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
+    const dateLocale = dateLocales[locale] || 'en-GB';
+
+    // Format payment date
+    const paidAtDate = paymentInfo.paidAt instanceof Date
+      ? paymentInfo.paidAt
+      : new Date(paymentInfo.paidAt);
+    const paymentDateStr = paidAtDate.toLocaleDateString(dateLocale);
+
+    // Format payment method for display
+    const paymentMethodLabels: Record<string, string> = {
+      stripe: 'Credit Card (Stripe)',
+      wise: 'Bank Transfer (Wise)',
+      bank_transfer: 'Bank Transfer',
+      manual: 'Manual Payment'
+    };
+    const paymentMethodDisplay = paymentMethodLabels[paymentInfo.paymentMethod] || paymentInfo.paymentMethod;
+
+    // Start drawing
+    let currentY = height - margins.top;
+
+    // Bill To and Invoice Details
+    firstPage.drawText(pdfTexts.billTo, {
+      x: margins.left,
+      y: currentY,
+      size: 12,
+      font: boldFont,
+      color: faseNavy,
+    });
+
+    const invoiceDetailsX = width - margins.right - 150;
+    firstPage.drawText(`${pdfTexts.invoiceNumber} ${data.invoiceNumber}`, {
+      x: invoiceDetailsX,
+      y: currentY,
+      size: 11,
+      font: boldFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText(`${pdfTexts.date} ${paymentDateStr}`, {
+      x: invoiceDetailsX,
+      y: currentY - 16,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    // PAID STATUS - prominent green badge
+    firstPage.drawText('Status: PAID', {
+      x: invoiceDetailsX,
+      y: currentY - 32,
+      size: 11,
+      font: boldFont,
+      color: faseGreen,
+    });
+
+    firstPage.drawText(`Payment: ${paymentMethodDisplay}`, {
+      x: invoiceDetailsX,
+      y: currentY - 48,
+      size: 9,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    // Bill To details
+    currentY -= 20;
+
+    const billToLines = [
+      data.organizationName,
+      fullName,
+      address.line1 || '',
+      address.line2 || '',
+      `${address.city || ''} ${address.postcode || ''}`.trim(),
+      address.country || ''
+    ].filter(line => line && line.trim() !== '');
+
+    billToLines.forEach((line, index) => {
+      firstPage.drawText(line, {
+        x: margins.left,
+        y: currentY - (index * standardLineHeight),
+        size: 10,
+        font: index === 0 ? boldFont : bodyFont,
+        color: faseBlack,
+      });
+    });
+
+    // Table
+    currentY -= (billToLines.length * standardLineHeight) + sectionGap + 20;
+
+    const tableY = currentY;
+    const colWidths = [250, 50, 100, 100];
+    const colX = [
+      margins.left,
+      margins.left + colWidths[0],
+      margins.left + colWidths[0] + colWidths[1],
+      margins.left + colWidths[0] + colWidths[1] + colWidths[2]
+    ];
+
+    // Table header
+    firstPage.drawRectangle({
+      x: margins.left,
+      y: tableY - 35,
+      width: contentWidth,
+      height: 35,
+      color: faseCream,
+    });
+
+    const headers = [pdfTexts.description, pdfTexts.quantity, pdfTexts.unitPrice, pdfTexts.total];
+    headers.forEach((header, i) => {
+      firstPage.drawText(header, {
+        x: colX[i] + 10,
+        y: tableY - 20,
+        size: 11,
+        font: boldFont,
+        color: faseNavy,
+      });
+    });
+
+    currentY = tableY - 40;
+
+    // Build line items
+    const lineItems = buildLineItems(data, translations, locale);
+
+    // Render line items
+    lineItems.forEach((item) => {
+      const color = item.isDiscount ? rgb(0.0, 0.6, 0.0) : faseBlack;
+
+      firstPage.drawText(item.description, {
+        x: colX[0] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      firstPage.drawText(item.quantity.toString(), {
+        x: colX[1] + 25,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      const unitPriceText = item.isDiscount ?
+        `-${formatEuro(Math.abs(item.unitPrice))}` :
+        formatEuro(item.unitPrice);
+
+      firstPage.drawText(unitPriceText, {
+        x: colX[2] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      const totalText = item.isDiscount ?
+        `-${formatEuro(Math.abs(item.total))}` :
+        formatEuro(item.total);
+
+      firstPage.drawText(totalText, {
+        x: colX[3] + 10,
+        y: currentY - 15,
+        size: 10,
+        font: bodyFont,
+        color: color,
+      });
+
+      currentY -= 30;
+    });
+
+    // Total section
+    currentY -= 20;
+
+    const totalSectionWidth = 320;
+    const totalX = width - margins.right - totalSectionWidth;
+    const sectionHeight = currencyConversion.convertedCurrency === 'EUR' ? 35 : 55;
+
+    // Green border for paid invoices
+    firstPage.drawRectangle({
+      x: totalX,
+      y: currentY - sectionHeight,
+      width: totalSectionWidth,
+      height: sectionHeight,
+      borderColor: faseGreen,
+      borderWidth: 2,
+    });
+
+    const labelX = totalX + 15;
+
+    if (currencyConversion.convertedCurrency === 'EUR') {
+      firstPage.drawText(pdfTexts.totalAmountPaid, {
+        x: labelX,
+        y: currentY - 22,
+        size: 12,
+        font: boldFont,
+        color: faseGreen,
+      });
+
+      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountPaid, 12);
+      firstPage.drawText(formatEuro(calculatedTotal), {
+        x: labelX + textWidth + 15,
+        y: currentY - 22,
+        size: 13,
+        font: boldFont,
+        color: faseGreen,
+      });
+    } else {
+      firstPage.drawText('Base Amount (EUR):', {
+        x: labelX,
+        y: currentY - 18,
+        size: 11,
+        font: bodyFont,
+        color: faseNavy,
+      });
+
+      firstPage.drawText(formatEuro(calculatedTotal), {
+        x: labelX + 130,
+        y: currentY - 18,
+        size: 11,
+        font: bodyFont,
+        color: faseNavy,
+      });
+
+      firstPage.drawText(pdfTexts.totalAmountPaid, {
+        x: labelX,
+        y: currentY - 38,
+        size: 12,
+        font: boldFont,
+        color: faseGreen,
+      });
+
+      firstPage.drawText(formatCurrency(currencyConversion.roundedAmount, currencyConversion.convertedCurrency), {
+        x: labelX + 130,
+        y: currentY - 38,
+        size: 13,
+        font: boldFont,
+        color: faseGreen,
+      });
+    }
+
+    // Thank you section (replaces payment instructions)
+    currentY -= 80;
+
+    firstPage.drawLine({
+      start: { x: margins.left, y: currentY - 10 },
+      end: { x: width - margins.right, y: currentY - 10 },
+      thickness: 1,
+      color: faseNavy,
+    });
+
+    firstPage.drawText('Thank you for your payment!', {
+      x: margins.left,
+      y: currentY - 30,
+      size: 14,
+      font: boldFont,
+      color: faseGreen,
+    });
+
+    // Payment details
+    const thankYouLines = [
+      `Payment received on ${paymentDateStr}`,
+      `Payment method: ${paymentMethodDisplay}`,
+      paymentInfo.paymentReference ? `Reference: ${paymentInfo.paymentReference}` : '',
+      '',
+      'This invoice has been paid in full.',
+      'Please retain this document for your records.',
+      '',
+      'FASE B.V.',
+      'Herengracht 124-128',
+      '1015 BT Amsterdam, The Netherlands',
+      'Email: admin@fasemga.com'
+    ].filter(line => line !== undefined);
+
+    thankYouLines.forEach((line, index) => {
+      firstPage.drawText(line, {
+        x: margins.left,
+        y: currentY - 55 - (index * standardLineHeight),
+        size: 10,
+        font: bodyFont,
+        color: faseBlack,
+      });
+    });
+
+    // Generate PDF
+    const pdfBytes = await pdfDoc.save();
+    const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
+
+    console.log('✅ PAID invoice PDF generated successfully, size:', pdfBytes.length);
+
+    return {
+      pdfBase64,
+      invoiceNumber: data.invoiceNumber,
+      totalAmount: calculatedTotal,
+      currency: baseCurrency,
+      convertedCurrency: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.convertedCurrency : undefined,
+      convertedAmount: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.roundedAmount : undefined,
+      exchangeRate: currencyConversion.convertedCurrency !== baseCurrency ? currencyConversion.exchangeRate : undefined,
+      bankDetails: null // No bank details for paid invoices
+    };
+
+  } catch (error: any) {
+    console.error('❌ Failed to generate PAID invoice PDF:', error);
     throw error;
   }
 }

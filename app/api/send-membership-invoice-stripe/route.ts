@@ -4,6 +4,12 @@ import Stripe from 'stripe';
 import * as fs from 'fs';
 import * as path from 'path';
 import { convertCurrency, detectCurrency } from '../../../lib/currency-conversion';
+import {
+  getOrCreateStripeProduct,
+  createCustomPrice,
+  getProductKey,
+  getPriceForProductKey,
+} from '../../../lib/stripe-products';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -14,11 +20,11 @@ let stripe: Stripe | null = null;
 const initializeStripe = () => {
   if (!stripe) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    
+
     if (!stripeKey) {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set');
     }
-    
+
     stripe = new Stripe(stripeKey, {
       apiVersion: '2025-08-27.basil',
     });
@@ -149,34 +155,42 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host');
     const baseUrl = `${protocol}://${host}`;
 
-    // Create product for Payment Link (persistent, no expiration)
-    const product = await stripeInstance.products.create({
-      name: `FASE Annual Membership`,
-      description: `Annual membership for ${invoiceData.organizationName}`,
-      metadata: {
-        invoice_number: invoiceNumber,
-        organization_name: invoiceData.organizationName,
-        organization_type: invoiceData.organizationType || 'individual',
-      }
-    });
+    // Use shared products instead of creating new ones per invoice
+    const amountInCents = invoiceData.totalAmount * 100;
+    const standardPrice = getPriceForProductKey(
+      getProductKey(invoiceData.organizationType || 'mga', invoiceData.grossWrittenPremiums)
+    );
 
-    // Create price for the product (annual subscription)
-    const price = await stripeInstance.prices.create({
-      currency: 'eur',
-      product: product.id,
-      unit_amount: invoiceData.totalAmount * 100, // Convert euros to cents
-      recurring: {
-        interval: 'year',
-      }
-    });
+    let priceId: string;
+    let productId: string;
+
+    if (amountInCents !== standardPrice) {
+      // Custom amount (e.g., with discount) - create custom price on shared product
+      const customResult = await createCustomPrice(
+        invoiceData.organizationType || 'mga',
+        amountInCents,
+        invoiceData.grossWrittenPremiums,
+        true // recurring
+      );
+      priceId = customResult.priceId;
+      productId = customResult.productId;
+    } else {
+      // Standard amount - use shared product directly
+      const sharedResult = await getOrCreateStripeProduct(
+        invoiceData.organizationType || 'mga',
+        invoiceData.grossWrittenPremiums
+      );
+      priceId = sharedResult.priceId;
+      productId = sharedResult.productId;
+    }
 
     // Create Payment Link (persistent, no expiration)
     const paymentLink = await stripeInstance.paymentLinks.create({
       line_items: [
         {
-          price: price.id,
+          price: priceId,
           quantity: 1,
-        }
+        },
       ],
       metadata: {
         invoice_number: invoiceNumber,
@@ -189,10 +203,10 @@ export async function POST(request: NextRequest) {
         type: 'redirect',
         redirect: {
           url: `${baseUrl}/payment-succeeded?payment_link_id={PAYMENT_LINK_ID}&invoice=${invoiceNumber}`,
-        }
+        },
       },
       allow_promotion_codes: true,
-      billing_address_collection: 'auto'
+      billing_address_collection: 'auto',
     });
 
     const stripeLink = paymentLink.url;
