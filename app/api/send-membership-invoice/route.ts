@@ -236,8 +236,8 @@ export async function POST(request: NextRequest) {
         portalAccess: followupEmail.portal_access || "As soon as we receive payment, we will be happy to share details on how to access the resources contained in our members' portal.",
         questions: followupEmail.questions || "If you have any questions relating to your membership, please do not hesitate to contact us.",
         regards: followupEmail.regards || "Best regards,",
-        signature: followupEmail.signature || "Aline Sullivan",
-        title: followupEmail.title || "Chief Operating Officer",
+        signature: followupEmail.signature || "William Pitt",
+        title: followupEmail.title || "Executive Director",
         company: followupEmail.company || "FASE B.V.",
         address: followupEmail.address || "Herengracht 124-128\n1015 BT Amsterdam"
       };
@@ -269,9 +269,9 @@ export async function POST(request: NextRequest) {
         paymentText: lostInvoiceEmail.follow_up_text || "We look forward to activating your FASE membership, providing you with access to the member portal, and inviting you to our upcoming events. If you require any additional documentation or have questions that would assist in processing the payment, please feel free to reach out to me or simply contact admin@fasemga.com. We are now able to provide European banking details, so just let me know if you need those.",
         engagement: lostInvoiceEmail.closing_text || "Thank you for your time in addressing this. We appreciate your prompt response.",
         regards: lostInvoiceEmail.regards || "Best regards,",
-        signature: lostInvoiceEmail.signature || "Aline Sullivan",
-        title: lostInvoiceEmail.title || "Chief Operating Officer, FASE",
-        email: lostInvoiceEmail.email || "aline.sullivan@fasemga.com"
+        signature: lostInvoiceEmail.signature || "William Pitt",
+        title: lostInvoiceEmail.title || "Executive Director, FASE",
+        email: lostInvoiceEmail.email || "william.pitt@fasemga.com"
       };
 
       // Apply customizations for lost invoice if provided
@@ -336,8 +336,8 @@ export async function POST(request: NextRequest) {
         invoiceAttached: adminEmail.invoice_attached || "Invoice attached with payment details",
         engagement: adminEmail.engagement || "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact admin@fasemga.com with any questions.",
         regards: adminEmail.regards || "Best regards,",
-        signature: adminEmail.signature || "Aline Sullivan",
-        title: adminEmail.title || "Chief Operating Officer, FASE"
+        signature: adminEmail.signature || "William Pitt",
+        title: adminEmail.title || "Executive Director, FASE"
       };
     }
 
@@ -428,10 +428,10 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>Aline</strong><br><br>
+              <strong>William</strong><br><br>
               ${emailContent.signature}<br>
               ${emailContent.title}<br>
-              <a href="mailto:aline.sullivan@fasemga.com" style="color: #2D5574;">aline.sullivan@fasemga.com</a>
+              <a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a>
             </p>
           </div>
         </div>
@@ -476,10 +476,10 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>Aline</strong><br><br>
-              Aline Sullivan<br>
-              Chief Operating Officer, FASE<br>
-              <a href="mailto:aline.sullivan@fasemga.com" style="color: #2D5574;">aline.sullivan@fasemga.com</a>
+              <strong>William</strong><br><br>
+              William Pitt<br>
+              Executive Director, FASE<br>
+              <a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a>
             </p>
           </div>
         </div>

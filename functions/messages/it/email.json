@@ -79,10 +79,10 @@
     "bank_transfer_link": "Genera fattura bonifico bancario",
     "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE. Non esiti a contattarci all'indirizzo admin@fasemga.com per qualsiasi domanda.",
     "regards": "Cordiali saluti,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Direttore Esecutivo, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "FATTURA",
@@ -115,8 +115,8 @@
     "portal_access": "Non appena riceveremo il pagamento, saremo lieti di condividere i dettagli su come accedere alle risorse contenute nel nostro portale membri.",
     "questions": "Se ha domande riguardo alla Sua iscrizione, non esiti a contattarci.",
     "regards": "Cordiali saluti,",
-    "signature": "Aline Sullivan",
-    "title": "Direttore Operativo",
+    "signature": "William Pitt",
+    "title": "Direttore Esecutivo",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -130,9 +130,9 @@
     "follow_up_text": "Non vediamo l'ora di attivare la Sua iscrizione FASE, fornirLe l'accesso al portale membri e invitarLa ai nostri prossimi eventi. Se ha bisogno di documentazione aggiuntiva o ha domande che potrebbero aiutare nell'elaborazione del pagamento, non esiti a contattarmi o semplicemente contatti admin@fasemga.com. Ora siamo in grado di fornire coordinate bancarie europee, quindi mi faccia sapere se ne ha bisogno.",
     "closing_text": "La ringrazio per il tempo dedicato a questa questione. Apprezziamo la Sua pronta risposta.",
     "regards": "Cordiali saluti,",
-    "signature": "Aline Sullivan",
-    "title": "Direttore Operativo, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Direttore Esecutivo, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "bank_transfer_invoice": {
     "title": "Genera fattura bonifico bancario",

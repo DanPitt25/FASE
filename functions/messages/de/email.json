@@ -79,10 +79,10 @@
     "bank_transfer_link": "Banküberweisung-Rechnung erstellen",
     "engagement": "Wir freuen uns auf Ihr Engagement bei FASE. Zögern Sie bitte nicht, uns unter admin@fasemga.com bei Fragen zu kontaktieren.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Geschäftsführer, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "RECHNUNG",
@@ -115,8 +115,8 @@
     "portal_access": "Sobald wir die Zahlung erhalten, teilen wir Ihnen gerne Details über den Zugang zu den Ressourcen in unserem Mitgliederportal mit.",
     "questions": "Sollten Sie Fragen zu Ihrer Mitgliedschaft haben, zögern Sie bitte nicht, uns zu kontaktieren.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "Aline Sullivan",
-    "title": "Chief Operating Officer",
+    "signature": "William Pitt",
+    "title": "Geschäftsführer",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -130,9 +130,9 @@
     "follow_up_text": "Wir freuen uns darauf, Ihre FASE-Mitgliedschaft zu aktivieren, Ihnen Zugang zum Mitgliederportal zu gewähren und Sie zu unseren kommenden Veranstaltungen einzuladen. Sollten Sie zusätzliche Dokumentation benötigen oder Fragen haben, die bei der Bearbeitung der Zahlung helfen könnten, zögern Sie bitte nicht, mich zu kontaktieren oder wenden Sie sich einfach an admin@fasemga.com. Wir können jetzt europäische Bankdaten bereitstellen, lassen Sie mich wissen, falls Sie diese benötigen.",
     "closing_text": "Vielen Dank für Ihre Zeit, sich dieser Angelegenheit zu widmen. Wir schätzen Ihre prompte Antwort.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Geschäftsführer, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "bank_transfer_invoice": {
     "title": "Banküberweisung-Rechnung erstellen",

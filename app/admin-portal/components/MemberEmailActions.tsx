@@ -711,7 +711,6 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
             <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
-            <option value="aline.sullivan@fasemga.com">Aline Sullivan &lt;aline.sullivan@fasemga.com&gt;</option>
             <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
             <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
             <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>

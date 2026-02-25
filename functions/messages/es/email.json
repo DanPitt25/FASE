@@ -79,10 +79,10 @@
     "bank_transfer_link": "Generar factura de transferencia bancaria",
     "engagement": "Esperamos su participación en FASE. No dude en contactarnos en admin@fasemga.com si tiene alguna pregunta.",
     "regards": "Saludos cordiales,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Director Ejecutivo, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "FACTURA",
@@ -115,8 +115,8 @@
     "portal_access": "Tan pronto como recibamos el pago, estaremos encantados de compartir detalles sobre cómo acceder a los recursos contenidos en nuestro portal de miembros.",
     "questions": "Si tiene alguna pregunta relacionada con su membresía, no dude en contactarnos.",
     "regards": "Atentamente,",
-    "signature": "Aline Sullivan",
-    "title": "Director de Operaciones",
+    "signature": "William Pitt",
+    "title": "Director Ejecutivo",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -130,9 +130,9 @@
     "follow_up_text": "Esperamos activar su membresía de FASE, brindarle acceso al portal de miembros e invitarle a nuestros próximos eventos. Si requiere documentación adicional o tiene preguntas que puedan ayudar en el procesamiento del pago, no dude en contactarme o simplemente contactar a admin@fasemga.com. Ahora podemos proporcionar detalles bancarios europeos, así que háganme saber si los necesita.",
     "closing_text": "Gracias por su tiempo para atender este asunto. Apreciamos su pronta respuesta.",
     "regards": "Atentamente,",
-    "signature": "Aline Sullivan",
-    "title": "Directora de Operaciones, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Director Ejecutivo, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "bank_transfer_invoice": {
     "title": "Generar factura de transferencia bancaria",

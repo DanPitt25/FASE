@@ -101,7 +101,7 @@ export const sendVerificationCode = functions.https.onCall({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'FASE <aline.sullivan@fasemga.com>',
+            from: 'FASE <william.pitt@fasemga.com>',
             to: email,
             subject: subject,
             html: emailHtml,
@@ -231,7 +231,7 @@ export const sendInvoiceEmail = functions.https.onCall({
         const emailSubject = subject || `FASE Invoice ${invoiceNumber}`;
         
         const emailPayload: any = {
-          from: 'FASE <aline.sullivan@fasemga.com>',
+          from: 'FASE <william.pitt@fasemga.com>',
           to: email,
           subject: emailSubject,
           html: emailHtml,

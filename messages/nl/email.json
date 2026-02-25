@@ -105,10 +105,10 @@
     "invoice_attached": "Factuur bijgevoegd met betalingsdetails",
     "engagement": "We kijken uit naar uw betrokkenheid bij FASE en we nemen zeer binnenkort contact op met een link naar ons ledenportaal. In de tussentijd kunt u contact met mij opnemen voor eventuele vragen.",
     "regards": "Vriendelijke groeten,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Uitvoerend Directeur, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "payment_confirmed_welcome": {
     "subject": "Welkom bij FASE",
@@ -209,8 +209,8 @@
     },
     "aline_sullivan": {
       "regards": "Met vriendelijke groet,",
-      "name": "Aline Sullivan",
-      "title": "Chief Operating Officer, FASE"
+      "name": "William Pitt",
+      "title": "Uitvoerend Directeur, FASE"
     },
     "admin_team": {
       "regards": "Met vriendelijke groet,",
@@ -237,8 +237,8 @@
     "portal_access": "Zodra wij de betaling ontvangen, delen wij graag details over toegang tot de middelen in ons ledenportaal.",
     "questions": "Als u vragen heeft betreffende uw lidmaatschap, aarzel dan niet om contact met ons op te nemen.",
     "regards": "Met vriendelijke groet,",
-    "signature": "Aline Sullivan",
-    "title": "Operationeel Directeur",
+    "signature": "William Pitt",
+    "title": "Uitvoerend Directeur",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -265,9 +265,9 @@
     "follow_up_text": "We kijken ernaar uit om uw FASE-lidmaatschap te activeren, u toegang te verlenen tot het ledenportaal en u uit te nodigen voor onze aankomende evenementen. Als u aanvullende documentatie nodig heeft of vragen heeft die zouden helpen bij de verwerking van de betaling, aarzel dan niet om contact met mij op te nemen of gewoon te schrijven naar admin@fasemga.com. We kunnen nu Europese bankgegevens verstrekken, dus laat me weten als u deze nodig heeft.",
     "closing_text": "Dank u voor uw tijd die u aan deze kwestie besteedt. We waarderen uw snelle reactie.",
     "regards": "Met vriendelijke groet,",
-    "signature": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Uitvoerend Directeur, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "rendezvous_2026_paid": {
     "subject": "Registratie geopend voor MGA Rendezvous 2026",

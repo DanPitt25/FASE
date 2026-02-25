@@ -73,10 +73,10 @@
     "bank_transfer_link": "Générer une facture de virement bancaire",
     "engagement": "Nous nous réjouissons de votre engagement dans FASE. N'hésitez pas à nous contacter à admin@fasemga.com pour toute question.",
     "regards": "Meilleures salutations,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Directrice des Opérations, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Directeur Exécutif, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "FACTURE",
@@ -109,8 +109,8 @@
     "portal_access": "Dès que nous recevrons le paiement, nous serons heureux de partager les détails sur l'accès aux ressources contenues dans notre portail des membres.",
     "questions": "Si vous avez des questions concernant votre adhésion, n'hésitez pas à nous contacter.",
     "regards": "Meilleures salutations,",
-    "signature": "Aline Sullivan",
-    "title": "Directrice des Opérations",
+    "signature": "William Pitt",
+    "title": "Directeur Exécutif",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -124,9 +124,9 @@
     "follow_up_text": "Nous avons hâte d'activer votre adhésion FASE, de vous fournir l'accès au portail des membres et de vous inviter à nos événements à venir. Si vous avez besoin de documentation supplémentaire ou si vous avez des questions qui pourraient aider au traitement du paiement, n'hésitez pas à me contacter ou simplement à contacter admin@fasemga.com. Nous sommes maintenant en mesure de fournir des coordonnées bancaires européennes, alors faites-moi savoir si vous en avez besoin.",
     "closing_text": "Merci de votre temps pour traiter cette question. Nous apprécions votre réponse rapide.",
     "regards": "Meilleures salutations,",
-    "signature": "Aline Sullivan",
-    "title": "Directrice des Opérations, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Directeur Exécutif, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "bank_transfer_invoice": {
     "title": "Générer une facture de virement bancaire",

@@ -17,7 +17,7 @@ This document provides a comprehensive audit of all email communications sent th
 - **Recipients**: Individual member organizations
 - **When**: Following up on outstanding payments
 - **Content**: Customizable follow-up message
-- **Sender**: Aline Sullivan (COO)
+- **Sender**: William Pitt (Executive Director)
 
 ### 3. Freeform Emails (`/api/send-freeform-email`)
 - **Triggered by**: Admin from Email Invoices tab
@@ -105,8 +105,7 @@ This document provides a comprehensive audit of all email communications sent th
 
 ### Sender Addresses
 - `admin@fasemga.com` - General administration
-- `aline.sullivan@fasemga.com` - COO (payment follow-ups)
-- `william.pitt@fasemga.com` - Executive Director (welcomes)
+- `william.pitt@fasemga.com` - Executive Director (welcomes, payment follow-ups)
 - `info@fasemga.com` - General information
 - `media@fasemga.com` - Media relations
 

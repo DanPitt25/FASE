@@ -297,9 +297,9 @@ export function generateMembershipAcceptanceAdminEmail(fullName: string, organiz
   const paymentText = replaceTemplateVars(t.payment_text, { totalAmount });
   const invoiceTextLine = t.invoice_attached;
   const signatureBlock = `
-        <p>Aline Sullivan</p>
-        <p>Chief Operating Officer, FASE</p>
-        <p><a href="mailto:aline.sullivan@fasemga.com" style="color: #2D5574;">aline.sullivan@fasemga.com</a></p>`;
+        <p>William Pitt</p>
+        <p>Executive Director, FASE</p>
+        <p><a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a></p>`;
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">

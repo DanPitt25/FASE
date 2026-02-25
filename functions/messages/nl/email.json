@@ -79,10 +79,10 @@
     "bank_transfer_link": "Genereer bankoverschrijving factuur",
     "engagement": "Wij kijken uit naar uw betrokkenheid bij FASE. Aarzel niet om contact met ons op te nemen via admin@fasemga.com voor eventuele vragen.",
     "regards": "Vriendelijke groeten,",
-    "signature": "Aline",
-    "name": "Aline Sullivan",
-    "title": "Chief Operating Officer, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William",
+    "name": "William Pitt",
+    "title": "Uitvoerend Directeur, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "pdf_invoice": {
     "invoice": "FACTUUR",
@@ -115,8 +115,8 @@
     "portal_access": "Zodra wij de betaling ontvangen, delen wij graag details over toegang tot de middelen in ons ledenportaal.",
     "questions": "Als u vragen heeft betreffende uw lidmaatschap, aarzel dan niet om contact met ons op te nemen.",
     "regards": "Met vriendelijke groet,",
-    "signature": "Aline Sullivan",
-    "title": "Operationeel Directeur",
+    "signature": "William Pitt",
+    "title": "Uitvoerend Directeur",
     "company": "FASE B.V.",
     "address": "Herengracht 124-128\n1015 BT Amsterdam"
   },
@@ -130,9 +130,9 @@
     "follow_up_text": "Wij kijken ernaar uit om uw FASE-lidmaatschap te activeren, u toegang te verlenen tot het ledenportaal en u uit te nodigen voor onze komende evenementen. Heeft u aanvullende documentatie nodig of heeft u vragen die kunnen helpen bij de verwerking van de betaling, aarzel dan niet om contact met mij op te nemen of neem gewoon contact op met admin@fasemga.com. Wij kunnen nu Europese bankgegevens verstrekken, dus laat me weten als u deze nodig heeft.",
     "closing_text": "Dank u voor uw tijd om dit aan te pakken. Wij waarderen uw snelle reactie.",
     "regards": "Met vriendelijke groet,",
-    "signature": "Aline Sullivan",
-    "title": "Operationeel Directeur, FASE",
-    "email": "aline.sullivan@fasemga.com"
+    "signature": "William Pitt",
+    "title": "Uitvoerend Directeur, FASE",
+    "email": "william.pitt@fasemga.com"
   },
   "bank_transfer_invoice": {
     "title": "Genereer bankoverschrijving factuur",

@@ -74,12 +74,12 @@ export async function POST(request: NextRequest) {
       portalAccess: "We look forward to activating your FASE membership, providing you with access to the member portal, and inviting you to our upcoming events. If you require any additional documentation or have questions that would assist in processing the payment, please feel free to reach out to me or simply contact admin@fasemga.com. We are now able to provide European banking details, so just let me know if you need those.",
       closing: "Thank you for your attention to this matter. We appreciate your prompt response.",
       signature: {
-        name: "Aline",
-        fullName: "Aline Sullivan",
-        title: "Chief Operating Officer",
+        name: "William",
+        fullName: "William Pitt",
+        title: "Executive Director",
         company: "FASE B.V.",
         address: "Herengracht 124-128\n1015 BT Amsterdam",
-        email: "aline.sullivan@fasemga.com"
+        email: "william.pitt@fasemga.com"
       }
     };
 
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
       console.log('Sending follow-up email via Resend...');
 
       const emailPayload: any = {
-        from: 'Aline Sullivan <aline.sullivan@fasemga.com>',
+        from: 'William Pitt <william.pitt@fasemga.com>',
         to: finalEmailData.email,
         subject: finalEmailData.subject,
         html: finalEmailData.html

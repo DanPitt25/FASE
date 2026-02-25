@@ -240,10 +240,10 @@ export async function POST(request: NextRequest) {
       bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice",
       engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
       regards: adminEmail.regards || "Best regards,",
-      signature: adminEmail.signature || "Aline",
-      title: adminEmail.title || "Chief Operating Officer, FASE",
-      name: adminEmail.name || "Aline Sullivan",
-      email: adminEmail.email || "aline.sullivan@fasemga.com"
+      signature: adminEmail.signature || "William",
+      title: adminEmail.title || "Executive Director, FASE",
+      name: adminEmail.name || "William Pitt",
+      email: adminEmail.email || "william.pitt@fasemga.com"
     };
 
     // Override with customized content if provided
@@ -320,10 +320,10 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>Aline</strong><br><br>
-              Aline Sullivan<br>
-              Chief Operating Officer, FASE<br>
-              <a href="mailto:aline.sullivan@fasemga.com" style="color: #2D5574;">aline.sullivan@fasemga.com</a>
+              <strong>William</strong><br><br>
+              William Pitt<br>
+              Executive Director, FASE<br>
+              <a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a>
             </p>
           </div>
         </div>

@@ -232,8 +232,8 @@ export async function POST(request: NextRequest) {
     const reminderEmail = emailTranslations.payment_reminder || {};
     const signatures = emailTranslations.signatures || {};
 
-    // Get signature based on sender (defaults to Aline Sullivan for payment reminders)
-    const senderEmail = requestData.freeformSender || 'aline.sullivan@fasemga.com';
+    // Get signature based on sender (defaults to William Pitt for payment reminders)
+    const senderEmail = requestData.freeformSender || 'william.pitt@fasemga.com';
     const senderSignatureMap: Record<string, string> = {
       'william.pitt@fasemga.com': 'william_pitt',
       'aline.sullivan@fasemga.com': 'aline_sullivan',
@@ -242,11 +242,11 @@ export async function POST(request: NextRequest) {
       'media@fasemga.com': 'media_team'
     };
 
-    const signatureKey = senderSignatureMap[senderEmail] || 'aline_sullivan';
-    const signature = signatures[signatureKey] || signatures['aline_sullivan'] || {
+    const signatureKey = senderSignatureMap[senderEmail] || 'william_pitt';
+    const signature = signatures[signatureKey] || signatures['william_pitt'] || {
       regards: 'Best regards,',
-      name: 'Aline Sullivan',
-      title: 'Chief Operating Officer, FASE'
+      name: 'William Pitt',
+      title: 'Executive Director, FASE'
     };
 
     // Apply template variable replacements with gender-aware content
@@ -430,7 +430,7 @@ export async function POST(request: NextRequest) {
       };
 
       const emailPayload: any = {
-        from: senderMap[senderEmail] || senderMap['aline.sullivan@fasemga.com'],
+        from: senderMap[senderEmail] || senderMap['william.pitt@fasemga.com'],
         to: emailData.email,
         subject: emailData.subject,
         html: emailData.invoiceHTML,
