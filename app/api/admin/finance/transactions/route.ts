@@ -106,7 +106,10 @@ export async function GET(request: NextRequest) {
       try {
         const { getWiseClient } = await import('../../../../../lib/wise-api');
         const wiseClient = getWiseClient();
-        const wiseFrom = from || new Date('2020-01-01');
+        // Wise API has 469 day limit, so cap at 365 days for "all time"
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const wiseFrom = from || oneYearAgo;
 
         // Test that we can get balances first
         const balances = await wiseClient.getBalances();
