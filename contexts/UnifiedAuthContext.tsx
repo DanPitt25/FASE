@@ -81,6 +81,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
           
         case 'approved':
         case 'admin':
+        case 'internal':
           break;
           
         default:
@@ -109,7 +110,7 @@ export const UnifiedAuthProvider = ({ children }: UnifiedAuthProviderProps) => {
       }
       
       setIsAdmin(adminClaim || memberData.status === 'admin');
-      setHasMemberAccess(memberClaim || ['approved', 'admin'].includes(memberData.status));
+      setHasMemberAccess(memberClaim || ['approved', 'admin', 'internal'].includes(memberData.status));
       
     } catch (error: any) {
       // If it's one of our custom account status errors, keep the user signed in but show the error
