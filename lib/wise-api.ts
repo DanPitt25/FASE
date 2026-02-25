@@ -276,24 +276,17 @@ class WiseClient {
     currency: string;
     intervalStart: string;
     intervalEnd: string;
+    balanceId: number; // Now required - caller must provide
   }): Promise<WiseStatement> {
-    // First get the balance account ID for this currency
-    const balances = await this.getBalances();
-    const balance = balances.find((b) => b.currency === params.currency);
-
-    if (!balance) {
-      throw new Error(`No balance found for currency: ${params.currency}`);
-    }
-
     const queryParams = new URLSearchParams();
     queryParams.set('currency', params.currency);
     queryParams.set('intervalStart', params.intervalStart);
     queryParams.set('intervalEnd', params.intervalEnd);
     queryParams.set('type', 'COMPACT');
 
-    return this.request<WiseStatement>(
-      `/v1/profiles/${this.profileId}/balance-statements/${balance.id}/statement.json?${queryParams.toString()}`
-    );
+    const url = `/v1/profiles/${this.profileId}/balance-statements/${params.balanceId}/statement.json?${queryParams.toString()}`;
+
+    return this.request<WiseStatement>(url);
   }
 
   // ==========================================
@@ -309,41 +302,60 @@ class WiseClient {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    // Get balances ONCE upfront
+    const balances = await this.getBalances();
+    debug.push(`Got ${balances.length} balances: ${balances.map(b => `${b.currency}(id:${b.id})`).join(', ')}`);
+
     const currencies = params?.currency
       ? [params.currency]
       : ['EUR', 'GBP', 'USD'];
 
-    const allTransactions: WiseTransaction[] = [];
+    const intervalStart = params?.from || thirtyDaysAgo.toISOString();
+    const intervalEnd = params?.to || now.toISOString();
 
-    for (const currency of currencies) {
-      try {
-        const intervalStart = params?.from || thirtyDaysAgo.toISOString();
-        const intervalEnd = params?.to || now.toISOString();
-        debug.push(`${currency}: Querying ${intervalStart} to ${intervalEnd}`);
+    // Query all currencies in parallel
+    const results = await Promise.allSettled(
+      currencies.map(async (currency) => {
+        const balance = balances.find((b) => b.currency === currency);
+        if (!balance) {
+          return { currency, error: `No balance for ${currency}` };
+        }
+
+        debug.push(`${currency}: Querying ${intervalStart.split('T')[0]} to ${intervalEnd.split('T')[0]}`);
 
         const statement = await this.getStatement({
           currency,
           intervalStart,
           intervalEnd,
+          balanceId: balance.id,
         });
 
-        debug.push(`${currency}: Got ${statement.transactions.length} total transactions`);
+        return { currency, statement };
+      })
+    );
 
-        // Log transaction types for debugging
-        const types = [...new Set(statement.transactions.map(t => t.type))];
-        debug.push(`${currency}: Transaction types found: ${types.join(', ') || 'none'}`);
+    const allTransactions: WiseTransaction[] = [];
 
-        // Filter for incoming payments (positive amounts)
-        const incoming = statement.transactions.filter(
-          (t) => t.amount.value > 0
-        );
-
-        debug.push(`${currency}: ${incoming.length} with positive amounts`);
-
-        allTransactions.push(...incoming);
-      } catch (error: any) {
-        debug.push(`${currency}: Error - ${error.message}`);
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        debug.push(`Error: ${result.reason}`);
+        continue;
       }
+
+      const { currency, statement, error } = result.value as any;
+      if (error) {
+        debug.push(error);
+        continue;
+      }
+
+      debug.push(`${currency}: ${statement.transactions.length} total, ${statement.transactions.filter((t: any) => t.amount.value > 0).length} incoming`);
+
+      // Filter for incoming payments (positive amounts)
+      const incoming = statement.transactions.filter(
+        (t: WiseTransaction) => t.amount.value > 0
+      );
+
+      allTransactions.push(...incoming);
     }
 
     // Sort by date descending
