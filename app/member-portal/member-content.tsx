@@ -594,8 +594,8 @@ export default function MemberContent() {
     }
   ];
 
-  // Filter out profile section for internal users
-  const dashboardSections = member?.status === 'internal'
+  // Filter out profile section for internal users (unless they are account administrators)
+  const dashboardSections = member?.status === 'internal' && !member?.isAccountAdministrator
     ? allDashboardSections.filter(section => section.id !== 'profile')
     : allDashboardSections;
 

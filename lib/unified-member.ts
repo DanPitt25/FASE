@@ -165,6 +165,7 @@ export interface UnifiedMember {
   personalName: string;
   jobTitle?: string;
   isPrimaryContact?: boolean; // Only for corporate members
+  isAccountAdministrator?: boolean; // Account admin flag
   memberJoinedAt?: any;
   
   // Organization context (for corporate members)
@@ -293,6 +294,7 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
           personalName: memberData.personalName || memberData.name || 'Unknown',
           jobTitle: memberData.jobTitle,
           isPrimaryContact: memberData.isPrimaryContact,
+          isAccountAdministrator: memberData.isAccountAdministrator ?? memberData.isPrimaryContact,
           memberJoinedAt: memberData.joinedAt,
           organizationId: uid, // Account ID = Primary Contact UID after migration
           organizationName: data.organizationName,
@@ -353,6 +355,7 @@ export const getUnifiedMember = async (uid: string): Promise<UnifiedMember | nul
         personalName: memberData.personalName || memberData.name || 'Unknown',
         jobTitle: memberData.jobTitle,
         isPrimaryContact: memberData.isPrimaryContact,
+        isAccountAdministrator: memberData.isAccountAdministrator ?? memberData.isPrimaryContact,
         memberJoinedAt: memberData.joinedAt,
         organizationId: orgDocId,
         organizationName: orgData.organizationName,
