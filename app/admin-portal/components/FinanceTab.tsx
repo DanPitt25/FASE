@@ -15,12 +15,14 @@ interface Transaction {
 }
 
 type FilterSource = 'all' | 'stripe' | 'wise';
+type DateRange = 'all' | '30' | '90' | '180' | '365';
 
 export default function FinanceTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [sourceFilter, setSourceFilter] = useState<FilterSource>('all');
+  const [dateRange, setDateRange] = useState<DateRange>('all');
 
   // API status
   const [stripeConfigured, setStripeConfigured] = useState(false);
@@ -28,14 +30,21 @@ export default function FinanceTab() {
 
   useEffect(() => {
     loadData();
-  }, [sourceFilter]);
+  }, [sourceFilter, dateRange]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/admin/finance/transactions?source=${sourceFilter}`);
+      let url = `/api/admin/finance/transactions?source=${sourceFilter}`;
+      if (dateRange !== 'all') {
+        const fromDate = new Date();
+        fromDate.setDate(fromDate.getDate() - parseInt(dateRange));
+        url += `&from=${fromDate.toISOString()}`;
+      }
+
+      const response = await fetch(url);
       const data = await response.json();
 
       if (!response.ok) {
@@ -106,7 +115,9 @@ export default function FinanceTab() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-500">Total (Last 90 Days)</div>
+          <div className="text-sm text-gray-500">
+            Total {dateRange === 'all' ? '(All Time)' : `(Last ${dateRange} Days)`}
+          </div>
           <div className="text-2xl font-bold text-gray-900">
             {formatCurrency(stripeTotal + wiseTotal)}
           </div>
@@ -171,8 +182,19 @@ export default function FinanceTab() {
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="p-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Incoming Payments (Last 90 Days)</h3>
-            <div className="flex gap-4">
+            <h3 className="text-lg font-semibold">Incoming Payments</h3>
+            <div className="flex gap-2">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value as DateRange)}
+                className="px-2 py-1 border border-gray-300 rounded text-sm"
+              >
+                <option value="all">All Time</option>
+                <option value="30">Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="180">Last 6 Months</option>
+                <option value="365">Last Year</option>
+              </select>
               <select
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value as FilterSource)}
@@ -207,7 +229,7 @@ export default function FinanceTab() {
               {transactions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    No payments found in the last 90 days
+                    No payments found
                   </td>
                 </tr>
               ) : (
