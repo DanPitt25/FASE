@@ -27,6 +27,10 @@ interface Transaction {
   amountEur: number; // Converted to EUR for sorting/filtering
   reference: string;
   senderName?: string;
+  // Additional fields for matching/invoicing
+  email?: string;
+  customerId?: string; // Stripe customer ID or Wise sender account
+  description?: string;
 }
 
 // Approximate exchange rates - updated periodically
@@ -94,12 +98,22 @@ export async function GET(request: NextRequest) {
             for (const pi of paymentIntents.data) {
               if (pi.status !== 'succeeded') continue;
 
-              // Try to get sender name from various sources
+              // Try to get sender name and email from various sources
               let senderName = pi.metadata?.organization_name || '';
-              if (!senderName && pi.latest_charge && typeof pi.latest_charge !== 'string') {
+              let email = '';
+
+              if (pi.latest_charge && typeof pi.latest_charge !== 'string') {
                 const charge = pi.latest_charge as Stripe.Charge;
-                senderName = charge.billing_details?.name || '';
+                if (!senderName) {
+                  senderName = charge.billing_details?.name || '';
+                }
+                email = charge.billing_details?.email || charge.receipt_email || '';
               }
+
+              // Get customer ID
+              const customerId = typeof pi.customer === 'string'
+                ? pi.customer
+                : pi.customer?.id || '';
 
               const amount = pi.amount / 100;
               const currency = pi.currency.toUpperCase();
@@ -114,6 +128,9 @@ export async function GET(request: NextRequest) {
                 amountEur,
                 reference: pi.metadata?.invoice_number || pi.description || '',
                 senderName,
+                email,
+                customerId,
+                description: pi.description || '',
               });
             }
 
@@ -157,6 +174,7 @@ export async function GET(request: NextRequest) {
             amountEur,
             reference: wiseTx.details.paymentReference || wiseTx.details.description || '',
             senderName: wiseTx.details.senderName || '',
+            description: wiseTx.details.description || '',
           });
         }
       } catch (wiseError: any) {

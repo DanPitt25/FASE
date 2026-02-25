@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Modal from '../../../components/Modal';
+import Button from '../../../components/Button';
 
 interface Transaction {
   id: string;
@@ -11,12 +13,35 @@ interface Transaction {
   amountEur: number;
   reference: string;
   senderName?: string;
+  email?: string;
+  customerId?: string;
+  description?: string;
+}
+
+interface PaymentActivity {
+  id: string;
+  type: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  performedBy: string;
+  performedByName: string;
+}
+
+interface PaymentNote {
+  id: string;
+  content: string;
+  category: string;
+  createdAt: string;
+  createdByName: string;
+  isPinned?: boolean;
 }
 
 type FilterSource = 'all' | 'stripe' | 'wise';
 type DateRange = 'all' | '30' | '90' | '180' | '365';
 type SortField = 'date' | 'amount';
 type SortDirection = 'asc' | 'desc';
+type ModalTab = 'details' | 'invoice' | 'timeline' | 'notes';
 
 export default function FinanceTab() {
   const [loading, setLoading] = useState(true);
@@ -31,6 +56,24 @@ export default function FinanceTab() {
   const [stripeConfigured, setStripeConfigured] = useState(false);
   const [wiseConfigured, setWiseConfigured] = useState(false);
   const [apiErrors, setApiErrors] = useState<string[]>([]);
+
+  // Modal state
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [modalTab, setModalTab] = useState<ModalTab>('details');
+  const [activities, setActivities] = useState<PaymentActivity[]>([]);
+  const [notes, setNotes] = useState<PaymentNote[]>([]);
+  const [loadingCrm, setLoadingCrm] = useState(false);
+
+  // Invoice generation state
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [invoiceOrganization, setInvoiceOrganization] = useState('');
+  const [invoiceDescription, setInvoiceDescription] = useState('FASE Annual Membership');
+  const [invoiceCurrency, setInvoiceCurrency] = useState('EUR');
+
+  // Note form state
+  const [newNote, setNewNote] = useState('');
+  const [noteCategory, setNoteCategory] = useState('general');
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -67,6 +110,135 @@ export default function FinanceTab() {
     }
   };
 
+  const loadPaymentCrmData = useCallback(async (transactionId: string, source: string) => {
+    setLoadingCrm(true);
+    try {
+      const [activitiesRes, notesRes] = await Promise.all([
+        fetch(`/api/admin/finance/activities?transactionId=${transactionId}&source=${source}`),
+        fetch(`/api/admin/finance/notes?transactionId=${transactionId}&source=${source}`),
+      ]);
+
+      const [activitiesData, notesData] = await Promise.all([
+        activitiesRes.json(),
+        notesRes.json(),
+      ]);
+
+      if (activitiesData.success) setActivities(activitiesData.activities || []);
+      if (notesData.success) setNotes(notesData.notes || []);
+    } catch (err) {
+      console.error('Failed to load payment CRM data:', err);
+    } finally {
+      setLoadingCrm(false);
+    }
+  }, []);
+
+  const openTransactionModal = (tx: Transaction) => {
+    setSelectedTransaction(tx);
+    setModalTab('details');
+    setInvoiceOrganization(tx.senderName || '');
+    setInvoiceDescription('FASE Annual Membership');
+    setInvoiceCurrency(tx.currency);
+    loadPaymentCrmData(tx.id, tx.source);
+  };
+
+  const closeModal = () => {
+    setSelectedTransaction(null);
+    setActivities([]);
+    setNotes([]);
+    setNewNote('');
+  };
+
+  const handleGeneratePaidInvoice = async () => {
+    if (!selectedTransaction || !invoiceOrganization.trim()) return;
+
+    setGeneratingInvoice(true);
+    try {
+      const response = await fetch('/api/admin/finance/generate-paid-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: selectedTransaction.id,
+          source: selectedTransaction.source,
+          organizationName: invoiceOrganization,
+          description: invoiceDescription,
+          amount: selectedTransaction.amount,
+          currency: selectedTransaction.currency,
+          paidAt: selectedTransaction.date,
+          paymentMethod: selectedTransaction.source,
+          email: selectedTransaction.email,
+          reference: selectedTransaction.reference,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate invoice');
+      }
+
+      // Download the PDF
+      if (data.pdfBase64) {
+        const link = document.createElement('a');
+        link.href = `data:application/pdf;base64,${data.pdfBase64}`;
+        link.download = `${data.invoiceNumber}-PAID.pdf`;
+        link.click();
+      }
+
+      // Reload CRM data to show new activity
+      loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+
+      alert(`Invoice ${data.invoiceNumber} generated successfully!`);
+    } catch (err: any) {
+      console.error('Failed to generate invoice:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!selectedTransaction || !newNote.trim()) return;
+
+    setSavingNote(true);
+    try {
+      const response = await fetch('/api/admin/finance/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: selectedTransaction.id,
+          source: selectedTransaction.source,
+          content: newNote,
+          category: noteCategory,
+          createdBy: 'admin',
+          createdByName: 'Admin',
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewNote('');
+        loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+      }
+    } catch (err) {
+      console.error('Failed to add note:', err);
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!selectedTransaction || !confirm('Delete this note?')) return;
+
+    try {
+      await fetch(`/api/admin/finance/notes?transactionId=${selectedTransaction.id}&source=${selectedTransaction.source}&noteId=${noteId}`, {
+        method: 'DELETE',
+      });
+      loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+    } catch (err) {
+      console.error('Failed to delete note:', err);
+    }
+  };
+
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('en-EU', {
       style: 'currency',
@@ -81,6 +253,27 @@ export default function FinanceTab() {
       month: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const formatDateTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getActivityIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      invoice_generated: '📄',
+      note_added: '📝',
+      matched_to_member: '🔗',
+      manual_entry: '✏️',
+    };
+    return icons[type] || '•';
   };
 
   // Calculate totals (in EUR)
@@ -134,6 +327,13 @@ export default function FinanceTab() {
       </div>
     );
   }
+
+  const modalTabs: { id: ModalTab; label: string; count?: number }[] = [
+    { id: 'details', label: 'Details' },
+    { id: 'invoice', label: 'Invoice' },
+    { id: 'timeline', label: 'Timeline', count: activities.length },
+    { id: 'notes', label: 'Notes', count: notes.length },
+  ];
 
   return (
     <div className="space-y-6">
@@ -269,13 +469,15 @@ export default function FinanceTab() {
                   Amount {sortField === 'amount' && (sortDirection === 'desc' ? '↓' : '↑')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                     No payments found
                   </td>
                 </tr>
@@ -302,8 +504,19 @@ export default function FinanceTab() {
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
                       {tx.senderName || '-'}
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
+                      {tx.email || '-'}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={tx.reference}>
                       {tx.reference || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <button
+                        onClick={() => openTransactionModal(tx)}
+                        className="text-fase-navy hover:text-fase-navy/80 text-sm font-medium"
+                      >
+                        View
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -312,6 +525,337 @@ export default function FinanceTab() {
           </table>
         </div>
       </div>
+
+      {/* Transaction Detail Modal */}
+      {selectedTransaction && (
+        <Modal
+          isOpen={!!selectedTransaction}
+          onClose={closeModal}
+          title={`Payment: ${formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}`}
+          maxWidth="4xl"
+        >
+          <div className="h-[600px] flex flex-col">
+            {/* Summary Header */}
+            <div className="bg-gradient-to-r from-fase-navy to-fase-navy/90 text-white p-4 rounded-lg mb-4 flex-shrink-0">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {selectedTransaction.senderName || 'Unknown Sender'}
+                  </h3>
+                  <div className="text-sm text-gray-200">
+                    {selectedTransaction.email && <span>{selectedTransaction.email}</span>}
+                    {selectedTransaction.reference && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>Ref: {selectedTransaction.reference}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
+                      selectedTransaction.source === 'stripe'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {selectedTransaction.source}
+                  </span>
+                  <span className="text-lg font-bold">
+                    {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200 flex-shrink-0">
+              <nav className="flex space-x-4">
+                {modalTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setModalTab(tab.id)}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      modalTab === tab.id
+                        ? 'border-fase-navy text-fase-navy'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                    {tab.count !== undefined && tab.count > 0 && (
+                      <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-gray-100 rounded-full">
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-y-auto py-4">
+              {/* DETAILS TAB */}
+              {modalTab === 'details' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-500">Transaction ID</div>
+                      <div className="font-mono text-sm">{selectedTransaction.id}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-500">Date</div>
+                      <div>{formatDateTime(selectedTransaction.date)}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-500">Amount</div>
+                      <div className="font-bold">
+                        {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+                        {selectedTransaction.currency !== 'EUR' && (
+                          <span className="text-sm text-gray-500 font-normal ml-2">
+                            (~{formatCurrency(selectedTransaction.amountEur, 'EUR')})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-500">Source</div>
+                      <div className="capitalize">{selectedTransaction.source}</div>
+                    </div>
+                    {selectedTransaction.senderName && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-500">Sender Name</div>
+                        <div>{selectedTransaction.senderName}</div>
+                      </div>
+                    )}
+                    {selectedTransaction.email && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-500">Email</div>
+                        <div>{selectedTransaction.email}</div>
+                      </div>
+                    )}
+                    {selectedTransaction.customerId && (
+                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
+                        <div className="text-sm text-gray-500">Customer ID</div>
+                        <div className="font-mono text-sm">{selectedTransaction.customerId}</div>
+                      </div>
+                    )}
+                    {selectedTransaction.reference && (
+                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
+                        <div className="text-sm text-gray-500">Reference</div>
+                        <div>{selectedTransaction.reference}</div>
+                      </div>
+                    )}
+                    {selectedTransaction.description && (
+                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
+                        <div className="text-sm text-gray-500">Description</div>
+                        <div>{selectedTransaction.description}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* INVOICE TAB */}
+              {modalTab === 'invoice' && (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="text-sm font-medium text-blue-800 mb-2">Generate PAID Invoice</div>
+                    <p className="text-sm text-blue-700">
+                      Create a payment confirmation invoice for this transaction. The invoice will be marked as PAID with the payment details.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Organization Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={invoiceOrganization}
+                        onChange={(e) => setInvoiceOrganization(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder="Enter organization name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        value={invoiceDescription}
+                        onChange={(e) => setInvoiceDescription(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        placeholder="e.g., FASE Annual Membership"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Invoice Currency
+                      </label>
+                      <select
+                        value={invoiceCurrency}
+                        onChange={(e) => setInvoiceCurrency(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      >
+                        <option value="EUR">EUR (Euro)</option>
+                        <option value="GBP">GBP (British Pound)</option>
+                        <option value="USD">USD (US Dollar)</option>
+                      </select>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-500 mb-2">Invoice Preview</div>
+                      <div className="space-y-1 text-sm">
+                        <div><strong>Organization:</strong> {invoiceOrganization || '(not set)'}</div>
+                        <div><strong>Amount:</strong> {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</div>
+                        <div><strong>Payment Date:</strong> {formatDate(selectedTransaction.date)}</div>
+                        <div><strong>Payment Method:</strong> {selectedTransaction.source}</div>
+                        <div><strong>Status:</strong> <span className="text-green-600 font-medium">PAID</span></div>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="primary"
+                      onClick={handleGeneratePaidInvoice}
+                      disabled={!invoiceOrganization.trim() || generatingInvoice}
+                      className="w-full"
+                    >
+                      {generatingInvoice ? 'Generating...' : 'Generate & Download PAID Invoice'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* TIMELINE TAB */}
+              {modalTab === 'timeline' && (
+                <div className="space-y-4">
+                  {loadingCrm ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fase-navy mx-auto"></div>
+                    </div>
+                  ) : activities.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No activity recorded yet</p>
+                  ) : (
+                    <div className="relative">
+                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                      {activities.map((activity) => (
+                        <div key={activity.id} className="relative pl-10 pb-4">
+                          <div className="absolute left-2 w-5 h-5 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-xs">
+                            {getActivityIcon(activity.type)}
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="flex justify-between items-start">
+                              <div className="font-medium text-gray-900">{activity.title}</div>
+                              <div className="text-xs text-gray-500">{formatDateTime(activity.createdAt)}</div>
+                            </div>
+                            {activity.description && (
+                              <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                            )}
+                            <div className="text-xs text-gray-400 mt-1">
+                              by {activity.performedByName || 'System'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* NOTES TAB */}
+              {modalTab === 'notes' && (
+                <div className="space-y-4">
+                  {/* Add Note Form */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      placeholder="Add a note..."
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-fase-navy focus:border-transparent resize-none"
+                      rows={3}
+                    />
+                    <div className="flex justify-between items-center mt-3">
+                      <select
+                        value={noteCategory}
+                        onChange={(e) => setNoteCategory(e.target.value)}
+                        className="border border-gray-300 rounded px-3 py-1 text-sm"
+                      >
+                        <option value="general">General</option>
+                        <option value="payment">Payment</option>
+                        <option value="support">Support</option>
+                        <option value="followup">Follow-up</option>
+                      </select>
+                      <Button
+                        variant="primary"
+                        size="small"
+                        onClick={handleAddNote}
+                        disabled={!newNote.trim() || savingNote}
+                      >
+                        {savingNote ? 'Saving...' : 'Add Note'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Notes List */}
+                  {loadingCrm ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fase-navy mx-auto"></div>
+                    </div>
+                  ) : notes.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No notes yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {notes.map((note) => (
+                        <div
+                          key={note.id}
+                          className={`bg-white border rounded-lg p-4 ${
+                            note.isPinned ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <p className="text-gray-900 whitespace-pre-wrap">{note.content}</p>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                                <span>{note.createdByName}</span>
+                                <span>•</span>
+                                <span>{formatDateTime(note.createdAt)}</span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-full ${
+                                    note.category === 'payment'
+                                      ? 'bg-green-100 text-green-700'
+                                      : note.category === 'support'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : note.category === 'followup'
+                                      ? 'bg-orange-100 text-orange-700'
+                                      : 'bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  {note.category}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 ml-4"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
