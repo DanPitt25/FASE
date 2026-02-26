@@ -590,10 +590,29 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
       });
     });
 
+    // FASE Address (bottom of page)
+    const addressY = currentY - 50 - (paymentLines.length * standardLineHeight) - 30;
+
+    firstPage.drawText('FASE B.V.', {
+      x: margins.left,
+      y: addressY,
+      size: 10,
+      font: boldFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Herengracht 124-128, 1015 BT Amsterdam, Netherlands', {
+      x: margins.left,
+      y: addressY - 14,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
     // Generate PDF bytes
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
-    
+
     console.log('✅ PDF generated successfully, size:', pdfBytes.length);
 
 
@@ -1033,6 +1052,25 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
         font: bodyFont,
         color: faseBlack,
       });
+    });
+
+    // FASE Address (bottom of page)
+    const addressY = currentY - 50 - (paymentLines.length * standardLineHeight) - 30;
+
+    firstPage.drawText('FASE B.V.', {
+      x: margins.left,
+      y: addressY,
+      size: 10,
+      font: boldFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Herengracht 124-128, 1015 BT Amsterdam, Netherlands', {
+      x: margins.left,
+      y: addressY - 14,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
     });
 
     // Generate PDF
