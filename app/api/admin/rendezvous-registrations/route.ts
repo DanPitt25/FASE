@@ -124,3 +124,74 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const data = await request.json();
+    const { registrationId, attendees } = data;
+
+    if (!registrationId) {
+      return NextResponse.json(
+        { error: 'Registration ID is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!attendees || !Array.isArray(attendees)) {
+      return NextResponse.json(
+        { error: 'Attendees array is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate attendee data
+    for (const attendee of attendees) {
+      if (!attendee.firstName || !attendee.lastName || !attendee.email) {
+        return NextResponse.json(
+          { error: 'Each attendee must have firstName, lastName, and email' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Format attendees with IDs
+    const formattedAttendees = attendees.map((a: any, index: number) => ({
+      id: a.id || `attendee_${index + 1}`,
+      firstName: a.firstName.trim(),
+      lastName: a.lastName.trim(),
+      email: a.email.trim(),
+      jobTitle: a.jobTitle?.trim() || '',
+    }));
+
+    // Update the registration
+    const docRef = adminDb.collection('rendezvous-registrations').doc(registrationId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return NextResponse.json(
+        { error: 'Registration not found' },
+        { status: 404 }
+      );
+    }
+
+    await docRef.update({
+      attendees: formattedAttendees,
+      numberOfAttendees: formattedAttendees.length,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    console.log(`✅ Updated attendees for registration: ${registrationId}`);
+
+    return NextResponse.json({
+      success: true,
+      registrationId,
+      attendees: formattedAttendees,
+    });
+  } catch (error: any) {
+    console.error('Error updating registration:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to update registration' },
+      { status: 500 }
+    );
+  }
+}

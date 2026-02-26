@@ -104,6 +104,11 @@ export default function RendezvousTab() {
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [showDuplicatesModal, setShowDuplicatesModal] = useState(false);
+  const [showEditAttendeesModal, setShowEditAttendeesModal] = useState(false);
+  const [editingRegistration, setEditingRegistration] = useState<RendezvousRegistration | null>(null);
+  const [editedAttendees, setEditedAttendees] = useState<Attendee[]>([]);
+  const [savingAttendees, setSavingAttendees] = useState(false);
+  const [editAttendeesError, setEditAttendeesError] = useState<string | null>(null);
   const [newRegistration, setNewRegistration] = useState({
     company: '',
     billingEmail: '',
@@ -414,6 +419,73 @@ export default function RendezvousTab() {
       alert('Failed to regenerate invoice: ' + (error.message || 'Unknown error'));
     } finally {
       setGeneratingInvoice(false);
+    }
+  };
+
+  const openEditAttendeesModal = (registration: RendezvousRegistration) => {
+    setEditingRegistration(registration);
+    setEditedAttendees(
+      (registration.attendees || []).map(a => ({ ...a }))
+    );
+    setEditAttendeesError(null);
+    setShowEditAttendeesModal(true);
+  };
+
+  const handleSaveAttendees = async () => {
+    if (!editingRegistration) return;
+
+    // Validate
+    for (const attendee of editedAttendees) {
+      if (!attendee.firstName?.trim() || !attendee.lastName?.trim() || !attendee.email?.trim()) {
+        setEditAttendeesError('Each attendee must have first name, last name, and email');
+        return;
+      }
+    }
+
+    try {
+      setSavingAttendees(true);
+      setEditAttendeesError(null);
+
+      const response = await fetch('/api/admin/rendezvous-registrations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationId: editingRegistration.registrationId,
+          attendees: editedAttendees,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update attendees');
+      }
+
+      // Update local state
+      setRegistrations(prev =>
+        prev.map(reg =>
+          reg.registrationId === editingRegistration.registrationId
+            ? { ...reg, attendees: result.attendees, numberOfAttendees: result.attendees.length }
+            : reg
+        )
+      );
+
+      // Also update selectedCompanyRegistrations if viewing
+      setSelectedCompanyRegistrations(prev =>
+        prev.map(reg =>
+          reg.registrationId === editingRegistration.registrationId
+            ? { ...reg, attendees: result.attendees, numberOfAttendees: result.attendees.length }
+            : reg
+        )
+      );
+
+      setShowEditAttendeesModal(false);
+      setEditingRegistration(null);
+    } catch (error: any) {
+      console.error('Error saving attendees:', error);
+      setEditAttendeesError(error.message || 'Failed to save attendees');
+    } finally {
+      setSavingAttendees(false);
     }
   };
 
@@ -967,7 +1039,13 @@ export default function RendezvousTab() {
                         <div className="font-medium">€{(reg.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-gray-100">
+                      <button
+                        onClick={() => openEditAttendeesModal(reg)}
+                        className="text-fase-navy hover:text-fase-orange text-xs underline"
+                      >
+                        Edit Attendees
+                      </button>
                       {reg.invoiceUrl && (
                         <a
                           href={reg.invoiceUrl}
@@ -1865,6 +1943,129 @@ export default function RendezvousTab() {
           <div className="flex justify-end pt-4 border-t">
             <Button variant="secondary" onClick={() => setShowDuplicatesModal(false)}>
               Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Attendees Modal */}
+      <Modal
+        isOpen={showEditAttendeesModal}
+        onClose={() => {
+          setShowEditAttendeesModal(false);
+          setEditingRegistration(null);
+          setEditedAttendees([]);
+          setEditAttendeesError(null);
+        }}
+        title={`Edit Attendees - ${editingRegistration?.invoiceNumber || ''}`}
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          {editAttendeesError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {editAttendeesError}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">{editedAttendees.length} attendee{editedAttendees.length !== 1 ? 's' : ''}</span>
+            <button
+              onClick={() => setEditedAttendees([...editedAttendees, { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '' }])}
+              className="text-fase-navy hover:text-fase-orange text-sm underline"
+            >
+              + Add Attendee
+            </button>
+          </div>
+
+          <div className="space-y-4 max-h-[50vh] overflow-y-auto">
+            {editedAttendees.map((attendee, index) => (
+              <div key={attendee.id || index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-600">Attendee {index + 1}</span>
+                  {editedAttendees.length > 1 && (
+                    <button
+                      onClick={() => setEditedAttendees(editedAttendees.filter((_, i) => i !== index))}
+                      className="text-red-500 hover:text-red-700 text-xs"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">First Name *</label>
+                    <input
+                      type="text"
+                      value={attendee.firstName}
+                      onChange={(e) => {
+                        const updated = [...editedAttendees];
+                        updated[index] = { ...updated[index], firstName: e.target.value };
+                        setEditedAttendees(updated);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Last Name *</label>
+                    <input
+                      type="text"
+                      value={attendee.lastName}
+                      onChange={(e) => {
+                        const updated = [...editedAttendees];
+                        updated[index] = { ...updated[index], lastName: e.target.value };
+                        setEditedAttendees(updated);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Email *</label>
+                    <input
+                      type="email"
+                      value={attendee.email}
+                      onChange={(e) => {
+                        const updated = [...editedAttendees];
+                        updated[index] = { ...updated[index], email: e.target.value };
+                        setEditedAttendees(updated);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Job Title</label>
+                    <input
+                      type="text"
+                      value={attendee.jobTitle}
+                      onChange={(e) => {
+                        const updated = [...editedAttendees];
+                        updated[index] = { ...updated[index], jobTitle: e.target.value };
+                        setEditedAttendees(updated);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowEditAttendeesModal(false);
+                setEditingRegistration(null);
+                setEditedAttendees([]);
+                setEditAttendeesError(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveAttendees}
+              disabled={savingAttendees}
+            >
+              {savingAttendees ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>
