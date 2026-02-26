@@ -358,6 +358,65 @@ export default function RendezvousTab() {
     }
   };
 
+  const handleRegenerateUnpaidInvoice = async (registration: RendezvousRegistration) => {
+    try {
+      setGeneratingInvoice(true);
+
+      const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber: registration.invoiceNumber,
+          registrationId: registration.registrationId,
+          companyName: registration.billingInfo?.company || '',
+          billingEmail: registration.billingInfo?.billingEmail || '',
+          address: registration.billingInfo?.address || '',
+          country: registration.billingInfo?.country || '',
+          attendees: registration.attendees || [],
+          pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
+          numberOfTickets: registration.numberOfAttendees || 1,
+          subtotal: registration.subtotal || 0,
+          vatAmount: registration.vatAmount || 0,
+          vatRate: 21,
+          totalPrice: registration.totalPrice || 0,
+          discount: registration.discount || 0,
+          isFaseMember: registration.companyIsFaseMember || false,
+          isAsaseMember: registration.isAsaseMember || false,
+          organizationType: registration.billingInfo?.organizationType || 'mga'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to regenerate invoice');
+      }
+
+      // Create a download link for the PDF
+      const pdfBlob = new Blob(
+        [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
+        { type: 'application/pdf' }
+      );
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename || `${registration.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Reload registrations to get updated invoice URL
+      loadRegistrations();
+
+    } catch (error: any) {
+      console.error('Error regenerating invoice:', error);
+      alert('Failed to regenerate invoice: ' + (error.message || 'Unknown error'));
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  };
+
   const handleAddRegistration = async () => {
     // Validate required fields
     if (!newRegistration.company || !newRegistration.billingEmail || !newRegistration.country) {
@@ -920,11 +979,18 @@ export default function RendezvousTab() {
                         </a>
                       )}
                       <button
-                        onClick={() => handleGeneratePaidInvoice(reg)}
+                        onClick={() => handleRegenerateUnpaidInvoice(reg)}
                         disabled={generatingInvoice}
                         className="text-fase-navy hover:text-fase-orange text-xs underline disabled:opacity-50"
                       >
-                        {generatingInvoice ? 'Generating...' : 'Regenerate Invoice'}
+                        {generatingInvoice ? 'Generating...' : 'New Invoice'}
+                      </button>
+                      <button
+                        onClick={() => handleGeneratePaidInvoice(reg)}
+                        disabled={generatingInvoice}
+                        className="text-green-600 hover:text-green-800 text-xs underline disabled:opacity-50"
+                      >
+                        {generatingInvoice ? 'Generating...' : 'PAID Invoice'}
                       </button>
                       {reg.paymentStatus === 'pending_bank_transfer' && (
                         <button
