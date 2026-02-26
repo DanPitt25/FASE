@@ -590,20 +590,45 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
       });
     });
 
-    // FASE Address (bottom of page)
-    const addressY = currentY - 50 - (paymentLines.length * standardLineHeight) - 30;
+    // FASE Company Info (right side, parallel to payment details)
+    const companyInfoX = width - margins.right - 180;
+    const companyInfoY = currentY - 50;
 
     firstPage.drawText('FASE B.V.', {
-      x: margins.left,
-      y: addressY,
+      x: companyInfoX,
+      y: companyInfoY,
       size: 10,
       font: boldFont,
       color: faseBlack,
     });
 
-    firstPage.drawText('Herengracht 124-128, 1015 BT Amsterdam, Netherlands', {
-      x: margins.left,
-      y: addressY - 14,
+    firstPage.drawText('Herengracht 124-128', {
+      x: companyInfoX,
+      y: companyInfoY - 14,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('1015 BT Amsterdam', {
+      x: companyInfoX,
+      y: companyInfoY - 28,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Netherlands', {
+      x: companyInfoX,
+      y: companyInfoY - 42,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Reg: 98582151', {
+      x: companyInfoX,
+      y: companyInfoY - 56,
       size: 10,
       font: bodyFont,
       color: faseBlack,
@@ -1054,20 +1079,45 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
       });
     });
 
-    // FASE Address (bottom of page)
-    const addressY = currentY - 50 - (paymentLines.length * standardLineHeight) - 30;
+    // FASE Company Info (right side, parallel to payment details)
+    const companyInfoX = width - margins.right - 180;
+    const companyInfoY = currentY - 50;
 
     firstPage.drawText('FASE B.V.', {
-      x: margins.left,
-      y: addressY,
+      x: companyInfoX,
+      y: companyInfoY,
       size: 10,
       font: boldFont,
       color: faseBlack,
     });
 
-    firstPage.drawText('Herengracht 124-128, 1015 BT Amsterdam, Netherlands', {
-      x: margins.left,
-      y: addressY - 14,
+    firstPage.drawText('Herengracht 124-128', {
+      x: companyInfoX,
+      y: companyInfoY - 14,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('1015 BT Amsterdam', {
+      x: companyInfoX,
+      y: companyInfoY - 28,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Netherlands', {
+      x: companyInfoX,
+      y: companyInfoY - 42,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
+    firstPage.drawText('Reg: 98582151', {
+      x: companyInfoX,
+      y: companyInfoY - 56,
       size: 10,
       font: bodyFont,
       color: faseBlack,
