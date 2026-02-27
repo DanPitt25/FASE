@@ -139,6 +139,25 @@ export default function MemberContent() {
       ),
       content: (
         <div className="space-y-6">
+          {/* Entrepreneurial Underwriter Banner Ad */}
+          <Link
+            href="/member-portal/bulletin/february-2026"
+            className="block rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow relative"
+          >
+            <object
+              data="/bulletin/feb-2026/lloyds-ad.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH,0"
+              type="application/pdf"
+              className="w-full pointer-events-none"
+              style={{ height: '400px' }}
+            >
+              <div className="bg-fase-navy text-white p-8 text-center">
+                <p className="text-xl font-semibold">The Entrepreneurial Underwriter</p>
+                <p className="text-fase-gold mt-2">Click to view</p>
+              </div>
+            </object>
+            <div className="absolute inset-0" />
+          </Link>
+
           <div className="bg-white border border-fase-light-gold rounded-lg p-6">
             <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('overview.welcome_title')}</h2>
             <p className="text-fase-black mb-6">{t('overview.benefits_intro')}</p>
