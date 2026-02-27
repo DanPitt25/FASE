@@ -4,6 +4,7 @@ import { LocaleProvider } from '../contexts/LocaleContext';
 import DynamicIntlProvider from '../components/DynamicIntlProvider';
 import CookieBanner from '../components/CookieBanner';
 import ConsentAwareAnalytics from '../components/ConsentAwareAnalytics';
+import { Analytics } from '@vercel/analytics/next';
 
 let title = 'FASE - Fédération des Agences de Souscription Européennes';
 let description =
@@ -66,6 +67,7 @@ export default async function RootLayout({
             </UnifiedAuthProvider>
           </DynamicIntlProvider>
         </LocaleProvider>
+        <Analytics />
       </body>
     </html>
   );
