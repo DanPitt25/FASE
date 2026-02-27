@@ -103,12 +103,9 @@
     "pay_online": "Payer en ligne",
     "bank_transfer": "Virement bancaire :",
     "invoice_attached": "Facture jointe avec les détails de paiement",
-    "engagement": "Nous nous réjouissons de votre engagement dans FASE et nous vous contacterons très prochainement avec un lien vers notre portail des membres. En attendant, veuillez me contacter pour toute question.",
+    "engagement": "Nous nous réjouissons de votre engagement dans FASE et nous vous contacterons très prochainement avec un lien vers notre portail des membres. En attendant, veuillez nous contacter à admin@fasemga.com pour toute question.",
     "regards": "Meilleures salutations,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Directeur Exécutif, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "L'équipe FASE"
   },
   "payment_confirmed_welcome": {
     "subject": "Bienvenue chez FASE",

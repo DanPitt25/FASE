@@ -77,12 +77,9 @@
     "payment_button": "Betaal lidmaatschapscontributie",
     "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, volgt u alstublieft {LINK}deze link{/LINK}",
     "bank_transfer_link": "Genereer bankoverschrijving factuur",
-    "engagement": "Wij kijken uit naar uw betrokkenheid bij FASE. Aarzel niet om contact met ons op te nemen via admin@fasemga.com voor eventuele vragen.",
+    "engagement": "We kijken uit naar uw betrokkenheid bij FASE en we nemen zeer binnenkort contact op met een link naar ons ledenportaal. In de tussentijd kunt u contact met ons opnemen via admin@fasemga.com voor eventuele vragen.",
     "regards": "Vriendelijke groeten,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Uitvoerend Directeur, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "Het FASE-team"
   },
   "pdf_invoice": {
     "invoice": "FACTUUR",

@@ -71,12 +71,9 @@
     "payment_button": "Payer les frais d'adhésion",
     "bank_transfer_text": "Si vous préférez payer par virement bancaire, veuillez suivre le lien ci-dessous :",
     "bank_transfer_link": "Générer une facture de virement bancaire",
-    "engagement": "Nous nous réjouissons de votre engagement dans FASE. N'hésitez pas à nous contacter à admin@fasemga.com pour toute question.",
+    "engagement": "Nous nous réjouissons de votre engagement dans FASE et nous vous contacterons très prochainement avec un lien vers notre portail des membres. En attendant, veuillez nous contacter à admin@fasemga.com pour toute question.",
     "regards": "Meilleures salutations,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Directeur Exécutif, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "L'équipe FASE"
   },
   "pdf_invoice": {
     "invoice": "FACTURE",

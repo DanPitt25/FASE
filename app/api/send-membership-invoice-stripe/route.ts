@@ -238,12 +238,9 @@ export async function POST(request: NextRequest) {
       paymentButton: adminEmail.payment_button || "Pay membership dues",
       bankTransferText: adminEmail.bank_transfer_text || "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
       bankTransferLink: adminEmail.bank_transfer_link || "Generate bank transfer invoice",
-      engagement: adminEmail.engagement || "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
-      regards: adminEmail.regards || "Best regards,",
-      signature: adminEmail.signature || "William",
-      title: adminEmail.title || "Executive Director, FASE",
-      name: adminEmail.name || "William Pitt",
-      email: adminEmail.email || "william.pitt@fasemga.com"
+      engagement: adminEmail.engagement || "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact us at admin@fasemga.com with any questions.",
+      regards: adminEmail.regards || "Best Regards,",
+      signature: adminEmail.signature || "The FASE Team"
     };
 
     // Override with customized content if provided
@@ -270,10 +267,7 @@ export async function POST(request: NextRequest) {
         bankTransferLink: replaceVariables(customContent.bank_transfer_link) || emailContent.bankTransferLink,
         engagement: replaceVariables(customContent.engagement) || emailContent.engagement,
         regards: replaceVariables(customContent.regards) || emailContent.regards,
-        signature: replaceVariables(customContent.signature) || emailContent.signature,
-        title: replaceVariables(customContent.title) || emailContent.title,
-        name: replaceVariables(customContent.name) || emailContent.name,
-        email: replaceVariables(customContent.email) || emailContent.email
+        signature: replaceVariables(customContent.signature) || emailContent.signature
       };
     }
 
@@ -320,10 +314,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>William</strong><br><br>
-              William Pitt<br>
-              Executive Director, FASE<br>
-              <a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a>
+              <strong>${emailContent.signature}</strong>
             </p>
           </div>
         </div>

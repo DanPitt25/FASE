@@ -77,12 +77,9 @@
     "payment_button": "Pagar cuotas de membresía",
     "bank_transfer_text": "Si prefiere pagar mediante transferencia bancaria, sírvase seguir el enlace a continuación:",
     "bank_transfer_link": "Generar factura de transferencia bancaria",
-    "engagement": "Esperamos su participación en FASE. No dude en contactarnos en admin@fasemga.com si tiene alguna pregunta.",
+    "engagement": "Esperamos su participación en FASE y nos pondremos en contacto muy pronto con un enlace a nuestro portal de miembros. Mientras tanto, contáctenos en admin@fasemga.com para cualquier pregunta.",
     "regards": "Saludos cordiales,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Director Ejecutivo, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "El equipo FASE"
   },
   "pdf_invoice": {
     "invoice": "FACTURA",

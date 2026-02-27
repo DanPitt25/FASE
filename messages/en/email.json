@@ -76,12 +76,9 @@
     "pay_online": "Pay Online",
     "bank_transfer": "Bank Transfer:",
     "invoice_attached": "Invoice attached with payment details",
-    "engagement": "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact me with any questions.",
+    "engagement": "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact us at admin@fasemga.com with any questions.",
     "regards": "Best Regards,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Executive Director, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "The FASE Team"
   },
   "membership_followup": {
     "subject": "Reminder: Outstanding membership dues for {organizationName}",

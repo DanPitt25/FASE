@@ -109,12 +109,9 @@
     "pay_online": "Online bezahlen",
     "bank_transfer": "Banküberweisung:",
     "invoice_attached": "Rechnung mit Zahlungsdetails beigefügt",
-    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie mich bitte bei Fragen.",
+    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie uns bitte unter admin@fasemga.com bei Fragen.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Geschäftsführer, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "Das FASE-Team"
   },
   "payment_confirmed_welcome": {
     "subject": "Willkommen bei FASE",

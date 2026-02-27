@@ -476,10 +476,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>William</strong><br><br>
-              William Pitt<br>
-              Executive Director, FASE<br>
-              <a href="mailto:william.pitt@fasemga.com" style="color: #2D5574;">william.pitt@fasemga.com</a>
+              <strong>${emailContent.signature}</strong>
             </p>
           </div>
         </div>

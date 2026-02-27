@@ -77,12 +77,9 @@
     "payment_button": "Paga quota associativa",
     "bank_transfer_text": "Se preferisce pagare tramite bonifico bancario, La preghiamo di seguire il link sottostante:",
     "bank_transfer_link": "Genera fattura bonifico bancario",
-    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE. Non esiti a contattarci all'indirizzo admin@fasemga.com per qualsiasi domanda.",
+    "engagement": "Non vediamo l'ora del Suo coinvolgimento in FASE e ci metteremo in contatto molto presto con un link al nostro portale membri. Nel frattempo, ci contatti a admin@fasemga.com per qualsiasi domanda.",
     "regards": "Cordiali saluti,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Direttore Esecutivo, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "Il team FASE"
   },
   "pdf_invoice": {
     "invoice": "FATTURA",

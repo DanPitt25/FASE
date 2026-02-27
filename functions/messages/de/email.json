@@ -77,12 +77,9 @@
     "payment_button": "Mitgliedsbeitrag zahlen",
     "bank_transfer_text": "Falls Sie per Banküberweisung zahlen möchten, folgen Sie bitte dem unten stehenden Link:",
     "bank_transfer_link": "Banküberweisung-Rechnung erstellen",
-    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE. Zögern Sie bitte nicht, uns unter admin@fasemga.com bei Fragen zu kontaktieren.",
+    "engagement": "Wir freuen uns auf Ihr Engagement bei FASE und werden uns in Kürze mit einem Link zu unserem Mitgliederportal melden. In der Zwischenzeit kontaktieren Sie uns bitte unter admin@fasemga.com bei Fragen.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Geschäftsführer, FASE",
-    "email": "william.pitt@fasemga.com"
+    "signature": "Das FASE-Team"
   },
   "pdf_invoice": {
     "invoice": "RECHNUNG",

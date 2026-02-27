@@ -71,12 +71,9 @@
     "payment_button": "Pay membership dues",
     "bank_transfer_text": "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
     "bank_transfer_link": "Generate bank transfer invoice",
-    "engagement": "We look forward to your engagement in FASE. Please do not hesitate to contact us at admin@fasemga.com with any questions.",
-    "regards": "Best regards,",
-    "signature": "William",
-    "name": "William Pitt",
-    "title": "Executive Director, FASE",
-    "email": "william.pitt@fasemga.com"
+    "engagement": "We look forward to your engagement in FASE and we'll be in touch very shortly with a link to our member portal. In the interim, please contact us at admin@fasemga.com with any questions.",
+    "regards": "Best Regards,",
+    "signature": "The FASE Team"
   },
   "membership_followup": {
     "subject": "Reminder: Outstanding membership dues for {organizationName}",
