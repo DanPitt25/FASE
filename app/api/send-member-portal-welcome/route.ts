@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       regards: welcomeEmail.regards || "Best regards,",
       signatureName: welcomeEmail.signature_name || "The FASE Team",
       signatureFull: welcomeEmail.signature_full || "The FASE Team",
-      signatureTitle: welcomeEmail.signature_title || "Executive Director, FASE",
+      signatureTitle: welcomeEmail.signature_title || "",
       accessPortal: welcomeEmail.access_portal || "Access Member Portal",
       portalUrl: "https://fasemga.com/member-portal"
     };
