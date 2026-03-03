@@ -106,6 +106,11 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       amount: 0,
       enabled: false
     },
+    rendezvousOverride: {
+      enabled: false,
+      passCount: 0,
+      unitPrice: 0
+    },
     testPayment: false,
     rendezvous: {
       registrationId: '',
@@ -338,7 +343,11 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     }
     return null;
   };
-  const rendezvousTotal = getRendezvousTotal();
+  const autoRendezvousTotal = getRendezvousTotal();
+  // If override is enabled, use override calculation; otherwise use auto-detected total
+  const rendezvousTotal = formData.rendezvousOverride.enabled
+    ? (formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice)
+    : autoRendezvousTotal;
   const customLineItemTotal = formData.customLineItem.enabled ? formData.customLineItem.amount : 0;
   const finalAmount = baseAmount + rendezvousTotal + customLineItemTotal;
 
@@ -347,11 +356,13 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     const config = actionConfig[selectedAction];
 
     const rendezvousPassData = getRendezvousPassData();
+    // Don't include auto-detected rendezvous data if override is enabled
+    const shouldIncludeRendezvous = rendezvousPassData && !formData.rendezvousOverride.enabled;
     const payload: any = {
       preview: isPreview,
       ...formData,
       greeting: formData.greeting || formData.fullName,
-      ...(rendezvousPassData && { rendezvousPassReservation: rendezvousPassData })
+      ...(shouldIncludeRendezvous && { rendezvousPassReservation: rendezvousPassData })
     };
 
     if (selectedAction === 'rendezvous') {
@@ -395,7 +406,18 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
       }
 
-      if (rendezvousPassData) {
+      // Check if rendezvous override is enabled
+      if (formData.rendezvousOverride.enabled) {
+        // Use override values if set (allows removal by setting passCount to 0)
+        if (formData.rendezvousOverride.passCount > 0 && formData.rendezvousOverride.unitPrice > 0) {
+          const overrideTotal = formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice;
+          lineItems.push({
+            description: `MGA Rendezvous 2026 Pass${formData.rendezvousOverride.passCount > 1 ? 'es' : ''} (${formData.rendezvousOverride.passCount}x)`,
+            amount: overrideTotal
+          });
+        }
+        // If override is enabled but passCount is 0, we don't add any rendezvous line item (removal)
+      } else if (rendezvousPassData) {
         const passOrgType = rendezvousPassData.organizationType || formData.organizationType;
         const passCount = rendezvousPassData.passCount || 1;
         const isFaseMember = rendezvousPassData.isFaseMember !== false;
@@ -944,6 +966,78 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
               />
             </div>
           </div>
+
+          {/* MGA Rendezvous Override */}
+          {(autoRendezvousTotal > 0 || formData.rendezvousOverride.enabled) && (
+            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-amber-800">MGA Rendezvous Line Item</h4>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.rendezvousOverride.enabled}
+                    onChange={(e) => {
+                      const passData = getRendezvousPassData();
+                      setFormData(prev => ({
+                        ...prev,
+                        rendezvousOverride: {
+                          enabled: e.target.checked,
+                          passCount: e.target.checked ? (passData?.passCount || 1) : 0,
+                          unitPrice: e.target.checked ? (autoRendezvousTotal / (passData?.passCount || 1)) : 0
+                        }
+                      }));
+                    }}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-amber-800">Override</span>
+                </label>
+              </div>
+              {formData.rendezvousOverride.enabled ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-amber-700 mb-1">Number of Passes</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.rendezvousOverride.passCount}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          rendezvousOverride: { ...prev.rendezvousOverride, passCount: Math.max(0, parseInt(e.target.value) || 0) }
+                        }))}
+                        className="w-full border border-amber-300 rounded px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-amber-700 mb-1">Unit Price (EUR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.rendezvousOverride.unitPrice}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          rendezvousOverride: { ...prev.rendezvousOverride, unitPrice: Math.max(0, parseFloat(e.target.value) || 0) }
+                        }))}
+                        className="w-full border border-amber-300 rounded px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm text-amber-700">
+                    {formData.rendezvousOverride.passCount === 0 ? (
+                      <span className="font-medium">Rendezvous line item will be removed from invoice</span>
+                    ) : (
+                      <span>Subtotal: EUR{(formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice).toLocaleString()}</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-amber-700">
+                  Auto-detected: EUR{autoRendezvousTotal.toLocaleString()} (Enable override to edit or remove)
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Pricing Summary */}
           <div className="bg-gray-50 p-4 rounded-lg">

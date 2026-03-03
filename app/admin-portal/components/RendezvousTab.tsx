@@ -109,6 +109,10 @@ export default function RendezvousTab() {
   const [editedAttendees, setEditedAttendees] = useState<Attendee[]>([]);
   const [savingAttendees, setSavingAttendees] = useState(false);
   const [editAttendeesError, setEditAttendeesError] = useState<string | null>(null);
+  const [showEditInvoiceModal, setShowEditInvoiceModal] = useState(false);
+  const [invoiceEditRegistration, setInvoiceEditRegistration] = useState<RendezvousRegistration | null>(null);
+  const [invoiceTicketCount, setInvoiceTicketCount] = useState(1);
+  const [invoiceUnitPrice, setInvoiceUnitPrice] = useState(0);
   const [newRegistration, setNewRegistration] = useState({
     company: '',
     billingEmail: '',
@@ -486,6 +490,79 @@ export default function RendezvousTab() {
       setEditAttendeesError(error.message || 'Failed to save attendees');
     } finally {
       setSavingAttendees(false);
+    }
+  };
+
+  const openEditInvoiceModal = (registration: RendezvousRegistration) => {
+    setInvoiceEditRegistration(registration);
+    setInvoiceTicketCount(registration.numberOfAttendees || 1);
+    // Calculate unit price from subtotal
+    const unitPrice = registration.subtotal / (registration.numberOfAttendees || 1);
+    setInvoiceUnitPrice(unitPrice);
+    setShowEditInvoiceModal(true);
+  };
+
+  const handleGenerateCustomInvoice = async () => {
+    if (!invoiceEditRegistration) return;
+
+    try {
+      setGeneratingInvoice(true);
+
+      const newSubtotal = invoiceTicketCount * invoiceUnitPrice;
+
+      const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber: invoiceEditRegistration.invoiceNumber,
+          registrationId: invoiceEditRegistration.registrationId,
+          companyName: invoiceEditRegistration.billingInfo?.company || '',
+          billingEmail: invoiceEditRegistration.billingInfo?.billingEmail || '',
+          address: invoiceEditRegistration.billingInfo?.address || '',
+          country: invoiceEditRegistration.billingInfo?.country || '',
+          attendees: invoiceEditRegistration.attendees || [],
+          pricePerTicket: invoiceUnitPrice,
+          numberOfTickets: invoiceTicketCount,
+          subtotal: newSubtotal,
+          vatAmount: 0,
+          vatRate: 21,
+          totalPrice: newSubtotal,
+          discount: invoiceEditRegistration.discount || 0,
+          isFaseMember: invoiceEditRegistration.companyIsFaseMember || false,
+          isAsaseMember: invoiceEditRegistration.isAsaseMember || false,
+          organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga'
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate invoice');
+      }
+
+      // Download the PDF
+      const pdfBlob = new Blob(
+        [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
+        { type: 'application/pdf' }
+      );
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename || `${invoiceEditRegistration.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setShowEditInvoiceModal(false);
+      setInvoiceEditRegistration(null);
+      loadRegistrations();
+
+    } catch (error: any) {
+      console.error('Error generating custom invoice:', error);
+      alert('Failed to generate invoice: ' + (error.message || 'Unknown error'));
+    } finally {
+      setGeneratingInvoice(false);
     }
   };
 
@@ -1062,6 +1139,13 @@ export default function RendezvousTab() {
                         className="text-fase-navy hover:text-fase-orange text-xs underline disabled:opacity-50"
                       >
                         {generatingInvoice ? 'Generating...' : 'New Invoice'}
+                      </button>
+                      <button
+                        onClick={() => openEditInvoiceModal(reg)}
+                        disabled={generatingInvoice}
+                        className="text-purple-600 hover:text-purple-800 text-xs underline disabled:opacity-50"
+                      >
+                        Edit Invoice
                       </button>
                       <button
                         onClick={() => handleGeneratePaidInvoice(reg)}
@@ -2066,6 +2150,92 @@ export default function RendezvousTab() {
               disabled={savingAttendees}
             >
               {savingAttendees ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Invoice Modal */}
+      <Modal
+        isOpen={showEditInvoiceModal}
+        onClose={() => {
+          setShowEditInvoiceModal(false);
+          setInvoiceEditRegistration(null);
+        }}
+        title={`Edit Invoice - ${invoiceEditRegistration?.invoiceNumber || ''}`}
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Adjust the ticket quantity and unit price to generate a custom invoice.
+          </p>
+
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="text-sm text-gray-600 mb-2">
+              Company: <span className="font-medium text-gray-900">{invoiceEditRegistration?.billingInfo?.company}</span>
+            </div>
+            <div className="text-sm text-gray-600">
+              Organization Type: <span className="font-medium text-gray-900">
+                {invoiceEditRegistration?.billingInfo?.organizationType === 'mga' ? 'MGA' :
+                 invoiceEditRegistration?.billingInfo?.organizationType === 'carrier_broker' ? 'Carrier/Broker' :
+                 invoiceEditRegistration?.billingInfo?.organizationType === 'service_provider' ? 'Service Provider' :
+                 invoiceEditRegistration?.billingInfo?.organizationType}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Number of Tickets
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={invoiceTicketCount}
+                onChange={(e) => setInvoiceTicketCount(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Unit Price (€)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={invoiceUnitPrice}
+                onChange={(e) => setInvoiceUnitPrice(Math.max(0, parseFloat(e.target.value) || 0))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+
+          <div className="bg-fase-navy text-white p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Subtotal:</span>
+              <span className="text-xl font-bold">
+                €{(invoiceTicketCount * invoiceUnitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowEditInvoiceModal(false);
+                setInvoiceEditRegistration(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerateCustomInvoice}
+              disabled={generatingInvoice}
+            >
+              {generatingInvoice ? 'Generating...' : 'Generate Invoice'}
             </Button>
           </div>
         </div>
