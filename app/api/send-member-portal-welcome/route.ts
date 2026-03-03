@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
       memberDirectory: (welcomeEmail.member_directory || "We have now published FASE's member directory. You can use the portal to share relevant details of {organizationName} that you would like to share with other members through the portal and with the broader market through our website.").replace('{organizationName}', testData.organizationName),
       closing: welcomeEmail.closing || "Please do not hesitate to reach out if you have any questions.",
       regards: welcomeEmail.regards || "Best regards,",
-      signatureName: welcomeEmail.signature_name || "William",
-      signatureFull: welcomeEmail.signature_full || "William Pitt",
+      signatureName: welcomeEmail.signature_name || "The FASE Team",
+      signatureFull: welcomeEmail.signature_full || "The FASE Team",
       signatureTitle: welcomeEmail.signature_title || "Executive Director, FASE",
       accessPortal: welcomeEmail.access_portal || "Access Member Portal",
       portalUrl: "https://fasemga.com/member-portal"
@@ -152,8 +152,7 @@ export async function POST(request: NextRequest) {
             
             <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 25px 0 0 0;">
               ${emailContent.regards}<br><br>
-              <strong>${emailContent.signatureName}</strong><br>
-              ${emailContent.signatureTitle}
+              <strong>${emailContent.signatureName}</strong>${emailContent.signatureTitle ? `<br>${emailContent.signatureTitle}` : ''}
             </p>
           </div>
         </div>
@@ -193,7 +192,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'William Pitt <william.pitt@fasemga.com>',
+          from: 'FASE <admin@fasemga.com>',
           to: testData.email,
           cc: requestData.cc || undefined,
           subject: emailContent.subject,
