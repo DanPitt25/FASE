@@ -5,30 +5,11 @@
  */
 
 import { Activity, ActivityType } from './firestore';
+import { adminDb as sharedAdminDb, FieldValue } from './firebase-admin';
 
-// Initialize Firebase Admin lazily
-let adminDb: FirebaseFirestore.Firestore | null = null;
-
-async function getAdminDb(): Promise<FirebaseFirestore.Firestore> {
-  if (adminDb) return adminDb;
-
-  const admin = await import('firebase-admin');
-
-  if (admin.apps.length === 0) {
-    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccountKey) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-    }
-
-    const serviceAccount = JSON.parse(serviceAccountKey);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  }
-
-  adminDb = admin.firestore();
-  return adminDb;
+// Use the shared Firebase Admin instance
+function getAdminDb(): FirebaseFirestore.Firestore {
+  return sharedAdminDb as unknown as FirebaseFirestore.Firestore;
 }
 
 export interface LogActivityOptions {
@@ -49,8 +30,7 @@ export async function logActivity(
   title: string,
   options: LogActivityOptions = {}
 ): Promise<string> {
-  const db = await getAdminDb();
-  const admin = await import('firebase-admin');
+  const db = getAdminDb();
 
   const activityRef = db.collection('accounts').doc(accountId).collection('activities').doc();
 
@@ -63,7 +43,7 @@ export async function logActivity(
     metadata: options.metadata,
     performedBy: options.performedBy || 'system',
     performedByName: options.performedByName || 'System',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
     relatedInvoiceId: options.relatedInvoiceId,
     relatedMemberId: options.relatedMemberId,
   };
@@ -408,7 +388,7 @@ export async function getAccountActivities(
   limit: number = 50,
   startAfter?: any
 ): Promise<Activity[]> {
-  const db = await getAdminDb();
+  const db = getAdminDb();
 
   let query = db
     .collection('accounts')
