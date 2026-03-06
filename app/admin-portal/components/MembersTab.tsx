@@ -57,8 +57,8 @@ export default function MembersTab({
           bVal = (b.organizationName || '').toLowerCase();
           break;
         case 'country':
-          aVal = (a.country || '').toLowerCase();
-          bVal = (b.country || '').toLowerCase();
+          aVal = (a.registeredAddress?.country || '').toLowerCase();
+          bVal = (b.registeredAddress?.country || '').toLowerCase();
           break;
         case 'status':
           aVal = a.status;
