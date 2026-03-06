@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Button from "../../components/Button";
-import DashboardLayout from "../../components/DashboardLayout";
+import ConsoleDashboard from "../../components/ConsoleDashboard";
+import type { ConsoleTileData } from "../../components/ConsoleDashboard";
 import ManageProfile from "../../components/ManageProfile";
 import MemberMap from "../../components/MemberMap";
 import MembershipDirectory from "../../components/MembershipDirectory";
@@ -127,14 +128,14 @@ export default function MemberContent() {
   // Get active alert count
   const unreadAlerts = alerts.filter(alert => !alert.isRead);
 
-  // Dashboard sections - filter out profile section for internal users
-  const allDashboardSections = [
+  // Dashboard tiles - filter out profile section for internal users
+  const allDashboardTiles: ConsoleTileData[] = [
     {
-      id: 'overview',
-      title: t('sections.overview'),
+      id: 'home',
+      title: t('sections.home') || 'Home',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
       ),
       content: (
@@ -158,10 +159,11 @@ export default function MemberContent() {
             <div className="absolute inset-0" />
           </Link>
 
-          <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+          {/* Member Benefits Section */}
+          <div className="border-t border-gray-200 pt-6">
             <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">{t('overview.welcome_title')}</h2>
             <p className="text-fase-black mb-6">{t('overview.benefits_intro')}</p>
-            
+
             <div className="space-y-4">
               {/* Brand endorsement - moved to top */}
               <details className="group border border-gray-200 rounded-lg">
@@ -178,14 +180,14 @@ export default function MemberContent() {
                   <p className="text-fase-black mb-6">
                     {t('overview.brand.description_2')}
                   </p>
-                  
+
                   {/* FASE Logo section integrated here */}
                   <div className="border-t border-gray-100 pt-6">
                     <h4 className="text-lg font-semibold text-fase-navy mb-4">{t('logo_access.title')}</h4>
                     <p className="text-fase-black mb-6 leading-relaxed">
                       {t('logo_access.description')}
                     </p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded">
                         <div className="flex items-center space-x-3">
@@ -227,7 +229,7 @@ export default function MemberContent() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="border-t border-gray-200 pt-6">
                       <h5 className="text-base font-semibold text-fase-navy mb-3">{t('logo_access.directory_title')}</h5>
                       <p className="text-fase-black leading-relaxed mb-4">
@@ -300,7 +302,7 @@ export default function MemberContent() {
                   <p className="text-fase-black mb-4">
                     {t('overview.data.description')}
                   </p>
-                  
+
                   <div className="space-y-3 ml-4">
                     {/* Regulatory analysis */}
                     <details className="group border border-gray-100 rounded-lg">
@@ -380,7 +382,7 @@ export default function MemberContent() {
                   <p className="text-fase-black mb-6">
                     {t('overview.relationships.description_6')}
                   </p>
-                  
+
                   {/* Member discounts subsection */}
                   <div className="border-t border-gray-200 pt-6">
                     <h4 className="text-base font-semibold text-fase-navy mb-4">{t('overview.member_discounts.title')}</h4>
@@ -398,127 +400,6 @@ export default function MemberContent() {
               </details>
             </div>
           </div>
-
-        </div>
-      )
-    },
-    {
-      id: 'alerts',
-      title: t('sections.alerts'),
-      icon: (
-        <div className="relative">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 19c-5 0-8-2.5-8-6 0-5 4-9 9-9s9 4 9 9c0 .5-.1 1-.2 1.5" />
-          </svg>
-          {unreadAlerts.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-              !
-            </span>
-          )}
-        </div>
-      ),
-      content: (
-        <div className="space-y-6">
-          {loadingAlerts ? (
-            <div className="space-y-4">
-              {Array.from({ length: 2 }).map((_, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-6 bg-gray-200 rounded w-16"></div>
-                  </div>
-                  <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              ))}
-            </div>
-          ) : alerts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mb-2">{t('alerts.no_alerts')}</h3>
-              <p className="text-fase-black">{t('alerts.no_alerts_desc')}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {alerts.map((alert) => (
-                <article 
-                  key={alert.id} 
-                  className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${
-                    !alert.isRead ? 'border-fase-navy/20 bg-gray-50/30' : ''
-                  }`}
-                >
-                  {/* Header */}
-                  <div className="px-6 py-4 border-b border-gray-100">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy leading-tight">
-                          {alert.title}
-                        </h3>
-                        {!alert.isRead && (
-                          <span className="inline-block mt-1 text-xs font-medium text-fase-navy/70">
-                            Unread
-                          </span>
-                        )}
-                      </div>
-                      
-                      <span className="text-xs text-gray-500 ml-4">
-                        {alert.createdAt?.toDate?.()?.toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="px-6 py-4">
-                    <div 
-                      className="prose prose-sm prose-gray max-w-none leading-relaxed text-fase-black"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(alert.message) }}
-                    />
-                  </div>
-                  
-                  {/* Action button */}
-                  {alert.actionUrl && alert.actionText && (
-                    <div className="px-6 pb-4">
-                      <a
-                        href={alert.actionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-fase-navy hover:bg-gray-800 rounded transition-colors duration-200"
-                      >
-                        {alert.actionText}
-                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </div>
-                  )}
-                  
-                  {/* Footer Actions */}
-                  <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100">
-                    <div className="flex justify-end space-x-4">
-                      {!alert.isRead && (
-                        <button
-                          onClick={() => handleMarkAlertAsRead(alert.id)}
-                          className="text-xs font-medium text-gray-600 hover:text-fase-navy transition-colors duration-200"
-                        >
-                          {t('alerts.mark_read')}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDismissAlert(alert.id)}
-                        className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                      >
-                        {t('alerts.dismiss')}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
         </div>
       )
     },
@@ -526,7 +407,7 @@ export default function MemberContent() {
       id: 'bulletin',
       title: 'The Entrepreneurial Underwriter',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
         </svg>
       ),
@@ -576,19 +457,19 @@ export default function MemberContent() {
       id: 'map',
       title: t('sections.map'),
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m-6 3v10" />
         </svg>
       ),
-      content: (
-        <MemberMap translations={{...(translations?.map || {}), locale}} />
+      content: () => (
+        <MemberMap key="member-map-instance" translations={{...(translations?.map || {}), locale}} />
       )
     },
     {
       id: 'directory',
       title: t('sections.directory'),
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       ),
@@ -600,7 +481,7 @@ export default function MemberContent() {
       id: 'profile',
       title: t('sections.profile'),
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       ),
@@ -613,10 +494,10 @@ export default function MemberContent() {
     }
   ];
 
-  // Filter out profile section for internal users (unless they are account administrators)
-  const dashboardSections = member?.status === 'internal' && !member?.isAccountAdministrator
-    ? allDashboardSections.filter(section => section.id !== 'profile')
-    : allDashboardSections;
+  // Filter out profile tile for internal users (unless they are account administrators)
+  const dashboardTiles = member?.status === 'internal' && !member?.isAccountAdministrator
+    ? allDashboardTiles.filter(tile => tile.id !== 'profile')
+    : allDashboardTiles;
 
   // Construct title with personal name and company name (if applicable)
   const getWelcomeTitle = () => {
@@ -638,15 +519,13 @@ export default function MemberContent() {
   };
 
   return (
-    <DashboardLayout
+    <ConsoleDashboard
       title={getWelcomeTitle()}
-      subtitle={user?.email || t('portal.email_subtitle')}
       bannerImage="/education.jpg"
       bannerImageAlt={t('manage_profile.business_meeting_alt')}
-      sections={dashboardSections}
+      tiles={dashboardTiles}
       currentPage="member-portal"
-      statusBadge={statusBadge}
-      defaultActiveSection="overview"
+      defaultActiveTile="home"
     />
   );
 }
