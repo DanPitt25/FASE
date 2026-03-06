@@ -149,3 +149,19 @@
 .animation-delay-600 {
   animation-delay: 600ms;
 }
+
+/* Console Dashboard Tile Animation */
+@keyframes tileEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-tile-entrance {
+  animation: tileEntrance 0.5s ease-out forwards;
+}
