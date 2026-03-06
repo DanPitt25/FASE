@@ -783,27 +783,20 @@ function MyCompanyView({
   );
 }
 
+// Global counter to ensure unique map IDs across all instances and remounts
+let mapInstanceCounter = 0;
+
 export default function MemberMap({ translations }: MemberMapProps) {
   const { user, member } = useUnifiedAuth();
-  // Use a state-based key that changes on every mount to force fresh map instances
-  const [mapKey, setMapKey] = useState(() => `map-${Date.now()}-${Math.random()}`);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
+  // Generate a unique ID on mount to prevent "Map container is already initialized" errors
+  // Using useRef with a counter that increments globally ensures uniqueness across remounts
+  const mapInstanceId = useRef(`map-${++mapInstanceCounter}-${Date.now()}`).current;
+  const [mapReady, setMapReady] = useState(false);
 
-  // Reset map key on mount and cleanup on unmount
+  // Delay map rendering slightly to ensure DOM is ready
   useEffect(() => {
-    // Generate new key on mount
-    setMapKey(`map-${Date.now()}-${Math.random()}`);
-
-    // Cleanup function to remove any lingering Leaflet instances
-    return () => {
-      if (mapContainerRef.current) {
-        // Clear the container's _leaflet_id to allow reinitialization
-        const container = mapContainerRef.current.querySelector('.leaflet-container');
-        if (container) {
-          (container as any)._leaflet_id = undefined;
-        }
-      }
-    };
+    const timer = setTimeout(() => setMapReady(true), 100);
+    return () => clearTimeout(timer);
   }, []);
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1191,7 +1184,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
             {/* Map and Sidebar Container */}
             <div className="flex h-[500px] w-full rounded-lg overflow-hidden border border-gray-200 relative">
               {/* Map */}
-              <div ref={mapContainerRef} className={`h-full transition-all duration-300 ${(selectedCountry || showMyCompany) ? 'w-2/3' : 'w-full'} relative`}>
+              <div className={`h-full transition-all duration-300 ${(selectedCountry || showMyCompany) ? 'w-2/3' : 'w-full'} relative`}>
                 <style jsx global>{`
                   .leaflet-control-attribution {
                     display: none !important;
@@ -1210,8 +1203,8 @@ export default function MemberMap({ translations }: MemberMapProps) {
                   </div>
                 )}
 
-                <MapContainer
-                  key={mapKey}
+                {mapReady && <MapContainer
+                  key={mapInstanceId}
                   center={[50.1109, 8.6821]} // Center on Frankfurt
                   zoom={4}
                   style={{ height: '100%', width: '100%' }}
@@ -1457,7 +1450,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       }}
                     />
                   )}
-                </MapContainer>
+                </MapContainer>}
               </div>
 
               {/* Sidebar */}
