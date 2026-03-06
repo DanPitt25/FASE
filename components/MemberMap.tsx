@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { getApprovedMembersForDirectory, getAllMembers } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
@@ -783,8 +783,21 @@ function MyCompanyView({
   );
 }
 
+// Global counter to ensure unique map IDs across all instances and remounts
+let mapInstanceCounter = 0;
+
 export default function MemberMap({ translations }: MemberMapProps) {
   const { user, member } = useUnifiedAuth();
+  // Generate a unique ID on mount to prevent "Map container is already initialized" errors
+  // Using useRef with a counter that increments globally ensures uniqueness across remounts
+  const mapInstanceId = useRef(`map-${++mapInstanceCounter}-${Date.now()}`).current;
+  const [mapReady, setMapReady] = useState(false);
+
+  // Delay map rendering slightly to ensure DOM is ready
+  useEffect(() => {
+    const timer = setTimeout(() => setMapReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
   const [members, setMembers] = useState<UnifiedMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocationFilter, setSelectedLocationFilter] = useState<string>('all'); // 'all', 'business', 'markets'
@@ -1189,8 +1202,9 @@ export default function MemberMap({ translations }: MemberMapProps) {
                     </button>
                   </div>
                 )}
-                
-                <MapContainer
+
+                {mapReady && <MapContainer
+                  key={mapInstanceId}
                   center={[50.1109, 8.6821]} // Center on Frankfurt
                   zoom={4}
                   style={{ height: '100%', width: '100%' }}
@@ -1436,7 +1450,7 @@ export default function MemberMap({ translations }: MemberMapProps) {
                       }}
                     />
                   )}
-                </MapContainer>
+                </MapContainer>}
               </div>
 
               {/* Sidebar */}
