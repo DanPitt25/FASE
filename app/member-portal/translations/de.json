@@ -8,12 +8,20 @@
     "email_subtitle": "Zugang zu allen Mitgliedervorteilen und -ressourcen"
   },
   "sections": {
+    "home": "Startseite",
+    "benefits": "Mitgliedervorteile",
     "overview": "Übersicht",
     "messages": "Nachrichten",
     "alerts": "Benachrichtigungen",
     "map": "MGA-Mitgliederkarte",
     "directory": "Mitgliederverzeichnis",
     "profile": "Profil Verwalten"
+  },
+  "home": {
+    "status": "Dashboard"
+  },
+  "benefits": {
+    "status": "Ihre Vorteile"
   },
   "overview": {
     "welcome_title": "Willkommen bei FASE",
@@ -78,6 +86,7 @@
     "no_alerts_desc": "Sie sind auf dem neuesten Stand! Schauen Sie später für wichtige Updates wieder vorbei.",
     "mark_read": "Als Gelesen Markieren",
     "dismiss": "Verwerfen",
+    "unread": "ungelesen",
     "types": {
       "error": "Fehler",
       "warning": "Warnung",
@@ -86,6 +95,7 @@
     }
   },
   "profile": {
+    "manage": "Verwalten",
     "account_settings": "Kontoeinstellungen",
     "personal_name": "Persönlicher Name",
     "company": "Unternehmen",
@@ -276,6 +286,7 @@
   "map": {
     "title": "MGA-Mitgliederkarte",
     "description": "",
+    "explore": "Europa erkunden",
     "loading": "Mitgliederstandorte werden geladen...",
     "member_count": "{{count}} Mitglieder",
     "no_members": "Keine Mitglieder gefunden",
@@ -341,11 +352,16 @@
       "market_removed": "Markt erfolgreich entfernt",
       "changes_saved": "Änderungen erfolgreich gespeichert",
       "error_saving": "Fehler beim Speichern"
+    },
+    "usage": {
+      "title": "So verwenden Sie die Karte:",
+      "instructions": "Klicken Sie auf farbige Länder, um dort tätige MGAs zu sehen. Verwenden Sie den Filter, um Hauptsitz-Standorte oder Marktgebiete anzuzeigen. Suchen Sie nach bestimmten Unternehmen über das Suchfeld oben."
     }
   },
   "directory": {
     "title": "Mitgliederverzeichnis",
     "description": "Vernetzen Sie sich mit FASE-Mitgliedern in ganz Europa. Kontaktinformationen sind nur für eingeloggte Mitglieder sichtbar.",
+    "connect": "Jetzt Verbinden",
     "loading": "Mitgliederverzeichnis wird geladen...",
     "no_members": "Keine Organisationen gefunden",
     "no_members_desc": "Das Mitgliederverzeichnis wird derzeit aufgebaut.",

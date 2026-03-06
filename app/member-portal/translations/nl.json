@@ -8,12 +8,20 @@
     "email_subtitle": "Toegang tot alle ledenvoordelen en bronnen"
   },
   "sections": {
+    "home": "Home",
+    "benefits": "Ledenvoordelen",
     "overview": "Overzicht",
-    "messages": "Berichten", 
+    "messages": "Berichten",
     "alerts": "Meldingen",
     "map": "MGA-Ledenkaart",
     "directory": "Ledengids",
     "profile": "Profiel Beheren"
+  },
+  "home": {
+    "status": "Dashboard"
+  },
+  "benefits": {
+    "status": "Uw voordelen"
   },
   "overview": {
     "welcome_title": "Welkom bij FASE",
@@ -83,6 +91,7 @@
     "no_alerts_desc": "U bent helemaal bijgewerkt! Kom later terug voor belangrijke updates.",
     "mark_read": "Markeer als Gelezen", 
     "dismiss": "Verwerpen",
+    "unread": "ongelezen",
     "priority": {
       "urgent": "urgent",
       "high": "hoog",
@@ -97,6 +106,7 @@
     }
   },
   "profile": {
+    "manage": "Beheren",
     "account_settings": "Accountinstellingen",
     "personal_name": "Persoonlijke Naam",
     "company": "Bedrijf",
@@ -287,6 +297,7 @@
   "map": {
     "title": "MGA-Ledenkaart",
     "description": "",
+    "explore": "Verken Europa",
     "loading": "Ledenlocaties laden...",
     "member_count": "{{count}} leden",
     "no_members": "Geen leden gevonden",
@@ -352,11 +363,16 @@
       "market_removed": "Markt succesvol verwijderd",
       "changes_saved": "Wijzigingen succesvol opgeslagen",
       "error_saving": "Fout bij opslaan wijzigingen"
+    },
+    "usage": {
+      "title": "Hoe de kaart te gebruiken:",
+      "instructions": "Klik op gekleurde landen om GA's te zien die daar actief zijn. Gebruik het filter om hoofdkantoorlocaties of marktgebieden te bekijken. Zoek naar specifieke bedrijven met behulp van het zoekveld hierboven."
     }
   },
   "directory": {
     "title": "Ledengids",
     "description": "Verbind met FASE-leden door heel Europa. Contactgegevens zijn alleen zichtbaar voor ingelogde leden.",
+    "connect": "Nu Verbinden",
     "loading": "Ledengids laden...",
     "no_members": "Geen organisaties gevonden",
     "no_members_desc": "De ledengids wordt momenteel opgevuld.",

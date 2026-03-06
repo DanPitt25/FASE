@@ -6,6 +6,7 @@ import { getApprovedMembersWithSubcollections } from '../lib/unified-member';
 import type { UnifiedMember } from '../lib/unified-member';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
 import { getLineOfBusinessDisplay } from '../lib/lines-of-business';
+import LinesOfBusinessFilter from './LinesOfBusinessFilter';
 
 // Helper function to get display organization type (matches external directory exactly)
 const getDisplayOrganizationType = (member: UnifiedMember): string => {
@@ -19,6 +20,25 @@ const getDisplayOrganizationType = (member: UnifiedMember): string => {
     return 'Carrier';
   }
   return member.organizationType || 'Other';
+};
+
+// Helper to get lines of business from either direct field or portfolio
+const getLinesOfBusiness = (member: UnifiedMember): string[] => {
+  return member.linesOfBusiness || (member as any).portfolio?.linesOfBusiness || [];
+};
+
+// Helper to get localized company bio
+const getLocalizedBio = (member: UnifiedMember, locale: string): string | null => {
+  const summary = member.companySummary;
+  if (!summary || summary.status !== 'approved' || !summary.text) return null;
+
+  // Try to get translated version first (for non-English locales)
+  if (locale !== 'en' && summary.translations?.[locale]) {
+    return summary.translations[locale];
+  }
+
+  // Fall back to English
+  return summary.text;
 };
 
 // Component for logo with error handling
@@ -130,10 +150,29 @@ function OrganizationCard({
                 </div>
               )}
 
+              {/* Lines of Business Badges - collapsed view */}
+              {!isExpanded && getLinesOfBusiness(organization) && getLinesOfBusiness(organization).length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {getLinesOfBusiness(organization).slice(0, 3).map((line: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 text-xs bg-fase-navy/10 text-fase-navy rounded-full"
+                    >
+                      {getLineOfBusinessDisplay(line, translations.locale || 'en')}
+                    </span>
+                  ))}
+                  {getLinesOfBusiness(organization).length > 3 && (
+                    <span className="px-2 py-0.5 text-xs text-gray-500">
+                      +{getLinesOfBusiness(organization).length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Company Bio Preview - only show when collapsed */}
-              {!isExpanded && organization.companySummary?.status === 'approved' && organization.companySummary.text && (
+              {!isExpanded && getLocalizedBio(organization, translations.locale || 'en') && (
                 <div className="text-sm text-gray-700 mb-2 line-clamp-2 leading-relaxed">
-                  {organization.companySummary.text}
+                  {getLocalizedBio(organization, translations.locale || 'en')}
                 </div>
               )}
 
@@ -162,24 +201,24 @@ function OrganizationCard({
           <div className="p-4 bg-gray-50">
             <div className="space-y-3">
               {/* Company Bio - Full Text */}
-              {organization.companySummary?.status === 'approved' && organization.companySummary.text && (
+              {getLocalizedBio(organization, translations.locale || 'en') && (
                 <div>
                   <div className="text-xs font-medium text-gray-700 mb-1">About</div>
                   <div className="text-sm text-gray-900 leading-relaxed">
-                    {organization.companySummary.text}
+                    {getLocalizedBio(organization, translations.locale || 'en')}
                   </div>
                 </div>
               )}
 
               {/* Lines of Business */}
-              {organization.linesOfBusiness && organization.linesOfBusiness.length > 0 && (
+              {getLinesOfBusiness(organization) && getLinesOfBusiness(organization).length > 0 && (
                 <div>
                   <div className="text-xs font-medium text-gray-700 mb-1">{translations.lines_of_business || 'Lines of Business'}</div>
                   <div className="text-sm text-gray-900">
-                    {organization.linesOfBusiness.map((line: string, index: number) => (
+                    {getLinesOfBusiness(organization).map((line: string, index: number) => (
                       <span key={index}>
                         {getLineOfBusinessDisplay(line, translations.locale || 'en')}
-                        {index < organization.linesOfBusiness!.length - 1 && ', '}
+                        {index < getLinesOfBusiness(organization)!.length - 1 && ', '}
                       </span>
                     ))}
                   </div>
@@ -239,6 +278,7 @@ export default function MembershipDirectory({ translations }: MembershipDirector
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredOrganizations, setFilteredOrganizations] = useState<UnifiedMember[]>([]);
   const [organizationFilter, setOrganizationFilter] = useState<string>('all');
+  const [selectedLinesOfBusiness, setSelectedLinesOfBusiness] = useState<string[]>([]);
 
   // Load members on mount
   useEffect(() => {
@@ -302,8 +342,17 @@ export default function MembershipDirectory({ translations }: MembershipDirector
       filtered = filtered.filter(org => getDisplayOrganizationType(org) === organizationFilter);
     }
 
+    // Filter by lines of business
+    if (selectedLinesOfBusiness.length > 0) {
+      filtered = filtered.filter(org => {
+        const orgLines = getLinesOfBusiness(org);
+        // Match if organization has ANY of the selected lines
+        return selectedLinesOfBusiness.some(line => orgLines.includes(line));
+      });
+    }
+
     setFilteredOrganizations(filtered);
-  }, [searchQuery, organizationFilter, directoryData]);
+  }, [searchQuery, organizationFilter, selectedLinesOfBusiness, directoryData]);
 
   // Get unique organization types for filter (using display types with same sort order as public directory)
   const organizationTypes = ['all', ...Array.from(new Set(
@@ -348,31 +397,45 @@ export default function MembershipDirectory({ translations }: MembershipDirector
       </div>
       
       {/* Search and Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search organizations and members..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-          />
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search organizations and members..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+            />
+          </div>
+          <select
+            value={organizationFilter}
+            onChange={(e) => setOrganizationFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
+          >
+            <option value="all">All Types</option>
+            {organizationTypes.slice(1).map(type => (
+              <option key={type} value={type}>
+                {type === 'MGA' ? 'Managing General Agent' :
+                 type === 'carrier' ? 'Insurance Carrier' :
+                 type === 'provider' ? 'Service Provider' :
+                 type}
+              </option>
+            ))}
+          </select>
         </div>
-        <select
-          value={organizationFilter}
-          onChange={(e) => setOrganizationFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent text-sm"
-        >
-          <option value="all">All Types</option>
-          {organizationTypes.slice(1).map(type => (
-            <option key={type} value={type}>
-              {type === 'MGA' ? 'Managing General Agent' :
-               type === 'carrier' ? 'Insurance Carrier' :
-               type === 'provider' ? 'Service Provider' :
-               type}
-            </option>
-          ))}
-        </select>
+
+        {/* Lines of Business Filter */}
+        <LinesOfBusinessFilter
+          selectedLines={selectedLinesOfBusiness}
+          onSelectionChange={setSelectedLinesOfBusiness}
+          locale={translations.locale || 'en'}
+          translations={{
+            filter_by_lob: translations.lines_of_business || 'Lines of Business',
+            lines_selected: 'selected',
+            clear_filters: 'Clear all'
+          }}
+        />
       </div>
 
       {/* Results Count */}

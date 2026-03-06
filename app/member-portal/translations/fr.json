@@ -8,12 +8,20 @@
     "email_subtitle": "Accédez à tous les avantages et ressources membres"
   },
   "sections": {
+    "home": "Accueil",
+    "benefits": "Avantages Membres",
     "overview": "Aperçu",
     "messages": "Messages",
     "alerts": "Alertes",
     "map": "Carte des Membres MGA",
     "directory": "Répertoire des Membres",
     "profile": "Gérer le Profil"
+  },
+  "home": {
+    "status": "Tableau de bord"
+  },
+  "benefits": {
+    "status": "Vos avantages"
   },
   "overview": {
     "welcome_title": "Bienvenue à FASE",
@@ -78,6 +86,7 @@
     "no_alerts_desc": "Vous êtes à jour ! Revenez plus tard pour des mises à jour importantes.",
     "mark_read": "Marquer comme Lu",
     "dismiss": "Ignorer",
+    "unread": "non lus",
     "types": {
       "error": "erreur",
       "warning": "avertissement",
@@ -86,6 +95,7 @@
     }
   },
   "profile": {
+    "manage": "Gérer",
     "account_settings": "Paramètres du Compte",
     "personal_name": "Nom Personnel",
     "company": "Entreprise",
@@ -276,6 +286,7 @@
   "map": {
     "title": "Carte des Membres MGA",
     "description": "",
+    "explore": "Explorez l'Europe",
     "loading": "Chargement des emplacements des membres...",
     "member_count": "{{count}} membres",
     "no_members": "Aucun membre trouvé",
@@ -341,11 +352,16 @@
       "market_removed": "Marché supprimé avec succès",
       "changes_saved": "Modifications enregistrées avec succès",
       "error_saving": "Erreur lors de l'enregistrement"
+    },
+    "usage": {
+      "title": "Comment utiliser la carte :",
+      "instructions": "Cliquez sur les pays colorés pour voir les Agences de Souscription qui y opèrent. Utilisez le filtre pour afficher les emplacements des sièges ou les territoires de marché. Recherchez des entreprises spécifiques en utilisant le champ de recherche ci-dessus."
     }
   },
   "directory": {
     "title": "Répertoire des Membres",
     "description": "Connectez-vous avec les membres FASE à travers l'Europe. Les informations de contact ne sont visibles que pour les membres connectés.",
+    "connect": "Se Connecter",
     "loading": "Chargement du répertoire des membres...",
     "no_members": "Aucune organisation trouvée",
     "no_members_desc": "Le répertoire des membres est en cours de constitution.",

@@ -8,12 +8,20 @@
     "email_subtitle": "Accedi a tutti i benefici e le risorse per i membri"
   },
   "sections": {
+    "home": "Home",
+    "benefits": "Benefici per i Membri",
     "overview": "Panoramica",
     "messages": "Messaggi",
     "alerts": "Avvisi",
     "map": "Mappa dei Membri MGA",
     "directory": "Elenco dei Membri",
     "profile": "Gestisci Profilo"
+  },
+  "home": {
+    "status": "Dashboard"
+  },
+  "benefits": {
+    "status": "I Suoi vantaggi"
   },
   "overview": {
     "welcome_title": "Benvenuto in FASE",
@@ -78,6 +86,7 @@
     "no_alerts_desc": "È aggiornato! Torni più tardi per aggiornamenti importanti.",
     "mark_read": "Segna come Letto",
     "dismiss": "Ignora",
+    "unread": "non letti",
     "types": {
       "error": "errore",
       "warning": "avvertimento",
@@ -86,6 +95,7 @@
     }
   },
   "profile": {
+    "manage": "Gestisci",
     "account_settings": "Impostazioni Account",
     "personal_name": "Nome Personale",
     "company": "Azienda",
@@ -276,6 +286,7 @@
   "map": {
     "title": "Mappa dei Membri MGA",
     "description": "",
+    "explore": "Esplora l'Europa",
     "loading": "Caricamento posizioni dei membri...",
     "member_count": "{{count}} membri",
     "no_members": "Nessun membro trovato",
@@ -341,11 +352,16 @@
       "market_removed": "Mercato rimosso con successo",
       "changes_saved": "Modifiche salvate con successo",
       "error_saving": "Errore nel salvare le modifiche"
+    },
+    "usage": {
+      "title": "Come usare la mappa:",
+      "instructions": "Clicca sui paesi colorati per vedere le Agenzie di Sottoscrizione che operano lì. Usa il filtro per visualizzare le sedi principali o i territori di mercato. Cerca aziende specifiche usando la casella di ricerca sopra."
     }
   },
   "directory": {
     "title": "Elenco dei Membri",
     "description": "Connettiti con i membri FASE in tutta Europa. Le informazioni di contatto sono visibili solo ai membri registrati.",
+    "connect": "Connettiti Ora",
     "loading": "Caricamento elenco membri...",
     "no_members": "Nessuna organizzazione trovata",
     "no_members_desc": "L'elenco dei membri è attualmente in fase di popolamento.",

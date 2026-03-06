@@ -8,12 +8,20 @@
     "email_subtitle": "Acceda a todos los beneficios y recursos de miembros"
   },
   "sections": {
+    "home": "Inicio",
+    "benefits": "Beneficios de Miembro",
     "overview": "Resumen",
     "messages": "Mensajes",
     "alerts": "Alertas",
     "map": "Mapa de Miembros MGA",
     "directory": "Directorio de Miembros",
     "profile": "Gestionar Perfil"
+  },
+  "home": {
+    "status": "Panel de control"
+  },
+  "benefits": {
+    "status": "Sus beneficios"
   },
   "overview": {
     "welcome_title": "Bienvenido a FASE",
@@ -78,6 +86,7 @@
     "no_alerts_desc": "¡Está al día! Vuelva más tarde para actualizaciones importantes.",
     "mark_read": "Marcar como Leído",
     "dismiss": "Descartar",
+    "unread": "no leídas",
     "types": {
       "error": "error",
       "warning": "advertencia",
@@ -86,6 +95,7 @@
     }
   },
   "profile": {
+    "manage": "Gestionar",
     "account_settings": "Configuración de Cuenta",
     "personal_name": "Nombre Personal",
     "company": "Empresa",
@@ -276,6 +286,7 @@
   "map": {
     "title": "Mapa de Miembros MGA",
     "description": "",
+    "explore": "Explorar Europa",
     "loading": "Cargando ubicaciones de miembros...",
     "loading_map": "Cargando mapa...",
     "member_count": "{{count}} miembros",
@@ -342,11 +353,16 @@
       "market_removed": "Mercado eliminado exitosamente",
       "changes_saved": "Cambios guardados exitosamente",
       "error_saving": "Error al guardar cambios"
+    },
+    "usage": {
+      "title": "Cómo usar el mapa:",
+      "instructions": "Haga clic en los países coloreados para ver las Agencias de Suscripción que operan allí. Use el filtro para ver las ubicaciones de las sedes o los territorios de mercado. Busque empresas específicas usando el cuadro de búsqueda de arriba."
     }
   },
   "directory": {
     "title": "Directorio de Miembros",
     "description": "Conecte con miembros de FASE en toda Europa. La información de contacto solo es visible para miembros registrados.",
+    "connect": "Conectar Ahora",
     "loading": "Cargando directorio de miembros...",
     "no_members": "No se encontraron organizaciones",
     "no_members_desc": "El directorio de miembros se está poblando actualmente.",

@@ -7,12 +7,20 @@
     "email_subtitle": "Access all member benefits and resources"
   },
   "sections": {
+    "home": "Home",
+    "benefits": "Member Benefits",
     "overview": "Overview",
-    "messages": "Messages", 
+    "messages": "Messages",
     "alerts": "Alerts",
     "map": "MGA Member Map",
     "directory": "Member Directory",
     "profile": "Manage Profile"
+  },
+  "home": {
+    "status": "Dashboard"
+  },
+  "benefits": {
+    "status": "Your perks"
   },
   "overview": {
     "welcome_title": "Welcome to FASE",
@@ -75,8 +83,9 @@
   "alerts": {
     "no_alerts": "No Alerts",
     "no_alerts_desc": "You're all caught up! Check back later for important updates.",
-    "mark_read": "Mark as Read", 
+    "mark_read": "Mark as Read",
     "dismiss": "Dismiss",
+    "unread": "unread",
     "types": {
       "error": "error",
       "warning": "warning", 
@@ -85,6 +94,7 @@
     }
   },
   "profile": {
+    "manage": "Manage",
     "account_settings": "Account Settings",
     "personal_name": "Personal Name",
     "company": "Company",
@@ -277,6 +287,7 @@
   "map": {
     "title": "MGA Member Map",
     "description": "",
+    "explore": "Explore Europe",
     "loading": "Loading member locations...",
     "loading_map": "Loading map...",
     "member_count": "{{count}} members",
@@ -352,6 +363,7 @@
   "directory": {
     "title": "Member Directory",
     "description": "Connect with FASE members across Europe. Contact information is only visible to logged-in members.",
+    "connect": "Connect Now",
     "loading": "Loading member directory...",
     "no_members": "No organizations found",
     "no_members_desc": "The member directory is currently being populated.",

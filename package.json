@@ -34,7 +34,7 @@
     "puppeteer": "^24.26.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-leaflet": "^4.2.1",
+    "react-leaflet": "^5.0.0-rc.1",
     "sharp": "^0.34.4",
     "stripe": "^18.5.0",
     "topojson-client": "^3.1.0",
