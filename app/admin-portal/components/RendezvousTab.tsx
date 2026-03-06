@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import AdminCountrySelect from './AdminCountrySelect';
+import * as XLSX from 'xlsx';
 
 interface Attendee {
   id: string;
@@ -36,7 +37,7 @@ interface RendezvousRegistration {
   membershipType: string;
   discount: number;
   paymentMethod: 'card' | 'bank_transfer';
-  paymentStatus: 'paid' | 'pending_bank_transfer' | 'confirmed';
+  paymentStatus: 'paid' | 'pending_bank_transfer' | 'confirmed' | 'pending' | 'complimentary';
   stripeSessionId?: string;
   invoiceUrl?: string;
   createdAt: any;
@@ -62,13 +63,35 @@ interface InterestRegistration {
   source: string;
 }
 
-type PaymentStatus = 'paid' | 'pending_bank_transfer' | 'confirmed';
+type PaymentStatus = 'paid' | 'pending_bank_transfer' | 'confirmed' | 'pending' | 'complimentary';
+type ViewMode = 'attendees' | 'companies' | 'issues';
+
+// Flattened attendee for the attendee view
+interface FlatAttendee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  jobTitle: string;
+  company: string;
+  country: string;
+  organizationType: string;
+  paymentStatus: PaymentStatus;
+  invoiceNumber: string;
+  registrationId: string;
+  isFaseMember: boolean;
+  isAsaseMember: boolean;
+  totalPrice: number;
+  createdAt: any;
+}
 
 export default function RendezvousTab() {
   const [registrations, setRegistrations] = useState<RendezvousRegistration[]>([]);
   const [interestRegistrations, setInterestRegistrations] = useState<InterestRegistration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('attendees');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
   const [selectedCompanyRegistrations, setSelectedCompanyRegistrations] = useState<RendezvousRegistration[]>([]);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -103,7 +126,6 @@ export default function RendezvousTab() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
-  const [showDuplicatesModal, setShowDuplicatesModal] = useState(false);
   const [showEditAttendeesModal, setShowEditAttendeesModal] = useState(false);
   const [editingRegistration, setEditingRegistration] = useState<RendezvousRegistration | null>(null);
   const [editedAttendees, setEditedAttendees] = useState<Attendee[]>([]);
@@ -113,6 +135,8 @@ export default function RendezvousTab() {
   const [invoiceEditRegistration, setInvoiceEditRegistration] = useState<RendezvousRegistration | null>(null);
   const [invoiceTicketCount, setInvoiceTicketCount] = useState(1);
   const [invoiceUnitPrice, setInvoiceUnitPrice] = useState(0);
+  const [sortColumn, setSortColumn] = useState<string>('company');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [newRegistration, setNewRegistration] = useState({
     company: '',
     billingEmail: '',
@@ -149,6 +173,218 @@ export default function RendezvousTab() {
       setLoading(false);
     }
   };
+
+  // Flatten all attendees from all registrations
+  const allAttendees = useMemo((): FlatAttendee[] => {
+    const attendees: FlatAttendee[] = [];
+    registrations.forEach(reg => {
+      (reg.attendees || []).forEach(att => {
+        attendees.push({
+          id: att.id,
+          firstName: att.firstName,
+          lastName: att.lastName,
+          email: att.email,
+          jobTitle: att.jobTitle,
+          company: reg.billingInfo?.company || '',
+          country: reg.billingInfo?.country || '',
+          organizationType: reg.billingInfo?.organizationType || '',
+          paymentStatus: reg.paymentStatus,
+          invoiceNumber: reg.invoiceNumber,
+          registrationId: reg.registrationId,
+          isFaseMember: reg.companyIsFaseMember,
+          isAsaseMember: reg.isAsaseMember,
+          totalPrice: reg.totalPrice,
+          createdAt: reg.createdAt,
+        });
+      });
+    });
+    return attendees;
+  }, [registrations]);
+
+  // Calculate stats - simple and accurate
+  const stats = useMemo(() => {
+    const confirmed = registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary');
+    const pending = registrations.filter(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
+
+    const confirmedAttendees = confirmed.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
+    const pendingAttendees = pending.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
+
+    const confirmedRevenue = confirmed.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+    const pendingRevenue = pending.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+
+    return {
+      totalRegistrations: registrations.length,
+      confirmedRegistrations: confirmed.length,
+      pendingRegistrations: pending.length,
+      totalAttendees: confirmedAttendees + pendingAttendees,
+      confirmedAttendees,
+      pendingAttendees,
+      confirmedRevenue,
+      pendingRevenue,
+      totalRevenue: confirmedRevenue + pendingRevenue,
+    };
+  }, [registrations]);
+
+  // Identify data quality issues
+  const dataIssues = useMemo(() => {
+    const issues: {
+      duplicateEmails: { email: string; count: number; attendees: FlatAttendee[] }[];
+      similarCompanies: { normalized: string; companies: string[] }[];
+      missingData: { type: string; count: number; items: any[] }[];
+    } = {
+      duplicateEmails: [],
+      similarCompanies: [],
+      missingData: [],
+    };
+
+    // Find duplicate emails across all attendees
+    const emailMap = new Map<string, FlatAttendee[]>();
+    allAttendees.forEach(att => {
+      const email = (att.email || '').toLowerCase().trim();
+      if (email) {
+        if (!emailMap.has(email)) emailMap.set(email, []);
+        emailMap.get(email)!.push(att);
+      }
+    });
+    emailMap.forEach((attendees, email) => {
+      if (attendees.length > 1) {
+        issues.duplicateEmails.push({ email, count: attendees.length, attendees });
+      }
+    });
+
+    // Find similar company names (potential duplicates)
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const companyMap = new Map<string, Set<string>>();
+    registrations.forEach(reg => {
+      const company = reg.billingInfo?.company || '';
+      const normalized = normalize(company);
+      if (normalized.length > 3) {
+        if (!companyMap.has(normalized)) companyMap.set(normalized, new Set());
+        companyMap.get(normalized)!.add(company);
+      }
+    });
+    companyMap.forEach((companies, normalized) => {
+      if (companies.size > 1) {
+        issues.similarCompanies.push({ normalized, companies: Array.from(companies) });
+      }
+    });
+
+    // Find registrations with missing critical data
+    const missingAttendees = registrations.filter(r => !r.attendees || r.attendees.length === 0);
+    if (missingAttendees.length > 0) {
+      issues.missingData.push({ type: 'Registrations without attendees', count: missingAttendees.length, items: missingAttendees });
+    }
+
+    const missingStatus = registrations.filter(r => !r.paymentStatus);
+    if (missingStatus.length > 0) {
+      issues.missingData.push({ type: 'Registrations without payment status', count: missingStatus.length, items: missingStatus });
+    }
+
+    return issues;
+  }, [allAttendees, registrations]);
+
+  const totalIssuesCount = dataIssues.duplicateEmails.length + dataIssues.similarCompanies.length +
+    dataIssues.missingData.reduce((sum, m) => sum + m.count, 0);
+
+  // Filter and sort attendees
+  const filteredAttendees = useMemo(() => {
+    let filtered = allAttendees;
+
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'pending_bank_transfer') {
+        filtered = filtered.filter(a => a.paymentStatus === 'pending_bank_transfer' || a.paymentStatus === 'pending');
+      } else {
+        filtered = filtered.filter(a => a.paymentStatus === statusFilter);
+      }
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(a =>
+        a.firstName.toLowerCase().includes(q) ||
+        a.lastName.toLowerCase().includes(q) ||
+        a.email.toLowerCase().includes(q) ||
+        a.company.toLowerCase().includes(q) ||
+        a.jobTitle.toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
+    filtered = [...filtered].sort((a, b) => {
+      let aVal: string | number = '';
+      let bVal: string | number = '';
+
+      switch (sortColumn) {
+        case 'name':
+          aVal = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bVal = `${b.firstName} ${b.lastName}`.toLowerCase();
+          break;
+        case 'company':
+          aVal = a.company.toLowerCase();
+          bVal = b.company.toLowerCase();
+          break;
+        case 'country':
+          aVal = a.country.toLowerCase();
+          bVal = b.country.toLowerCase();
+          break;
+        case 'status':
+          aVal = a.paymentStatus;
+          bVal = b.paymentStatus;
+          break;
+        default:
+          aVal = a.company.toLowerCase();
+          bVal = b.company.toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [allAttendees, statusFilter, searchQuery, sortColumn, sortDirection]);
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  // Group registrations by company for company view
+  const companyGroups = useMemo(() => {
+    const groups: { company: string; registrations: RendezvousRegistration[] }[] = [];
+    const companyMap = new Map<string, RendezvousRegistration[]>();
+
+    let filtered = registrations;
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'pending_bank_transfer') {
+        filtered = filtered.filter(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
+      } else {
+        filtered = filtered.filter(r => r.paymentStatus === statusFilter);
+      }
+    }
+
+    filtered.forEach(reg => {
+      const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
+      if (company) {
+        if (!companyMap.has(company)) companyMap.set(company, []);
+        companyMap.get(company)!.push(reg);
+      }
+    });
+
+    companyMap.forEach((regs) => {
+      groups.push({
+        company: regs[0].billingInfo?.company || '',
+        registrations: regs,
+      });
+    });
+
+    groups.sort((a, b) => a.company.localeCompare(b.company));
+    return groups;
+  }, [registrations, statusFilter]);
 
   const initEmailForm = (registration: RendezvousRegistration) => {
     const attendeeNames = registration.attendees
@@ -645,7 +881,10 @@ export default function RendezvousTab() {
         return 'bg-green-100 text-green-800';
       case 'confirmed':
         return 'bg-blue-100 text-blue-800';
+      case 'complimentary':
+        return 'bg-purple-100 text-purple-800';
       case 'pending_bank_transfer':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -655,18 +894,17 @@ export default function RendezvousTab() {
   const formatStatus = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'Paid (Stripe)';
+        return 'Paid';
       case 'confirmed':
         return 'Confirmed';
+      case 'complimentary':
+        return 'Complimentary';
       case 'pending_bank_transfer':
-        return 'Pending Payment';
+      case 'pending':
+        return 'Pending';
       default:
         return status;
     }
-  };
-
-  const getPaymentMethodLabel = (method: string) => {
-    return method === 'card' ? 'Card (Stripe)' : 'Bank Transfer';
   };
 
   const getOrgTypeLabel = (type: string) => {
@@ -678,119 +916,27 @@ export default function RendezvousTab() {
     return labels[type] || type;
   };
 
-  // Filter registrations
-  const filteredRegistrations = statusFilter === 'all'
-    ? registrations
-    : registrations.filter(reg => reg.paymentStatus === statusFilter);
-
-  // Calculate stats - count actual attendees (people), deduplicate across registrations
-  // If same email appears in both confirmed and pending registrations, only count once (confirmed wins)
-  const confirmedRegistrations = registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed');
-  const pendingRegistrations = registrations.filter(r => r.paymentStatus === 'pending_bank_transfer');
-
-  // Count all attendees in confirmed registrations
-  let confirmedAttendeeCount = 0;
-  const confirmedAttendeeEmails = new Set<string>();
-  confirmedRegistrations.forEach(reg => {
-    reg.attendees?.forEach(attendee => {
-      confirmedAttendeeCount++;
-      if (attendee.email) {
-        confirmedAttendeeEmails.add(attendee.email.toLowerCase().trim());
-      }
-    });
-  });
-
-  // Count pending attendees, but skip anyone whose email is already in confirmed
-  let pendingAttendeeCount = 0;
-  pendingRegistrations.forEach(reg => {
-    reg.attendees?.forEach(attendee => {
-      const email = attendee.email?.toLowerCase().trim();
-      // Only skip if we have an email AND it's already confirmed
-      if (!email || !confirmedAttendeeEmails.has(email)) {
-        pendingAttendeeCount++;
-      }
-    });
-  });
-
-  const stats = {
-    total: registrations.length,
-    uniqueAttendees: confirmedAttendeeCount + pendingAttendeeCount,
-    confirmedAttendees: confirmedAttendeeCount,
-    pendingAttendees: pendingAttendeeCount,
-    paid: confirmedRegistrations.length,
-    pending: pendingRegistrations.length,
-    revenue: confirmedRegistrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0)
+  const findRegistrationByAttendee = (attendee: FlatAttendee): RendezvousRegistration | undefined => {
+    return registrations.find(r => r.registrationId === attendee.registrationId);
   };
 
-  // Find duplicate attendees (same email appears multiple times across registrations)
-  const attendeeOccurrences: Record<string, Array<{
-    email: string;
-    name: string;
-    company: string;
-    registrationId: string;
-    status: string;
-  }>> = {};
+  const exportToExcel = () => {
+    const data = allAttendees.map(a => ({
+      'First Name': a.firstName,
+      'Last Name': a.lastName,
+      'Email': a.email,
+      'Job Title': a.jobTitle,
+      'Company': a.company,
+      'Country': a.country,
+      'Organization Type': getOrgTypeLabel(a.organizationType),
+      'Payment Status': formatStatus(a.paymentStatus)
+    }));
 
-  registrations.forEach(reg => {
-    reg.attendees?.forEach(attendee => {
-      if (attendee.email) {
-        const email = attendee.email.toLowerCase().trim();
-        if (!attendeeOccurrences[email]) {
-          attendeeOccurrences[email] = [];
-        }
-        attendeeOccurrences[email].push({
-          email: attendee.email,
-          name: `${attendee.firstName} ${attendee.lastName}`.trim(),
-          company: reg.billingInfo?.company || '',
-          registrationId: reg.registrationId,
-          status: reg.paymentStatus
-        });
-      }
-    });
-  });
-
-  const duplicateAttendees = Object.entries(attendeeOccurrences)
-    .filter(([_, occurrences]) => occurrences.length > 1)
-    .map(([email, occurrences]) => ({ email, occurrences }));
-
-  // Find duplicate company registrations (same company name, multiple registrations)
-  const companyRegistrations: Record<string, RendezvousRegistration[]> = {};
-  registrations.forEach(reg => {
-    const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
-    if (company) {
-      if (!companyRegistrations[company]) {
-        companyRegistrations[company] = [];
-      }
-      companyRegistrations[company].push(reg);
-    }
-  });
-
-  const duplicateCompanies = Object.entries(companyRegistrations)
-    .filter(([_, regs]) => regs.length > 1)
-    .map(([company, regs]) => ({ company: regs[0].billingInfo?.company, registrations: regs }));
-
-  const hasDuplicates = duplicateAttendees.length > 0 || duplicateCompanies.length > 0;
-
-  // Group filtered registrations by company for the table
-  const filteredCompanyGroups: { company: string; registrations: RendezvousRegistration[] }[] = [];
-  const filteredCompanyMap: Record<string, RendezvousRegistration[]> = {};
-  filteredRegistrations.forEach(reg => {
-    const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
-    if (company) {
-      if (!filteredCompanyMap[company]) {
-        filteredCompanyMap[company] = [];
-      }
-      filteredCompanyMap[company].push(reg);
-    }
-  });
-  Object.entries(filteredCompanyMap).forEach(([_, regs]) => {
-    filteredCompanyGroups.push({
-      company: regs[0].billingInfo?.company || '',
-      registrations: regs
-    });
-  });
-  // Sort alphabetically by company name
-  filteredCompanyGroups.sort((a, b) => a.company.localeCompare(b.company));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendees');
+    XLSX.writeFile(workbook, `rendezvous-attendees-${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   if (loading) {
     return (
@@ -803,67 +949,120 @@ export default function RendezvousTab() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {/* Stats Cards - Redesigned for clarity */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-fase-navy">{stats.total}</div>
-          <div className="text-sm text-gray-600">Registrations</div>
+          <div className="text-3xl font-bold text-fase-navy">{stats.totalAttendees}</div>
+          <div className="text-sm font-medium text-gray-700">Total Attendees</div>
+          <div className="text-xs text-gray-500 mt-1">
+            <span className="text-green-600">{stats.confirmedAttendees} confirmed</span>
+            {stats.pendingAttendees > 0 && (
+              <span className="text-yellow-600"> + {stats.pendingAttendees} pending</span>
+            )}
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-fase-navy">{stats.uniqueAttendees}</div>
-          <div className="text-sm text-gray-600">Unique Attendees</div>
-          <div className="text-xs text-gray-400 mt-1">{stats.confirmedAttendees} confirmed · {stats.pendingAttendees} pending</div>
+          <div className="text-3xl font-bold text-fase-navy">{stats.totalRegistrations}</div>
+          <div className="text-sm font-medium text-gray-700">Registrations</div>
+          <div className="text-xs text-gray-500 mt-1">
+            <span className="text-green-600">{stats.confirmedRegistrations} confirmed</span>
+            {stats.pendingRegistrations > 0 && (
+              <span className="text-yellow-600"> + {stats.pendingRegistrations} pending</span>
+            )}
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.paid}</div>
-          <div className="text-sm text-gray-600">Paid Registrations</div>
+          <div className="text-3xl font-bold text-green-600">€{stats.confirmedRevenue.toLocaleString()}</div>
+          <div className="text-sm font-medium text-gray-700">Confirmed Revenue</div>
+          {stats.pendingRevenue > 0 && (
+            <div className="text-xs text-yellow-600 mt-1">
+              +€{stats.pendingRevenue.toLocaleString()} pending
+            </div>
+          )}
         </div>
         <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-          <div className="text-sm text-gray-600">Pending Payment</div>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-2xl font-bold text-fase-navy">€{stats.revenue.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">Revenue</div>
+          <div className="text-3xl font-bold text-gray-500">{interestRegistrations.length}</div>
+          <div className="text-sm font-medium text-gray-700">Interest Signups</div>
+          <button
+            onClick={() => setShowInterestModal(true)}
+            className="text-xs text-fase-navy hover:text-fase-orange underline mt-1"
+          >
+            View list
+          </button>
         </div>
       </div>
 
-      {/* Filter Controls */}
+      {/* View Controls */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            MGA Rendezvous Companies ({filteredCompanyGroups.length})
-          </h3>
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'all')}
-              className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+          {/* View Mode Tabs */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('attendees')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'attendees'
+                  ? 'bg-white text-fase-navy shadow-sm'
+                  : 'text-gray-600 hover:text-fase-navy'
+              }`}
             >
-              <option value="all">All Statuses ({registrations.length})</option>
-              <option value="paid">Paid - Stripe ({registrations.filter(r => r.paymentStatus === 'paid').length})</option>
-              <option value="confirmed">Confirmed ({registrations.filter(r => r.paymentStatus === 'confirmed').length})</option>
-              <option value="pending_bank_transfer">Pending Payment ({registrations.filter(r => r.paymentStatus === 'pending_bank_transfer').length})</option>
-            </select>
+              Attendees ({stats.totalAttendees})
+            </button>
+            <button
+              onClick={() => setViewMode('companies')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'companies'
+                  ? 'bg-white text-fase-navy shadow-sm'
+                  : 'text-gray-600 hover:text-fase-navy'
+              }`}
+            >
+              Companies ({companyGroups.length})
+            </button>
+            <button
+              onClick={() => setViewMode('issues')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'issues'
+                  ? 'bg-white text-fase-navy shadow-sm'
+                  : 'text-gray-600 hover:text-fase-navy'
+              } ${totalIssuesCount > 0 ? 'relative' : ''}`}
+            >
+              Data Issues
+              {totalIssuesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {totalIssuesCount}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Filters and Actions */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {viewMode !== 'issues' && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-2 text-sm w-48 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'all')}
+                  className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="paid">Paid</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="complimentary">Complimentary</option>
+                  <option value="pending_bank_transfer">Pending</option>
+                </select>
+              </>
+            )}
             <Button variant="secondary" size="small" onClick={loadRegistrations}>
               Refresh
             </Button>
-            {hasDuplicates && (
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={() => setShowDuplicatesModal(true)}
-                className="!bg-orange-50 !text-orange-700 !border-orange-200 hover:!bg-orange-100"
-              >
-                Duplicates ({duplicateAttendees.length + duplicateCompanies.length})
-              </Button>
-            )}
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setShowInterestModal(true)}
-            >
-              Interest Signups ({interestRegistrations.length})
+            <Button variant="secondary" size="small" onClick={exportToExcel}>
+              Export CSV
             </Button>
             <Button variant="primary" size="small" onClick={() => setShowAddModal(true)}>
               + Add Registration
@@ -872,151 +1071,314 @@ export default function RendezvousTab() {
         </div>
       </div>
 
-      {/* Registrations Table */}
-      <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full divide-y divide-fase-light-gold">
-            <thead className="bg-fase-navy">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Company
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Invoice
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Attendees
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Payment
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCompanyGroups.map((group) => {
-                const totalAttendees = group.registrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
-                const totalAmount = group.registrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
-                const primaryReg = group.registrations[0];
-                const hasPending = group.registrations.some(r => r.paymentStatus === 'pending_bank_transfer');
-                const allConfirmed = group.registrations.every(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed');
-                // For single registration, use its actual status; for multiple, show overall
-                const isSingleReg = group.registrations.length === 1;
-                const overallStatus = isSingleReg ? primaryReg.paymentStatus : (allConfirmed ? 'paid' : 'pending_bank_transfer');
-
-                return (
-                  <tr key={group.company} className="hover:bg-gray-50">
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        <div className="font-medium text-gray-900">{group.company}</div>
-                        <div className="text-gray-500 text-xs">{getOrgTypeLabel(primaryReg.billingInfo?.organizationType)}</div>
-                        {primaryReg.companyIsFaseMember && (
-                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded mt-1">FASE</span>
-                        )}
-                        {primaryReg.isAsaseMember && (
-                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded mt-1 ml-1">ASASE</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        {group.registrations.length === 1 ? (
-                          <>
-                            <div className="font-mono text-gray-900">{primaryReg.invoiceNumber}</div>
-                            {primaryReg.invoiceUrl && (
-                              <a
-                                href={primaryReg.invoiceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-fase-navy hover:text-fase-orange text-xs underline"
-                              >
-                                View PDF
-                              </a>
-                            )}
-                          </>
-                        ) : (
-                          <div className="text-gray-500">{group.registrations.length} registrations</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-4 text-sm text-gray-900">
-                      {totalAttendees}
-                    </td>
-                    <td className="px-3 py-4">
+      {/* Attendees View */}
+      {viewMode === 'attendees' && (
+        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-fase-light-gold">
+              <thead className="bg-fase-navy">
+                <tr>
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                    onClick={() => handleSort('name')}
+                  >
+                    Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                    onClick={() => handleSort('company')}
+                  >
+                    Company {sortColumn === 'company' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Job Title</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Type</th>
+                  <th
+                    className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                    onClick={() => handleSort('status')}
+                  >
+                    Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAttendees.map((attendee, index) => (
+                  <tr key={`${attendee.registrationId}-${attendee.id}-${index}`} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
                       <div className="text-sm font-medium text-gray-900">
-                        €{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {attendee.firstName} {attendee.lastName}
+                      </div>
+                      <div className="text-xs text-gray-500">{attendee.email}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-gray-900">{attendee.company}</div>
+                      <div className="flex gap-1 mt-0.5">
+                        {attendee.isFaseMember && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">FASE</span>
+                        )}
+                        {attendee.isAsaseMember && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded">ASASE</span>
+                        )}
                       </div>
                     </td>
-                    <td className="px-3 py-4 text-xs text-gray-600">
-                      {group.registrations.length === 1
-                        ? getPaymentMethodLabel(primaryReg.paymentMethod)
-                        : 'Multiple'}
-                    </td>
-                    <td className="px-3 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(overallStatus)}`}>
-                        {isSingleReg ? formatStatus(primaryReg.paymentStatus) : (allConfirmed ? 'Confirmed' : 'Partial')}
+                    <td className="px-4 py-3 text-sm text-gray-600">{attendee.jobTitle}</td>
+                    <td className="px-3 py-3 text-xs text-gray-500">{getOrgTypeLabel(attendee.organizationType)}</td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(attendee.paymentStatus)}`}>
+                        {formatStatus(attendee.paymentStatus)}
                       </span>
                     </td>
-                    <td className="px-3 py-4 text-xs text-gray-500">
-                      {primaryReg.createdAt?.toDate
-                        ? primaryReg.createdAt.toDate().toLocaleDateString('en-GB')
-                        : primaryReg.createdAt
-                          ? new Date(primaryReg.createdAt).toLocaleDateString('en-GB')
-                          : 'Unknown'}
-                    </td>
-                    <td className="px-4 py-4 text-sm font-medium">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="secondary"
-                          size="small"
-                          onClick={() => {
-                            setSelectedCompanyRegistrations(group.registrations);
-                            setSelectedRegistration(group.registrations[0]);
+                    <td className="px-4 py-3">
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={() => {
+                          const reg = findRegistrationByAttendee(attendee);
+                          if (reg) {
+                            const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
+                            const companyRegs = registrations.filter(r =>
+                              (r.billingInfo?.company?.toLowerCase().trim() || '') === company
+                            );
+                            setSelectedCompanyRegistrations(companyRegs);
+                            setSelectedRegistration(reg);
                             setShowDetailModal(true);
-                          }}
-                        >
-                          View
-                        </Button>
-                        {hasPending && (
-                          <Button
-                            variant="primary"
-                            size="small"
-                            onClick={() => {
-                              const pendingReg = group.registrations.find(r => r.paymentStatus === 'pending_bank_transfer');
-                              if (pendingReg) {
-                                setSelectedRegistration(pendingReg);
-                                setShowStatusModal(true);
-                              }
-                            }}
-                          >
-                            Confirm
-                          </Button>
-                        )}
-                      </div>
+                          }
+                        }}
+                      >
+                        View
+                      </Button>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {filteredCompanyGroups.length === 0 && (
-          <div className="p-8 text-center">
-            <p className="text-fase-black">No registrations found.</p>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+          {filteredAttendees.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="text-fase-black">No attendees found.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Companies View */}
+      {viewMode === 'companies' && (
+        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-fase-light-gold">
+              <thead className="bg-fase-navy">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Company</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Invoice</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Attendees</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Amount</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {companyGroups.map((group) => {
+                  const totalAttendees = group.registrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
+                  const totalAmount = group.registrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+                  const primaryReg = group.registrations[0];
+                  const allConfirmed = group.registrations.every(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary');
+                  const hasPending = group.registrations.some(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
+                  const isSingleReg = group.registrations.length === 1;
+
+                  return (
+                    <tr key={group.company} className="hover:bg-gray-50">
+                      <td className="px-4 py-4">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">{group.company}</div>
+                          <div className="text-gray-500 text-xs">{getOrgTypeLabel(primaryReg.billingInfo?.organizationType)}</div>
+                          <div className="flex gap-1 mt-0.5">
+                            {primaryReg.companyIsFaseMember && (
+                              <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">FASE</span>
+                            )}
+                            {primaryReg.isAsaseMember && (
+                              <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded">ASASE</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm">
+                          {isSingleReg ? (
+                            <>
+                              <div className="font-mono text-gray-900">{primaryReg.invoiceNumber}</div>
+                              {primaryReg.invoiceUrl && (
+                                <a
+                                  href={primaryReg.invoiceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-fase-navy hover:text-fase-orange text-xs underline"
+                                >
+                                  View PDF
+                                </a>
+                              )}
+                            </>
+                          ) : (
+                            <div className="text-gray-500">{group.registrations.length} registrations</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 text-sm text-gray-900">{totalAttendees}</td>
+                      <td className="px-3 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          €{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </div>
+                      </td>
+                      <td className="px-3 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          getStatusColor(isSingleReg ? primaryReg.paymentStatus : (allConfirmed ? 'paid' : 'pending_bank_transfer'))
+                        }`}>
+                          {isSingleReg ? formatStatus(primaryReg.paymentStatus) : (allConfirmed ? 'Confirmed' : 'Partial')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm font-medium">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            onClick={() => {
+                              setSelectedCompanyRegistrations(group.registrations);
+                              setSelectedRegistration(group.registrations[0]);
+                              setShowDetailModal(true);
+                            }}
+                          >
+                            View
+                          </Button>
+                          {hasPending && (
+                            <Button
+                              variant="primary"
+                              size="small"
+                              onClick={() => {
+                                const pendingReg = group.registrations.find(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
+                                if (pendingReg) {
+                                  setSelectedRegistration(pendingReg);
+                                  setShowStatusModal(true);
+                                }
+                              }}
+                            >
+                              Confirm
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {companyGroups.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="text-fase-black">No companies found.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Data Issues View */}
+      {viewMode === 'issues' && (
+        <div className="space-y-6">
+          {totalIssuesCount === 0 ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+              <div className="text-green-600 text-lg font-medium">No data issues detected</div>
+              <p className="text-green-700 text-sm mt-1">All registration data looks clean.</p>
+            </div>
+          ) : (
+            <>
+              {/* Duplicate Emails */}
+              {dataIssues.duplicateEmails.length > 0 && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-orange-800 mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Duplicate Email Addresses ({dataIssues.duplicateEmails.length})
+                  </h3>
+                  <p className="text-sm text-orange-700 mb-4">
+                    These email addresses appear multiple times across registrations. This may indicate the same person registered multiple times, or someone entered their own email for multiple attendees.
+                  </p>
+                  <div className="space-y-3">
+                    {dataIssues.duplicateEmails.map(({ email, count, attendees }) => (
+                      <div key={email} className="bg-white rounded p-3 border border-orange-100">
+                        <div className="font-medium text-gray-900 mb-2">
+                          {email} <span className="text-orange-600 text-sm">({count} occurrences)</span>
+                        </div>
+                        <div className="space-y-1">
+                          {attendees.map((att, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                              <div>
+                                <span className="font-medium">{att.firstName} {att.lastName}</span>
+                                <span className="text-gray-400 mx-2">·</span>
+                                <span className="text-gray-500">{att.company}</span>
+                              </div>
+                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(att.paymentStatus)}`}>
+                                {formatStatus(att.paymentStatus)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Similar Company Names */}
+              {dataIssues.similarCompanies.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-yellow-800 mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Similar Company Names ({dataIssues.similarCompanies.length})
+                  </h3>
+                  <p className="text-sm text-yellow-700 mb-4">
+                    These company names are very similar and may be the same company registered with slightly different names.
+                  </p>
+                  <div className="space-y-2">
+                    {dataIssues.similarCompanies.map(({ normalized, companies }) => (
+                      <div key={normalized} className="bg-white rounded p-3 border border-yellow-100">
+                        <div className="flex flex-wrap gap-2">
+                          {companies.map((company, idx) => (
+                            <span key={idx} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
+                              {company}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Missing Data */}
+              {dataIssues.missingData.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Missing Data
+                  </h3>
+                  <div className="space-y-2">
+                    {dataIssues.missingData.map((issue, idx) => (
+                      <div key={idx} className="bg-white rounded p-3 border border-red-100">
+                        <div className="font-medium text-gray-900">
+                          {issue.type}: <span className="text-red-600">{issue.count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Detail Modal */}
       <Modal
@@ -1154,7 +1516,7 @@ export default function RendezvousTab() {
                       >
                         {generatingInvoice ? 'Generating...' : 'PAID Invoice'}
                       </button>
-                      {reg.paymentStatus === 'pending_bank_transfer' && (
+                      {(reg.paymentStatus === 'pending_bank_transfer' || reg.paymentStatus === 'pending') && (
                         <button
                           onClick={() => {
                             setSelectedRegistration(reg);
@@ -1863,17 +2225,17 @@ export default function RendezvousTab() {
       <Modal
         isOpen={showInterestModal}
         onClose={() => setShowInterestModal(false)}
-        title={`Interest Registrations (${interestRegistrations.length})`}
+        title={`Interest Signups (${interestRegistrations.length})`}
         maxWidth="4xl"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            These are companies that have expressed interest in attending the MGA Rendezvous but have not yet registered or paid.
+            Companies that expressed interest but have not registered or paid.
           </p>
 
           {interestRegistrations.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No interest registrations found.
+              No interest signups found.
             </div>
           ) : (
             <div className="max-h-[60vh] overflow-y-auto">
@@ -1924,108 +2286,6 @@ export default function RendezvousTab() {
 
           <div className="flex justify-end pt-4 border-t">
             <Button variant="secondary" onClick={() => setShowInterestModal(false)}>
-              Close
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Duplicates Modal */}
-      <Modal
-        isOpen={showDuplicatesModal}
-        onClose={() => setShowDuplicatesModal(false)}
-        title="Potential Duplicates"
-        maxWidth="4xl"
-      >
-        <div className="space-y-6">
-          <p className="text-sm text-gray-600">
-            Review potential duplicate attendees and company registrations. Duplicates are detected but not automatically counted in stats.
-          </p>
-
-          {/* Duplicate Attendees */}
-          {duplicateAttendees.length > 0 && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h4 className="font-semibold text-orange-800 mb-3">
-                Duplicate Attendees ({duplicateAttendees.length} emails appear multiple times)
-              </h4>
-              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
-                {duplicateAttendees.map(({ email, occurrences }) => (
-                  <div key={email} className="bg-white rounded p-3 border border-orange-100">
-                    <div className="font-medium text-gray-900 mb-2">{email}</div>
-                    <div className="space-y-1">
-                      {occurrences.map((occ, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-sm">
-                          <div>
-                            <span className="text-gray-700">{occ.name}</span>
-                            <span className="text-gray-400 mx-2">·</span>
-                            <span className="text-gray-500">{occ.company}</span>
-                          </div>
-                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(occ.status)}`}>
-                            {formatStatus(occ.status)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Duplicate Companies */}
-          {duplicateCompanies.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-800 mb-3">
-                Multiple Registrations from Same Company ({duplicateCompanies.length})
-              </h4>
-              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
-                {duplicateCompanies.map(({ company, registrations: companyRegs }) => (
-                  <div key={company} className="bg-white rounded p-3 border border-yellow-100">
-                    <div className="font-medium text-gray-900 mb-2">{company}</div>
-                    <div className="space-y-2">
-                      {companyRegs.map((reg) => (
-                        <div key={reg.registrationId} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
-                          <div>
-                            <span className="font-mono text-gray-600">{reg.invoiceNumber}</span>
-                            <span className="text-gray-400 mx-2">·</span>
-                            <span className="text-gray-500">{reg.attendees?.length || 0} attendees</span>
-                            <span className="text-gray-400 mx-2">·</span>
-                            <span className="text-gray-500">€{(reg.totalPrice || 0).toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
-                              {formatStatus(reg.paymentStatus)}
-                            </span>
-                            <Button
-                              variant="secondary"
-                              size="small"
-                              onClick={() => {
-                                setSelectedCompanyRegistrations(companyRegs);
-                                setSelectedRegistration(reg);
-                                setShowDuplicatesModal(false);
-                                setShowDetailModal(true);
-                              }}
-                            >
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!hasDuplicates && (
-            <div className="text-center py-8 text-gray-500">
-              No duplicates found.
-            </div>
-          )}
-
-          <div className="flex justify-end pt-4 border-t">
-            <Button variant="secondary" onClick={() => setShowDuplicatesModal(false)}>
               Close
             </Button>
           </div>

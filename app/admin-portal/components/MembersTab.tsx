@@ -22,6 +22,8 @@ export default function MembersTab({
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
+  const [sortColumn, setSortColumn] = useState<string>('organizationName');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Delete confirmation state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -39,10 +41,52 @@ export default function MembersTab({
     );
   }
 
-  // Filter members based on status
-  const filteredMembers = statusFilter === 'all'
-    ? memberApplications
-    : memberApplications.filter(member => member.status === statusFilter);
+  // Filter and sort members
+  const filteredMembers = (() => {
+    let filtered = statusFilter === 'all'
+      ? memberApplications
+      : memberApplications.filter(member => member.status === statusFilter);
+
+    return [...filtered].sort((a, b) => {
+      let aVal: string = '';
+      let bVal: string = '';
+
+      switch (sortColumn) {
+        case 'organizationName':
+          aVal = (a.organizationName || '').toLowerCase();
+          bVal = (b.organizationName || '').toLowerCase();
+          break;
+        case 'country':
+          aVal = (a.country || '').toLowerCase();
+          bVal = (b.country || '').toLowerCase();
+          break;
+        case 'status':
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        case 'createdAt':
+          aVal = a.createdAt?.toString() || '';
+          bVal = b.createdAt?.toString() || '';
+          break;
+        default:
+          aVal = (a.organizationName || '').toLowerCase();
+          bVal = (b.organizationName || '').toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  })();
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
 
   // Count for header only includes approved and invoice_sent (actual members)
   const memberApplicationCount = memberApplications.filter(m => m.status === 'approved' || m.status === 'invoice_sent').length;
@@ -162,17 +206,26 @@ export default function MembersTab({
           <table className="w-full divide-y divide-fase-light-gold">
             <thead className="bg-fase-navy">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Organization
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('organizationName')}
+                >
+                  Organization {sortColumn === 'organizationName' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Status
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('status')}
+                >
+                  Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Applied
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('createdAt')}
+                >
+                  Applied {sortColumn === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Actions
