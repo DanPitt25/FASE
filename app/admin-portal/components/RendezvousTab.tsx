@@ -135,6 +135,7 @@ export default function RendezvousTab() {
   const [invoiceEditRegistration, setInvoiceEditRegistration] = useState<RendezvousRegistration | null>(null);
   const [invoiceTicketCount, setInvoiceTicketCount] = useState(1);
   const [invoiceUnitPrice, setInvoiceUnitPrice] = useState(0);
+  const [invoiceMemberDiscount, setInvoiceMemberDiscount] = useState(false);
   const [sortColumn, setSortColumn] = useState<string>('company');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [newRegistration, setNewRegistration] = useState({
@@ -732,9 +733,11 @@ export default function RendezvousTab() {
   const openEditInvoiceModal = (registration: RendezvousRegistration) => {
     setInvoiceEditRegistration(registration);
     setInvoiceTicketCount(registration.numberOfAttendees || 1);
-    // Calculate unit price from subtotal
-    const unitPrice = registration.subtotal / (registration.numberOfAttendees || 1);
-    setInvoiceUnitPrice(unitPrice);
+    // Base price is €800 for non-members, €400 for members (50% discount)
+    const basePrice = 800;
+    const hasMemberDiscount = registration.companyIsFaseMember || registration.isAsaseMember || (registration.discount !== undefined && registration.discount > 0);
+    setInvoiceMemberDiscount(hasMemberDiscount);
+    setInvoiceUnitPrice(hasMemberDiscount ? basePrice * 0.5 : basePrice);
     setShowEditInvoiceModal(true);
   };
 
@@ -763,9 +766,9 @@ export default function RendezvousTab() {
           vatAmount: 0,
           vatRate: 21,
           totalPrice: newSubtotal,
-          discount: invoiceEditRegistration.discount || 0,
-          isFaseMember: invoiceEditRegistration.companyIsFaseMember || false,
-          isAsaseMember: invoiceEditRegistration.isAsaseMember || false,
+          discount: invoiceMemberDiscount ? 50 : 0,
+          isFaseMember: invoiceMemberDiscount,
+          isAsaseMember: false,
           organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga'
         })
       });
@@ -2444,36 +2447,53 @@ export default function RendezvousTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Number of Tickets
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={invoiceTicketCount}
-                onChange={(e) => setInvoiceTicketCount(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Tickets
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={invoiceTicketCount}
+                  onChange={(e) => setInvoiceTicketCount(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Base Price (€)
+                </label>
+                <div className="text-lg font-semibold text-gray-900 py-2">€800.00</div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit Price (€)
-              </label>
+
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={invoiceUnitPrice}
-                onChange={(e) => setInvoiceUnitPrice(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                type="checkbox"
+                id="memberDiscount"
+                checked={invoiceMemberDiscount}
+                onChange={(e) => {
+                  setInvoiceMemberDiscount(e.target.checked);
+                  setInvoiceUnitPrice(e.target.checked ? 400 : 800);
+                }}
+                className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
               />
+              <label htmlFor="memberDiscount" className="text-sm text-gray-700">
+                Apply 50% member discount (FASE/ASASE member)
+              </label>
             </div>
           </div>
 
-          <div className="bg-fase-navy text-white p-4 rounded-lg">
-            <div className="flex justify-between items-center">
+          <div className="bg-fase-navy text-white p-4 rounded-lg space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span>{invoiceTicketCount} ticket{invoiceTicketCount !== 1 ? 's' : ''} × €{invoiceUnitPrice.toFixed(2)}</span>
+              {invoiceMemberDiscount && (
+                <span className="text-fase-gold text-xs">50% discount applied</span>
+              )}
+            </div>
+            <div className="flex justify-between items-center border-t border-white/20 pt-2">
               <span className="text-sm">Subtotal:</span>
               <span className="text-xl font-bold">
                 €{(invoiceTicketCount * invoiceUnitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
