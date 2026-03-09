@@ -153,11 +153,9 @@ export default function MembersManageTab({
     }
   };
 
-  // Count for header only includes approved and invoice_sent (actual members)
-  const memberApplicationCount = memberApplications.filter(m => m.status === 'approved' || m.status === 'invoice_sent').length;
-  const filteredMemberCount = statusFilter === 'all'
-    ? memberApplicationCount
-    : filteredMembers.length;
+  // Count visible (non-suppressed) members
+  const visibleMemberCount = memberApplications.filter(m => !suppressedIds.has(m.id)).length;
+  const filteredMemberCount = filteredMembers.length;
 
   // Get unique statuses for filter dropdown
   const statuses = Array.from(new Set(memberApplications.map(member => member.status)));
@@ -208,7 +206,7 @@ export default function MembersManageTab({
               onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
               className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
             >
-              <option value="all">All Statuses ({memberApplicationCount})</option>
+              <option value="all">All Statuses ({visibleMemberCount})</option>
               {statuses.map(status => (
                 <option key={status} value={status}>
                   {formatStatus(status)} ({memberApplications.filter(m => m.status === status).length})

@@ -28,6 +28,8 @@ export default function MembersViewTab({
 }: MembersViewTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
+  const [sortColumn, setSortColumn] = useState<string>('organizationName');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // View modal
   const [selectedMember, setSelectedMember] = useState<UnifiedMember | null>(null);
@@ -99,7 +101,7 @@ export default function MembersViewTab({
     return memberApplications.filter(m => !suppressedIds.has(m.id));
   }, [memberApplications, suppressedIds]);
 
-  // Filter and search
+  // Filter, search, and sort
   const filteredMembers = useMemo(() => {
     let filtered = visibleMembers;
 
@@ -117,11 +119,43 @@ export default function MembersViewTab({
       );
     }
 
-    // Sort by organization name
-    return [...filtered].sort((a, b) =>
-      (a.organizationName || '').localeCompare(b.organizationName || '')
-    );
-  }, [visibleMembers, statusFilter, searchQuery]);
+    // Sort
+    return [...filtered].sort((a, b) => {
+      let aVal: string = '';
+      let bVal: string = '';
+
+      switch (sortColumn) {
+        case 'organizationName':
+          aVal = (a.organizationName || '').toLowerCase();
+          bVal = (b.organizationName || '').toLowerCase();
+          break;
+        case 'country':
+          aVal = (a.businessAddress?.country || a.registeredAddress?.country || '').toLowerCase();
+          bVal = (b.businessAddress?.country || b.registeredAddress?.country || '').toLowerCase();
+          break;
+        case 'status':
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        default:
+          aVal = (a.organizationName || '').toLowerCase();
+          bVal = (b.organizationName || '').toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [visibleMembers, statusFilter, searchQuery, sortColumn, sortDirection]);
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -186,17 +220,26 @@ export default function MembersViewTab({
           <table className="w-full divide-y divide-fase-light-gold">
             <thead className="bg-fase-navy">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Organization
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('organizationName')}
+                >
+                  Organization {sortColumn === 'organizationName' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Country
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('country')}
+                >
+                  Country {sortColumn === 'country' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Status
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('status')}
+                >
+                  Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 </th>

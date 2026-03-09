@@ -41,6 +41,8 @@ export default function RendezvousViewTab() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
+  const [sortColumn, setSortColumn] = useState<string>('company');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Suppressed registrations
   const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
@@ -109,7 +111,7 @@ export default function RendezvousViewTab() {
     return attendees;
   }, [visibleRegistrations]);
 
-  // Filter attendees
+  // Filter and sort attendees
   const filteredAttendees = useMemo(() => {
     let filtered = allAttendees;
 
@@ -131,13 +133,47 @@ export default function RendezvousViewTab() {
       );
     }
 
-    // Sort by company then name
+    // Sort
     return [...filtered].sort((a, b) => {
-      const companyCompare = a.company.localeCompare(b.company);
-      if (companyCompare !== 0) return companyCompare;
-      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      let aVal: string = '';
+      let bVal: string = '';
+
+      switch (sortColumn) {
+        case 'name':
+          aVal = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bVal = `${b.firstName} ${b.lastName}`.toLowerCase();
+          break;
+        case 'company':
+          aVal = a.company.toLowerCase();
+          bVal = b.company.toLowerCase();
+          break;
+        case 'jobTitle':
+          aVal = (a.jobTitle || '').toLowerCase();
+          bVal = (b.jobTitle || '').toLowerCase();
+          break;
+        case 'status':
+          aVal = a.paymentStatus;
+          bVal = b.paymentStatus;
+          break;
+        default:
+          aVal = a.company.toLowerCase();
+          bVal = b.company.toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
     });
-  }, [allAttendees, statusFilter, searchQuery]);
+  }, [allAttendees, statusFilter, searchQuery, sortColumn, sortDirection]);
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -227,17 +263,29 @@ export default function RendezvousViewTab() {
           <table className="w-full divide-y divide-fase-light-gold">
             <thead className="bg-fase-navy">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Name
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('name')}
+                >
+                  Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Company
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('company')}
+                >
+                  Company {sortColumn === 'company' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Job Title
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('jobTitle')}
+                >
+                  Job Title {sortColumn === 'jobTitle' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Status
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('status')}
+                >
+                  Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
               </tr>
             </thead>
