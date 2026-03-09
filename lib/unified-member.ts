@@ -204,12 +204,37 @@ export interface UnifiedMember {
     postcode: string;
     country: string;
   };
-  
+  invoicingAddress?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    county?: string;
+    postcode: string;
+    country: string;
+  };
+
   // Additional organization data
   logoURL?: string;
   companySummary?: CompanySummary;
   linesOfBusiness?: string[];
-  
+  website?: string;
+  fullName?: string;
+
+  // Rendezvous pass reservation (legacy field from account)
+  rendezvousPassReservation?: {
+    reserved?: boolean;
+    passCount?: number;
+    organizationType?: string;
+    isFaseMember?: boolean;
+    isAsaseMember?: boolean;
+    attendees?: Array<{
+      firstName: string;
+      lastName: string;
+      email: string;
+      jobTitle?: string;
+    }>;
+  };
+
   // Timestamps
   createdAt: any;
   updatedAt: any;

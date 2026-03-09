@@ -568,70 +568,8 @@ export function hasAdminAccess(status: AccountStatus): boolean {
 // ============== MEMBER DATA TYPE ==============
 
 /**
- * Full member/account data as passed to admin components
+ * For member/account data, use UnifiedMember from lib/unified-member.ts
+ * That is the single source of truth for account document types.
  *
- * This is the comprehensive type for account data fetched from Firestore.
- * Use this instead of `any` for memberData props.
+ * @see lib/unified-member.ts
  */
-export interface MemberData {
-  id: string;
-  organizationName: string;
-  organizationType: OrganizationType;
-  status: AccountStatus;
-
-  // Contact info
-  email?: string;
-  primaryContact?: PrimaryContact;
-  accountAdministrator?: AccountAdministrator;
-
-  // Personal info (for individual accounts)
-  personalName?: string;
-  fullName?: string;
-  jobTitle?: string;
-
-  // Addresses
-  businessAddress?: Address;
-  registeredAddress?: Address;
-  invoicingAddress?: Address;
-
-  // Company info
-  website?: string;
-  country?: string;
-  companySummary?: CompanySummary;
-  logoURL?: string;
-  logoStatus?: LogoStatus;
-
-  // Portfolio info (for MGAs)
-  portfolio?: {
-    grossWrittenPremiums?: string;
-    numberOfPolicies?: string;
-    linesOfBusiness?: string[];
-    territories?: string[];
-  };
-
-  // Membership
-  hasOtherAssociations?: boolean;
-  otherAssociations?: string[];
-
-  // Rendezvous reservation (legacy field)
-  rendezvousPassReservation?: {
-    reserved: boolean;
-    passCount?: number;
-    organizationType?: string;
-    isFaseMember?: boolean;
-    isAsaseMember?: boolean;
-    attendees?: Array<{
-      firstName: string;
-      lastName: string;
-      email: string;
-      jobTitle?: string;
-    }>;
-  };
-
-  // Timestamps
-  createdAt?: FirestoreTimestamp;
-  updatedAt?: FirestoreTimestamp;
-
-  // Additional fields
-  [key: string]: unknown; // Allow additional dynamic fields
-}

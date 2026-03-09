@@ -10,14 +10,14 @@ import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import CompanyDetailsTab from './CompanyDetailsTab';
 import MemberEmailActions from './MemberEmailActions';
-import { type MemberData, type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
+import { type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
 
 interface CompanyMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: string;
   companyName: string;
-  memberData?: MemberData;
+  memberData?: UnifiedMember;
   onStatusUpdate?: (memberId: string, newStatus: UnifiedMember['status']) => void;
   onDelete?: (memberId: string) => void;
   isSuppressed?: boolean;
@@ -322,7 +322,7 @@ export default function CompanyMembersModal({
               <div>
                 <h3 className="text-lg font-semibold">{memberData.organizationName}</h3>
                 <div className="text-sm text-gray-200">
-                  {memberData.personalName || memberData.accountAdministrator?.name}
+                  {memberData.personalName || memberData.primaryContact?.name}
                   {memberData.email && <span className="mx-2">•</span>}
                   {memberData.email}
                 </div>
@@ -334,7 +334,7 @@ export default function CompanyMembersModal({
                   value={memberData.status}
                   onChange={(e) => handleStatusChange(e.target.value as UnifiedMember['status'])}
                   disabled={updatingStatus}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border cursor-pointer ${getStatusColor(memberData.status)}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border cursor-pointer ${getStatusColor(memberData.status || '')}`}
                 >
                   {statusOptions.map((option) => (
                     <option key={option.value} value={option.value}>

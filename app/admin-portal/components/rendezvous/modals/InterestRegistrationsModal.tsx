@@ -3,6 +3,7 @@
 import Modal from '@/components/Modal';
 import Button from '@/components/Button';
 import type { RendezvousInterestRegistration } from '@/lib/admin-types';
+import { toDate } from '@/lib/admin-types';
 
 interface InterestRegistrationsModalProps {
   isOpen: boolean;
@@ -67,9 +68,7 @@ export default function InterestRegistrationsModal({
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {reg.submittedAt
                         ? new Date(reg.submittedAt).toLocaleDateString('en-GB')
-                        : reg.createdAt?._seconds
-                          ? new Date(reg.createdAt._seconds * 1000).toLocaleDateString('en-GB')
-                          : 'Unknown'}
+                        : toDate(reg.createdAt)?.toLocaleDateString('en-GB') || 'Unknown'}
                     </td>
                   </tr>
                 ))}

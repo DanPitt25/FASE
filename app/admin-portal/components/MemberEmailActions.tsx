@@ -5,14 +5,14 @@ import Button from '../../../components/Button';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
 import { authFetch, authPost } from '@/lib/auth-fetch';
-import type { MemberData } from '@/lib/admin-types';
+import { UnifiedMember } from '@/lib/unified-member';
 
 // NOTE: useEmailActionState hook is available in @/lib/hooks/useEmailActionState
 // for future refactoring of this component's state management.
 // See ADMIN-PORTAL-AUDIT.md for migration plan.
 
 interface MemberEmailActionsProps {
-  memberData: MemberData;
+  memberData: UnifiedMember;
   companyId: string;
   onEmailSent?: () => void;
 }
@@ -136,7 +136,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       setFormData(prev => ({
         ...prev,
         email: memberData.email || '',
-        fullName: memberData?.accountAdministrator?.name || memberData.personalName || memberData?.fullName || '',
+        fullName: memberData?.primaryContact?.name || memberData.personalName || memberData?.fullName || '',
         organizationName: memberData.organizationName || '',
         organizationType: memberData.organizationType || 'MGA',
         hasOtherAssociations: memberData.hasOtherAssociations || false,
@@ -206,8 +206,8 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       recipients.push({
         id: 'account_admin',
         email: memberData.email,
-        name: memberData.accountAdministrator?.name || memberData.personalName || memberData.fullName || 'Account Admin',
-        role: memberData.accountAdministrator?.role || memberData.jobTitle,
+        name: memberData.primaryContact?.name || memberData.personalName || memberData.fullName || 'Account Admin',
+        role: memberData.primaryContact?.role || memberData.jobTitle,
         isAdmin: true
       });
     }

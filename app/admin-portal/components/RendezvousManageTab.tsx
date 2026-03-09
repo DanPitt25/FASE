@@ -25,6 +25,7 @@ import type {
   RendezvousAttendee,
   RendezvousPaymentStatus,
 } from '@/lib/admin-types';
+import { toDate } from '@/lib/admin-types';
 import {
   StatusChangeModal,
   DeleteRegistrationModal,
@@ -225,8 +226,8 @@ export default function RendezvousManageTab() {
           bVal = b.paymentStatus;
           break;
         case 'date':
-          aVal = new Date(a.createdAt).getTime();
-          bVal = new Date(b.createdAt).getTime();
+          aVal = toDate(a.createdAt)?.getTime() || 0;
+          bVal = toDate(b.createdAt)?.getTime() || 0;
           break;
         case 'amount':
           aVal = a.totalPrice || 0;

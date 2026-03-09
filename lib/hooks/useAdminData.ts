@@ -139,8 +139,12 @@ export function useRendezvousData(): UseRendezvousDataResult {
       const allRegistrations = data.registrations || [];
 
       // Separate interest registrations from actual registrations
-      const interest = allRegistrations.filter((r: RendezvousInterestRegistration) => r.registrationType === 'interest');
-      const actual = allRegistrations.filter((r: RendezvousRegistration) => (r as RendezvousInterestRegistration).registrationType !== 'interest');
+      const interest: RendezvousInterestRegistration[] = allRegistrations.filter(
+        (r: { registrationType?: string }) => r.registrationType === 'interest'
+      );
+      const actual: RendezvousRegistration[] = allRegistrations.filter(
+        (r: { registrationType?: string }) => r.registrationType !== 'interest'
+      );
 
       setInterestRegistrations(interest);
       setRegistrations(actual);
