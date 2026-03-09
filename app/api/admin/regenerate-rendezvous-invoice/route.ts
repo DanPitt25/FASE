@@ -71,11 +71,11 @@ function getWiseBankDetails(currency: string) {
     },
     USD: {
       accountHolder: 'FASE BV',
-      routingNumber: '084009519',
-      accountNumber: '9600010674658553',
+      routingNumber: '101019628',
+      accountNumber: '218936745391',
       accountType: 'Checking',
       bankName: 'Wise US Inc',
-      address: ['30 W. 26th Street, Sixth Floor', 'New York NY 10010', 'United States']
+      address: ['108 W 13th St', 'Wilmington, DE 19801', 'United States']
     }
   };
   return bankDetails[currency] || bankDetails.EUR;
