@@ -155,13 +155,16 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 
 /**
  * Convert EUR amount to target currency
+ * Second param can be either a country name OR a currency code (EUR/USD/GBP)
  */
 export async function convertCurrency(
-  eurAmount: number, 
-  targetCountry: string,
+  eurAmount: number,
+  targetCountryOrCurrency: string,
   forceCurrency?: string
 ): Promise<ConversionResult> {
-  const targetCurrency = forceCurrency || detectCurrency(targetCountry);
+  // Check if second param is already a currency code
+  const isCurrencyCode = ['EUR', 'USD', 'GBP'].includes(targetCountryOrCurrency);
+  const targetCurrency = forceCurrency || (isCurrencyCode ? targetCountryOrCurrency : detectCurrency(targetCountryOrCurrency));
   
   // If already EUR, no conversion needed
   if (targetCurrency === 'EUR') {
