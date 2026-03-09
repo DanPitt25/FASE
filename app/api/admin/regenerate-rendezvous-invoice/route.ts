@@ -63,8 +63,8 @@ function getWiseBankDetails(currency: string) {
     },
     GBP: {
       accountHolder: 'FASE BV',
-      sortCode: '60-84-63',
-      accountNumber: '44068846',
+      sortCode: '60-84-64',
+      accountNumber: '34068846',
       iban: 'GB67 TRWI 6084 6434 0688 46',
       bankName: 'Wise Payments Limited',
       address: ['56 Shoreditch High Street', 'London', 'E1 6JJ', 'United Kingdom']
