@@ -5,6 +5,7 @@ import { UnifiedMember } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import CompanyMembersModal from './CompanyMembersModal';
+import { auth } from '@/lib/firebase';
 
 interface MembersTabProps {
   memberApplications: UnifiedMember[];
@@ -142,9 +143,13 @@ export default function MembersTab({
     setDeleteError(null);
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/delete-member', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           accountId: memberToDelete.id,
           confirmationPhrase: deleteConfirmation

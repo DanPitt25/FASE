@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { auth } from '@/lib/firebase';
 
 interface StorageInvoice {
   id: string;
@@ -76,7 +77,10 @@ export default function InvoicesTab() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/storage-invoices');
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/admin/storage-invoices', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
       if (!data.success) {
         throw new Error(data.error || 'Failed to load invoices');
@@ -168,9 +172,13 @@ export default function InvoicesTab() {
         locale: formData.locale
       };
 
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/generate-invoice-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
+import { auth } from '@/lib/firebase';
 
 interface Transaction {
   id: string;
@@ -118,7 +119,10 @@ export default function FinanceTab() {
         url += `&from=${fromDate.toISOString()}`;
       }
 
-      const response = await fetch(url);
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
 
       if (!response.ok) {
@@ -140,9 +144,14 @@ export default function FinanceTab() {
   const loadPaymentCrmData = useCallback(async (transactionId: string, source: string) => {
     setLoadingCrm(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const [activitiesRes, notesRes] = await Promise.all([
-        fetch(`/api/admin/finance/activities?transactionId=${transactionId}&source=${source}`),
-        fetch(`/api/admin/finance/notes?transactionId=${transactionId}&source=${source}`),
+        fetch(`/api/admin/finance/activities?transactionId=${transactionId}&source=${source}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`/api/admin/finance/notes?transactionId=${transactionId}&source=${source}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
       ]);
 
       const [activitiesData, notesData] = await Promise.all([
@@ -202,7 +211,10 @@ export default function FinanceTab() {
 
     setSearchingMembers(true);
     try {
-      const response = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`);
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
 
       if (data.success && data.results) {
@@ -239,7 +251,10 @@ export default function FinanceTab() {
     // Fetch full member details to get address
     setLoadingMemberDetails(true);
     try {
-      const response = await fetch(`/api/admin/account/${member.id}`);
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch(`/api/admin/account/${member.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
 
       if (data.success && data.account) {
@@ -280,9 +295,13 @@ export default function FinanceTab() {
 
     setGeneratingInvoice(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/finance/generate-paid-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           transactionId: selectedTransaction.id,
           source: selectedTransaction.source,
@@ -334,9 +353,13 @@ export default function FinanceTab() {
 
     setSavingNote(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/finance/notes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           transactionId: selectedTransaction.id,
           source: selectedTransaction.source,
@@ -363,8 +386,10 @@ export default function FinanceTab() {
     if (!selectedTransaction || !confirm('Delete this note?')) return;
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       await fetch(`/api/admin/finance/notes?transactionId=${selectedTransaction.id}&source=${selectedTransaction.source}&noteId=${noteId}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
     } catch (err) {

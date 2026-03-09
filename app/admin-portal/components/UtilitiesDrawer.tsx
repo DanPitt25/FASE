@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import TasksTab from './TasksTab';
 import ReportsTab from './ReportsTab';
+import { auth } from '@/lib/firebase';
 
 type UtilitySection = 'tasks' | 'reports' | 'mass-email' | 'freeform';
 
@@ -118,9 +119,13 @@ function MassEmailSection() {
 
     setLoading(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/get-filtered-accounts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           organizationTypes: filters.organizationTypes,
           accountStatuses: filters.accountStatuses
@@ -159,9 +164,13 @@ function MassEmailSection() {
     setSending(true);
     setResult(null);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/send-mass-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           recipients: getAllRecipients().map(r => ({ email: r.email, organizationName: r.organizationName })),
           subject: content.subject,
@@ -327,8 +336,10 @@ function FreeformEmailSection() {
         formDataObj.append('attachments', file);
       });
 
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/send-freeform-email', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataObj
       });
 

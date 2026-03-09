@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskPriority, TaskStatus } from '../../../lib/firestore';
+import { auth } from '@/lib/firebase';
 
 export default function TasksTab() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -21,7 +22,10 @@ export default function TasksTab() {
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/tasks');
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/admin/tasks', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await response.json();
       if (data.success) {
         setTasks(data.tasks);
@@ -42,9 +46,13 @@ export default function TasksTab() {
 
     setSaving(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           title: newTask.title,
           description: newTask.description,
@@ -70,9 +78,13 @@ export default function TasksTab() {
 
   const handleUpdateStatus = async (taskId: string, status: TaskStatus) => {
     try {
+      const token = await auth.currentUser?.getIdToken();
       await fetch('/api/admin/tasks', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           taskId,
           status,
@@ -90,8 +102,10 @@ export default function TasksTab() {
     if (!confirm('Delete this task?')) return;
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       await fetch(`/api/admin/tasks?task_id=${taskId}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       await loadTasks();
     } catch (err) {

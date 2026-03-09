@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { UnifiedMember } from '../../../lib/unified-member';
 import { Activity, Note, NoteCategory } from '../../../lib/firestore';
 import Modal from '../../../components/Modal';
@@ -61,9 +61,11 @@ export default function CompanyMembersModal({
 
     setCrmLoading(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
+      const headers = { 'Authorization': `Bearer ${token}` };
       const [activitiesRes, notesRes] = await Promise.all([
-        fetch(`/api/admin/activities?account_id=${companyId}&limit=50`),
-        fetch(`/api/admin/notes?account_id=${companyId}`),
+        fetch(`/api/admin/activities?account_id=${companyId}&limit=50`, { headers }),
+        fetch(`/api/admin/notes?account_id=${companyId}`, { headers }),
       ]);
 
       const [activitiesData, notesData] = await Promise.all([
@@ -75,7 +77,7 @@ export default function CompanyMembersModal({
       if (notesData.success) setNotes(notesData.notes);
 
       try {
-        const invoicesRes = await fetch(`/api/admin/account-invoices?account_id=${companyId}`);
+        const invoicesRes = await fetch(`/api/admin/account-invoices?account_id=${companyId}`, { headers });
         const invoicesData = await invoicesRes.json();
         if (invoicesData.success) {
           setInvoices(invoicesData.invoices);
@@ -108,9 +110,13 @@ export default function CompanyMembersModal({
 
     setSavingNote(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/admin/notes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           accountId: companyId,
           content: newNote,
@@ -134,9 +140,13 @@ export default function CompanyMembersModal({
 
   const handleTogglePin = async (noteId: string, isPinned: boolean) => {
     try {
+      const token = await auth.currentUser?.getIdToken();
       await fetch('/api/admin/notes', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           accountId: companyId,
           noteId,
@@ -153,8 +163,10 @@ export default function CompanyMembersModal({
     if (!confirm('Delete this note?')) return;
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       await fetch(`/api/admin/notes?account_id=${companyId}&note_id=${noteId}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       await loadCrmData();
     } catch (err) {
@@ -173,9 +185,13 @@ export default function CompanyMembersModal({
 
       // Log activity to timeline
       try {
+        const token = await auth.currentUser?.getIdToken();
         await fetch('/api/admin/activities', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             accountId: companyId,
             type: 'status_change',
