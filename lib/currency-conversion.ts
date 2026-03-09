@@ -96,6 +96,7 @@ export function getWiseBankDetails(currency: string): {
   accountNumber?: string;
   routingNumber?: string;
   accountType?: string;
+  swiftBic?: string;
   accountHolder: string;
   bankName: string;
   address: string[];
