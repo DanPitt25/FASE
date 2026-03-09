@@ -1,10 +1,17 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { getAuth } from 'firebase/auth';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import AdminCountrySelect from './AdminCountrySelect';
 import * as XLSX from 'xlsx';
+
+// Helper to get auth token
+const getAuthToken = async (): Promise<string | null> => {
+  const auth = getAuth();
+  return auth.currentUser?.getIdToken() || null;
+};
 
 interface Attendee {
   id: string;
@@ -136,6 +143,7 @@ export default function RendezvousTab() {
   const [invoiceTicketCount, setInvoiceTicketCount] = useState(1);
   const [invoiceUnitPrice, setInvoiceUnitPrice] = useState(0);
   const [invoiceMemberDiscount, setInvoiceMemberDiscount] = useState(false);
+  const [invoiceCurrency, setInvoiceCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('auto');
   const [sortColumn, setSortColumn] = useState<string>('company');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [newRegistration, setNewRegistration] = useState({
@@ -157,7 +165,14 @@ export default function RendezvousTab() {
   const loadRegistrations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/rendezvous-registrations');
+      const token = await getAuthToken();
+      if (!token) {
+        console.error('Not authenticated');
+        return;
+      }
+      const response = await fetch('/api/admin/rendezvous-registrations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (!response.ok) throw new Error('Failed to fetch registrations');
       const data = await response.json();
       const allRegistrations = data.registrations || [];
@@ -482,9 +497,17 @@ export default function RendezvousTab() {
   const handleStatusUpdate = async (registrationId: string, newStatus: PaymentStatus) => {
     try {
       setUpdating(true);
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Not authenticated');
+        return;
+      }
       const response = await fetch('/api/admin/update-rendezvous-status', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ registrationId, status: newStatus })
       });
 
@@ -516,9 +539,18 @@ export default function RendezvousTab() {
       setDeleting(true);
       setDeleteError(null);
 
+      const token = await getAuthToken();
+      if (!token) {
+        setDeleteError('Not authenticated');
+        return;
+      }
+
       const response = await fetch('/api/admin/delete-rendezvous-registration', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           registrationId: selectedRegistration.registrationId,
           confirmationPhrase: deleteConfirmation,
@@ -552,9 +584,18 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Not authenticated');
+        return;
+      }
+
       const response = await fetch('/api/admin/generate-paid-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           invoiceNumber: registration.invoiceNumber,
           registrationId: registration.registrationId,
@@ -608,9 +649,18 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Not authenticated');
+        return;
+      }
+
       const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           invoiceNumber: registration.invoiceNumber,
           registrationId: registration.registrationId,
@@ -687,9 +737,18 @@ export default function RendezvousTab() {
       setSavingAttendees(true);
       setEditAttendeesError(null);
 
+      const token = await getAuthToken();
+      if (!token) {
+        setEditAttendeesError('Not authenticated');
+        return;
+      }
+
       const response = await fetch('/api/admin/rendezvous-registrations', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           registrationId: editingRegistration.registrationId,
           attendees: editedAttendees,
@@ -738,6 +797,7 @@ export default function RendezvousTab() {
     const hasMemberDiscount = registration.companyIsFaseMember || registration.isAsaseMember || (registration.discount !== undefined && registration.discount > 0);
     setInvoiceMemberDiscount(hasMemberDiscount);
     setInvoiceUnitPrice(hasMemberDiscount ? basePrice * 0.5 : basePrice);
+    setInvoiceCurrency('auto');
     setShowEditInvoiceModal(true);
   };
 
@@ -747,11 +807,20 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Not authenticated');
+        return;
+      }
+
       const newSubtotal = invoiceTicketCount * invoiceUnitPrice;
 
       const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           invoiceNumber: invoiceEditRegistration.invoiceNumber,
           registrationId: invoiceEditRegistration.registrationId,
@@ -769,7 +838,8 @@ export default function RendezvousTab() {
           discount: invoiceMemberDiscount ? 50 : 0,
           isFaseMember: invoiceMemberDiscount,
           isAsaseMember: false,
-          organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga'
+          organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga',
+          forceCurrency: invoiceCurrency === 'auto' ? undefined : invoiceCurrency
         })
       });
 
@@ -824,9 +894,18 @@ export default function RendezvousTab() {
       setAdding(true);
       setAddError(null);
 
+      const token = await getAuthToken();
+      if (!token) {
+        setAddError('Not authenticated');
+        return;
+      }
+
       const response = await fetch('/api/admin/rendezvous-registrations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           billingInfo: {
             company: newRegistration.company,
@@ -2483,6 +2562,22 @@ export default function RendezvousTab() {
               <label htmlFor="memberDiscount" className="text-sm text-gray-700">
                 Apply 50% member discount (FASE/ASASE member)
               </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Currency / Bank Account
+              </label>
+              <select
+                value={invoiceCurrency}
+                onChange={(e) => setInvoiceCurrency(e.target.value as 'auto' | 'EUR' | 'GBP' | 'USD')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="auto">Auto (based on country: {invoiceEditRegistration?.billingInfo?.country || 'Unknown'})</option>
+                <option value="EUR">EUR - Wise Belgium (IBAN: BE90 9057 9070 7732)</option>
+                <option value="GBP">GBP - Wise UK (Sort: 60-84-64, Acc: 34068846)</option>
+                <option value="USD">USD - Wise US Inc (Routing: 101019628, Acc: 218936745391)</option>
+              </select>
             </div>
           </div>
 

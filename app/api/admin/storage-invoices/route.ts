@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,12 @@ export interface StorageInvoice {
 /**
  * GET: List all invoice PDFs from Firebase Storage
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
       || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebasestorage.app`;

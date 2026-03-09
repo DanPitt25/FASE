@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     // Fetch all rendezvous registrations
     const registrationsSnapshot = await adminDb
@@ -31,6 +37,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const data = await request.json();
 
@@ -126,6 +137,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const data = await request.json();
     const { registrationId, attendees } = data;

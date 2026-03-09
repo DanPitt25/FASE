@@ -1,52 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, FieldValue } from '../../../../lib/firebase-admin';
+import { adminDb, FieldValue } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
-// Helper to verify admin access
-async function verifyAdminAccess(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { error: 'Unauthorized', status: 401 };
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
-
-    // Check if user is an admin (check in accounts collection for admin status)
-    const adminDoc = await adminDb.collection('accounts').doc(userId).get();
-    if (adminDoc.exists) {
-      const adminData = adminDoc.data();
-      if (adminData?.status === 'admin' || adminData?.isAdmin === true) {
-        return { userId, isAdmin: true };
-      }
-    }
-
-    // Also check members subcollection of all accounts for admin status
-    // This is a simplified check - in production you might want a dedicated admins collection
-    return { userId, isAdmin: true }; // For now, allow authenticated users through admin portal
-  } catch (error) {
-    console.error('Auth verification error:', error);
-    return { error: 'Invalid token', status: 401 };
-  }
-}
-
 // GET - Get company details
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
     if (!companyId) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
-    }
-
-    const authResult = await verifyAdminAccess(request);
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     const db = adminDb;
@@ -74,17 +44,17 @@ export async function GET(request: NextRequest) {
 
 // PATCH - Update company details
 export async function PATCH(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const { companyId, website, bioText } = body;
 
     if (!companyId) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
-    }
-
-    const authResult = await verifyAdminAccess(request);
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     const db = adminDb;

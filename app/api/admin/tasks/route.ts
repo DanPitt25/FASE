@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue, Timestamp } from '../../../../lib/firebase-admin';
 import { logTaskCreated, logTaskCompleted } from '../../../../lib/activity-logger';
 import { Task, TaskStatus, TaskPriority } from '../../../../lib/firestore';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,11 @@ export const dynamic = 'force-dynamic';
  * With account_id: returns account-specific tasks (legacy, kept for compatibility)
  */
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
@@ -95,6 +101,11 @@ export async function GET(request: NextRequest) {
  * With accountId: creates account-specific task (legacy)
  */
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const {
@@ -171,6 +182,11 @@ export async function POST(request: NextRequest) {
  * With accountId: updates account-specific task (legacy)
  */
 export async function PATCH(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const {
@@ -263,6 +279,11 @@ export async function PATCH(request: NextRequest) {
  * With account_id: deletes account-specific task (legacy)
  */
 export async function DELETE(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');

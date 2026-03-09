@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,11 @@ interface SearchFilters {
  * POST: Advanced search across accounts, members, and invoices
  */
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const { query, filters, limit = 50 } = body as {
@@ -194,6 +200,11 @@ export async function POST(request: NextRequest) {
  * GET: Quick search by query string
  */
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.toLowerCase().trim() || '';

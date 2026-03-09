@@ -113,8 +113,9 @@ export function getWiseBankDetails(currency: string): {
         routingNumber: '101019628',
         accountNumber: '218936745391',
         accountType: 'Checking',
-        bankName: 'Lead Bank',
-        address: ['1801 Main St.', 'Kansas City MO 64108', 'United States']
+        swiftBic: 'TRWIUS35XXX',
+        bankName: 'Wise US Inc',
+        address: ['108 W 13th St', 'Wilmington, DE 19801', 'United States']
       };
     case 'GBP':
       return {
@@ -122,6 +123,7 @@ export function getWiseBankDetails(currency: string): {
         sortCode: '60-84-64',
         accountNumber: '34068846',
         iban: 'GB67 TRWI 6084 6434 0688 46',
+        swiftBic: 'TRWIGB2LXXX',
         bankName: 'Wise Payments Limited',
         address: ['Worship Square, 65 Clifton Street', 'London', 'EC2A 4JE', 'United Kingdom']
       };

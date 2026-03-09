@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminAuth } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { accountId, confirmationPhrase } = await request.json();
 

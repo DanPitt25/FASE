@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '../../../../lib/firebase-admin';
 import { logManualEntry } from '../../../../lib/activity-logger';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,11 @@ export const dynamic = 'force-dynamic';
  * GET: List activities for an account
  */
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get('account_id');
@@ -73,6 +79,11 @@ export async function GET(request: NextRequest) {
  * POST: Create a manual activity entry
  */
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const { accountId, title, description, performedBy, performedByName } = body;

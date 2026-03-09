@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as fs from 'fs';
 import * as path from 'path';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const runtime = 'nodejs';
 
@@ -19,6 +20,11 @@ function loadEmailTranslations(language: string): any {
 }
 
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { recipients, subject, body, sender } = await request.json();
 

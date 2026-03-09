@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminStorage, FieldValue } from '@/lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,11 @@ interface LineItemInput {
  * POST: Generate a PAID invoice PDF for a payment transaction
  */
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const {

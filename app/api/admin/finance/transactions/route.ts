@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +57,11 @@ async function getExchangeRates(): Promise<Record<string, number>> {
  * Query params: ?source=all|stripe|wise&from=&to=
  */
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const source = searchParams.get('source') || 'all';

@@ -73,3 +73,10 @@ Other key terms:
 ## UI/UX Guidelines
 - **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, hero sections, or any UI components. This includes any secondary text under titles/headings that describes or elaborates on the title. Just use the title alone.
 - **ALWAYS USE NEXT.JS LINK COMPONENT** - Never use `<a>` tags for internal navigation. Always use `<Link>` from `next/link` for internal routes. Only use `<a>` tags for external URLs.
+
+## Code Reuse - CRITICAL
+**ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE WRITING NEW CODE.**
+
+- Before writing any functionality, search for existing implementations in `lib/` and other shared directories
+- If a shared library exists, USE IT - don't duplicate code in API routes
+- If you need to extend functionality, ADD to the shared library, don't copy-paste and modify

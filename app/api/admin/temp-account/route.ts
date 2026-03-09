@@ -1,34 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, FieldValue } from '../../../../lib/firebase-admin';
+import { adminDb, FieldValue } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
-// Helper to verify admin access
-async function verifyAdminAccess(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { error: 'Unauthorized', status: 401 };
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    return { userId: decodedToken.uid };
-  } catch (error) {
-    console.error('Auth verification error:', error);
-    return { error: 'Invalid token', status: 401 };
-  }
-}
-
 // POST - Create a temporary account
 export async function POST(request: NextRequest) {
-  try {
-    const authResult = await verifyAdminAccess(request);
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-    }
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
 
+  try {
     const body = await request.json();
     const { organizationName, personalName, organizationType, carrierType, country, website } = body;
 

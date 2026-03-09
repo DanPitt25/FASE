@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, FieldValue } from '@/lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,11 @@ export const dynamic = 'force-dynamic';
  * GET: Get activities for a specific payment transaction
  */
 export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const transactionId = searchParams.get('transactionId');
@@ -53,6 +59,11 @@ export async function GET(request: NextRequest) {
  * POST: Add an activity for a payment transaction
  */
 export async function POST(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
     const body = await request.json();
     const {
