@@ -57,15 +57,15 @@ function getWiseBankDetails(currency: string) {
     EUR: {
       accountHolder: 'FASE BV',
       bic: 'TRWIBEB1XXX',
-      iban: 'BE31 9677 5765 4344',
+      iban: 'BE90 9057 9070 7732',
       bankName: 'Wise',
       address: ['Rue du Trône 100, 3rd floor', '1050 Brussels', 'Belgium']
     },
     GBP: {
       accountHolder: 'FASE BV',
-      sortCode: '23-14-70',
-      accountNumber: '38163382',
-      iban: 'GB89 TRWI 2314 7038 1633 82',
+      sortCode: '60-84-63',
+      accountNumber: '44068846',
+      iban: 'GB67 TRWI 6084 6434 0688 46',
       bankName: 'Wise Payments Limited',
       address: ['56 Shoreditch High Street', 'London', 'E1 6JJ', 'United Kingdom']
     },
