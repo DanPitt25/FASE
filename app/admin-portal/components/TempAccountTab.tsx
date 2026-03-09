@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { getAuth } from 'firebase/auth';
 import Button from '../../../components/Button';
 import CountrySelector from '../../../components/CountrySelector';
+import { authPost } from '@/lib/auth-fetch';
 
 export default function TempAccountTab() {
   const [formData, setFormData] = useState({
@@ -38,28 +38,13 @@ export default function TempAccountTab() {
     setSubmitStatus('idle');
 
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        alert('Not authenticated');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const response = await fetch('/api/admin/temp-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          organizationName: formData.organizationName,
-          personalName: formData.personalName,
-          organizationType: formData.organizationType,
-          carrierType: formData.carrierType,
-          country: formData.country,
-          website: formData.website
-        })
+      const response = await authPost('/api/admin/temp-account', {
+        organizationName: formData.organizationName,
+        personalName: formData.personalName,
+        organizationType: formData.organizationType,
+        carrierType: formData.carrierType,
+        country: formData.country,
+        website: formData.website
       });
 
       const data = await response.json();

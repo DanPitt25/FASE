@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { getAuth } from 'firebase/auth';
 import Image from 'next/image';
 import Button from '../../../components/Button';
+import { authFetch } from '@/lib/auth-fetch';
 
 interface CompanyDetailsTabProps {
   companyId: string;
@@ -48,19 +48,7 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
       try {
         setLoading(true);
 
-        const auth = getAuth();
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) {
-          console.error('Not authenticated');
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(`/api/admin/company-details?companyId=${encodeURIComponent(companyId)}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await authFetch(`/api/admin/company-details?companyId=${encodeURIComponent(companyId)}`);
 
         const data = await response.json();
         if (data.success) {
@@ -153,26 +141,15 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
 
     setSaving(true);
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        alert('Not authenticated');
-        setSaving(false);
-        return;
-      }
-
       // Normalize website URL
       let normalizedWebsite = website.trim();
       if (normalizedWebsite && !normalizedWebsite.startsWith('http://') && !normalizedWebsite.startsWith('https://')) {
         normalizedWebsite = 'https://' + normalizedWebsite;
       }
 
-      const response = await fetch('/api/admin/company-details', {
+      const response = await authFetch('/api/admin/company-details', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyId,
           website: normalizedWebsite || null,

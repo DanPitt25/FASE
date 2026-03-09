@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskPriority, TaskStatus } from '../../../lib/firestore';
-import { auth } from '@/lib/firebase';
+import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
 
 export default function TasksTab() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -22,10 +22,7 @@ export default function TasksTab() {
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/tasks', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await authFetch('/api/admin/tasks');
       const data = await response.json();
       if (data.success) {
         setTasks(data.tasks);
@@ -46,21 +43,13 @@ export default function TasksTab() {
 
     setSaving(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          title: newTask.title,
-          description: newTask.description,
-          priority: newTask.priority,
-          dueDate: newTask.dueDate || null,
-          createdBy: 'admin',
-          createdByName: 'Admin',
-        }),
+      const response = await authPost('/api/admin/tasks', {
+        title: newTask.title,
+        description: newTask.description,
+        priority: newTask.priority,
+        dueDate: newTask.dueDate || null,
+        createdBy: 'admin',
+        createdByName: 'Admin',
       });
 
       const data = await response.json();
@@ -78,13 +67,9 @@ export default function TasksTab() {
 
   const handleUpdateStatus = async (taskId: string, status: TaskStatus) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
-      await fetch('/api/admin/tasks', {
+      await authFetch('/api/admin/tasks', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           taskId,
           status,
@@ -102,11 +87,7 @@ export default function TasksTab() {
     if (!confirm('Delete this task?')) return;
 
     try {
-      const token = await auth.currentUser?.getIdToken();
-      await fetch(`/api/admin/tasks?task_id=${taskId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      await authDelete(`/api/admin/tasks?task_id=${taskId}`);
       await loadTasks();
     } catch (err) {
       console.error('Failed to delete task:', err);

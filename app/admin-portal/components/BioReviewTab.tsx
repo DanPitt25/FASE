@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
 import { OrganizationAccount, CompanySummary } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import Image from 'next/image';
+import { authFetch, authPost } from '@/lib/auth-fetch';
 
 interface CompanyWithPendingContent extends OrganizationAccount {
   // Bio fields
@@ -83,17 +83,7 @@ export default function BioReviewTab() {
     try {
       setLoading(true);
 
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/admin/bio-review?type=pending', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await authFetch('/api/admin/bio-review?type=pending');
 
       const data = await response.json();
       if (data.success) {
@@ -112,28 +102,13 @@ export default function BioReviewTab() {
     try {
       setProcessingReview(true);
 
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setProcessingReview(false);
-        return;
-      }
-
-      const response = await fetch('/api/admin/bio-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          action: 'review_bio',
-          companyId,
-          reviewAction: action,
-          reason,
-          editedBioText: action === 'edit' ? editedBioText : undefined,
-          translations: action === 'edit' ? translations : undefined
-        })
+      const response = await authPost('/api/admin/bio-review', {
+        action: 'review_bio',
+        companyId,
+        reviewAction: action,
+        reason,
+        editedBioText: action === 'edit' ? editedBioText : undefined,
+        translations: action === 'edit' ? translations : undefined
       });
 
       const data = await response.json();
@@ -164,29 +139,14 @@ export default function BioReviewTab() {
     try {
       setProcessingReview(true);
 
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setProcessingReview(false);
-        return;
-      }
-
       const item = pendingItems.find(i => i.id === companyId);
 
-      const response = await fetch('/api/admin/bio-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          action: 'review_logo',
-          companyId,
-          reviewAction: action,
-          reason,
-          pendingLogoURL: item?.pendingLogoURL
-        })
+      const response = await authPost('/api/admin/bio-review', {
+        action: 'review_logo',
+        companyId,
+        reviewAction: action,
+        reason,
+        pendingLogoURL: item?.pendingLogoURL
       });
 
       const data = await response.json();
@@ -257,13 +217,7 @@ export default function BioReviewTab() {
     // Load all accounts if not already loaded
     if (allAccounts.length === 0) {
       try {
-        const auth = getAuth();
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) return;
-
-        const response = await fetch('/api/admin/bio-review?type=all', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await authFetch('/api/admin/bio-review?type=all');
 
         const data = await response.json();
         if (data.success) {
@@ -310,29 +264,20 @@ export default function BioReviewTab() {
     try {
       setSavingNewBio(true);
 
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setSavingNewBio(false);
-        return;
-      }
-
       let logoURL: string | undefined;
 
       // Handle logo upload if provided
       if (newLogoFile) {
         setUploadingLogo(true);
 
-        const formData = new FormData();
-        formData.append('file', newLogoFile);
-        formData.append('identifier', selectedAccount.id);
-        formData.append('organizationName', selectedAccount.organizationName || '');
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', newLogoFile);
+        uploadFormData.append('identifier', selectedAccount.id);
+        uploadFormData.append('organizationName', selectedAccount.organizationName || '');
 
-        const uploadResponse = await fetch('/api/upload-logo', {
+        const uploadResponse = await authFetch('/api/upload-logo', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData,
+          body: uploadFormData,
         });
 
         if (uploadResponse.ok) {
@@ -347,19 +292,12 @@ export default function BioReviewTab() {
       }
 
       // Save bio and logo status via API
-      const response = await fetch('/api/admin/bio-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          action: 'save_new',
-          companyId: selectedAccount.id,
-          bioText: newBioText.trim(),
-          translations: newBioTranslations,
-          logoURL
-        })
+      const response = await authPost('/api/admin/bio-review', {
+        action: 'save_new',
+        companyId: selectedAccount.id,
+        bioText: newBioText.trim(),
+        translations: newBioTranslations,
+        logoURL
       });
 
       const data = await response.json();
@@ -380,13 +318,7 @@ export default function BioReviewTab() {
   const loadAccountsIfNeeded = async () => {
     if (allAccounts.length === 0) {
       try {
-        const auth = getAuth();
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) return;
-
-        const response = await fetch('/api/admin/bio-review?type=all', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await authFetch('/api/admin/bio-review?type=all');
 
         const data = await response.json();
         if (data.success) {
@@ -442,29 +374,20 @@ export default function BioReviewTab() {
     try {
       setSavingEdit(true);
 
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setSavingEdit(false);
-        return;
-      }
-
       let logoURL: string | undefined;
 
       // Handle logo upload if provided
       if (editLogoFile) {
         setUploadingEditLogo(true);
 
-        const formData = new FormData();
-        formData.append('file', editLogoFile);
-        formData.append('identifier', editSelectedAccount.id);
-        formData.append('organizationName', editSelectedAccount.organizationName || '');
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', editLogoFile);
+        uploadFormData.append('identifier', editSelectedAccount.id);
+        uploadFormData.append('organizationName', editSelectedAccount.organizationName || '');
 
-        const uploadResponse = await fetch('/api/upload-logo', {
+        const uploadResponse = await authFetch('/api/upload-logo', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData,
+          body: uploadFormData,
         });
 
         if (uploadResponse.ok) {
@@ -479,19 +402,12 @@ export default function BioReviewTab() {
       }
 
       // Save via API
-      const response = await fetch('/api/admin/bio-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          action: 'save_edit',
-          companyId: editSelectedAccount.id,
-          bioText: editBioText.trim(),
-          translations: editBioTranslations,
-          logoURL
-        })
+      const response = await authPost('/api/admin/bio-review', {
+        action: 'save_edit',
+        companyId: editSelectedAccount.id,
+        bioText: editBioText.trim(),
+        translations: editBioTranslations,
+        logoURL
       });
 
       const data = await response.json();

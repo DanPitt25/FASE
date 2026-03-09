@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Button from '../../../components/Button';
-import { auth } from '@/lib/firebase';
+import { authFetch, authPost } from '@/lib/auth-fetch';
 
 type OrganizationType = 'MGA' | 'carrier' | 'provider';
 type AccountStatus = 'pending' | 'pending_invoice' | 'invoice_sent' | 'approved' | 'flagged' | 'admin' | 'guest';
@@ -56,17 +56,9 @@ export default function FreeformEmailTab() {
 
     setLoadingRecipients(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/get-filtered-accounts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          organizationTypes: massEmailFilters.organizationTypes,
-          accountStatuses: massEmailFilters.accountStatuses
-        })
+      const response = await authPost('/api/admin/get-filtered-accounts', {
+        organizationTypes: massEmailFilters.organizationTypes,
+        accountStatuses: massEmailFilters.accountStatuses
       });
 
       if (!response.ok) throw new Error('Failed to fetch recipients');
@@ -140,19 +132,11 @@ export default function FreeformEmailTab() {
     const allRecipients = getAllRecipients();
 
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/send-mass-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName, contactName: r.contactName || '' })),
-          subject: massEmailContent.subject,
-          body: massEmailContent.body,
-          sender: massEmailContent.sender
-        })
+      const response = await authPost('/api/admin/send-mass-email', {
+        recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName, contactName: r.contactName || '' })),
+        subject: massEmailContent.subject,
+        body: massEmailContent.body,
+        sender: massEmailContent.sender
       });
 
       const data = await response.json();
@@ -186,10 +170,8 @@ export default function FreeformEmailTab() {
         formDataObj.append('attachments', file);
       });
 
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/send-freeform-email', {
+      const response = await authFetch('/api/send-freeform-email', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataObj,
       });
 

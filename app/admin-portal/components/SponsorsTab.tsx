@@ -2,10 +2,10 @@
 
 import React, { useState, useRef } from 'react';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
-import { getAuth } from 'firebase/auth';
 import Image from 'next/image';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
+import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
 
 interface SponsorBio {
   de: string;
@@ -64,17 +64,7 @@ export default function SponsorsTab() {
 
     setLoading(true);
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error('Not authenticated');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/admin/sponsors', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await authFetch('/api/admin/sponsors');
 
       const data = await response.json();
       if (data.success) {
@@ -89,22 +79,13 @@ export default function SponsorsTab() {
 
   // Upload logo via API route (uses Firebase Admin SDK)
   const uploadLogo = async (file: File, sponsorName: string): Promise<string> => {
-    const auth = getAuth();
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    uploadFormData.append('sponsorName', sponsorName);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('sponsorName', sponsorName);
-
-    const response = await fetch('/api/upload-sponsor', {
+    const response = await authFetch('/api/upload-sponsor', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
+      body: uploadFormData
     });
 
     if (!response.ok) {
@@ -125,14 +106,6 @@ export default function SponsorsTab() {
 
     setUploading(true);
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        alert('Not authenticated');
-        setUploading(false);
-        return;
-      }
-
       let logoUrl = editingSponsor?.logoUrl || '';
 
       // Upload new logo if provided
@@ -152,12 +125,9 @@ export default function SponsorsTab() {
 
       if (editingSponsor) {
         // Update existing sponsor
-        const response = await fetch('/api/admin/sponsors', {
+        const response = await authFetch('/api/admin/sponsors', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sponsorId: editingSponsor.id, ...sponsorData })
         });
 
@@ -171,14 +141,7 @@ export default function SponsorsTab() {
         ));
       } else {
         // Create new sponsor
-        const response = await fetch('/api/admin/sponsors', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(sponsorData)
-        });
+        const response = await authPost('/api/admin/sponsors', sponsorData);
 
         const data = await response.json();
         if (!data.success) {
@@ -217,17 +180,7 @@ export default function SponsorsTab() {
     if (!confirm(`Are you sure you want to delete ${sponsor.name}?`)) return;
 
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        alert('Not authenticated');
-        return;
-      }
-
-      const response = await fetch(`/api/admin/sponsors?sponsorId=${encodeURIComponent(sponsor.id)}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await authDelete(`/api/admin/sponsors?sponsorId=${encodeURIComponent(sponsor.id)}`);
 
       const data = await response.json();
       if (!data.success) {

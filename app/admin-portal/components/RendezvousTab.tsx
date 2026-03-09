@@ -1,17 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getAuth } from 'firebase/auth';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import AdminCountrySelect from './AdminCountrySelect';
 import * as XLSX from 'xlsx';
-
-// Helper to get auth token
-const getAuthToken = async (): Promise<string | null> => {
-  const auth = getAuth();
-  return auth.currentUser?.getIdToken() || null;
-};
+import { authFetch, authPost } from '@/lib/auth-fetch';
 
 interface Attendee {
   id: string;
@@ -165,14 +159,7 @@ export default function RendezvousTab() {
   const loadRegistrations = async () => {
     try {
       setLoading(true);
-      const token = await getAuthToken();
-      if (!token) {
-        console.error('Not authenticated');
-        return;
-      }
-      const response = await fetch('/api/admin/rendezvous-registrations', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await authFetch('/api/admin/rendezvous-registrations');
       if (!response.ok) throw new Error('Failed to fetch registrations');
       const data = await response.json();
       const allRegistrations = data.registrations || [];
@@ -497,19 +484,7 @@ export default function RendezvousTab() {
   const handleStatusUpdate = async (registrationId: string, newStatus: PaymentStatus) => {
     try {
       setUpdating(true);
-      const token = await getAuthToken();
-      if (!token) {
-        alert('Not authenticated');
-        return;
-      }
-      const response = await fetch('/api/admin/update-rendezvous-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ registrationId, status: newStatus })
-      });
+      const response = await authPost('/api/admin/update-rendezvous-status', { registrationId, status: newStatus });
 
       if (!response.ok) throw new Error('Failed to update status');
 
@@ -539,23 +514,10 @@ export default function RendezvousTab() {
       setDeleting(true);
       setDeleteError(null);
 
-      const token = await getAuthToken();
-      if (!token) {
-        setDeleteError('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/admin/delete-rendezvous-registration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          registrationId: selectedRegistration.registrationId,
-          confirmationPhrase: deleteConfirmation,
-          invoiceNumber: selectedRegistration.invoiceNumber
-        })
+      const response = await authPost('/api/admin/delete-rendezvous-registration', {
+        registrationId: selectedRegistration.registrationId,
+        confirmationPhrase: deleteConfirmation,
+        invoiceNumber: selectedRegistration.invoiceNumber
       });
 
       const result = await response.json();
@@ -584,37 +546,24 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
-      const token = await getAuthToken();
-      if (!token) {
-        alert('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/admin/generate-paid-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          invoiceNumber: registration.invoiceNumber,
-          registrationId: registration.registrationId,
-          companyName: registration.billingInfo?.company || '',
-          billingEmail: registration.billingInfo?.billingEmail || '',
-          address: registration.billingInfo?.address || '',
-          country: registration.billingInfo?.country || '',
-          attendees: registration.attendees || [],
-          pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
-          numberOfTickets: registration.numberOfAttendees || 1,
-          subtotal: registration.subtotal || 0,
-          vatAmount: registration.vatAmount || 0,
-          vatRate: 21,
-          totalPrice: registration.totalPrice || 0,
-          discount: registration.discount || 0,
-          isFaseMember: registration.companyIsFaseMember || false,
-          isAsaseMember: registration.isAsaseMember || false,
-          organizationType: registration.billingInfo?.organizationType || 'mga'
-        })
+      const response = await authPost('/api/admin/generate-paid-invoice', {
+        invoiceNumber: registration.invoiceNumber,
+        registrationId: registration.registrationId,
+        companyName: registration.billingInfo?.company || '',
+        billingEmail: registration.billingInfo?.billingEmail || '',
+        address: registration.billingInfo?.address || '',
+        country: registration.billingInfo?.country || '',
+        attendees: registration.attendees || [],
+        pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
+        numberOfTickets: registration.numberOfAttendees || 1,
+        subtotal: registration.subtotal || 0,
+        vatAmount: registration.vatAmount || 0,
+        vatRate: 21,
+        totalPrice: registration.totalPrice || 0,
+        discount: registration.discount || 0,
+        isFaseMember: registration.companyIsFaseMember || false,
+        isAsaseMember: registration.isAsaseMember || false,
+        organizationType: registration.billingInfo?.organizationType || 'mga'
       });
 
       const result = await response.json();
@@ -649,37 +598,24 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
-      const token = await getAuthToken();
-      if (!token) {
-        alert('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          invoiceNumber: registration.invoiceNumber,
-          registrationId: registration.registrationId,
-          companyName: registration.billingInfo?.company || '',
-          billingEmail: registration.billingInfo?.billingEmail || '',
-          address: registration.billingInfo?.address || '',
-          country: registration.billingInfo?.country || '',
-          attendees: registration.attendees || [],
-          pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
-          numberOfTickets: registration.numberOfAttendees || 1,
-          subtotal: registration.subtotal || 0,
-          vatAmount: registration.vatAmount || 0,
-          vatRate: 21,
-          totalPrice: registration.totalPrice || 0,
-          discount: registration.discount || 0,
-          isFaseMember: registration.companyIsFaseMember || false,
-          isAsaseMember: registration.isAsaseMember || false,
-          organizationType: registration.billingInfo?.organizationType || 'mga'
-        })
+      const response = await authPost('/api/admin/regenerate-rendezvous-invoice', {
+        invoiceNumber: registration.invoiceNumber,
+        registrationId: registration.registrationId,
+        companyName: registration.billingInfo?.company || '',
+        billingEmail: registration.billingInfo?.billingEmail || '',
+        address: registration.billingInfo?.address || '',
+        country: registration.billingInfo?.country || '',
+        attendees: registration.attendees || [],
+        pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
+        numberOfTickets: registration.numberOfAttendees || 1,
+        subtotal: registration.subtotal || 0,
+        vatAmount: registration.vatAmount || 0,
+        vatRate: 21,
+        totalPrice: registration.totalPrice || 0,
+        discount: registration.discount || 0,
+        isFaseMember: registration.companyIsFaseMember || false,
+        isAsaseMember: registration.isAsaseMember || false,
+        organizationType: registration.billingInfo?.organizationType || 'mga'
       });
 
       const result = await response.json();
@@ -737,18 +673,9 @@ export default function RendezvousTab() {
       setSavingAttendees(true);
       setEditAttendeesError(null);
 
-      const token = await getAuthToken();
-      if (!token) {
-        setEditAttendeesError('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/admin/rendezvous-registrations', {
+      const response = await authFetch('/api/admin/rendezvous-registrations', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           registrationId: editingRegistration.registrationId,
           attendees: editedAttendees,
@@ -807,40 +734,27 @@ export default function RendezvousTab() {
     try {
       setGeneratingInvoice(true);
 
-      const token = await getAuthToken();
-      if (!token) {
-        alert('Not authenticated');
-        return;
-      }
-
       const newSubtotal = invoiceTicketCount * invoiceUnitPrice;
 
-      const response = await fetch('/api/admin/regenerate-rendezvous-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          invoiceNumber: invoiceEditRegistration.invoiceNumber,
-          registrationId: invoiceEditRegistration.registrationId,
-          companyName: invoiceEditRegistration.billingInfo?.company || '',
-          billingEmail: invoiceEditRegistration.billingInfo?.billingEmail || '',
-          address: invoiceEditRegistration.billingInfo?.address || '',
-          country: invoiceEditRegistration.billingInfo?.country || '',
-          attendees: invoiceEditRegistration.attendees || [],
-          pricePerTicket: invoiceUnitPrice,
-          numberOfTickets: invoiceTicketCount,
-          subtotal: newSubtotal,
-          vatAmount: 0,
-          vatRate: 21,
-          totalPrice: newSubtotal,
-          discount: invoiceMemberDiscount ? 50 : 0,
-          isFaseMember: invoiceMemberDiscount,
-          isAsaseMember: false,
-          organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga',
-          forceCurrency: invoiceCurrency === 'auto' ? undefined : invoiceCurrency
-        })
+      const response = await authPost('/api/admin/regenerate-rendezvous-invoice', {
+        invoiceNumber: invoiceEditRegistration.invoiceNumber,
+        registrationId: invoiceEditRegistration.registrationId,
+        companyName: invoiceEditRegistration.billingInfo?.company || '',
+        billingEmail: invoiceEditRegistration.billingInfo?.billingEmail || '',
+        address: invoiceEditRegistration.billingInfo?.address || '',
+        country: invoiceEditRegistration.billingInfo?.country || '',
+        attendees: invoiceEditRegistration.attendees || [],
+        pricePerTicket: invoiceUnitPrice,
+        numberOfTickets: invoiceTicketCount,
+        subtotal: newSubtotal,
+        vatAmount: 0,
+        vatRate: 21,
+        totalPrice: newSubtotal,
+        discount: invoiceMemberDiscount ? 50 : 0,
+        isFaseMember: invoiceMemberDiscount,
+        isAsaseMember: false,
+        organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga',
+        forceCurrency: invoiceCurrency === 'auto' ? undefined : invoiceCurrency
       });
 
       const result = await response.json();
@@ -894,37 +808,24 @@ export default function RendezvousTab() {
       setAdding(true);
       setAddError(null);
 
-      const token = await getAuthToken();
-      if (!token) {
-        setAddError('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/admin/rendezvous-registrations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const response = await authPost('/api/admin/rendezvous-registrations', {
+        billingInfo: {
+          company: newRegistration.company,
+          billingEmail: newRegistration.billingEmail,
+          country: newRegistration.country,
+          address: newRegistration.address,
+          organizationType: newRegistration.organizationType,
         },
-        body: JSON.stringify({
-          billingInfo: {
-            company: newRegistration.company,
-            billingEmail: newRegistration.billingEmail,
-            country: newRegistration.country,
-            address: newRegistration.address,
-            organizationType: newRegistration.organizationType,
-          },
-          attendees: newRegistration.attendees,
-          totalPrice: newRegistration.totalPrice,
-          subtotal: newRegistration.totalPrice,
-          numberOfAttendees: newRegistration.attendees.length,
-          companyIsFaseMember: newRegistration.companyIsFaseMember,
-          isAsaseMember: newRegistration.isAsaseMember,
-          membershipType: newRegistration.isAsaseMember ? 'asase' : (newRegistration.companyIsFaseMember ? 'fase' : 'none'),
-          discount: 0,
-          paymentMethod: 'admin_manual',
-          paymentStatus: 'confirmed',
-        })
+        attendees: newRegistration.attendees,
+        totalPrice: newRegistration.totalPrice,
+        subtotal: newRegistration.totalPrice,
+        numberOfAttendees: newRegistration.attendees.length,
+        companyIsFaseMember: newRegistration.companyIsFaseMember,
+        isAsaseMember: newRegistration.isAsaseMember,
+        membershipType: newRegistration.isAsaseMember ? 'asase' : (newRegistration.companyIsFaseMember ? 'fase' : 'none'),
+        discount: 0,
+        paymentMethod: 'admin_manual',
+        paymentStatus: 'confirmed',
       });
 
       const result = await response.json();

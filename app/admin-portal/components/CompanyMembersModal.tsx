@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth } from '../../../lib/firebase';
+import { db } from '../../../lib/firebase';
+import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
 import { UnifiedMember } from '../../../lib/unified-member';
 import { Activity, Note, NoteCategory } from '../../../lib/firestore';
 import Modal from '../../../components/Modal';
@@ -61,11 +62,9 @@ export default function CompanyMembersModal({
 
     setCrmLoading(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const headers = { 'Authorization': `Bearer ${token}` };
       const [activitiesRes, notesRes] = await Promise.all([
-        fetch(`/api/admin/activities?account_id=${companyId}&limit=50`, { headers }),
-        fetch(`/api/admin/notes?account_id=${companyId}`, { headers }),
+        authFetch(`/api/admin/activities?account_id=${companyId}&limit=50`),
+        authFetch(`/api/admin/notes?account_id=${companyId}`),
       ]);
 
       const [activitiesData, notesData] = await Promise.all([
@@ -77,7 +76,7 @@ export default function CompanyMembersModal({
       if (notesData.success) setNotes(notesData.notes);
 
       try {
-        const invoicesRes = await fetch(`/api/admin/account-invoices?account_id=${companyId}`, { headers });
+        const invoicesRes = await authFetch(`/api/admin/account-invoices?account_id=${companyId}`);
         const invoicesData = await invoicesRes.json();
         if (invoicesData.success) {
           setInvoices(invoicesData.invoices);
@@ -110,20 +109,12 @@ export default function CompanyMembersModal({
 
     setSavingNote(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          accountId: companyId,
-          content: newNote,
-          category: noteCategory,
-          createdBy: 'admin',
-          createdByName: 'Admin',
-        }),
+      const response = await authPost('/api/admin/notes', {
+        accountId: companyId,
+        content: newNote,
+        category: noteCategory,
+        createdBy: 'admin',
+        createdByName: 'Admin',
       });
 
       const data = await response.json();
@@ -140,13 +131,9 @@ export default function CompanyMembersModal({
 
   const handleTogglePin = async (noteId: string, isPinned: boolean) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
-      await fetch('/api/admin/notes', {
+      await authFetch('/api/admin/notes', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accountId: companyId,
           noteId,
@@ -163,11 +150,7 @@ export default function CompanyMembersModal({
     if (!confirm('Delete this note?')) return;
 
     try {
-      const token = await auth.currentUser?.getIdToken();
-      await fetch(`/api/admin/notes?account_id=${companyId}&note_id=${noteId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      await authDelete(`/api/admin/notes?account_id=${companyId}&note_id=${noteId}`);
       await loadCrmData();
     } catch (err) {
       console.error('Failed to delete note:', err);
@@ -185,21 +168,13 @@ export default function CompanyMembersModal({
 
       // Log activity to timeline
       try {
-        const token = await auth.currentUser?.getIdToken();
-        await fetch('/api/admin/activities', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            accountId: companyId,
-            type: 'status_change',
-            title: 'Status Changed',
-            description: `Status changed from "${memberData.status}" to "${newStatus}"`,
-            performedBy: 'admin',
-            performedByName: 'Admin'
-          })
+        await authPost('/api/admin/activities', {
+          accountId: companyId,
+          type: 'status_change',
+          title: 'Status Changed',
+          description: `Status changed from "${memberData.status}" to "${newStatus}"`,
+          performedBy: 'admin',
+          performedByName: 'Admin'
         });
         await loadCrmData();
       } catch (activityError) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
-import { auth } from '@/lib/firebase';
+import { authFetch, authPost } from '@/lib/auth-fetch';
 
 interface MemberEmailActionsProps {
   memberData: any;
@@ -153,10 +153,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       if (!memberData?.email && !memberData?.organizationName) return;
 
       try {
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(`/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await authFetch(`/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`);
         if (response.ok) {
           const data = await response.json();
           if (data.registration) {
@@ -178,10 +175,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
 
       setLoadingMembers(true);
       try {
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(`/api/admin/company-members?companyId=${companyId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await authFetch(`/api/admin/company-members?companyId=${companyId}`);
         if (response.ok) {
           const data = await response.json();
           if (data.members) {
@@ -518,15 +512,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
           payload = await handleReminderAttachment(payload);
         }
 
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(config.apiEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload),
-        });
+        const response = await authPost(config.apiEndpoint, payload);
 
         const data = await response.json();
         setPreview(data);
@@ -573,15 +559,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
           }
 
           try {
-            const token = await auth.currentUser?.getIdToken();
-            const response = await fetch(config.apiEndpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(payload),
-            });
+            const response = await authPost(config.apiEndpoint, payload);
 
             const data = await response.json();
 
@@ -645,21 +623,13 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         // Log activity to timeline
         if (successCount > 0 && companyId) {
           try {
-            const token = await auth.currentUser?.getIdToken();
-            await fetch('/api/admin/activities', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                accountId: companyId,
-                type: 'email_sent',
-                title: `${config.title} Sent`,
-                description: `${config.title} sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}`,
-                performedBy: 'admin',
-                performedByName: 'Admin'
-              })
+            await authPost('/api/admin/activities', {
+              accountId: companyId,
+              type: 'email_sent',
+              title: `${config.title} Sent`,
+              description: `${config.title} sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}`,
+              performedBy: 'admin',
+              performedByName: 'Admin'
             });
             onEmailSent?.();
           } catch (activityError) {
