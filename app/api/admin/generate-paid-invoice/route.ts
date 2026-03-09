@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
-import { generateRendezvousPaidInvoicePDF, RendezvousInvoiceData } from '../../../../mga-rendezvous/lib/invoice-pdf-generator';
+import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
+import { generateRendezvousPaidInvoicePDF, RendezvousInvoiceData } from '@/lib/rendezvous-invoice-generator';
 
 export const dynamic = 'force-dynamic';
 

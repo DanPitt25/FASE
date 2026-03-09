@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminStorage, FieldValue } from '@/lib/firebase-admin';
 import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
-import { generateRendezvousInvoicePDF, RendezvousInvoiceData } from '../../../../mga-rendezvous/lib/invoice-pdf-generator';
+import { generateRendezvousInvoicePDF, RendezvousInvoiceData } from '@/lib/rendezvous-invoice-generator';
 
 export const dynamic = 'force-dynamic';
 
