@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardLayout from '../../components/DashboardLayout';
+import AdminConsoleDashboard, { ConsoleTileData } from '../../components/AdminConsoleDashboard';
 import { useUnifiedAuth } from '../../contexts/UnifiedAuthContext';
 import {
   UnifiedMember,
@@ -10,21 +10,91 @@ import {
   updateMemberStatus
 } from '../../lib/unified-member';
 
-// Import modular tab components
-import MembersTab from './components/MembersTab';
+// Import tab components
+import MembersViewTab from './components/MembersViewTab';
+import MembersManageTab from './components/MembersManageTab';
+import RendezvousViewTab from './components/RendezvousViewTab';
+import RendezvousManageTab from './components/RendezvousManageTab';
+import FinanceViewTab from './components/FinanceViewTab';
+import FinanceManageTab from './components/FinanceManageTab';
+import ReportsTab from './components/ReportsTab';
+import TasksTab from './components/TasksTab';
 import FreeformEmailTab from './components/FreeformEmailTab';
 import InvoicesTab from './components/InvoicesTab';
-import RendezvousTab from './components/RendezvousTab';
-import ContentTab from './components/ContentTab';
-import UtilitiesDrawer from './components/UtilitiesDrawer';
-import FinanceTab from './components/FinanceTab';
+import BioReviewTab from './components/BioReviewTab';
+import SponsorsTab from './components/SponsorsTab';
+import TempAccountTab from './components/TempAccountTab';
 
+// Error boundary and context providers
+import { AdminErrorBoundary } from './components/AdminErrorBoundary';
+import { EmailProvider, EmailToast } from '../../lib/contexts/EmailContext';
+
+// Icons for tiles
+const MembersIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
+
+const RendezvousIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
+const FinanceIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const ReportsIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+const TasksIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+  </svg>
+);
+
+const EmailIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+
+const InvoicesIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
+const BiosLogosIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
+const SponsorsIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+  </svg>
+);
+
+const DirectoryIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+  </svg>
+);
 
 export default function AdminPortalPage() {
   const { user, loading: authLoading, isAdmin } = useUnifiedAuth();
   const router = useRouter();
 
-  // State for data - loaded lazily
+  // State for data
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
 
   // Track loading state
@@ -37,15 +107,12 @@ export default function AdminPortalPage() {
     members: false,
   });
 
-  const [activeSection, setActiveSection] = useState<string>('members');
-
   // Check admin access
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       router.push('/member-portal');
     }
   }, [user, isAdmin, authLoading, router]);
-
 
   const loadMembersData = useCallback(async () => {
     if (!user?.uid || !isAdmin || dataLoaded.members) return;
@@ -81,38 +148,12 @@ export default function AdminPortalPage() {
     }
   }, [user?.uid, isAdmin, dataLoaded.members]);
 
-
-  // Load data based on active section
-  useEffect(() => {
-    if (activeSection === 'members') {
-      loadMembersData();
-    }
-  }, [activeSection, loadMembersData]);
-
   // Load members data on initial load
   useEffect(() => {
     if (user?.uid && isAdmin) {
       loadMembersData();
     }
   }, [user?.uid, isAdmin, loadMembersData]);
-
-  // Status badge for header
-  const statusBadge = () => {
-    const pendingCount = memberApplications.filter(m => m.status === 'pending').length;
-
-    if (pendingCount > 0) {
-      return (
-        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-medium">
-          {pendingCount} Pending
-        </span>
-      );
-    }
-    return null;
-  };
-
-  const handleActiveSectionChange = (section: string) => {
-    setActiveSection(section);
-  };
 
   const handleMemberStatusUpdate = async (memberId: string, newStatus: UnifiedMember['status']) => {
     try {
@@ -167,95 +208,172 @@ export default function AdminPortalPage() {
     return null;
   }
 
-  // Dashboard sections - Simplified 5-tab structure
-  const dashboardSections = [
+  // Calculate badge counts
+  const pendingMembersCount = memberApplications.filter(m => m.status === 'pending').length;
+
+  // VIEW tiles - for viewing data and reports
+  const viewTiles: ConsoleTileData[] = [
     {
       id: 'members',
-      title: `Members (${memberApplications.length})`,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
+      title: 'Members',
+      icon: MembersIcon,
+      badge: pendingMembersCount || undefined,
       content: (
-        <MembersTab
-          memberApplications={memberApplications}
-          loading={loading.members}
-          onStatusUpdate={handleMemberStatusUpdate}
-          onMemberDeleted={(memberId) => {
-            setMemberApplications(prev => prev.filter(m => m.id !== memberId));
-          }}
-        />
-      )
+        <AdminErrorBoundary tabName="Members">
+          <MembersViewTab
+            memberApplications={memberApplications}
+            loading={loading.members}
+          />
+        </AdminErrorBoundary>
+      ),
     },
     {
       id: 'rendezvous',
       title: 'Rendezvous',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+      icon: RendezvousIcon,
+      content: (
+        <AdminErrorBoundary tabName="Rendezvous">
+          <RendezvousViewTab />
+        </AdminErrorBoundary>
       ),
-      content: <RendezvousTab />
-    },
-    {
-      id: 'invoices',
-      title: 'Invoices',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      content: <InvoicesTab />
     },
     {
       id: 'finance',
       title: 'Finance',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      content: <FinanceTab />
-    },
-    {
-      id: 'content',
-      title: 'Content',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
+      icon: FinanceIcon,
       content: (
-        <>
-          <ContentTab />
-          <UtilitiesDrawer />
-        </>
-      )
+        <AdminErrorBoundary tabName="Finance">
+          <FinanceViewTab />
+        </AdminErrorBoundary>
+      ),
     },
     {
-      id: 'emails',
-      title: 'Freeform Email',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
+      id: 'reports',
+      title: 'Reports',
+      icon: ReportsIcon,
+      content: (
+        <AdminErrorBoundary tabName="Reports">
+          <ReportsTab />
+        </AdminErrorBoundary>
       ),
-      content: <FreeformEmailTab />
-    }
+    },
+    {
+      id: 'tasks',
+      title: 'Tasks',
+      icon: TasksIcon,
+      content: (
+        <AdminErrorBoundary tabName="Tasks">
+          <TasksTab />
+        </AdminErrorBoundary>
+      ),
+    },
+  ];
+
+  // MANAGE tiles - for producing content and communications
+  const manageTiles: ConsoleTileData[] = [
+    {
+      id: 'members-manage',
+      title: 'Members',
+      icon: MembersIcon,
+      badge: pendingMembersCount || undefined,
+      content: (
+        <AdminErrorBoundary tabName="Members">
+          <MembersManageTab
+            memberApplications={memberApplications}
+            loading={loading.members}
+            onStatusUpdate={handleMemberStatusUpdate}
+            onMemberDeleted={(memberId) => {
+              setMemberApplications(prev => prev.filter(m => m.id !== memberId));
+            }}
+          />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'registrations',
+      title: 'Registrations',
+      icon: RendezvousIcon,
+      content: (
+        <AdminErrorBoundary tabName="Registrations">
+          <RendezvousManageTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'email',
+      title: 'Email',
+      icon: EmailIcon,
+      content: (
+        <AdminErrorBoundary tabName="Email">
+          <FreeformEmailTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'invoices',
+      title: 'Invoices',
+      icon: InvoicesIcon,
+      content: (
+        <AdminErrorBoundary tabName="Invoices">
+          <InvoicesTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'finance-manage',
+      title: 'Finance',
+      icon: FinanceIcon,
+      content: (
+        <AdminErrorBoundary tabName="Finance">
+          <FinanceManageTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'bios-logos',
+      title: 'Bios & Logos',
+      icon: BiosLogosIcon,
+      content: (
+        <AdminErrorBoundary tabName="Bios & Logos">
+          <BioReviewTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'sponsors',
+      title: 'Sponsors',
+      icon: SponsorsIcon,
+      content: (
+        <AdminErrorBoundary tabName="Sponsors">
+          <SponsorsTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'directory',
+      title: 'Directory',
+      icon: DirectoryIcon,
+      content: (
+        <AdminErrorBoundary tabName="Directory">
+          <TempAccountTab />
+        </AdminErrorBoundary>
+      ),
+    },
   ];
 
   return (
-    <DashboardLayout
-      title="Admin Portal"
-      bannerImage="/conferenceWood.jpg"
-      bannerImageAlt="Corporate Management"
-      sections={dashboardSections}
-      currentPage="admin-portal"
-      statusBadge={statusBadge()}
-      activeSection={activeSection}
-      onActiveSectionChange={handleActiveSectionChange}
-      defaultActiveSection="members"
-    />
+    <EmailProvider>
+      <AdminConsoleDashboard
+        title="Admin Portal"
+        bannerImage="/conferenceWood.jpg"
+        bannerImageAlt="Corporate Management"
+        viewTiles={viewTiles}
+        manageTiles={manageTiles}
+        currentPage="admin-portal"
+        defaultSection="view"
+        defaultActiveTile="members"
+      />
+      <EmailToast />
+    </EmailProvider>
   );
 }

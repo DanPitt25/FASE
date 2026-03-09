@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
+import { adminDb } from '@/lib/firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,7 @@ interface Transaction {
   email?: string;
   customerId?: string; // Stripe customer ID or Wise sender account
   description?: string;
+  suppressed?: boolean; // Hidden from reports
 }
 
 // Approximate exchange rates - updated periodically
@@ -54,7 +56,7 @@ async function getExchangeRates(): Promise<Record<string, number>> {
 
 /**
  * GET: Combined transaction list from Stripe and Wise
- * Query params: ?source=all|stripe|wise&from=&to=
+ * Query params: ?source=all|stripe|wise&from=&to=&hideSuppressed=true
  */
 export async function GET(request: NextRequest) {
   const authResult = await verifyAdminAccess(request);
@@ -67,6 +69,7 @@ export async function GET(request: NextRequest) {
     const source = searchParams.get('source') || 'all';
     const fromDate = searchParams.get('from');
     const toDate = searchParams.get('to');
+    const hideSuppressed = searchParams.get('hideSuppressed') === 'true';
 
     const now = new Date();
     const from = fromDate ? new Date(fromDate) : null;
@@ -74,6 +77,10 @@ export async function GET(request: NextRequest) {
 
     const transactions: Transaction[] = [];
     const errors: string[] = [];
+
+    // Get suppressed transaction IDs from Firestore
+    const suppressedSnapshot = await adminDb.collection('suppressed-transactions').get();
+    const suppressedIds = new Set(suppressedSnapshot.docs.map(doc => doc.id));
 
     // Get exchange rates for EUR conversion
     const exchangeRates = await getExchangeRates();
@@ -125,6 +132,7 @@ export async function GET(request: NextRequest) {
               const currency = pi.currency.toUpperCase();
               const amountEur = amount * (exchangeRates[currency] || 1);
 
+              const txId = `stripe_${pi.id}`;
               transactions.push({
                 id: pi.id,
                 source: 'stripe',
@@ -137,6 +145,7 @@ export async function GET(request: NextRequest) {
                 email,
                 customerId,
                 description: pi.description || '',
+                suppressed: suppressedIds.has(txId),
               });
             }
 
@@ -171,6 +180,7 @@ export async function GET(request: NextRequest) {
           const currency = wiseTx.amount.currency;
           const amountEur = amount * (exchangeRates[currency] || 1);
 
+          const txId = `wise_${wiseTx.referenceNumber}`;
           transactions.push({
             id: wiseTx.referenceNumber,
             source: 'wise',
@@ -181,6 +191,7 @@ export async function GET(request: NextRequest) {
             reference: wiseTx.details.paymentReference || wiseTx.details.description || '',
             senderName: wiseTx.details.senderName || '',
             description: wiseTx.details.description || '',
+            suppressed: suppressedIds.has(txId),
           });
         }
       } catch (wiseError: any) {
@@ -189,19 +200,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter out small transactions (under €10 equivalent)
-    const filteredTransactions = transactions.filter((t) => t.amountEur >= 10);
+    let filteredTransactions = transactions.filter((t) => t.amountEur >= 10);
+
+    // Optionally hide suppressed transactions (for View mode)
+    if (hideSuppressed) {
+      filteredTransactions = filteredTransactions.filter((t) => !t.suppressed);
+    }
 
     // Sort by date descending
     filteredTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Calculate summary (excluding suppressed for accurate totals)
+    const visibleTransactions = filteredTransactions.filter((t) => !t.suppressed);
 
     return NextResponse.json({
       success: true,
       transactions: filteredTransactions,
       summary: {
-        total: filteredTransactions.length,
-        stripeCount: filteredTransactions.filter((t) => t.source === 'stripe').length,
-        wiseCount: filteredTransactions.filter((t) => t.source === 'wise').length,
-        totalEur: filteredTransactions.reduce((sum, t) => sum + t.amountEur, 0),
+        total: visibleTransactions.length,
+        stripeCount: visibleTransactions.filter((t) => t.source === 'stripe').length,
+        wiseCount: visibleTransactions.filter((t) => t.source === 'wise').length,
+        totalEur: visibleTransactions.reduce((sum, t) => sum + t.amountEur, 0),
+        suppressedCount: filteredTransactions.filter((t) => t.suppressed).length,
       },
       errors: errors.length > 0 ? errors : undefined,
     });

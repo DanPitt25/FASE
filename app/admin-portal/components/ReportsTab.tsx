@@ -5,6 +5,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import Button from '../../../components/Button';
 import { getLineOfBusinessDisplay } from '../../../lib/lines-of-business';
+import { authFetch } from '@/lib/auth-fetch';
+import * as XLSX from 'xlsx';
 
 // Professional color palette matching FASE report style (blue → teal → gold → cream gradient)
 const CHART_COLORS = [
@@ -125,6 +127,24 @@ interface PDFSections {
   carrierCountries: boolean;
   providerServices: boolean;
 }
+
+interface RendezvousReportData {
+  totalRegistrations: number;
+  totalAttendees: number;
+  confirmedAttendees: number;
+  pendingAttendees: number;
+  confirmedRevenue: number;
+  pendingRevenue: number;
+  totalRevenue: number;
+  faseMembers: number;
+  asaseMembers: number;
+  byPaymentStatus: Record<string, number>;
+  byCountry: Record<string, number>;
+  byOrganizationType: Record<string, number>;
+  attendeesByCompany: Record<string, number>;
+}
+
+type ReportType = 'membership' | 'rendezvous';
 
 type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice' | 'paid' | 'flagged' | 'rejected';
 type TypeFilter = 'all' | 'MGA' | 'carrier' | 'provider';
@@ -370,6 +390,10 @@ function PDFExportModal({
 }
 
 export default function ReportsTab() {
+  // Report type selector
+  const [reportType, setReportType] = useState<ReportType>('membership');
+
+  // Membership report state
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false);
@@ -377,6 +401,13 @@ export default function ReportsTab() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [allAccounts, setAllAccounts] = useState<AccountData[]>([]);
+  const [suppressedMemberIds, setSuppressedMemberIds] = useState<Set<string>>(new Set());
+
+  // Rendezvous report state
+  const [rendezvousLoading, setRendezvousLoading] = useState(true);
+  const [rendezvousData, setRendezvousData] = useState<RendezvousReportData | null>(null);
+  const [generatingRendezvous, setGeneratingRendezvous] = useState(false);
+
   const [pdfSections, setPdfSections] = useState<PDFSections>({
     summary: true,
     status: true,
@@ -393,15 +424,218 @@ export default function ReportsTab() {
   });
 
   useEffect(() => {
+    loadSuppressedIds();
     loadAccounts();
+    loadRendezvousData();
   }, []);
 
   useEffect(() => {
     if (allAccounts.length > 0) {
-      const filtered = calculateReportData(allAccounts, statusFilter, typeFilter);
+      const filtered = calculateReportData(allAccounts, statusFilter, typeFilter, suppressedMemberIds);
       setReportData(filtered);
     }
-  }, [allAccounts, statusFilter, typeFilter]);
+  }, [allAccounts, statusFilter, typeFilter, suppressedMemberIds]);
+
+  const loadSuppressedIds = async () => {
+    try {
+      const response = await authFetch('/api/admin/members/suppress');
+      const data = await response.json();
+      if (data.success) {
+        setSuppressedMemberIds(new Set(data.suppressedIds));
+      }
+    } catch (error) {
+      console.error('Error loading suppressed members:', error);
+    }
+  };
+
+  const loadRendezvousData = async () => {
+    setRendezvousLoading(true);
+    try {
+      const [regResponse, suppressResponse] = await Promise.all([
+        authFetch('/api/admin/rendezvous-registrations'),
+        authFetch('/api/admin/rendezvous/suppress'),
+      ]);
+
+      const regData = await regResponse.json();
+      const suppressData = await suppressResponse.json();
+
+      const suppressedIds = new Set<string>(suppressData.success ? suppressData.suppressedIds : []);
+      const allRegistrations = regData.registrations || [];
+
+      // Filter: only actual registrations, not suppressed
+      const registrations = allRegistrations.filter((r: any) =>
+        r.registrationType !== 'interest' && !suppressedIds.has(r.registrationId)
+      );
+
+      // Calculate statistics
+      const confirmed = registrations.filter((r: any) =>
+        r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary'
+      );
+      const pending = registrations.filter((r: any) =>
+        r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending'
+      );
+
+      const confirmedAttendees = confirmed.reduce((sum: number, r: any) => sum + (r.attendees?.length || 0), 0);
+      const pendingAttendees = pending.reduce((sum: number, r: any) => sum + (r.attendees?.length || 0), 0);
+      const confirmedRevenue = confirmed.reduce((sum: number, r: any) => sum + (r.totalPrice || 0), 0);
+      const pendingRevenue = pending.reduce((sum: number, r: any) => sum + (r.totalPrice || 0), 0);
+
+      // By payment status
+      const byPaymentStatus: Record<string, number> = {};
+      registrations.forEach((r: any) => {
+        const status = r.paymentStatus === 'paid' ? 'Paid' :
+                      r.paymentStatus === 'confirmed' ? 'Confirmed' :
+                      r.paymentStatus === 'complimentary' ? 'Complimentary' : 'Pending';
+        byPaymentStatus[status] = (byPaymentStatus[status] || 0) + (r.attendees?.length || 0);
+      });
+
+      // By country
+      const byCountry: Record<string, number> = {};
+      registrations.forEach((r: any) => {
+        const country = r.billingInfo?.country;
+        if (country) {
+          const countryName = countryNames[country] || country;
+          byCountry[countryName] = (byCountry[countryName] || 0) + (r.attendees?.length || 0);
+        }
+      });
+
+      // By organization type
+      const byOrganizationType: Record<string, number> = {};
+      registrations.forEach((r: any) => {
+        const orgType = r.billingInfo?.organizationType || 'Unknown';
+        const label = orgType === 'mga' ? 'MGA' :
+                     orgType === 'carrier' ? 'Carrier' :
+                     orgType === 'provider' ? 'Service Provider' : orgType;
+        byOrganizationType[label] = (byOrganizationType[label] || 0) + (r.attendees?.length || 0);
+      });
+
+      // Attendees by company (top companies)
+      const attendeesByCompany: Record<string, number> = {};
+      registrations.forEach((r: any) => {
+        const company = r.billingInfo?.company || 'Unknown';
+        attendeesByCompany[company] = (attendeesByCompany[company] || 0) + (r.attendees?.length || 0);
+      });
+
+      setRendezvousData({
+        totalRegistrations: registrations.length,
+        totalAttendees: confirmedAttendees + pendingAttendees,
+        confirmedAttendees,
+        pendingAttendees,
+        confirmedRevenue,
+        pendingRevenue,
+        totalRevenue: confirmedRevenue + pendingRevenue,
+        faseMembers: registrations.filter((r: any) => r.companyIsFaseMember).length,
+        asaseMembers: registrations.filter((r: any) => r.isAsaseMember).length,
+        byPaymentStatus,
+        byCountry,
+        byOrganizationType,
+        attendeesByCompany,
+      });
+    } catch (error) {
+      console.error('Error loading rendezvous data:', error);
+    } finally {
+      setRendezvousLoading(false);
+    }
+  };
+
+  const generateRendezvousReport = async () => {
+    setGeneratingRendezvous(true);
+    try {
+      // Load fresh data directly
+      const [regResponse, suppressResponse] = await Promise.all([
+        authFetch('/api/admin/rendezvous-registrations'),
+        authFetch('/api/admin/rendezvous/suppress'),
+      ]);
+
+      const regData = await regResponse.json();
+      const suppressData = await suppressResponse.json();
+
+      const suppressedIds = new Set<string>(suppressData.success ? suppressData.suppressedIds : []);
+      const allRegistrations = regData.registrations || [];
+
+      // Filter: only actual registrations, not suppressed
+      const registrations = allRegistrations.filter((r: any) =>
+        r.registrationType !== 'interest' && !suppressedIds.has(r.registrationId)
+      );
+
+      // Flatten attendees
+      const attendees: any[] = [];
+      registrations.forEach((reg: any) => {
+        (reg.attendees || []).forEach((att: any) => {
+          attendees.push({
+            'First Name': att.firstName,
+            'Last Name': att.lastName,
+            'Email': att.email,
+            'Job Title': att.jobTitle,
+            'Company': reg.billingInfo?.company || '',
+            'Country': reg.billingInfo?.country || '',
+            'Organization Type': reg.billingInfo?.organizationType || '',
+            'Payment Status': reg.paymentStatus === 'paid' ? 'Paid' :
+                             reg.paymentStatus === 'confirmed' ? 'Confirmed' :
+                             reg.paymentStatus === 'complimentary' ? 'Complimentary' : 'Pending',
+            'FASE Member': reg.companyIsFaseMember ? 'Yes' : 'No',
+            'ASASE Member': reg.isAsaseMember ? 'Yes' : 'No',
+            'Invoice Number': reg.invoiceNumber || '',
+            'Total Price': reg.totalPrice || 0,
+          });
+        });
+      });
+
+      // Create workbook with multiple sheets
+      const workbook = XLSX.utils.book_new();
+
+      // Sheet 1: All Attendees
+      const attendeesSheet = XLSX.utils.json_to_sheet(attendees);
+      XLSX.utils.book_append_sheet(workbook, attendeesSheet, 'Attendees');
+
+      // Sheet 2: Registrations Summary
+      const regSummary = registrations.map((reg: any) => ({
+        'Company': reg.billingInfo?.company || '',
+        'Billing Email': reg.billingInfo?.billingEmail || '',
+        'Country': reg.billingInfo?.country || '',
+        'Attendee Count': reg.attendees?.length || 0,
+        'Total Price': reg.totalPrice || 0,
+        'Payment Status': reg.paymentStatus,
+        'Invoice Number': reg.invoiceNumber || '',
+        'FASE Member': reg.companyIsFaseMember ? 'Yes' : 'No',
+        'ASASE Member': reg.isAsaseMember ? 'Yes' : 'No',
+      }));
+      const regSheet = XLSX.utils.json_to_sheet(regSummary);
+      XLSX.utils.book_append_sheet(workbook, regSheet, 'Registrations');
+
+      // Sheet 3: Statistics
+      const confirmed = registrations.filter((r: any) =>
+        r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary'
+      );
+      const pending = registrations.filter((r: any) =>
+        r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending'
+      );
+      const confirmedAttendees = confirmed.reduce((sum: number, r: any) => sum + (r.attendees?.length || 0), 0);
+      const pendingAttendees = pending.reduce((sum: number, r: any) => sum + (r.attendees?.length || 0), 0);
+      const confirmedRevenue = confirmed.reduce((sum: number, r: any) => sum + (r.totalPrice || 0), 0);
+      const pendingRevenue = pending.reduce((sum: number, r: any) => sum + (r.totalPrice || 0), 0);
+
+      const stats = [
+        { 'Metric': 'Total Registrations', 'Value': registrations.length },
+        { 'Metric': 'Total Attendees', 'Value': confirmedAttendees + pendingAttendees },
+        { 'Metric': 'Confirmed Attendees', 'Value': confirmedAttendees },
+        { 'Metric': 'Pending Attendees', 'Value': pendingAttendees },
+        { 'Metric': 'Confirmed Revenue (EUR)', 'Value': confirmedRevenue },
+        { 'Metric': 'Pending Revenue (EUR)', 'Value': pendingRevenue },
+        { 'Metric': 'Total Revenue (EUR)', 'Value': confirmedRevenue + pendingRevenue },
+        { 'Metric': 'FASE Members', 'Value': registrations.filter((r: any) => r.companyIsFaseMember).length },
+        { 'Metric': 'ASASE Members', 'Value': registrations.filter((r: any) => r.isAsaseMember).length },
+      ];
+      const statsSheet = XLSX.utils.json_to_sheet(stats);
+      XLSX.utils.book_append_sheet(workbook, statsSheet, 'Statistics');
+
+      XLSX.writeFile(workbook, `MGA-Rendezvous-Report-${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (error) {
+      console.error('Error generating Rendezvous report:', error);
+    } finally {
+      setGeneratingRendezvous(false);
+    }
+  };
 
   const loadAccounts = async () => {
     try {
@@ -423,9 +657,13 @@ export default function ReportsTab() {
   const calculateReportData = (
     accounts: AccountData[],
     status: StatusFilter,
-    type: TypeFilter
+    type: TypeFilter,
+    suppressedIds: Set<string>
   ): ReportData => {
     let filtered = accounts;
+
+    // Filter out suppressed members
+    filtered = filtered.filter((a) => !suppressedIds.has(a.id));
 
     // Exclude flagged and rejected unless explicitly filtering for them
     if (status === 'all') {
@@ -1062,23 +1300,6 @@ export default function ReportsTab() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fase-navy"></div>
-      </div>
-    );
-  }
-
-  if (!reportData) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">Failed to load report data</p>
-        <Button onClick={loadAccounts} variant="secondary" className="mt-4">Retry</Button>
-      </div>
-    );
-  }
-
   const getReportTitle = () => {
     const typeLabel = typeFilter === 'all' ? 'All Organizations' :
       typeFilter === 'MGA' ? 'MGAs' :
@@ -1087,195 +1308,353 @@ export default function ReportsTab() {
     return `${typeLabel}${statusLabel}`;
   };
 
-  const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
-  const showCarrier = (typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0;
-  const showProvider = (typeFilter === 'all' || typeFilter === 'provider') && reportData.providers.length > 0;
+  const showMGA = reportData && (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
+  const showCarrier = reportData && (typeFilter === 'all' || typeFilter === 'carrier') && reportData.carriers.length > 0;
+  const showProvider = reportData && (typeFilter === 'all' || typeFilter === 'provider') && reportData.providers.length > 0;
 
   return (
     <div className="space-y-6">
-      {/* PDF Export Modal */}
-      <PDFExportModal
-        isOpen={showPDFModal}
-        onClose={() => setShowPDFModal(false)}
-        onExport={generatePDF}
-        sections={pdfSections}
-        setSections={setPdfSections}
-        typeFilter={typeFilter}
-        reportData={reportData}
-      />
-
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">Membership Reports</h3>
-          <p className="text-sm text-gray-500">{getReportTitle()} - {reportData.totalAccounts} organizations</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-          >
-            <option value="all">All Types</option>
-            <option value="MGA">MGAs Only</option>
-            <option value="carrier">Carriers Only</option>
-            <option value="provider">Providers Only</option>
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-          >
-            <option value="all">All Statuses</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="flagged">Flagged</option>
-            <option value="invoice_sent">Invoice Sent</option>
-            <option value="pending_invoice">Pending Invoice</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          <Button onClick={() => setShowPDFModal(true)} disabled={generating} variant="primary">
-            {generating ? 'Generating...' : 'Export PDF'}
-          </Button>
-        </div>
+      {/* Report Type Tabs */}
+      <div className="flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setReportType('membership')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            reportType === 'membership'
+              ? 'border-fase-navy text-fase-navy'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          Membership Reports
+        </button>
+        <button
+          onClick={() => setReportType('rendezvous')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            reportType === 'rendezvous'
+              ? 'border-fase-navy text-fase-navy'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          MGA Rendezvous
+        </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-fase-navy text-white rounded-xl p-5 shadow-lg">
-          <div className="text-3xl font-bold">{reportData.totalAccounts}</div>
-          <div className="text-fase-cream/70 text-sm mt-1">Total Organizations</div>
-        </div>
-        {(typeFilter === 'all' || typeFilter === 'MGA') && (
-          <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm">
-            <div className="text-3xl font-bold text-blue-600">{reportData.mgas.length}</div>
-            <div className="text-gray-500 text-sm mt-1">MGAs</div>
-          </div>
-        )}
-        {(typeFilter === 'all' || typeFilter === 'carrier') && (
-          <div className="bg-white border-2 border-green-200 rounded-xl p-5 shadow-sm">
-            <div className="text-3xl font-bold text-green-600">{reportData.carriers.length}</div>
-            <div className="text-gray-500 text-sm mt-1">Carriers</div>
-          </div>
-        )}
-        {(typeFilter === 'all' || typeFilter === 'provider') && (
-          <div className="bg-white border-2 border-orange-200 rounded-xl p-5 shadow-sm">
-            <div className="text-3xl font-bold text-orange-600">{reportData.providers.length}</div>
-            <div className="text-gray-500 text-sm mt-1">Service Providers</div>
-          </div>
-        )}
-      </div>
-
-      {/* Status & Country with Pie Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">By Status</h4>
-          <DonutChart data={reportData.byStatus} total={reportData.totalAccounts} />
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">By Country</h4>
-          <DonutChart data={reportData.byCountry} total={reportData.totalAccounts} />
-        </div>
-      </div>
-
-      {/* Associations */}
-      {Object.keys(reportData.byAssociation).length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <h4 className="text-lg font-semibold text-gray-800 mb-1">Other Association Memberships</h4>
-          <p className="text-sm text-gray-500 mb-4">{reportData.withAssociations} organizations with other memberships</p>
-          <ColoredBarChart data={reportData.byAssociation} total={reportData.withAssociations} />
-        </div>
-      )}
-
-      {/* MGA Section */}
-      {showMGA && (
+      {/* MEMBERSHIP REPORTS */}
+      {reportType === 'membership' && (
         <>
-          <div className="flex items-center gap-3 pt-4">
-            <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-            <h3 className="text-xl font-bold text-gray-800">MGA Analysis</h3>
-          </div>
-
-          <div className="bg-blue-600 text-white rounded-xl p-6 shadow-lg">
-            <div className="text-sm text-blue-100 mb-1">Total Gross Written Premiums</div>
-            <div className="text-4xl font-bold">€{(reportData.mgaTotalGWP / 1000000).toFixed(1)}M</div>
-            <div className="text-sm text-blue-200 mt-2">Across {reportData.mgas.length} MGAs</div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">By GWP Band</h4>
-              <DonutChart data={reportData.mgaByGWPBand} total={reportData.mgas.length} />
+          {loading ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fase-navy"></div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Lines of Business</h4>
-              <div className="max-h-72 overflow-y-auto">
-                <ColoredBarChart data={reportData.mgaByLinesOfBusiness} total={reportData.mgas.length} maxItems={12} />
+          ) : !reportData ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Failed to load report data</p>
+              <Button onClick={loadAccounts} variant="secondary" className="mt-4">Retry</Button>
+            </div>
+          ) : (
+            <>
+              {/* PDF Export Modal */}
+              <PDFExportModal
+                isOpen={showPDFModal}
+                onClose={() => setShowPDFModal(false)}
+                onExport={generatePDF}
+                sections={pdfSections}
+                setSections={setPdfSections}
+                typeFilter={typeFilter}
+                reportData={reportData}
+              />
+
+              {/* Header */}
+              <div className="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Membership Reports</h3>
+                  <p className="text-sm text-gray-500">{getReportTitle()} - {reportData.totalAccounts} organizations</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="MGA">MGAs Only</option>
+                    <option value="carrier">Carriers Only</option>
+                    <option value="provider">Providers Only</option>
+                  </select>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                    <option value="flagged">Flagged</option>
+                    <option value="invoice_sent">Invoice Sent</option>
+                    <option value="pending_invoice">Pending Invoice</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <Button onClick={() => setShowPDFModal(true)} disabled={generating} variant="primary">
+                    {generating ? 'Generating...' : 'Export PDF'}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Target Markets</h4>
-            <div className="max-h-72 overflow-y-auto">
-              <ColoredBarChart data={reportData.mgaByMarket} total={reportData.mgas.length} maxItems={15} />
-            </div>
-          </div>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-fase-navy text-white rounded-xl p-5 shadow-lg">
+                  <div className="text-3xl font-bold">{reportData.totalAccounts}</div>
+                  <div className="text-fase-cream/70 text-sm mt-1">Total Organizations</div>
+                </div>
+                {(typeFilter === 'all' || typeFilter === 'MGA') && (
+                  <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+                    <div className="text-3xl font-bold text-blue-600">{reportData.mgas.length}</div>
+                    <div className="text-gray-500 text-sm mt-1">MGAs</div>
+                  </div>
+                )}
+                {(typeFilter === 'all' || typeFilter === 'carrier') && (
+                  <div className="bg-white border-2 border-green-200 rounded-xl p-5 shadow-sm">
+                    <div className="text-3xl font-bold text-green-600">{reportData.carriers.length}</div>
+                    <div className="text-gray-500 text-sm mt-1">Carriers</div>
+                  </div>
+                )}
+                {(typeFilter === 'all' || typeFilter === 'provider') && (
+                  <div className="bg-white border-2 border-orange-200 rounded-xl p-5 shadow-sm">
+                    <div className="text-3xl font-bold text-orange-600">{reportData.providers.length}</div>
+                    <div className="text-gray-500 text-sm mt-1">Service Providers</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Status & Country with Pie Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">By Status</h4>
+                  <DonutChart data={reportData.byStatus} total={reportData.totalAccounts} />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">By Country</h4>
+                  <DonutChart data={reportData.byCountry} total={reportData.totalAccounts} />
+                </div>
+              </div>
+
+              {/* Associations */}
+              {Object.keys(reportData.byAssociation).length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-1">Other Association Memberships</h4>
+                  <p className="text-sm text-gray-500 mb-4">{reportData.withAssociations} organizations with other memberships</p>
+                  <ColoredBarChart data={reportData.byAssociation} total={reportData.withAssociations} />
+                </div>
+              )}
+
+              {/* MGA Section */}
+              {showMGA && (
+                <>
+                  <div className="flex items-center gap-3 pt-4">
+                    <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+                    <h3 className="text-xl font-bold text-gray-800">MGA Analysis</h3>
+                  </div>
+
+                  <div className="bg-blue-600 text-white rounded-xl p-6 shadow-lg">
+                    <div className="text-sm text-blue-100 mb-1">Total Gross Written Premiums</div>
+                    <div className="text-4xl font-bold">€{(reportData.mgaTotalGWP / 1000000).toFixed(1)}M</div>
+                    <div className="text-sm text-blue-200 mt-2">Across {reportData.mgas.length} MGAs</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">By GWP Band</h4>
+                      <DonutChart data={reportData.mgaByGWPBand} total={reportData.mgas.length} />
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Lines of Business</h4>
+                      <div className="max-h-72 overflow-y-auto">
+                        <ColoredBarChart data={reportData.mgaByLinesOfBusiness} total={reportData.mgas.length} maxItems={12} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4">Target Markets</h4>
+                    <div className="max-h-72 overflow-y-auto">
+                      <ColoredBarChart data={reportData.mgaByMarket} total={reportData.mgas.length} maxItems={15} />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Carrier Section */}
+              {showCarrier && (
+                <>
+                  <div className="flex items-center gap-3 pt-4">
+                    <div className="w-1 h-6 bg-green-500 rounded-full"></div>
+                    <h3 className="text-xl font-bold text-gray-800">Carrier Analysis</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Fronting Options</h4>
+                      <DonutChart data={reportData.carrierByFronting} total={reportData.carriers.length} />
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">AM Best Ratings</h4>
+                      <DonutChart data={reportData.carrierByRating} total={reportData.carriers.length} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Considers Startup MGAs</h4>
+                      <DonutChart data={reportData.carrierByStartupMGA} total={reportData.carriers.length} />
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Delegating Countries</h4>
+                      <div className="max-h-64 overflow-y-auto">
+                        <ColoredBarChart data={reportData.carrierDelegatingCountries} total={reportData.carriers.length} />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Provider Section */}
+              {showProvider && (
+                <>
+                  <div className="flex items-center gap-3 pt-4">
+                    <div className="w-1 h-6 bg-orange-500 rounded-full"></div>
+                    <h3 className="text-xl font-bold text-gray-800">Service Provider Analysis</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Services Provided</h4>
+                      <DonutChart data={reportData.providerByService} total={reportData.providers.length} />
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Service Distribution</h4>
+                      <ColoredBarChart data={reportData.providerByService} total={reportData.providers.length} />
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </>
       )}
 
-      {/* Carrier Section */}
-      {showCarrier && (
+      {/* RENDEZVOUS REPORTS */}
+      {reportType === 'rendezvous' && (
         <>
-          <div className="flex items-center gap-3 pt-4">
-            <div className="w-1 h-6 bg-green-500 rounded-full"></div>
-            <h3 className="text-xl font-bold text-gray-800">Carrier Analysis</h3>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Fronting Options</h4>
-              <DonutChart data={reportData.carrierByFronting} total={reportData.carriers.length} />
+          {rendezvousLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fase-navy"></div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">AM Best Ratings</h4>
-              <DonutChart data={reportData.carrierByRating} total={reportData.carriers.length} />
+          ) : !rendezvousData ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Failed to load Rendezvous data</p>
+              <Button onClick={loadRendezvousData} variant="secondary" className="mt-4">Retry</Button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Considers Startup MGAs</h4>
-              <DonutChart data={reportData.carrierByStartupMGA} total={reportData.carriers.length} />
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Delegating Countries</h4>
-              <div className="max-h-64 overflow-y-auto">
-                <ColoredBarChart data={reportData.carrierDelegatingCountries} total={reportData.carriers.length} />
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">MGA Rendezvous Report</h3>
+                  <p className="text-sm text-gray-500">{rendezvousData.totalRegistrations} registrations - {rendezvousData.totalAttendees} attendees</p>
+                </div>
+                <Button
+                  onClick={generateRendezvousReport}
+                  disabled={generatingRendezvous}
+                  variant="primary"
+                >
+                  {generatingRendezvous ? 'Generating...' : 'Export Excel'}
+                </Button>
               </div>
-            </div>
-          </div>
-        </>
-      )}
 
-      {/* Provider Section */}
-      {showProvider && (
-        <>
-          <div className="flex items-center gap-3 pt-4">
-            <div className="w-1 h-6 bg-orange-500 rounded-full"></div>
-            <h3 className="text-xl font-bold text-gray-800">Service Provider Analysis</h3>
-          </div>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-fase-navy text-white rounded-xl p-5 shadow-lg">
+                  <div className="text-3xl font-bold">{rendezvousData.totalAttendees}</div>
+                  <div className="text-fase-cream/70 text-sm mt-1">Total Attendees</div>
+                </div>
+                <div className="bg-white border-2 border-green-200 rounded-xl p-5 shadow-sm">
+                  <div className="text-3xl font-bold text-green-600">{rendezvousData.confirmedAttendees}</div>
+                  <div className="text-gray-500 text-sm mt-1">Confirmed</div>
+                </div>
+                <div className="bg-white border-2 border-yellow-200 rounded-xl p-5 shadow-sm">
+                  <div className="text-3xl font-bold text-yellow-600">{rendezvousData.pendingAttendees}</div>
+                  <div className="text-gray-500 text-sm mt-1">Pending</div>
+                </div>
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+                  <div className="text-3xl font-bold text-blue-600">{rendezvousData.totalRegistrations}</div>
+                  <div className="text-gray-500 text-sm mt-1">Registrations</div>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Services Provided</h4>
-              <DonutChart data={reportData.providerByService} total={reportData.providers.length} />
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Service Distribution</h4>
-              <ColoredBarChart data={reportData.providerByService} total={reportData.providers.length} />
-            </div>
-          </div>
+              {/* Revenue Card */}
+              <div className="bg-green-600 text-white rounded-xl p-6 shadow-lg">
+                <div className="text-sm text-green-100 mb-1">Total Revenue</div>
+                <div className="text-4xl font-bold">€{rendezvousData.totalRevenue.toLocaleString()}</div>
+                <div className="flex gap-6 mt-3 text-sm">
+                  <div>
+                    <span className="text-green-200">Confirmed:</span> €{rendezvousData.confirmedRevenue.toLocaleString()}
+                  </div>
+                  <div>
+                    <span className="text-green-200">Pending:</span> €{rendezvousData.pendingRevenue.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Membership Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+                  <div className="text-3xl font-bold text-blue-600">{rendezvousData.faseMembers}</div>
+                  <div className="text-gray-500 text-sm mt-1">FASE Member Registrations</div>
+                </div>
+                <div className="bg-white border-2 border-green-200 rounded-xl p-5 shadow-sm">
+                  <div className="text-3xl font-bold text-green-600">{rendezvousData.asaseMembers}</div>
+                  <div className="text-gray-500 text-sm mt-1">ASASE Member Registrations</div>
+                </div>
+              </div>
+
+              {/* Status & Country Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">By Payment Status</h4>
+                  <DonutChart data={rendezvousData.byPaymentStatus} total={rendezvousData.totalAttendees} />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">By Country</h4>
+                  <DonutChart data={rendezvousData.byCountry} total={rendezvousData.totalAttendees} />
+                </div>
+              </div>
+
+              {/* Organization Type */}
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">By Organization Type</h4>
+                <DonutChart data={rendezvousData.byOrganizationType} total={rendezvousData.totalAttendees} />
+              </div>
+
+              {/* Top Companies */}
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Top Companies by Attendees</h4>
+                <div className="max-h-72 overflow-y-auto">
+                  <div className="space-y-2">
+                    {Object.entries(rendezvousData.attendeesByCompany)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 20)
+                      .map(([company, count], index) => (
+                        <div key={company} className="flex items-center gap-3 py-1.5 border-b border-gray-100 last:border-0">
+                          <span className="text-sm font-medium text-gray-400 w-6">{index + 1}.</span>
+                          <span className="text-sm text-gray-700 flex-1">{company}</span>
+                          <span className="text-sm font-semibold text-fase-navy">{count}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

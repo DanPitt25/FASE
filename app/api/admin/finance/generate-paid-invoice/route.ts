@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, adminStorage, FieldValue } from '@/lib/firebase-admin';
 import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
+import { generateInvoiceNumber, generateAndStore } from '@/lib/invoice-service';
+import { generatePaidInvoicePDF } from '@/lib/paid-invoice-generator';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       source,
       organizationName,
       lineItems,
-      currency,
+      currency = 'EUR',
       paidAt,
       paymentMethod,
       email,
@@ -52,102 +53,57 @@ export async function POST(request: NextRequest) {
     }));
 
     const totalAmount = processedLineItems.reduce((sum, item) => sum + item.total, 0);
-
-    // Generate invoice number - simple 5-digit random number
-    const randomNum = Math.floor(10000 + Math.random() * 90000);
-    const invoiceNumber = `FASE-${randomNum}`;
-
-    // Generate PDF using the paid invoice generator
-    const { generatePaidInvoicePDF } = await import('@/lib/paid-invoice-generator');
-
-    const pdfResult = await generatePaidInvoicePDF({
-      invoiceNumber,
-      organizationName,
-      contactName: contactName || '',
-      address: address || undefined,
-      lineItems: processedLineItems,
-      currency: currency || 'EUR',
-      paidAt: paidAt || new Date().toISOString(),
-      paymentMethod: paymentMethod || source,
-      reference: reference || transactionId,
-    });
-
-    // Upload PDF to Firebase Storage
-    const pdfBuffer = Buffer.from(pdfResult.pdfBase64, 'base64');
-    const storagePath = `invoices/paid/${invoiceNumber}.pdf`;
-    const file = adminStorage.bucket().file(storagePath);
-
-    await file.save(pdfBuffer, {
-      metadata: {
-        contentType: 'application/pdf',
-        metadata: {
-          invoiceNumber,
-          organizationName,
-          transactionId,
-          source,
-          generatedAt: new Date().toISOString(),
-        },
-      },
-    });
-
-    // Get the public URL
-    const [signedUrl] = await file.getSignedUrl({
-      action: 'read',
-      expires: '2099-12-31',
-    });
-
-    // Store invoice record in Firestore
+    const invoiceNumber = generateInvoiceNumber({ type: 'finance_paid' });
     const paymentKey = `${source}_${transactionId}`;
 
-    const invoiceDoc = await adminDb.collection('paid_invoices').add({
-      invoiceNumber,
-      paymentKey,
-      transactionId,
-      source,
+    // Generate, upload, record, and log in one operation
+    const result = await generateAndStore({
+      type: 'finance_paid',
       organizationName,
-      lineItems: processedLineItems,
       totalAmount,
-      currency: currency || 'EUR',
-      paidAt,
-      paymentMethod: paymentMethod || source,
-      email: email || null,
-      reference: reference || null,
-      accountId: accountId || null,
-      contactName: contactName || null,
-      address: address || null,
-      pdfUrl: signedUrl,
-      storagePath,
-      generatedAt: FieldValue.serverTimestamp(),
-      generatedBy: 'admin',
-    });
-
-    // Log activity
-    await adminDb.collection('payment_activities').add({
-      paymentKey,
-      transactionId,
-      source,
-      type: 'invoice_generated',
-      title: 'PAID Invoice Generated',
-      description: `Invoice ${invoiceNumber} generated for ${organizationName}`,
-      performedBy: 'admin',
-      performedByName: 'Admin',
-      metadata: {
-        invoiceId: invoiceDoc.id,
+      currency,
+      generatePdf: () => generatePaidInvoicePDF({
         invoiceNumber,
-        totalAmount,
-        currency: currency || 'EUR',
-        lineItemCount: processedLineItems.length,
-        pdfUrl: signedUrl,
+        organizationName,
+        contactName: contactName || '',
+        address: address || undefined,
+        lineItems: processedLineItems,
+        currency,
+        paidAt: paidAt || new Date().toISOString(),
+        paymentMethod: paymentMethod || source,
+        reference: reference || transactionId,
+      }),
+      upload: true,
+      folder: 'invoices/paid',
+      createRecord: true,
+      logActivity: true,
+      payment: { paymentKey, transactionId, source },
+      recordExtra: {
+        paymentKey,
+        transactionId,
+        source,
+        lineItems: processedLineItems,
+        paidAt,
+        paymentMethod: paymentMethod || source,
+        email: email || null,
+        reference: reference || null,
+        accountId: accountId || null,
+        contactName: contactName || null,
+        address: address || null,
+        generatedBy: 'admin',
       },
-      createdAt: FieldValue.serverTimestamp(),
+      storageMetadata: {
+        transactionId,
+        source,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      invoiceNumber,
-      invoiceId: invoiceDoc.id,
-      pdfBase64: pdfResult.pdfBase64,
-      pdfUrl: signedUrl,
+      invoiceNumber: result.invoiceNumber,
+      invoiceId: result.recordId,
+      pdfBase64: result.pdfBase64,
+      pdfUrl: result.signedUrl,
     });
   } catch (error: any) {
     console.error('Error generating paid invoice:', error);

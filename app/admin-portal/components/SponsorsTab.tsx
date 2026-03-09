@@ -6,28 +6,7 @@ import Image from 'next/image';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
-
-interface SponsorBio {
-  de: string;
-  en: string;
-  es: string;
-  fr: string;
-  it: string;
-  nl: string;
-}
-
-interface Sponsor {
-  id: string;
-  name: string;
-  tier: 'silver' | 'gold' | 'platinum';
-  logoUrl: string;
-  websiteUrl: string;
-  bio: SponsorBio;
-  order: number;
-  isActive: boolean;
-  createdAt: any;
-  updatedAt: any;
-}
+import type { Sponsor, SponsorBio, SponsorTier } from '@/lib/admin-types';
 
 export default function SponsorsTab() {
   const { user } = useUnifiedAuth();

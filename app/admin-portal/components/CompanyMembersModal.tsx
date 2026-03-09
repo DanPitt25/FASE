@@ -10,14 +10,18 @@ import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import CompanyDetailsTab from './CompanyDetailsTab';
 import MemberEmailActions from './MemberEmailActions';
+import { type MemberData, type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
 
 interface CompanyMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: string;
   companyName: string;
-  memberData?: any;
+  memberData?: MemberData;
   onStatusUpdate?: (memberId: string, newStatus: UnifiedMember['status']) => void;
+  onDelete?: (memberId: string) => void;
+  isSuppressed?: boolean;
+  onToggleSuppressed?: (memberId: string) => void;
 }
 
 interface Invoice {
@@ -26,8 +30,8 @@ interface Invoice {
   amount: number;
   currency: string;
   status: string;
-  sentAt: any;
-  paidAt?: any;
+  sentAt: FirestoreTimestamp;
+  paidAt?: FirestoreTimestamp;
   paymentMethod?: string;
 }
 
@@ -39,9 +43,52 @@ export default function CompanyMembersModal({
   companyId,
   companyName,
   memberData,
-  onStatusUpdate
+  onStatusUpdate,
+  onDelete,
+  isSuppressed,
+  onToggleSuppressed
 }: CompanyMembersModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>('actions');
+
+  // Delete state
+  const [showDeleteSection, setShowDeleteSection] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!memberData || deleteConfirmation !== 'DELETE' || !onDelete) {
+      setDeleteError('Please type DELETE to confirm');
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const response = await authPost('/api/admin/delete-member', {
+        accountId: memberData.id,
+        confirmationPhrase: deleteConfirmation
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete member');
+      }
+
+      // Close modal and notify parent
+      onClose();
+      onDelete(memberData.id);
+
+      alert(`Successfully deleted ${result.details?.organizationName || 'member'}. ${result.details?.membersDeleted || 0} member documents and ${result.details?.authUsersDeleted || 0} auth accounts removed.`);
+
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete member');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // CRM State
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -100,6 +147,9 @@ export default function CompanyMembersModal({
   useEffect(() => {
     if (!isOpen) {
       setActiveTab('actions');
+      setShowDeleteSection(false);
+      setDeleteConfirmation('');
+      setDeleteError(null);
     }
   }, [isOpen]);
 
@@ -196,14 +246,8 @@ export default function CompanyMembersModal({
     });
   };
 
-  const formatDate = (dateValue: any) => {
-    if (!dateValue) return '-';
-    const date = dateValue?.toDate?.() || new Date(dateValue);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+  const formatDate = (dateValue: FirestoreTimestamp) => {
+    return formatFirestoreDate(dateValue) || '-';
   };
 
   const getActivityIcon = (type: string) => {
@@ -343,11 +387,107 @@ export default function CompanyMembersModal({
 
           {/* COMPANY TAB */}
           {activeTab === 'company' && (
-            <CompanyDetailsTab
-              companyId={companyId}
-              memberData={memberData}
-              onDataChange={loadCrmData}
-            />
+            <div className="space-y-6">
+              <CompanyDetailsTab
+                companyId={companyId}
+                memberData={memberData}
+                onDataChange={loadCrmData}
+              />
+
+              {/* Danger Zone - Suppress & Delete Account (subtle, collapsible) */}
+              {(onDelete || onToggleSuppressed) && memberData && (
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setShowDeleteSection(!showDeleteSection);
+                      setDeleteConfirmation('');
+                      setDeleteError(null);
+                    }}
+                    className="text-xs text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                  >
+                    <svg className={`w-3 h-3 transition-transform ${showDeleteSection ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    Danger Zone
+                  </button>
+
+                  {showDeleteSection && (
+                    <div className="mt-4 space-y-4">
+                      {/* Suppress Toggle */}
+                      {onToggleSuppressed && (
+                        <div className={`${isSuppressed ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className={`text-sm font-semibold ${isSuppressed ? 'text-yellow-800' : 'text-gray-700'}`}>
+                                {isSuppressed ? 'Member is suppressed' : 'Suppress this member'}
+                              </h4>
+                              <p className={`text-xs mt-1 ${isSuppressed ? 'text-yellow-700' : 'text-gray-500'}`}>
+                                {isSuppressed
+                                  ? 'This member is hidden from the View tab. Click to restore visibility.'
+                                  : 'Hide this member from the View tab without deleting it.'}
+                              </p>
+                            </div>
+                            <Button
+                              variant={isSuppressed ? 'primary' : 'secondary'}
+                              size="small"
+                              onClick={() => onToggleSuppressed(memberData.id)}
+                            >
+                              {isSuppressed ? 'Unsuppress' : 'Suppress'}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Delete Section */}
+                      {onDelete && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-semibold text-red-800">Delete this account</h4>
+                              <p className="text-xs text-red-700 mt-1">
+                                This will permanently delete the account, all team members, and their Firebase Auth credentials. This action cannot be undone.
+                              </p>
+
+                              <div className="mt-3">
+                                <label className="block text-xs font-medium text-red-800 mb-1">
+                                  Type <span className="font-mono bg-red-100 px-1">DELETE</span> to confirm:
+                                </label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={deleteConfirmation}
+                                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                    className="flex-1 px-2 py-1 text-sm border border-red-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    placeholder="Type DELETE here"
+                                    disabled={deleting}
+                                  />
+                                  <Button
+                                    variant="primary"
+                                    size="small"
+                                    onClick={handleDeleteConfirm}
+                                    disabled={deleting || deleteConfirmation !== 'DELETE'}
+                                    className="bg-red-600 hover:bg-red-700 text-xs"
+                                  >
+                                    {deleting ? 'Deleting...' : 'Delete'}
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {deleteError && (
+                                <p className="text-xs text-red-700 mt-2">{deleteError}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* TIMELINE TAB */}

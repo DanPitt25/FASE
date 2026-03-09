@@ -13,8 +13,19 @@ interface SearchFilters {
   createdBefore?: string;
 }
 
+interface PaginationOptions {
+  limit: number;
+  cursor?: string; // Last document ID for cursor-based pagination
+  offset?: number; // Alternative: offset-based pagination (less efficient but simpler)
+}
+
 /**
- * POST: Advanced search across accounts, members, and invoices
+ * POST: Advanced search across accounts with pagination
+ *
+ * Optimizations:
+ * - Uses cursor-based pagination to avoid loading all accounts
+ * - Only fetches member/invoice data for accounts that pass filters
+ * - Returns minimal data by default, with option to include stats
  */
 export async function POST(request: NextRequest) {
   const authResult = await verifyAdminAccess(request);
@@ -24,30 +35,74 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { query, filters, limit = 50 } = body as {
+    const {
+      query,
+      filters,
+      limit = 50,
+      cursor,
+      includeStats = false, // Only fetch invoice stats if requested
+    } = body as {
       query?: string;
       filters?: SearchFilters;
       limit?: number;
+      cursor?: string;
+      includeStats?: boolean;
     };
 
     const searchQuery = query?.toLowerCase().trim() || '';
+    const pageSize = Math.min(limit, 100); // Cap at 100
 
-    // Get all accounts
-    const accountsSnapshot = await adminDb.collection('accounts').get();
+    // Build Firestore query with filters that can be applied at query level
+    let accountsQuery = adminDb.collection('accounts').orderBy('organizationName');
+
+    // Apply status filter at query level if single value
+    if (filters?.status?.length === 1) {
+      accountsQuery = accountsQuery.where('status', '==', filters.status[0]);
+    }
+
+    // Apply organization type filter at query level if single value
+    if (filters?.organizationType?.length === 1) {
+      accountsQuery = accountsQuery.where('organizationType', '==', filters.organizationType[0]);
+    }
+
+    // Apply cursor for pagination
+    if (cursor) {
+      const cursorDoc = await adminDb.collection('accounts').doc(cursor).get();
+      if (cursorDoc.exists) {
+        accountsQuery = accountsQuery.startAfter(cursorDoc);
+      }
+    }
+
+    // Fetch more than needed to account for client-side filtering
+    // If we have text search or complex filters, we need to over-fetch
+    const needsClientFilter = searchQuery ||
+      (filters?.status?.length && filters.status.length > 1) ||
+      (filters?.organizationType?.length && filters.organizationType.length > 1) ||
+      filters?.country?.length ||
+      filters?.createdAfter ||
+      filters?.createdBefore ||
+      filters?.hasUnpaidInvoice !== undefined;
+
+    const fetchLimit = needsClientFilter ? pageSize * 3 : pageSize;
+    const accountsSnapshot = await accountsQuery.limit(fetchLimit).get();
 
     const results: any[] = [];
+    let lastDocId: string | null = null;
 
     for (const accountDoc of accountsSnapshot.docs) {
-      const accountData = accountDoc.data();
+      if (results.length >= pageSize) break;
 
-      // Apply filters
-      if (filters?.organizationType?.length) {
+      const accountData = accountDoc.data();
+      lastDocId = accountDoc.id;
+
+      // Apply client-side filters
+      if (filters?.organizationType?.length && filters.organizationType.length > 1) {
         if (!filters.organizationType.includes(accountData.organizationType)) {
           continue;
         }
       }
 
-      if (filters?.status?.length) {
+      if (filters?.status?.length && filters.status.length > 1) {
         if (!filters.status.includes(accountData.status)) {
           continue;
         }
@@ -91,7 +146,7 @@ export async function POST(request: NextRequest) {
         );
 
         if (!matches) {
-          // Also search in members
+          // Search in members - this is expensive but necessary for member search
           const membersSnapshot = await accountDoc.ref.collection('members').get();
           const memberMatches = membersSnapshot.docs.some((memberDoc) => {
             const memberData = memberDoc.data();
@@ -131,59 +186,66 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Get member count
-      const membersSnapshot = await accountDoc.ref.collection('members').get();
-
-      // Get invoice stats
-      const invoicesSnapshot = await adminDb
-        .collection('invoices')
-        .where('accountId', '==', accountDoc.id)
-        .get();
-
-      const invoiceStats = {
-        total: invoicesSnapshot.size,
-        paid: 0,
-        unpaid: 0,
-        totalAmount: 0,
-        paidAmount: 0,
-      };
-
-      invoicesSnapshot.docs.forEach((invoiceDoc) => {
-        const invoiceData = invoiceDoc.data();
-        invoiceStats.totalAmount += invoiceData.amount || 0;
-        if (invoiceData.status === 'paid') {
-          invoiceStats.paid++;
-          invoiceStats.paidAmount += invoiceData.amount || 0;
-        } else {
-          invoiceStats.unpaid++;
-        }
-      });
-
-      results.push({
+      // Build result object
+      const result: any = {
         id: accountDoc.id,
         organizationName: accountData.organizationName,
         organizationType: accountData.organizationType,
         status: accountData.status,
         country: accountData.registeredAddress?.country,
         primaryContact: accountData.primaryContact,
-        memberCount: membersSnapshot.size,
-        invoiceStats,
         hasUnpaidInvoice,
         createdAt: accountData.createdAt?.toDate?.()?.toISOString() || null,
-        updatedAt: accountData.updatedAt?.toDate?.()?.toISOString() || null,
         logoURL: accountData.logoURL,
-      });
+      };
+
+      // Only fetch stats if requested (reduces queries significantly)
+      if (includeStats) {
+        const [membersSnapshot, invoicesSnapshot] = await Promise.all([
+          accountDoc.ref.collection('members').get(),
+          adminDb.collection('invoices').where('accountId', '==', accountDoc.id).get(),
+        ]);
+
+        result.memberCount = membersSnapshot.size;
+
+        const invoiceStats = {
+          total: invoicesSnapshot.size,
+          paid: 0,
+          unpaid: 0,
+          totalAmount: 0,
+          paidAmount: 0,
+        };
+
+        invoicesSnapshot.docs.forEach((invoiceDoc) => {
+          const invoiceData = invoiceDoc.data();
+          invoiceStats.totalAmount += invoiceData.amount || 0;
+          if (invoiceData.status === 'paid') {
+            invoiceStats.paid++;
+            invoiceStats.paidAmount += invoiceData.amount || 0;
+          } else {
+            invoiceStats.unpaid++;
+          }
+        });
+
+        result.invoiceStats = invoiceStats;
+        result.updatedAt = accountData.updatedAt?.toDate?.()?.toISOString() || null;
+      }
+
+      results.push(result);
     }
 
-    // Sort by organization name
-    results.sort((a, b) =>
-      (a.organizationName || '').localeCompare(b.organizationName || '')
-    );
+    // Determine if there are more results
+    const hasMore = accountsSnapshot.docs.length === fetchLimit && results.length === pageSize;
 
     return NextResponse.json({
       success: true,
-      results: results.slice(0, limit),
-      total: results.length,
+      results,
+      pagination: {
+        limit: pageSize,
+        count: results.length,
+        hasMore,
+        nextCursor: hasMore ? lastDocId : null,
+      },
       query: searchQuery,
       filters,
     });
@@ -197,7 +259,10 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET: Quick search by query string
+ * GET: Quick search by query string with pagination
+ *
+ * Optimized for typeahead/autocomplete use cases.
+ * Returns minimal data for fast responses.
  */
 export async function GET(request: NextRequest) {
   const authResult = await verifyAdminAccess(request);
@@ -208,7 +273,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.toLowerCase().trim() || '';
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 50);
+    const cursor = searchParams.get('cursor');
 
     if (!query || query.length < 2) {
       return NextResponse.json({
@@ -218,12 +284,28 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const accountsSnapshot = await adminDb.collection('accounts').get();
+    // Build query with cursor support
+    let accountsQuery = adminDb.collection('accounts').orderBy('organizationName');
+
+    if (cursor) {
+      const cursorDoc = await adminDb.collection('accounts').doc(cursor).get();
+      if (cursorDoc.exists) {
+        accountsQuery = accountsQuery.startAfter(cursorDoc);
+      }
+    }
+
+    // Fetch more than needed since we filter client-side
+    const fetchLimit = limit * 3;
+    const accountsSnapshot = await accountsQuery.limit(fetchLimit).get();
 
     const results: any[] = [];
+    let lastDocId: string | null = null;
 
     for (const accountDoc of accountsSnapshot.docs) {
+      if (results.length >= limit) break;
+
       const data = accountDoc.data();
+      lastDocId = accountDoc.id;
 
       const searchableText = [
         data.organizationName,
@@ -244,14 +326,18 @@ export async function GET(request: NextRequest) {
           primaryContact: data.primaryContact,
         });
       }
-
-      if (results.length >= limit) break;
     }
+
+    const hasMore = accountsSnapshot.docs.length === fetchLimit && results.length === limit;
 
     return NextResponse.json({
       success: true,
       results,
-      count: results.length,
+      pagination: {
+        count: results.length,
+        hasMore,
+        nextCursor: hasMore ? lastDocId : null,
+      },
     });
   } catch (error: any) {
     console.error('Error in quick search:', error);

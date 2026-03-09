@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, adminStorage, FieldValue } from '@/lib/firebase-admin';
+import { adminDb, FieldValue } from '@/lib/firebase-admin';
 import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
 import { generateRendezvousInvoicePDF, RendezvousInvoiceData } from '@/lib/rendezvous-invoice-generator';
+import { generateInvoiceNumber, uploadInvoicePDF } from '@/lib/invoice-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,9 +50,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate invoice number if not provided
-    const invoiceNumber = data.invoiceNumber || `RDV-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+    const invoiceNumber = data.invoiceNumber || generateInvoiceNumber({
+      type: 'rendezvous',
+      registrationId: data.registrationId,
+    });
 
-    // Prepare data for the shared PDF generator
+    // Prepare data for the PDF generator
     const invoiceData: RendezvousInvoiceData = {
       invoiceNumber,
       registrationId: data.registrationId,
@@ -74,29 +78,19 @@ export async function POST(request: NextRequest) {
       forceCurrency: data.forceCurrency,
     };
 
-    // Generate the PDF using the shared library
+    // Generate the PDF
     const result = await generateRendezvousInvoicePDF(invoiceData);
 
-    // Upload PDF to Firebase Storage
-    const pdfBuffer = Buffer.from(result.pdfBase64, 'base64');
-    const storagePath = `rendezvous-invoices/${invoiceNumber}.pdf`;
-    const file = adminStorage.bucket().file(storagePath);
-
-    await file.save(pdfBuffer, {
+    // Upload to storage using shared service
+    const { signedUrl } = await uploadInvoicePDF({
+      pdfBase64: result.pdfBase64,
+      invoiceNumber,
+      organizationName: data.companyName,
+      folder: 'rendezvous-invoices',
       metadata: {
-        contentType: 'application/pdf',
-        metadata: {
-          invoiceNumber,
-          companyName: data.companyName,
-          registrationId: data.registrationId,
-          regeneratedAt: new Date().toISOString(),
-        },
+        registrationId: data.registrationId,
+        regeneratedAt: new Date().toISOString(),
       },
-    });
-
-    const [signedUrl] = await file.getSignedUrl({
-      action: 'read',
-      expires: '2099-12-31',
     });
 
     // Update the registration with the new invoice URL

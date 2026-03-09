@@ -5,9 +5,14 @@ import Button from '../../../components/Button';
 import { createInvoiceRecord } from '../../../lib/firestore';
 import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
 import { authFetch, authPost } from '@/lib/auth-fetch';
+import type { MemberData } from '@/lib/admin-types';
+
+// NOTE: useEmailActionState hook is available in @/lib/hooks/useEmailActionState
+// for future refactoring of this component's state management.
+// See ADMIN-PORTAL-AUDIT.md for migration plan.
 
 interface MemberEmailActionsProps {
-  memberData: any;
+  memberData: MemberData;
   companyId: string;
   onEmailSent?: () => void;
 }

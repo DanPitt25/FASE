@@ -1,50 +1,80 @@
 'use client';
 
+/**
+ * RendezvousManageTab - MANAGE functions for Rendezvous registrations
+ *
+ * MANAGE functions:
+ * - Add new registration (full form with company info and attendees)
+ * - Edit attendees (EditAttendeesModal)
+ * - Change payment status (StatusChangeModal)
+ * - Delete registration (DeleteRegistrationModal)
+ * - Send confirmation emails (full email form with preview)
+ * - Generate/regenerate invoices (paid and unpaid)
+ * - Edit invoice details (EditInvoiceModal)
+ *
+ * All VIEW functions are in RendezvousViewTab.tsx
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import AdminCountrySelect from './AdminCountrySelect';
-import * as XLSX from 'xlsx';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import type {
   RendezvousRegistration,
-  RendezvousInterestRegistration,
   RendezvousAttendee,
-  FlattenedAttendee,
   RendezvousPaymentStatus,
-  RendezvousViewMode,
 } from '@/lib/admin-types';
 import {
   StatusChangeModal,
   DeleteRegistrationModal,
   EditAttendeesModal,
   EditInvoiceModal,
-  InterestRegistrationsModal,
 } from './rendezvous/modals';
 
-// Local type aliases for backwards compatibility within this file
 type Attendee = RendezvousAttendee;
-type InterestRegistration = RendezvousInterestRegistration;
 type PaymentStatus = RendezvousPaymentStatus;
-type ViewMode = RendezvousViewMode;
-type FlatAttendee = FlattenedAttendee;
 
-export default function RendezvousTab() {
+export default function RendezvousManageTab() {
   const [registrations, setRegistrations] = useState<RendezvousRegistration[]>([]);
-  const [interestRegistrations, setInterestRegistrations] = useState<InterestRegistration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('attendees');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortColumn, setSortColumn] = useState<string>('company');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Suppression state
+  const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
+  const [showSuppressed, setShowSuppressed] = useState(false);
+
+  // Selected registration for actions
   const [selectedRegistration, setSelectedRegistration] = useState<RendezvousRegistration | null>(null);
   const [selectedCompanyRegistrations, setSelectedCompanyRegistrations] = useState<RendezvousRegistration[]>([]);
+
+  // Modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [showInterestModal, setShowInterestModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditAttendeesModal, setShowEditAttendeesModal] = useState(false);
+  const [showEditInvoiceModal, setShowEditInvoiceModal] = useState(false);
+
+  // Loading/action states
   const [updating, setUpdating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [previewingEmail, setPreviewingEmail] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [savingAttendees, setSavingAttendees] = useState(false);
+
+  // Error states
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [editAttendeesError, setEditAttendeesError] = useState<string | null>(null);
+
+  // Email form state
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
   const [emailPreviewHtml, setEmailPreviewHtml] = useState<string | null>(null);
   const [emailForm, setEmailForm] = useState({
@@ -62,26 +92,14 @@ export default function RendezvousTab() {
     isComplimentary: false,
     specialRequests: ''
   });
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [generatingInvoice, setGeneratingInvoice] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [showEditAttendeesModal, setShowEditAttendeesModal] = useState(false);
+
+  // Edit attendees state
   const [editingRegistration, setEditingRegistration] = useState<RendezvousRegistration | null>(null);
-  const [editedAttendees, setEditedAttendees] = useState<Attendee[]>([]);
-  const [savingAttendees, setSavingAttendees] = useState(false);
-  const [editAttendeesError, setEditAttendeesError] = useState<string | null>(null);
-  const [showEditInvoiceModal, setShowEditInvoiceModal] = useState(false);
+
+  // Edit invoice state
   const [invoiceEditRegistration, setInvoiceEditRegistration] = useState<RendezvousRegistration | null>(null);
-  const [invoiceTicketCount, setInvoiceTicketCount] = useState(1);
-  const [invoiceUnitPrice, setInvoiceUnitPrice] = useState(0);
-  const [invoiceMemberDiscount, setInvoiceMemberDiscount] = useState(false);
-  const [invoiceCurrency, setInvoiceCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('auto');
-  const [sortColumn, setSortColumn] = useState<string>('company');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // New registration form
   const [newRegistration, setNewRegistration] = useState({
     company: '',
     billingEmail: '',
@@ -93,6 +111,22 @@ export default function RendezvousTab() {
     totalPrice: 0,
     attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
   });
+
+  // Load suppressed IDs on mount
+  useEffect(() => {
+    const loadSuppressedIds = async () => {
+      try {
+        const response = await authFetch('/api/admin/rendezvous/suppress');
+        const data = await response.json();
+        if (data.success) {
+          setSuppressedIds(new Set(data.suppressedIds));
+        }
+      } catch (error) {
+        console.error('Error loading suppressed registrations:', error);
+      }
+    };
+    loadSuppressedIds();
+  }, []);
 
   useEffect(() => {
     loadRegistrations();
@@ -106,11 +140,8 @@ export default function RendezvousTab() {
       const data = await response.json();
       const allRegistrations = data.registrations || [];
 
-      // Separate interest registrations from actual paid/pending registrations
-      const interest = allRegistrations.filter((r: any) => r.registrationType === 'interest');
+      // Only actual registrations (not interest)
       const actual = allRegistrations.filter((r: any) => r.registrationType !== 'interest');
-
-      setInterestRegistrations(interest);
       setRegistrations(actual);
     } catch (error) {
       console.error('Error loading registrations:', error);
@@ -119,138 +150,63 @@ export default function RendezvousTab() {
     }
   };
 
-  // Flatten all attendees from all registrations
-  const allAttendees = useMemo((): FlatAttendee[] => {
-    const attendees: FlatAttendee[] = [];
-    registrations.forEach(reg => {
-      (reg.attendees || []).forEach(att => {
-        attendees.push({
-          id: att.id,
-          firstName: att.firstName,
-          lastName: att.lastName,
-          email: att.email,
-          jobTitle: att.jobTitle,
-          company: reg.billingInfo?.company || '',
-          country: reg.billingInfo?.country || '',
-          organizationType: reg.billingInfo?.organizationType || '',
-          paymentStatus: reg.paymentStatus,
-          invoiceNumber: reg.invoiceNumber,
-          registrationId: reg.registrationId,
-          isFaseMember: reg.companyIsFaseMember,
-          isAsaseMember: reg.isAsaseMember,
-          totalPrice: reg.totalPrice,
-          createdAt: reg.createdAt,
-        });
+  // Handle suppress/unsuppress
+  const handleToggleSuppressed = async (registrationId: string) => {
+    const isSuppressed = suppressedIds.has(registrationId);
+    try {
+      const response = await authPost('/api/admin/rendezvous/suppress', {
+        registrationId,
+        suppressed: !isSuppressed,
       });
-    });
-    return attendees;
-  }, [registrations]);
 
-  // Calculate stats - simple and accurate
-  const stats = useMemo(() => {
-    const confirmed = registrations.filter(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary');
-    const pending = registrations.filter(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
-
-    const confirmedAttendees = confirmed.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
-    const pendingAttendees = pending.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
-
-    const confirmedRevenue = confirmed.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
-    const pendingRevenue = pending.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
-
-    return {
-      totalRegistrations: registrations.length,
-      confirmedRegistrations: confirmed.length,
-      pendingRegistrations: pending.length,
-      totalAttendees: confirmedAttendees + pendingAttendees,
-      confirmedAttendees,
-      pendingAttendees,
-      confirmedRevenue,
-      pendingRevenue,
-      totalRevenue: confirmedRevenue + pendingRevenue,
-    };
-  }, [registrations]);
-
-  // Identify data quality issues
-  const dataIssues = useMemo(() => {
-    const issues: {
-      duplicateEmails: { email: string; count: number; attendees: FlatAttendee[] }[];
-      similarCompanies: { normalized: string; companies: string[] }[];
-      missingData: { type: string; count: number; items: any[] }[];
-    } = {
-      duplicateEmails: [],
-      similarCompanies: [],
-      missingData: [],
-    };
-
-    // Find duplicate emails across all attendees
-    const emailMap = new Map<string, FlatAttendee[]>();
-    allAttendees.forEach(att => {
-      const email = (att.email || '').toLowerCase().trim();
-      if (email) {
-        if (!emailMap.has(email)) emailMap.set(email, []);
-        emailMap.get(email)!.push(att);
+      if (!response.ok) {
+        throw new Error('Failed to update suppression');
       }
-    });
-    emailMap.forEach((attendees, email) => {
-      if (attendees.length > 1) {
-        issues.duplicateEmails.push({ email, count: attendees.length, attendees });
-      }
-    });
 
-    // Find similar company names (potential duplicates)
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const companyMap = new Map<string, Set<string>>();
-    registrations.forEach(reg => {
-      const company = reg.billingInfo?.company || '';
-      const normalized = normalize(company);
-      if (normalized.length > 3) {
-        if (!companyMap.has(normalized)) companyMap.set(normalized, new Set());
-        companyMap.get(normalized)!.add(company);
-      }
-    });
-    companyMap.forEach((companies, normalized) => {
-      if (companies.size > 1) {
-        issues.similarCompanies.push({ normalized, companies: Array.from(companies) });
-      }
-    });
-
-    // Find registrations with missing critical data
-    const missingAttendees = registrations.filter(r => !r.attendees || r.attendees.length === 0);
-    if (missingAttendees.length > 0) {
-      issues.missingData.push({ type: 'Registrations without attendees', count: missingAttendees.length, items: missingAttendees });
+      // Update local state
+      setSuppressedIds(prev => {
+        const newSet = new Set(prev);
+        if (isSuppressed) {
+          newSet.delete(registrationId);
+        } else {
+          newSet.add(registrationId);
+        }
+        return newSet;
+      });
+    } catch (err: any) {
+      console.error('Failed to toggle suppressed:', err);
+      alert(`Error: ${err.message}`);
     }
+  };
 
-    const missingStatus = registrations.filter(r => !r.paymentStatus);
-    if (missingStatus.length > 0) {
-      issues.missingData.push({ type: 'Registrations without payment status', count: missingStatus.length, items: missingStatus });
+  // Filter and sort registrations
+  const filteredRegistrations = useMemo(() => {
+    let filtered = registrations;
+
+    // Filter by suppression status
+    if (!showSuppressed) {
+      filtered = filtered.filter(r => !suppressedIds.has(r.registrationId));
     }
-
-    return issues;
-  }, [allAttendees, registrations]);
-
-  const totalIssuesCount = dataIssues.duplicateEmails.length + dataIssues.similarCompanies.length +
-    dataIssues.missingData.reduce((sum, m) => sum + m.count, 0);
-
-  // Filter and sort attendees
-  const filteredAttendees = useMemo(() => {
-    let filtered = allAttendees;
 
     if (statusFilter !== 'all') {
       if (statusFilter === 'pending_bank_transfer') {
-        filtered = filtered.filter(a => a.paymentStatus === 'pending_bank_transfer' || a.paymentStatus === 'pending');
+        filtered = filtered.filter(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
       } else {
-        filtered = filtered.filter(a => a.paymentStatus === statusFilter);
+        filtered = filtered.filter(r => r.paymentStatus === statusFilter);
       }
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(a =>
-        a.firstName.toLowerCase().includes(q) ||
-        a.lastName.toLowerCase().includes(q) ||
-        a.email.toLowerCase().includes(q) ||
-        a.company.toLowerCase().includes(q) ||
-        a.jobTitle.toLowerCase().includes(q)
+      filtered = filtered.filter(r =>
+        (r.billingInfo?.company || '').toLowerCase().includes(q) ||
+        (r.billingInfo?.billingEmail || '').toLowerCase().includes(q) ||
+        (r.invoiceNumber || '').toLowerCase().includes(q) ||
+        r.attendees?.some(a =>
+          a.firstName.toLowerCase().includes(q) ||
+          a.lastName.toLowerCase().includes(q) ||
+          a.email.toLowerCase().includes(q)
+        )
       );
     }
 
@@ -260,25 +216,25 @@ export default function RendezvousTab() {
       let bVal: string | number = '';
 
       switch (sortColumn) {
-        case 'name':
-          aVal = `${a.firstName} ${a.lastName}`.toLowerCase();
-          bVal = `${b.firstName} ${b.lastName}`.toLowerCase();
-          break;
         case 'company':
-          aVal = a.company.toLowerCase();
-          bVal = b.company.toLowerCase();
-          break;
-        case 'country':
-          aVal = a.country.toLowerCase();
-          bVal = b.country.toLowerCase();
+          aVal = (a.billingInfo?.company || '').toLowerCase();
+          bVal = (b.billingInfo?.company || '').toLowerCase();
           break;
         case 'status':
           aVal = a.paymentStatus;
           bVal = b.paymentStatus;
           break;
+        case 'date':
+          aVal = new Date(a.createdAt).getTime();
+          bVal = new Date(b.createdAt).getTime();
+          break;
+        case 'amount':
+          aVal = a.totalPrice || 0;
+          bVal = b.totalPrice || 0;
+          break;
         default:
-          aVal = a.company.toLowerCase();
-          bVal = b.company.toLowerCase();
+          aVal = (a.billingInfo?.company || '').toLowerCase();
+          bVal = (b.billingInfo?.company || '').toLowerCase();
       }
 
       if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
@@ -287,7 +243,7 @@ export default function RendezvousTab() {
     });
 
     return filtered;
-  }, [allAttendees, statusFilter, searchQuery, sortColumn, sortDirection]);
+  }, [registrations, statusFilter, searchQuery, sortColumn, sortDirection, showSuppressed, suppressedIds]);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -298,39 +254,15 @@ export default function RendezvousTab() {
     }
   };
 
-  // Group registrations by company for company view
-  const companyGroups = useMemo(() => {
-    const groups: { company: string; registrations: RendezvousRegistration[] }[] = [];
-    const companyMap = new Map<string, RendezvousRegistration[]>();
+  // Group registrations by company
+  const getCompanyRegistrations = (registration: RendezvousRegistration): RendezvousRegistration[] => {
+    const company = registration.billingInfo?.company?.toLowerCase().trim() || '';
+    return registrations.filter(r =>
+      (r.billingInfo?.company?.toLowerCase().trim() || '') === company
+    );
+  };
 
-    let filtered = registrations;
-    if (statusFilter !== 'all') {
-      if (statusFilter === 'pending_bank_transfer') {
-        filtered = filtered.filter(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
-      } else {
-        filtered = filtered.filter(r => r.paymentStatus === statusFilter);
-      }
-    }
-
-    filtered.forEach(reg => {
-      const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
-      if (company) {
-        if (!companyMap.has(company)) companyMap.set(company, []);
-        companyMap.get(company)!.push(reg);
-      }
-    });
-
-    companyMap.forEach((regs) => {
-      groups.push({
-        company: regs[0].billingInfo?.company || '',
-        registrations: regs,
-      });
-    });
-
-    groups.sort((a, b) => a.company.localeCompare(b.company));
-    return groups;
-  }, [registrations, statusFilter]);
-
+  // Email functions
   const initEmailForm = (registration: RendezvousRegistration) => {
     const attendeeNames = registration.attendees
       ?.map(a => `${a.firstName} ${a.lastName}`.trim())
@@ -423,6 +355,7 @@ export default function RendezvousTab() {
     }
   };
 
+  // Status update
   const handleStatusUpdate = async (registrationId: string, newStatus: PaymentStatus) => {
     try {
       setUpdating(true);
@@ -430,7 +363,6 @@ export default function RendezvousTab() {
 
       if (!response.ok) throw new Error('Failed to update status');
 
-      // Update local state
       setRegistrations(prev =>
         prev.map(reg =>
           reg.registrationId === registrationId
@@ -449,6 +381,7 @@ export default function RendezvousTab() {
     }
   };
 
+  // Delete registration
   const handleDeleteRegistration = async () => {
     if (!selectedRegistration) return;
 
@@ -458,7 +391,7 @@ export default function RendezvousTab() {
 
       const response = await authPost('/api/admin/delete-rendezvous-registration', {
         registrationId: selectedRegistration.registrationId,
-        confirmationPhrase: 'DELETE', // Modal validates this before calling onDelete
+        confirmationPhrase: 'DELETE',
         invoiceNumber: selectedRegistration.invoiceNumber
       });
 
@@ -468,7 +401,6 @@ export default function RendezvousTab() {
         throw new Error(result.error || 'Failed to delete registration');
       }
 
-      // Remove from local state
       setRegistrations(prev =>
         prev.filter(reg => reg.registrationId !== selectedRegistration.registrationId)
       );
@@ -483,6 +415,7 @@ export default function RendezvousTab() {
     }
   };
 
+  // Invoice generation
   const handleGeneratePaidInvoice = async (registration: RendezvousRegistration) => {
     try {
       setGeneratingInvoice(true);
@@ -513,7 +446,7 @@ export default function RendezvousTab() {
         throw new Error(result.error || 'Failed to generate invoice');
       }
 
-      // Create a download link for the PDF
+      // Download the PDF
       const pdfBlob = new Blob(
         [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
         { type: 'application/pdf' }
@@ -565,7 +498,7 @@ export default function RendezvousTab() {
         throw new Error(result.error || 'Failed to regenerate invoice');
       }
 
-      // Create a download link for the PDF
+      // Download the PDF
       const pdfBlob = new Blob(
         [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
         { type: 'application/pdf' }
@@ -579,7 +512,6 @@ export default function RendezvousTab() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Reload registrations to get updated invoice URL
       loadRegistrations();
 
     } catch (error: any) {
@@ -590,11 +522,9 @@ export default function RendezvousTab() {
     }
   };
 
+  // Edit attendees
   const openEditAttendeesModal = (registration: RendezvousRegistration) => {
     setEditingRegistration(registration);
-    setEditedAttendees(
-      (registration.attendees || []).map(a => ({ ...a }))
-    );
     setEditAttendeesError(null);
     setShowEditAttendeesModal(true);
   };
@@ -657,15 +587,9 @@ export default function RendezvousTab() {
     }
   };
 
+  // Edit invoice
   const openEditInvoiceModal = (registration: RendezvousRegistration) => {
     setInvoiceEditRegistration(registration);
-    setInvoiceTicketCount(registration.numberOfAttendees || 1);
-    // Base price is €800 for non-members, €400 for members (50% discount)
-    const basePrice = 800;
-    const hasMemberDiscount = registration.companyIsFaseMember || registration.isAsaseMember || (registration.discount !== undefined && registration.discount > 0);
-    setInvoiceMemberDiscount(hasMemberDiscount);
-    setInvoiceUnitPrice(hasMemberDiscount ? basePrice * 0.5 : basePrice);
-    setInvoiceCurrency('auto');
     setShowEditInvoiceModal(true);
   };
 
@@ -735,6 +659,7 @@ export default function RendezvousTab() {
     }
   };
 
+  // Add registration
   const handleAddRegistration = async () => {
     // Validate required fields
     if (!newRegistration.company || !newRegistration.billingEmail || !newRegistration.country) {
@@ -804,6 +729,7 @@ export default function RendezvousTab() {
     }
   };
 
+  // Helpers
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -845,28 +771,6 @@ export default function RendezvousTab() {
     return labels[type] || type;
   };
 
-  const findRegistrationByAttendee = (attendee: FlatAttendee): RendezvousRegistration | undefined => {
-    return registrations.find(r => r.registrationId === attendee.registrationId);
-  };
-
-  const exportToExcel = () => {
-    const data = allAttendees.map(a => ({
-      'First Name': a.firstName,
-      'Last Name': a.lastName,
-      'Email': a.email,
-      'Job Title': a.jobTitle,
-      'Company': a.company,
-      'Country': a.country,
-      'Organization Type': getOrgTypeLabel(a.organizationType),
-      'Payment Status': formatStatus(a.paymentStatus)
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendees');
-    XLSX.writeFile(workbook, `rendezvous-attendees-${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -878,438 +782,175 @@ export default function RendezvousTab() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards - Redesigned for clarity */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-3xl font-bold text-fase-navy">{stats.totalAttendees}</div>
-          <div className="text-sm font-medium text-gray-700">Total Attendees</div>
-          <div className="text-xs text-gray-500 mt-1">
-            <span className="text-green-600">{stats.confirmedAttendees} confirmed</span>
-            {stats.pendingAttendees > 0 && (
-              <span className="text-yellow-600"> + {stats.pendingAttendees} pending</span>
-            )}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-3xl font-bold text-fase-navy">{stats.totalRegistrations}</div>
-          <div className="text-sm font-medium text-gray-700">Registrations</div>
-          <div className="text-xs text-gray-500 mt-1">
-            <span className="text-green-600">{stats.confirmedRegistrations} confirmed</span>
-            {stats.pendingRegistrations > 0 && (
-              <span className="text-yellow-600"> + {stats.pendingRegistrations} pending</span>
-            )}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-3xl font-bold text-green-600">€{stats.confirmedRevenue.toLocaleString()}</div>
-          <div className="text-sm font-medium text-gray-700">Confirmed Revenue</div>
-          {stats.pendingRevenue > 0 && (
-            <div className="text-xs text-yellow-600 mt-1">
-              +€{stats.pendingRevenue.toLocaleString()} pending
-            </div>
-          )}
-        </div>
-        <div className="bg-white rounded-lg shadow border border-fase-light-gold p-4">
-          <div className="text-3xl font-bold text-gray-500">{interestRegistrations.length}</div>
-          <div className="text-sm font-medium text-gray-700">Interest Signups</div>
-          <button
-            onClick={() => setShowInterestModal(true)}
-            className="text-xs text-fase-navy hover:text-fase-orange underline mt-1"
-          >
-            View list
-          </button>
-        </div>
+      {/* Header with Add button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-fase-navy">Manage Registrations</h2>
+        <Button variant="primary" onClick={() => setShowAddModal(true)}>
+          + Add Registration
+        </Button>
       </div>
 
-      {/* View Controls */}
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-          {/* View Mode Tabs */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode('attendees')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'attendees'
-                  ? 'bg-white text-fase-navy shadow-sm'
-                  : 'text-gray-600 hover:text-fase-navy'
-              }`}
-            >
-              Attendees ({stats.totalAttendees})
-            </button>
-            <button
-              onClick={() => setViewMode('companies')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'companies'
-                  ? 'bg-white text-fase-navy shadow-sm'
-                  : 'text-gray-600 hover:text-fase-navy'
-              }`}
-            >
-              Companies ({companyGroups.length})
-            </button>
-            <button
-              onClick={() => setViewMode('issues')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'issues'
-                  ? 'bg-white text-fase-navy shadow-sm'
-                  : 'text-gray-600 hover:text-fase-navy'
-              } ${totalIssuesCount > 0 ? 'relative' : ''}`}
-            >
-              Data Issues
-              {totalIssuesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {totalIssuesCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Filters and Actions */}
-          <div className="flex flex-wrap gap-2 items-center">
-            {viewMode !== 'issues' && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-2 text-sm w-48 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'all')}
-                  className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="paid">Paid</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="complimentary">Complimentary</option>
-                  <option value="pending_bank_transfer">Pending</option>
-                </select>
-              </>
-            )}
-            <Button variant="secondary" size="small" onClick={loadRegistrations}>
-              Refresh
-            </Button>
-            <Button variant="secondary" size="small" onClick={exportToExcel}>
-              Export CSV
-            </Button>
-            <Button variant="primary" size="small" onClick={() => setShowAddModal(true)}>
-              + Add Registration
-            </Button>
+        <div className="flex flex-wrap gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Search company, email, invoice..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-64 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'all')}
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="all">All Statuses</option>
+            <option value="paid">Paid</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="complimentary">Complimentary</option>
+            <option value="pending_bank_transfer">Pending</option>
+          </select>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={showSuppressed}
+              onChange={(e) => setShowSuppressed(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Show suppressed {suppressedIds.size > 0 && `(${suppressedIds.size})`}
+          </label>
+          <Button variant="secondary" size="small" onClick={loadRegistrations}>
+            Refresh
+          </Button>
+          <div className="text-sm text-gray-500 ml-auto">
+            {filteredRegistrations.length} registrations
           </div>
         </div>
       </div>
 
-      {/* Attendees View */}
-      {viewMode === 'attendees' && (
-        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full divide-y divide-fase-light-gold">
-              <thead className="bg-fase-navy">
-                <tr>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
-                    onClick={() => handleSort('name')}
-                  >
-                    Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
-                    onClick={() => handleSort('company')}
-                  >
-                    Company {sortColumn === 'company' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Job Title</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Type</th>
-                  <th
-                    className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
-                    onClick={() => handleSort('status')}
-                  >
-                    Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAttendees.map((attendee, index) => (
-                  <tr key={`${attendee.registrationId}-${attendee.id}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900">
-                        {attendee.firstName} {attendee.lastName}
-                      </div>
-                      <div className="text-xs text-gray-500">{attendee.email}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-gray-900">{attendee.company}</div>
-                      <div className="flex gap-1 mt-0.5">
-                        {attendee.isFaseMember && (
-                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">FASE</span>
-                        )}
-                        {attendee.isAsaseMember && (
-                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded">ASASE</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{attendee.jobTitle}</td>
-                    <td className="px-3 py-3 text-xs text-gray-500">{getOrgTypeLabel(attendee.organizationType)}</td>
-                    <td className="px-3 py-3">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(attendee.paymentStatus)}`}>
-                        {formatStatus(attendee.paymentStatus)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => {
-                          const reg = findRegistrationByAttendee(attendee);
-                          if (reg) {
-                            const company = reg.billingInfo?.company?.toLowerCase().trim() || '';
-                            const companyRegs = registrations.filter(r =>
-                              (r.billingInfo?.company?.toLowerCase().trim() || '') === company
-                            );
-                            setSelectedCompanyRegistrations(companyRegs);
-                            setSelectedRegistration(reg);
-                            setShowDetailModal(true);
-                          }
-                        }}
-                      >
-                        View
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredAttendees.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-fase-black">No attendees found.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Companies View */}
-      {viewMode === 'companies' && (
-        <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full divide-y divide-fase-light-gold">
-              <thead className="bg-fase-navy">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Company</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Invoice</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Attendees</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Amount</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {companyGroups.map((group) => {
-                  const totalAttendees = group.registrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0);
-                  const totalAmount = group.registrations.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
-                  const primaryReg = group.registrations[0];
-                  const allConfirmed = group.registrations.every(r => r.paymentStatus === 'paid' || r.paymentStatus === 'confirmed' || r.paymentStatus === 'complimentary');
-                  const hasPending = group.registrations.some(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
-                  const isSingleReg = group.registrations.length === 1;
-
-                  return (
-                    <tr key={group.company} className="hover:bg-gray-50">
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">{group.company}</div>
-                          <div className="text-gray-500 text-xs">{getOrgTypeLabel(primaryReg.billingInfo?.organizationType)}</div>
-                          <div className="flex gap-1 mt-0.5">
-                            {primaryReg.companyIsFaseMember && (
-                              <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">FASE</span>
-                            )}
-                            {primaryReg.isAsaseMember && (
-                              <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded">ASASE</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
-                          {isSingleReg ? (
-                            <>
-                              <div className="font-mono text-gray-900">{primaryReg.invoiceNumber}</div>
-                              {primaryReg.invoiceUrl && (
-                                <a
-                                  href={primaryReg.invoiceUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-fase-navy hover:text-fase-orange text-xs underline"
-                                >
-                                  View PDF
-                                </a>
-                              )}
-                            </>
-                          ) : (
-                            <div className="text-gray-500">{group.registrations.length} registrations</div>
+      {/* Registrations Table */}
+      <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full divide-y divide-fase-light-gold">
+            <thead className="bg-fase-navy">
+              <tr>
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('company')}
+                >
+                  Company {sortColumn === 'company' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Invoice</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Attendees</th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('amount')}
+                >
+                  Amount {sortColumn === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('status')}
+                >
+                  Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredRegistrations.map((reg) => {
+                const isSuppressed = suppressedIds.has(reg.registrationId);
+                return (
+                  <tr key={reg.registrationId} className={`hover:bg-gray-50 ${isSuppressed ? 'opacity-50 bg-gray-100' : ''}`}>
+                    <td className="px-4 py-4">
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{reg.billingInfo?.company}</div>
+                        <div className="text-gray-500 text-xs">{reg.billingInfo?.billingEmail}</div>
+                        <div className="flex gap-1 mt-0.5">
+                          {reg.companyIsFaseMember && (
+                            <span className="inline-flex px-1.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">FASE</span>
+                          )}
+                          {reg.isAsaseMember && (
+                            <span className="inline-flex px-1.5 py-0.5 text-xs bg-green-100 text-green-800 rounded">ASASE</span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-3 py-4 text-sm text-gray-900">{totalAttendees}</td>
-                      <td className="px-3 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          €{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          getStatusColor(isSingleReg ? primaryReg.paymentStatus : (allConfirmed ? 'paid' : 'pending_bank_transfer'))
-                        }`}>
-                          {isSingleReg ? formatStatus(primaryReg.paymentStatus) : (allConfirmed ? 'Confirmed' : 'Partial')}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm">
+                        <div className="font-mono text-gray-900">{reg.invoiceNumber}</div>
+                        {reg.invoiceUrl && (
+                          <a
+                            href={reg.invoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-fase-navy hover:text-fase-orange text-xs underline"
+                          >
+                            View PDF
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-900">{reg.attendees?.length || 0}</td>
+                    <td className="px-3 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        €{(reg.totalPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </div>
+                    </td>
+                    <td className="px-3 py-4">
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
+                          {formatStatus(reg.paymentStatus)}
                         </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm font-medium">
-                        <div className="flex gap-2">
+                        {isSuppressed && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          onClick={() => {
+                            setSelectedRegistration(reg);
+                            setSelectedCompanyRegistrations(getCompanyRegistrations(reg));
+                            setShowDetailModal(true);
+                          }}
+                        >
+                          Manage
+                        </Button>
+                        {(reg.paymentStatus === 'pending_bank_transfer' || reg.paymentStatus === 'pending') && (
                           <Button
-                            variant="secondary"
+                            variant="primary"
                             size="small"
                             onClick={() => {
-                              setSelectedCompanyRegistrations(group.registrations);
-                              setSelectedRegistration(group.registrations[0]);
-                              setShowDetailModal(true);
+                              setSelectedRegistration(reg);
+                              setShowStatusModal(true);
                             }}
                           >
-                            View
+                            Confirm
                           </Button>
-                          {hasPending && (
-                            <Button
-                              variant="primary"
-                              size="small"
-                              onClick={() => {
-                                const pendingReg = group.registrations.find(r => r.paymentStatus === 'pending_bank_transfer' || r.paymentStatus === 'pending');
-                                if (pendingReg) {
-                                  setSelectedRegistration(pendingReg);
-                                  setShowStatusModal(true);
-                                }
-                              }}
-                            >
-                              Confirm
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {filteredRegistrations.length === 0 && (
+          <div className="p-8 text-center">
+            <p className="text-fase-black">No registrations found.</p>
           </div>
-          {companyGroups.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-fase-black">No companies found.</p>
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Data Issues View */}
-      {viewMode === 'issues' && (
-        <div className="space-y-6">
-          {totalIssuesCount === 0 ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-              <div className="text-green-600 text-lg font-medium">No data issues detected</div>
-              <p className="text-green-700 text-sm mt-1">All registration data looks clean.</p>
-            </div>
-          ) : (
-            <>
-              {/* Duplicate Emails */}
-              {dataIssues.duplicateEmails.length > 0 && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-orange-800 mb-3 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    Duplicate Email Addresses ({dataIssues.duplicateEmails.length})
-                  </h3>
-                  <p className="text-sm text-orange-700 mb-4">
-                    These email addresses appear multiple times across registrations. This may indicate the same person registered multiple times, or someone entered their own email for multiple attendees.
-                  </p>
-                  <div className="space-y-3">
-                    {dataIssues.duplicateEmails.map(({ email, count, attendees }) => (
-                      <div key={email} className="bg-white rounded p-3 border border-orange-100">
-                        <div className="font-medium text-gray-900 mb-2">
-                          {email} <span className="text-orange-600 text-sm">({count} occurrences)</span>
-                        </div>
-                        <div className="space-y-1">
-                          {attendees.map((att, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
-                              <div>
-                                <span className="font-medium">{att.firstName} {att.lastName}</span>
-                                <span className="text-gray-400 mx-2">·</span>
-                                <span className="text-gray-500">{att.company}</span>
-                              </div>
-                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(att.paymentStatus)}`}>
-                                {formatStatus(att.paymentStatus)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Similar Company Names */}
-              {dataIssues.similarCompanies.length > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-yellow-800 mb-3 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Similar Company Names ({dataIssues.similarCompanies.length})
-                  </h3>
-                  <p className="text-sm text-yellow-700 mb-4">
-                    These company names are very similar and may be the same company registered with slightly different names.
-                  </p>
-                  <div className="space-y-2">
-                    {dataIssues.similarCompanies.map(({ normalized, companies }) => (
-                      <div key={normalized} className="bg-white rounded p-3 border border-yellow-100">
-                        <div className="flex flex-wrap gap-2">
-                          {companies.map((company, idx) => (
-                            <span key={idx} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
-                              {company}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Missing Data */}
-              {dataIssues.missingData.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Missing Data
-                  </h3>
-                  <div className="space-y-2">
-                    {dataIssues.missingData.map((issue, idx) => (
-                      <div key={idx} className="bg-white rounded p-3 border border-red-100">
-                        <div className="font-medium text-gray-900">
-                          {issue.type}: <span className="text-red-600">{issue.count}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Detail Modal */}
+      {/* Detail/Manage Modal */}
       <Modal
         isOpen={showDetailModal}
         onClose={() => {
@@ -1317,7 +958,7 @@ export default function RendezvousTab() {
           setSelectedRegistration(null);
           setSelectedCompanyRegistrations([]);
         }}
-        title={`${selectedRegistration?.billingInfo?.company}`}
+        title={`Manage: ${selectedRegistration?.billingInfo?.company}`}
         maxWidth="3xl"
       >
         {selectedRegistration && (
@@ -1351,7 +992,7 @@ export default function RendezvousTab() {
               </div>
             </div>
 
-            {/* All Attendees from all registrations */}
+            {/* Attendees */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-fase-navy mb-3">
                 Attendees ({selectedCompanyRegistrations.reduce((sum, r) => sum + (r.attendees?.length || 0), 0)})
@@ -1376,7 +1017,7 @@ export default function RendezvousTab() {
               </div>
             </div>
 
-            {/* Registrations */}
+            {/* Registrations with action buttons */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-fase-navy mb-3">
                 Registrations ({selectedCompanyRegistrations.length})
@@ -1490,6 +1131,34 @@ export default function RendezvousTab() {
                 </div>
               </div>
             </div>
+
+            {/* Suppress Toggle */}
+            {(() => {
+              const isSuppressed = suppressedIds.has(selectedRegistration.registrationId);
+              return (
+                <div className={`${isSuppressed ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className={`text-sm font-semibold ${isSuppressed ? 'text-yellow-800' : 'text-gray-700'}`}>
+                        {isSuppressed ? 'Registration is suppressed' : 'Suppress this registration'}
+                      </h4>
+                      <p className={`text-xs mt-1 ${isSuppressed ? 'text-yellow-700' : 'text-gray-500'}`}>
+                        {isSuppressed
+                          ? 'This registration is hidden from the View tab. Click to restore visibility.'
+                          : 'Hide this registration from the View tab without deleting it.'}
+                      </p>
+                    </div>
+                    <Button
+                      variant={isSuppressed ? 'primary' : 'secondary'}
+                      size="small"
+                      onClick={() => handleToggleSuppressed(selectedRegistration.registrationId)}
+                    >
+                      {isSuppressed ? 'Unsuppress' : 'Suppress'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="flex justify-end pt-4 border-t">
               <div className="flex gap-2">
@@ -2017,13 +1686,6 @@ export default function RendezvousTab() {
           </div>
         </div>
       </Modal>
-
-      {/* Interest Registrations Modal */}
-      <InterestRegistrationsModal
-        isOpen={showInterestModal}
-        onClose={() => setShowInterestModal(false)}
-        registrations={interestRegistrations}
-      />
 
       {/* Edit Attendees Modal */}
       <EditAttendeesModal

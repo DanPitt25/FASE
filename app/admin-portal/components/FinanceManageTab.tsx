@@ -4,58 +4,24 @@ import { useState, useEffect, useCallback } from 'react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
+import type {
+  Transaction,
+  PaymentActivity,
+  PaymentNote,
+  MemberSearchResult,
+  FinanceFilterSource,
+  FinanceDateRange,
+  FinanceSortField,
+  FinanceModalTab,
+  SortDirection,
+} from '@/lib/admin-types';
 
-interface Transaction {
-  id: string;
-  source: 'stripe' | 'wise';
-  date: string;
-  amount: number;
-  currency: string;
-  amountEur: number;
-  reference: string;
-  senderName?: string;
-  email?: string;
-  customerId?: string;
-  description?: string;
-}
+type FilterSource = FinanceFilterSource;
+type DateRange = FinanceDateRange;
+type SortField = FinanceSortField;
+type ModalTab = FinanceModalTab;
 
-interface PaymentActivity {
-  id: string;
-  type: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  performedBy: string;
-  performedByName: string;
-}
-
-interface PaymentNote {
-  id: string;
-  content: string;
-  category: string;
-  createdAt: string;
-  createdByName: string;
-  isPinned?: boolean;
-}
-
-interface MemberSearchResult {
-  id: string;
-  organizationName: string;
-  organizationType: string;
-  status: string;
-  primaryContact?: {
-    name?: string;
-    email?: string;
-  };
-}
-
-type FilterSource = 'all' | 'stripe' | 'wise';
-type DateRange = 'all' | '30' | '90' | '180' | '365';
-type SortField = 'date' | 'amount';
-type SortDirection = 'asc' | 'desc';
-type ModalTab = 'details' | 'invoice' | 'timeline' | 'notes';
-
-export default function FinanceTab() {
+export default function FinanceManageTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -63,11 +29,7 @@ export default function FinanceTab() {
   const [dateRange, setDateRange] = useState<DateRange>('all');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-
-  // API status
-  const [stripeConfigured, setStripeConfigured] = useState(false);
-  const [wiseConfigured, setWiseConfigured] = useState(false);
-  const [apiErrors, setApiErrors] = useState<string[]>([]);
+  const [showSuppressed, setShowSuppressed] = useState(false);
 
   // Modal state
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -105,7 +67,7 @@ export default function FinanceTab() {
 
   useEffect(() => {
     loadData();
-  }, [sourceFilter, dateRange]);
+  }, [sourceFilter, dateRange, showSuppressed]);
 
   const loadData = async () => {
     try {
@@ -113,6 +75,9 @@ export default function FinanceTab() {
       setError(null);
 
       let url = `/api/admin/finance/transactions?source=${sourceFilter}`;
+      if (!showSuppressed) {
+        url += '&hideSuppressed=true';
+      }
       if (dateRange !== 'all') {
         const fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - parseInt(dateRange));
@@ -127,9 +92,6 @@ export default function FinanceTab() {
       }
 
       setTransactions(data.transactions || []);
-      setStripeConfigured(data.summary?.stripeCount !== undefined);
-      setApiErrors(data.errors || []);
-      setWiseConfigured(data.summary?.wiseCount !== undefined);
     } catch (err: any) {
       console.error('Failed to load finance data:', err);
       setError(err.message || 'Failed to load data');
@@ -194,6 +156,39 @@ export default function FinanceTab() {
     setInvoiceCountry('');
   };
 
+  // Suppress/unsuppress transaction
+  const handleToggleSuppressed = async (tx: Transaction) => {
+    const newSuppressed = !tx.suppressed;
+    try {
+      const response = await authPost('/api/admin/finance/suppress', {
+        transactionId: tx.id,
+        source: tx.source,
+        suppressed: newSuppressed,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update transaction');
+      }
+
+      // Update local state
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === tx.id && t.source === tx.source
+            ? { ...t, suppressed: newSuppressed }
+            : t
+        )
+      );
+
+      // If we're not showing suppressed and we just suppressed it, remove from view
+      if (!showSuppressed && newSuppressed) {
+        setTransactions(prev => prev.filter(t => !(t.id === tx.id && t.source === tx.source)));
+      }
+    } catch (err: any) {
+      console.error('Failed to toggle suppressed:', err);
+      alert(`Error: ${err.message}`);
+    }
+  };
+
   // Member search function
   const searchMembers = useCallback(async (query: string) => {
     if (query.length < 2) {
@@ -237,7 +232,6 @@ export default function FinanceTab() {
     setMemberSearchQuery(member.organizationName);
     setShowMemberDropdown(false);
 
-    // Fetch full member details to get address
     setLoadingMemberDetails(true);
     try {
       const response = await authFetch(`/api/admin/account/${member.id}`);
@@ -245,7 +239,6 @@ export default function FinanceTab() {
 
       if (data.success && data.account) {
         const account = data.account;
-        // businessAddress is the primary address field in account documents
         const address = account.businessAddress || account.registeredAddress || {};
         const contactName = account.accountAdministrator?.name || account.primaryContact?.name || '';
 
@@ -308,7 +301,6 @@ export default function FinanceTab() {
         throw new Error(data.error || 'Failed to generate invoice');
       }
 
-      // Download the PDF
       if (data.pdfBase64) {
         const link = document.createElement('a');
         link.href = `data:application/pdf;base64,${data.pdfBase64}`;
@@ -316,7 +308,6 @@ export default function FinanceTab() {
         link.click();
       }
 
-      // Reload CRM data to show new activity
       loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
     } catch (err: any) {
       console.error('Failed to generate invoice:', err);
@@ -396,17 +387,11 @@ export default function FinanceTab() {
       note_added: '📝',
       matched_to_member: '🔗',
       manual_entry: '✏️',
+      suppressed: '🚫',
+      unsuppressed: '✅',
     };
     return icons[type] || '•';
   };
-
-  // Calculate totals (in EUR)
-  const stripeTotal = transactions
-    .filter((t) => t.source === 'stripe')
-    .reduce((sum, t) => sum + t.amountEur, 0);
-  const wiseTotal = transactions
-    .filter((t) => t.source === 'wise')
-    .reduce((sum, t) => sum + t.amountEur, 0);
 
   // Sort transactions
   const sortedTransactions = [...transactions].sort((a, b) => {
@@ -459,92 +444,24 @@ export default function FinanceTab() {
     { id: 'notes', label: 'Notes', count: notes.length },
   ];
 
+  const suppressedCount = transactions.filter(t => t.suppressed).length;
+
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-500">
-            Total {dateRange === 'all' ? '(All Time)' : `(Last ${dateRange} Days)`}
-          </div>
-          <div className="text-2xl font-bold text-gray-900">
-            {formatCurrency(stripeTotal + wiseTotal)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {transactions.length} payments
-          </div>
-        </div>
-        <div className="bg-white border border-purple-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Stripe</span>
-            {!stripeConfigured && (
-              <span className="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded">
-                Not configured
-              </span>
-            )}
-          </div>
-          <div className="text-2xl font-bold text-purple-600">
-            {formatCurrency(stripeTotal)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {transactions.filter((t) => t.source === 'stripe').length} payments
-          </div>
-        </div>
-        <div className="bg-white border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Wise</span>
-            {!wiseConfigured && (
-              <span className="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded">
-                Not configured
-              </span>
-            )}
-          </div>
-          <div className="text-2xl font-bold text-blue-600">
-            {formatCurrency(wiseTotal)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            {transactions.filter((t) => t.source === 'wise').length} payments
-          </div>
-        </div>
+      {/* Info Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="text-sm font-medium text-blue-800">Finance Management</div>
+        <p className="text-sm text-blue-700 mt-1">
+          Generate invoices for payments, add notes, and suppress irrelevant transactions (test payments, duplicates, etc.).
+        </p>
       </div>
-
-      {/* API Errors */}
-      {apiErrors.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-sm font-medium text-red-800 mb-2">API Errors</div>
-          <div className="text-sm text-red-700 space-y-1">
-            {apiErrors.map((err, i) => (
-              <div key={i}>{err}</div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* API Setup Info */}
-      {(!stripeConfigured || !wiseConfigured) && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-sm font-medium text-yellow-800 mb-2">API Configuration</div>
-          <div className="text-sm text-yellow-700 space-y-1">
-            {!stripeConfigured && (
-              <div>
-                <strong>Stripe:</strong> Set <code className="bg-yellow-100 px-1 rounded">STRIPE_SECRET_KEY</code> in environment variables
-              </div>
-            )}
-            {!wiseConfigured && (
-              <div>
-                <strong>Wise:</strong> Set <code className="bg-yellow-100 px-1 rounded">WISE_API_KEY</code> and <code className="bg-yellow-100 px-1 rounded">WISE_PROFILE_ID</code> in environment variables
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Payments Table */}
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="p-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Incoming Payments</h3>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h3 className="text-lg font-semibold">Manage Transactions</h3>
+            <div className="flex flex-wrap gap-2 items-center">
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as DateRange)}
@@ -565,6 +482,15 @@ export default function FinanceTab() {
                 <option value="stripe">Stripe Only</option>
                 <option value="wise">Wise Only</option>
               </select>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={showSuppressed}
+                  onChange={(e) => setShowSuppressed(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                Show suppressed {suppressedCount > 0 && `(${suppressedCount})`}
+              </label>
               <button
                 onClick={loadData}
                 className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
@@ -593,7 +519,6 @@ export default function FinanceTab() {
                   Amount {sortField === 'amount' && (sortDirection === 'desc' ? '↓' : '↑')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
@@ -601,13 +526,16 @@ export default function FinanceTab() {
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                    No payments found
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    No transactions found
                   </td>
                 </tr>
               ) : (
                 sortedTransactions.map((tx) => (
-                  <tr key={`${tx.source}-${tx.id}`} className="hover:bg-gray-50">
+                  <tr
+                    key={`${tx.source}-${tx.id}`}
+                    className={`hover:bg-gray-50 ${tx.suppressed ? 'opacity-50 bg-gray-100' : ''}`}
+                  >
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(tx.date)}
                     </td>
@@ -628,19 +556,25 @@ export default function FinanceTab() {
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
                       {tx.senderName || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
-                      {tx.email || '-'}
-                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={tx.reference}>
                       {tx.reference || '-'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <button
-                        onClick={() => openTransactionModal(tx)}
-                        className="text-fase-navy hover:text-fase-navy/80 text-sm font-medium"
-                      >
-                        View
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openTransactionModal(tx)}
+                          className="text-fase-navy hover:text-fase-navy/80 text-sm font-medium"
+                        >
+                          Manage
+                        </button>
+                        <button
+                          onClick={() => handleToggleSuppressed(tx)}
+                          className={`text-sm ${tx.suppressed ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-red-600'}`}
+                          title={tx.suppressed ? 'Unsuppress' : 'Suppress'}
+                        >
+                          {tx.suppressed ? '✓ Show' : '✕ Hide'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -650,12 +584,12 @@ export default function FinanceTab() {
         </div>
       </div>
 
-      {/* Transaction Detail Modal */}
+      {/* Transaction Management Modal */}
       {selectedTransaction && (
         <Modal
           isOpen={!!selectedTransaction}
           onClose={closeModal}
-          title={`Payment: ${formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}`}
+          title={`Manage: ${formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}`}
           maxWidth="4xl"
         >
           <div className="h-[600px] flex flex-col">
@@ -677,6 +611,11 @@ export default function FinanceTab() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  {selectedTransaction.suppressed && (
+                    <span className="px-2 py-1 text-xs bg-red-500 text-white rounded">
+                      Suppressed
+                    </span>
+                  )}
                   <span
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
                       selectedTransaction.source === 'stripe'
@@ -746,36 +685,28 @@ export default function FinanceTab() {
                       <div className="text-sm text-gray-500">Source</div>
                       <div className="capitalize">{selectedTransaction.source}</div>
                     </div>
-                    {selectedTransaction.senderName && (
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Sender Name</div>
-                        <div>{selectedTransaction.senderName}</div>
-                      </div>
-                    )}
-                    {selectedTransaction.email && (
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Email</div>
-                        <div>{selectedTransaction.email}</div>
-                      </div>
-                    )}
-                    {selectedTransaction.customerId && (
-                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
-                        <div className="text-sm text-gray-500">Customer ID</div>
-                        <div className="font-mono text-sm">{selectedTransaction.customerId}</div>
-                      </div>
-                    )}
-                    {selectedTransaction.reference && (
-                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
-                        <div className="text-sm text-gray-500">Reference</div>
-                        <div>{selectedTransaction.reference}</div>
-                      </div>
-                    )}
-                    {selectedTransaction.description && (
-                      <div className="bg-gray-50 rounded-lg p-4 col-span-2">
-                        <div className="text-sm text-gray-500">Description</div>
-                        <div>{selectedTransaction.description}</div>
-                      </div>
-                    )}
+                  </div>
+
+                  {/* Suppress/Unsuppress button */}
+                  <div className="border-t pt-4">
+                    <button
+                      onClick={() => {
+                        handleToggleSuppressed(selectedTransaction);
+                        setSelectedTransaction({ ...selectedTransaction, suppressed: !selectedTransaction.suppressed });
+                      }}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        selectedTransaction.suppressed
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-red-100 text-red-800 hover:bg-red-200'
+                      }`}
+                    >
+                      {selectedTransaction.suppressed ? '✓ Unsuppress Transaction' : '✕ Suppress Transaction'}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {selectedTransaction.suppressed
+                        ? 'This transaction is hidden from reports. Click to show it again.'
+                        : 'Suppress this transaction to hide it from reports (e.g., test payments, duplicates).'}
+                    </p>
                   </div>
                 </div>
               )}
@@ -786,7 +717,7 @@ export default function FinanceTab() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="text-sm font-medium text-blue-800 mb-2">Generate PAID Invoice</div>
                     <p className="text-sm text-blue-700">
-                      Create a payment confirmation invoice for this transaction. Search for an existing member or enter organization details manually.
+                      Create a payment confirmation invoice for this transaction.
                     </p>
                   </div>
 
@@ -853,12 +784,8 @@ export default function FinanceTab() {
                           </>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Search for a member to auto-fill their details, or enter manually below
-                      </p>
                     </div>
 
-                    {/* Loading indicator when fetching member details */}
                     {loadingMemberDetails && (
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-fase-navy"></div>
@@ -866,9 +793,9 @@ export default function FinanceTab() {
                       </div>
                     )}
 
-                    {/* Bill To Section - Editable fields */}
+                    {/* Bill To Section */}
                     <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-                      <div className="text-sm font-medium text-gray-700 border-b pb-2">Bill To (Editable)</div>
+                      <div className="text-sm font-medium text-gray-700 border-b pb-2">Bill To</div>
 
                       <div>
                         <label className="block text-xs text-gray-500 mb-1">Organization Name *</label>
@@ -876,41 +803,47 @@ export default function FinanceTab() {
                           type="text"
                           value={invoiceOrganization}
                           onChange={(e) => setInvoiceOrganization(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          className="w-full border border-gray-300 rounded p-2 text-sm"
                           placeholder="Organization name"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Contact Name</label>
-                        <input
-                          type="text"
-                          value={invoiceContactName}
-                          onChange={(e) => setInvoiceContactName(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="Contact name"
-                        />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Contact Name</label>
+                          <input
+                            type="text"
+                            value={invoiceContactName}
+                            onChange={(e) => setInvoiceContactName(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Country</label>
+                          <input
+                            type="text"
+                            value={invoiceCountry}
+                            onChange={(e) => setInvoiceCountry(e.target.value)}
+                            className="w-full border border-gray-300 rounded p-2 text-sm"
+                          />
+                        </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Address Line 1</label>
+                        <label className="block text-xs text-gray-500 mb-1">Address</label>
                         <input
                           type="text"
                           value={invoiceAddressLine1}
                           onChange={(e) => setInvoiceAddressLine1(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="Street address"
+                          className="w-full border border-gray-300 rounded p-2 text-sm mb-2"
+                          placeholder="Line 1"
                         />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Address Line 2</label>
                         <input
                           type="text"
                           value={invoiceAddressLine2}
                           onChange={(e) => setInvoiceAddressLine2(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="Suite, floor, etc. (optional)"
+                          className="w-full border border-gray-300 rounded p-2 text-sm"
+                          placeholder="Line 2 (optional)"
                         />
                       </div>
 
@@ -921,8 +854,7 @@ export default function FinanceTab() {
                             type="text"
                             value={invoiceCity}
                             onChange={(e) => setInvoiceCity(e.target.value)}
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                            placeholder="City"
+                            className="w-full border border-gray-300 rounded p-2 text-sm"
                           />
                         </div>
                         <div>
@@ -931,25 +863,13 @@ export default function FinanceTab() {
                             type="text"
                             value={invoicePostcode}
                             onChange={(e) => setInvoicePostcode(e.target.value)}
-                            className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                            placeholder="Postcode"
+                            className="w-full border border-gray-300 rounded p-2 text-sm"
                           />
                         </div>
                       </div>
-
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Country</label>
-                        <input
-                          type="text"
-                          value={invoiceCountry}
-                          onChange={(e) => setInvoiceCountry(e.target.value)}
-                          className="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                          placeholder="Country"
-                        />
-                      </div>
                     </div>
 
-                    {/* Line Items Section */}
+                    {/* Line Items */}
                     <div className="border border-gray-200 rounded-lg p-4 space-y-3">
                       <div className="flex items-center justify-between border-b pb-2">
                         <div className="text-sm font-medium text-gray-700">Line Items</div>
@@ -967,15 +887,6 @@ export default function FinanceTab() {
                         </div>
                       </div>
 
-                      {/* Line items table header */}
-                      <div className="grid grid-cols-12 gap-2 text-xs text-gray-500 font-medium">
-                        <div className="col-span-6">Description</div>
-                        <div className="col-span-2 text-center">Qty</div>
-                        <div className="col-span-3 text-right">Unit Price</div>
-                        <div className="col-span-1"></div>
-                      </div>
-
-                      {/* Line items */}
                       {invoiceLineItems.map((item, index) => (
                         <div key={index} className="grid grid-cols-12 gap-2 items-center">
                           <div className="col-span-6">
@@ -1020,9 +931,7 @@ export default function FinanceTab() {
                           <div className="col-span-1 text-center">
                             {invoiceLineItems.length > 1 && (
                               <button
-                                onClick={() => {
-                                  setInvoiceLineItems(invoiceLineItems.filter((_, i) => i !== index));
-                                }}
+                                onClick={() => setInvoiceLineItems(invoiceLineItems.filter((_, i) => i !== index))}
                                 className="text-red-500 hover:text-red-700 p-1"
                               >
                                 ✕
@@ -1032,17 +941,13 @@ export default function FinanceTab() {
                         </div>
                       ))}
 
-                      {/* Add line item button */}
                       <button
-                        onClick={() => {
-                          setInvoiceLineItems([...invoiceLineItems, { description: '', quantity: 1, unitPrice: 0 }]);
-                        }}
+                        onClick={() => setInvoiceLineItems([...invoiceLineItems, { description: '', quantity: 1, unitPrice: 0 }])}
                         className="text-sm text-fase-navy hover:text-fase-navy/80 font-medium"
                       >
                         + Add Line Item
                       </button>
 
-                      {/* Total */}
                       <div className="border-t pt-3 flex justify-between items-center">
                         <span className="text-sm font-medium text-gray-700">Total:</span>
                         <span className="text-lg font-bold text-fase-navy">
@@ -1050,28 +955,6 @@ export default function FinanceTab() {
                           {invoiceLineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
-                    </div>
-
-                    {/* Payment Info (read-only) */}
-                    <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 bg-gray-50 rounded p-3">
-                      <div>
-                        <span className="text-gray-500">Payment Date:</span>{' '}
-                        {formatDate(selectedTransaction.date)}
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Payment Method:</span>{' '}
-                        <span className="capitalize">{selectedTransaction.source}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Status:</span>{' '}
-                        <span className="text-fase-navy font-medium">PAID</span>
-                      </div>
-                      {selectedTransaction.reference && (
-                        <div>
-                          <span className="text-gray-500">Reference:</span>{' '}
-                          {selectedTransaction.reference}
-                        </div>
-                      )}
                     </div>
 
                     <Button
@@ -1125,7 +1008,6 @@ export default function FinanceTab() {
               {/* NOTES TAB */}
               {modalTab === 'notes' && (
                 <div className="space-y-4">
-                  {/* Add Note Form */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <textarea
                       value={newNote}
@@ -1156,7 +1038,6 @@ export default function FinanceTab() {
                     </div>
                   </div>
 
-                  {/* Notes List */}
                   {loadingCrm ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fase-navy mx-auto"></div>
