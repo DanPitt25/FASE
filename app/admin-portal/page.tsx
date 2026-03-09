@@ -9,6 +9,7 @@ import {
   getAccountsByStatus,
   updateMemberStatus
 } from '../../lib/unified-member';
+import { authFetch } from '@/lib/auth-fetch';
 
 // Import tab components
 import MembersViewTab from './components/MembersViewTab';
@@ -96,6 +97,7 @@ export default function AdminPortalPage() {
 
   // State for data
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
+  const [memberSuppressedIds, setMemberSuppressedIds] = useState<Set<string>>(new Set());
 
   // Track loading state
   const [loading, setLoading] = useState({
@@ -119,14 +121,26 @@ export default function AdminPortalPage() {
 
     try {
       setLoading(prev => ({ ...prev, members: true }));
-      const [pendingAccounts, pendingInvoiceAccounts, approvedAccounts, adminAccounts, invoiceSentAccounts, flaggedAccounts, internalAccounts] = await Promise.all([
+
+      // Load members and suppression IDs in parallel
+      const [
+        pendingAccounts,
+        pendingInvoiceAccounts,
+        approvedAccounts,
+        adminAccounts,
+        invoiceSentAccounts,
+        flaggedAccounts,
+        internalAccounts,
+        suppressionResponse
+      ] = await Promise.all([
         getAccountsByStatus('pending'),
         getAccountsByStatus('pending_invoice'),
         getAccountsByStatus('approved'),
         getAccountsByStatus('admin'),
         getAccountsByStatus('invoice_sent'),
         getAccountsByStatus('flagged'),
-        getAccountsByStatus('internal')
+        getAccountsByStatus('internal'),
+        authFetch('/api/admin/members/suppress').then(r => r.json()).catch(() => ({ success: false }))
       ]);
 
       const membersData = [
@@ -140,6 +154,12 @@ export default function AdminPortalPage() {
       ];
 
       setMemberApplications(membersData);
+
+      // Set suppressed IDs
+      if (suppressionResponse.success && suppressionResponse.suppressedIds) {
+        setMemberSuppressedIds(new Set(suppressionResponse.suppressedIds));
+      }
+
       setDataLoaded(prev => ({ ...prev, members: true }));
     } catch (error) {
       console.error('Error loading members data:', error);
@@ -223,6 +243,7 @@ export default function AdminPortalPage() {
           <MembersViewTab
             memberApplications={memberApplications}
             loading={loading.members}
+            suppressedIds={memberSuppressedIds}
           />
         </AdminErrorBoundary>
       ),
@@ -285,6 +306,8 @@ export default function AdminPortalPage() {
             onMemberDeleted={(memberId) => {
               setMemberApplications(prev => prev.filter(m => m.id !== memberId));
             }}
+            suppressedIds={memberSuppressedIds}
+            onSuppressedIdsChange={setMemberSuppressedIds}
           />
         </AdminErrorBoundary>
       ),

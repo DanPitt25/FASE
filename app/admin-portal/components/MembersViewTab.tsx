@@ -20,11 +20,13 @@ import Modal from '../../../components/Modal';
 interface MembersViewTabProps {
   memberApplications: UnifiedMember[];
   loading: boolean;
+  suppressedIds: Set<string>;
 }
 
 export default function MembersViewTab({
   memberApplications,
   loading,
+  suppressedIds,
 }: MembersViewTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
@@ -40,25 +42,6 @@ export default function MembersViewTab({
     phone?: string;
   } | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
-
-  // Suppressed members
-  const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
-
-  // Load suppressed IDs on mount
-  useEffect(() => {
-    const loadSuppressedIds = async () => {
-      try {
-        const response = await authFetch('/api/admin/members/suppress');
-        const data = await response.json();
-        if (data.success) {
-          setSuppressedIds(new Set(data.suppressedIds));
-        }
-      } catch (error) {
-        console.error('Error loading suppressed members:', error);
-      }
-    };
-    loadSuppressedIds();
-  }, []);
 
   // Fetch account admin when modal opens
   useEffect(() => {

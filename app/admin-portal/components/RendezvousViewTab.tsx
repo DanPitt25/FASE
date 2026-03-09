@@ -47,42 +47,35 @@ export default function RendezvousViewTab() {
   // Suppressed registrations
   const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
 
-  // Load suppressed IDs on mount
+  // Load registrations and suppressed IDs in parallel on mount
   useEffect(() => {
-    const loadSuppressedIds = async () => {
+    const loadData = async () => {
       try {
-        const response = await authFetch('/api/admin/rendezvous/suppress');
-        const data = await response.json();
-        if (data.success) {
-          setSuppressedIds(new Set(data.suppressedIds));
+        setLoading(true);
+        const [registrationsResponse, suppressionResponse] = await Promise.all([
+          authFetch('/api/admin/rendezvous-registrations'),
+          authFetch('/api/admin/rendezvous/suppress').then(r => r.json()).catch(() => ({ success: false }))
+        ]);
+
+        if (!registrationsResponse.ok) throw new Error('Failed to fetch registrations');
+        const data = await registrationsResponse.json();
+        const allRegistrations = data.registrations || [];
+        // Only actual registrations (not interest)
+        const actual = allRegistrations.filter((r: any) => r.registrationType !== 'interest');
+        setRegistrations(actual);
+
+        // Set suppressed IDs
+        if (suppressionResponse.success && suppressionResponse.suppressedIds) {
+          setSuppressedIds(new Set(suppressionResponse.suppressedIds));
         }
       } catch (error) {
-        console.error('Error loading suppressed registrations:', error);
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    loadSuppressedIds();
+    loadData();
   }, []);
-
-  useEffect(() => {
-    loadRegistrations();
-  }, []);
-
-  const loadRegistrations = async () => {
-    try {
-      setLoading(true);
-      const response = await authFetch('/api/admin/rendezvous-registrations');
-      if (!response.ok) throw new Error('Failed to fetch registrations');
-      const data = await response.json();
-      const allRegistrations = data.registrations || [];
-      // Only actual registrations (not interest)
-      const actual = allRegistrations.filter((r: any) => r.registrationType !== 'interest');
-      setRegistrations(actual);
-    } catch (error) {
-      console.error('Error loading registrations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Filter out suppressed registrations
   const visibleRegistrations = useMemo(() => {

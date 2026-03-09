@@ -15,50 +15,35 @@
  * All VIEW functions are in MembersViewTab.tsx
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UnifiedMember } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import CompanyMembersModal from './CompanyMembersModal';
-import { authFetch, authPost } from '@/lib/auth-fetch';
+import { authPost } from '@/lib/auth-fetch';
 
 interface MembersManageTabProps {
   memberApplications: UnifiedMember[];
   loading: boolean;
   onStatusUpdate: (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => void;
   onMemberDeleted?: (memberId: string) => void;
+  suppressedIds: Set<string>;
+  onSuppressedIdsChange: (ids: Set<string>) => void;
 }
 
 export default function MembersManageTab({
   memberApplications,
   loading,
   onStatusUpdate,
-  onMemberDeleted
+  onMemberDeleted,
+  suppressedIds,
+  onSuppressedIdsChange
 }: MembersManageTabProps) {
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
   const [sortColumn, setSortColumn] = useState<string>('organizationName');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  // Suppression state
-  const [suppressedIds, setSuppressedIds] = useState<Set<string>>(new Set());
   const [showSuppressed, setShowSuppressed] = useState(false);
-
-  // Load suppressed IDs on mount
-  useEffect(() => {
-    const loadSuppressedIds = async () => {
-      try {
-        const response = await authFetch('/api/admin/members/suppress');
-        const data = await response.json();
-        if (data.success) {
-          setSuppressedIds(new Set(data.suppressedIds));
-        }
-      } catch (error) {
-        console.error('Error loading suppressed members:', error);
-      }
-    };
-    loadSuppressedIds();
-  }, []);
 
   // Handle suppress/unsuppress
   const handleToggleSuppressed = async (memberId: string) => {
@@ -73,16 +58,14 @@ export default function MembersManageTab({
         throw new Error('Failed to update suppression');
       }
 
-      // Update local state
-      setSuppressedIds(prev => {
-        const newSet = new Set(prev);
-        if (isSuppressed) {
-          newSet.delete(memberId);
-        } else {
-          newSet.add(memberId);
-        }
-        return newSet;
-      });
+      // Update parent state via callback
+      const newSet = new Set(suppressedIds);
+      if (isSuppressed) {
+        newSet.delete(memberId);
+      } else {
+        newSet.add(memberId);
+      }
+      onSuppressedIdsChange(newSet);
     } catch (err: any) {
       console.error('Failed to toggle suppressed:', err);
       alert(`Error: ${err.message}`);

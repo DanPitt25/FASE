@@ -113,26 +113,6 @@ export default function RendezvousManageTab() {
     attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
   });
 
-  // Load suppressed IDs on mount
-  useEffect(() => {
-    const loadSuppressedIds = async () => {
-      try {
-        const response = await authFetch('/api/admin/rendezvous/suppress');
-        const data = await response.json();
-        if (data.success) {
-          setSuppressedIds(new Set(data.suppressedIds));
-        }
-      } catch (error) {
-        console.error('Error loading suppressed registrations:', error);
-      }
-    };
-    loadSuppressedIds();
-  }, []);
-
-  useEffect(() => {
-    loadRegistrations();
-  }, []);
-
   const loadRegistrations = async () => {
     try {
       setLoading(true);
@@ -150,6 +130,34 @@ export default function RendezvousManageTab() {
       setLoading(false);
     }
   };
+
+  // Load registrations and suppressed IDs in parallel on mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const [registrationsResponse, suppressionResponse] = await Promise.all([
+          authFetch('/api/admin/rendezvous-registrations'),
+          authFetch('/api/admin/rendezvous/suppress').then(r => r.json()).catch(() => ({ success: false }))
+        ]);
+
+        if (!registrationsResponse.ok) throw new Error('Failed to fetch registrations');
+        const data = await registrationsResponse.json();
+        const allRegistrations = data.registrations || [];
+        const actual = allRegistrations.filter((r: any) => r.registrationType !== 'interest');
+        setRegistrations(actual);
+
+        if (suppressionResponse.success && suppressionResponse.suppressedIds) {
+          setSuppressedIds(new Set(suppressionResponse.suppressedIds));
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadInitialData();
+  }, []);
 
   // Handle suppress/unsuppress
   const handleToggleSuppressed = async (registrationId: string) => {
