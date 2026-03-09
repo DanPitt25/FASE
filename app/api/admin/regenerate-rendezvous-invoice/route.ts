@@ -3,82 +3,22 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
 import { adminDb, adminStorage, FieldValue } from '@/lib/firebase-admin';
+import { detectCurrency, getCurrencySymbol, getWiseBankDetails, fetchExchangeRates } from '@/lib/currency-conversion';
 
 export const dynamic = 'force-dynamic';
-
-// Currency conversion utilities
-const COUNTRY_CURRENCY_MAP: Record<string, string> = {
-  'US': 'USD', 'USA': 'USD', 'United States': 'USD',
-  'CA': 'USD', 'Canada': 'USD',
-  'MX': 'USD', 'Mexico': 'USD',
-  'GB': 'GBP', 'UK': 'GBP', 'United Kingdom': 'GBP',
-  'AT': 'EUR', 'BE': 'EUR', 'CY': 'EUR', 'EE': 'EUR', 'FI': 'EUR',
-  'FR': 'EUR', 'DE': 'EUR', 'GR': 'EUR', 'IE': 'EUR', 'IT': 'EUR',
-  'LV': 'EUR', 'LT': 'EUR', 'LU': 'EUR', 'MT': 'EUR', 'NL': 'EUR',
-  'PT': 'EUR', 'SK': 'EUR', 'SI': 'EUR', 'ES': 'EUR', 'HR': 'EUR',
-};
-
-function detectCurrency(country: string): string {
-  if (!country) return 'EUR';
-  const currency = COUNTRY_CURRENCY_MAP[country];
-  if (currency) return currency;
-  const upperCountry = country.toUpperCase();
-  for (const [key, value] of Object.entries(COUNTRY_CURRENCY_MAP)) {
-    if (key.toUpperCase() === upperCountry) return value;
-  }
-  return 'EUR';
-}
-
-function getCurrencySymbol(currency: string): string {
-  const symbols: Record<string, string> = { 'EUR': '€', 'USD': '$', 'GBP': '£' };
-  return symbols[currency] || currency;
-}
 
 async function convertCurrency(eurAmount: number, targetCurrency: string) {
   if (targetCurrency === 'EUR') {
     return { convertedCurrency: 'EUR', roundedAmount: eurAmount, exchangeRate: 1 };
   }
 
-  const response = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
-  if (!response.ok) {
-    throw new Error(`Failed to fetch exchange rates: ${response.status}`);
-  }
-  const data = await response.json();
-  const rate = data.rates[targetCurrency];
+  const rates = await fetchExchangeRates();
+  const rate = rates[targetCurrency];
   if (!rate) {
     throw new Error(`No exchange rate found for currency: ${targetCurrency}`);
   }
   const roundedAmount = Math.max(1, Math.floor((eurAmount * rate) / 10) * 10);
   return { convertedCurrency: targetCurrency, roundedAmount, exchangeRate: rate };
-}
-
-function getWiseBankDetails(currency: string) {
-  const bankDetails: Record<string, any> = {
-    EUR: {
-      accountHolder: 'FASE BV',
-      bic: 'TRWIBEB1XXX',
-      iban: 'BE90 9057 9070 7732',
-      bankName: 'Wise',
-      address: ['Rue du Trône 100, 3rd floor', '1050 Brussels', 'Belgium']
-    },
-    GBP: {
-      accountHolder: 'FASE BV',
-      sortCode: '60-84-64',
-      accountNumber: '34068846',
-      iban: 'GB67 TRWI 6084 6434 0688 46',
-      bankName: 'Wise Payments Limited',
-      address: ['56 Shoreditch High Street', 'London', 'E1 6JJ', 'United Kingdom']
-    },
-    USD: {
-      accountHolder: 'FASE BV',
-      routingNumber: '101019628',
-      accountNumber: '218936745391',
-      accountType: 'Checking',
-      bankName: 'Wise US Inc',
-      address: ['108 W 13th St', 'Wilmington, DE 19801', 'United States']
-    }
-  };
-  return bankDetails[currency] || bankDetails.EUR;
 }
 
 interface RegistrationData {
