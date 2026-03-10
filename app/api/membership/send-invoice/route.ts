@@ -5,7 +5,7 @@ import * as path from 'path';
 import { generateInvoiceFromLineItems } from '../../../../lib/invoice-pdf-generator';
 import { uploadInvoicePDF } from '../../../../lib/invoice-storage';
 import { adminDb, FieldValue } from '../../../../lib/firebase-admin';
-import { convertCurrency, getWiseBankDetails } from '../../../../lib/currency-conversion';
+import { convertCurrency, getWiseBankDetails, detectCurrency } from '../../../../lib/currency-conversion';
 
 export const runtime = 'nodejs';
 
@@ -125,9 +125,16 @@ export async function POST(request: NextRequest) {
     // CURRENCY HANDLING
     // =========================================================================
     const supportedCurrencies = ['EUR', 'GBP', 'USD'];
-    const paymentCurrency = currency === 'auto'
-      ? 'EUR' // Default to EUR for auto
-      : (supportedCurrencies.includes(currency) ? currency : 'EUR');
+
+    // Auto-detect currency from address country, or use specified currency
+    let paymentCurrency: string;
+    if (currency === 'auto') {
+      // Auto-detect from address country
+      const country = address?.country || '';
+      paymentCurrency = detectCurrency(country);
+    } else {
+      paymentCurrency = supportedCurrencies.includes(currency) ? currency : 'EUR';
+    }
 
     // Get bank details for this currency
     const bankDetails = getWiseBankDetails(paymentCurrency);
