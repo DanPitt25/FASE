@@ -484,8 +484,13 @@ export async function POST(request: NextRequest) {
           currency: paymentCurrency,
           hasStripeLink: !!stripePaymentLinkUrl,
         },
-        performedBy: 'admin',
-        performedByName: sender === 'william' ? 'William van der Valk' : sender === 'aline' ? 'Aline van Maaren' : 'Admin',
+        performedBy: sender,
+        performedByName: {
+          'admin@fasemga.com': 'FASE Admin',
+          'william.pitt@fasemga.com': 'William Pitt',
+          'info@fasemga.com': 'FASE Info',
+          'media@fasemga.com': 'FASE Media',
+        }[sender] || 'Admin',
         createdAt: FieldValue.serverTimestamp(),
       });
     } catch (activityError: any) {

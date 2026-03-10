@@ -76,9 +76,10 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const SENDERS = [
-  { id: 'admin', label: 'FASE Admin', email: 'admin@fasemga.com' },
-  { id: 'william', label: 'William van der Valk', email: 'william.vandervalk@fasemga.com' },
-  { id: 'aline', label: 'Aline van Maaren', email: 'aline.vanmaaren@fasemga.com' },
+  { id: 'admin@fasemga.com', label: 'FASE Admin <admin@fasemga.com>' },
+  { id: 'william.pitt@fasemga.com', label: 'William Pitt <william.pitt@fasemga.com>' },
+  { id: 'info@fasemga.com', label: 'FASE Info <info@fasemga.com>' },
+  { id: 'media@fasemga.com', label: 'FASE Media <media@fasemga.com>' },
 ];
 
 
@@ -91,7 +92,7 @@ export default function MemberInvoicePanel({
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
   // Form state - multiple recipient selection
-  const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set(['account_admin']));
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set());
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [greeting, setGreeting] = useState('');
@@ -99,9 +100,17 @@ export default function MemberInvoicePanel({
   const [currency, setCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('EUR');
   const [locale, setLocale] = useState('en');
   const [gender, setGender] = useState<'m' | 'f'>('m');
-  const [sender, setSender] = useState('admin');
+  const [sender, setSender] = useState('admin@fasemga.com');
   const [customMessage, setCustomMessage] = useState('');
   const [hasOtherAssociations, setHasOtherAssociations] = useState(false);
+  const [address, setAddress] = useState({
+    line1: '',
+    line2: '',
+    city: '',
+    county: '',
+    postcode: '',
+    country: '',
+  });
 
   // Company members for recipient selection
   const [companyMembers, setCompanyMembers] = useState<CompanyMember[]>([]);
@@ -121,10 +130,22 @@ export default function MemberInvoicePanel({
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<{ success?: boolean; message?: string; error?: string } | null>(null);
 
-  // Initialize hasOtherAssociations from memberData
+  // Initialize hasOtherAssociations and address from memberData
   useEffect(() => {
     if (memberData) {
       setHasOtherAssociations(memberData.hasOtherAssociations || false);
+      // Initialize address from invoicingAddress, businessAddress, or registeredAddress
+      const addr = memberData.invoicingAddress || memberData.businessAddress || memberData.registeredAddress;
+      if (addr) {
+        setAddress({
+          line1: addr.line1 || '',
+          line2: addr.line2 || '',
+          city: addr.city || '',
+          county: addr.county || '',
+          postcode: addr.postcode || '',
+          country: addr.country || '',
+        });
+      }
     }
   }, [memberData]);
 
@@ -202,6 +223,18 @@ export default function MemberInvoicePanel({
     };
     fetchMembers();
   }, [companyId]);
+
+  // Set default recipient selection after members load
+  useEffect(() => {
+    if (companyMembers.length > 0 && selectedRecipientIds.size === 0) {
+      // Prefer account administrator, fall back to first member
+      const admin = companyMembers.find(m => m.isAccountAdministrator);
+      const defaultId = admin?.id || companyMembers[0]?.id;
+      if (defaultId) {
+        setSelectedRecipientIds(new Set([defaultId]));
+      }
+    }
+  }, [companyMembers]);
 
   // Check for Rendezvous - both legacy account field and fetched registration
   useEffect(() => {
@@ -348,15 +381,6 @@ export default function MemberInvoicePanel({
 
   // Build payload for API
   const buildPayload = (isPreview: boolean, targetEmail?: string, targetName?: string) => {
-    const address = memberData?.invoicingAddress ||
-      memberData?.businessAddress ||
-      memberData?.registeredAddress || {
-        line1: '',
-        city: '',
-        postcode: '',
-        country: '',
-      };
-
     return {
       accountId: companyId,
       recipientEmail: targetEmail || recipientEmail,
@@ -619,6 +643,55 @@ export default function MemberInvoicePanel({
         </div>
       </div>
 
+      {/* Address */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h4 className="font-semibold text-fase-navy mb-3">Invoice Address</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input
+            type="text"
+            value={address.line1}
+            onChange={(e) => setAddress(prev => ({ ...prev, line1: e.target.value }))}
+            placeholder="Address Line 1 *"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            value={address.line2}
+            onChange={(e) => setAddress(prev => ({ ...prev, line2: e.target.value }))}
+            placeholder="Address Line 2"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            value={address.city}
+            onChange={(e) => setAddress(prev => ({ ...prev, city: e.target.value }))}
+            placeholder="City *"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            value={address.county}
+            onChange={(e) => setAddress(prev => ({ ...prev, county: e.target.value }))}
+            placeholder="County"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            value={address.postcode}
+            onChange={(e) => setAddress(prev => ({ ...prev, postcode: e.target.value }))}
+            placeholder="Postcode *"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            value={address.country}
+            onChange={(e) => setAddress(prev => ({ ...prev, country: e.target.value }))}
+            placeholder="Country *"
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
+      </div>
+
       {/* Rendezvous Detection */}
       {rendezvousRegistration && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
@@ -747,6 +820,7 @@ export default function MemberInvoicePanel({
             onChange={(e) => setCurrency(e.target.value as 'auto' | 'EUR' | 'GBP' | 'USD')}
             className="w-full border border-gray-300 rounded px-3 py-2"
           >
+            <option value="auto">Auto-detect from country</option>
             <option value="EUR">EUR - Wise Belgium</option>
             <option value="GBP">GBP - Wise UK</option>
             <option value="USD">USD - Wise US</option>
