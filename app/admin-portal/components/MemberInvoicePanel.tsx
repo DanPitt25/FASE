@@ -63,7 +63,7 @@ interface RendezvousRegistration {
   status: string;
   paymentStatus: string;
   totalPrice: number;
-  attendees?: { firstName: string; lastName: string; email: string; jobTitle: string }[];
+  attendees?: { firstName: string; lastName: string; email: string; jobTitle?: string }[];
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -282,31 +282,15 @@ export default function MemberInvoicePanel({
     return lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   }, [lineItems]);
 
-  // Get all available recipients
+  // Get all available recipients from members subcollection
   const allRecipients = useMemo(() => {
-    const recipients: { id: string; email: string; name: string; isAdmin?: boolean }[] = [];
-
-    if (memberData?.email) {
-      recipients.push({
-        id: 'account_admin',
-        email: memberData.email,
-        name: memberData.primaryContact?.name || memberData.personalName || 'Account Admin',
-        isAdmin: true,
-      });
-    }
-
-    companyMembers
-      .filter(m => m.email !== memberData?.email)
-      .forEach(member => {
-        recipients.push({
-          id: member.id,
-          email: member.email,
-          name: member.personalName,
-        });
-      });
-
-    return recipients;
-  }, [memberData, companyMembers]);
+    return companyMembers.map(member => ({
+      id: member.id,
+      email: member.email,
+      name: member.personalName,
+      isAdmin: member.isAccountAdministrator || false,
+    }));
+  }, [companyMembers]);
 
   // Update recipient email/name when selection changes
   useEffect(() => {
