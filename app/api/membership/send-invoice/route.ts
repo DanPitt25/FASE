@@ -190,8 +190,8 @@ export async function POST(request: NextRequest) {
           // Product doesn't exist, create it with a specific ID
           product = await stripeInstance.products.create({
             id: FASE_INVOICE_PRODUCT_ID,
-            name: 'FASE Membership Invoice',
-            description: 'Invoice payment for FASE membership',
+            name: 'FASE Membership Dues',
+            description: 'Membership dues for FASE',
           });
         }
 
