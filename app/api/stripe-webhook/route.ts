@@ -3,7 +3,6 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { adminDb, FieldValue } from '../../../lib/firebase-admin';
 import { logPaymentReceived, logInvoicePaid } from '../../../lib/activity-logger';
-import { calculateRendezvousTotal } from '../../../lib/pricing';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -21,117 +20,6 @@ const initializeStripe = () => {
 
   if (!endpointSecret) {
     endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  }
-};
-
-// Process Rendezvous registration when bundled invoice is paid
-const processRendezvousRegistration = async (
-  invoiceData: any,
-  paymentMethod: 'stripe' | 'wise',
-  paymentId: string
-) => {
-  const passData = invoiceData.rendezvousPassReservation;
-  if (!passData || !passData.reserved) {
-    return null;
-  }
-
-  try {
-    const registrationId = `membership_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const attendees = passData.attendees || [];
-    const passCount = passData.passCount || attendees.length || 1;
-    const organizationType = passData.organizationType || 'MGA';
-    const isFaseMember = passData.isFaseMember !== false;
-    const isAsaseMember = passData.isAsaseMember || false;
-
-    // Calculate the rendezvous total
-    const rendezvousTotal = calculateRendezvousTotal(
-      organizationType,
-      passCount,
-      isFaseMember,
-      isAsaseMember
-    ).subtotal;
-
-    const registrationRecord = {
-      registrationId,
-      billingInfo: {
-        company: invoiceData.accountName || invoiceData.organizationName,
-        billingEmail: invoiceData.recipientEmail,
-        country: invoiceData.address?.country || '',
-        organizationType,
-      },
-      attendees: attendees.map((att: any, i: number) => ({
-        id: `att_${i}`,
-        firstName: att.firstName || att.name?.split(' ')[0] || '',
-        lastName: att.lastName || att.name?.split(' ').slice(1).join(' ') || '',
-        email: att.email || '',
-        jobTitle: att.jobTitle || att.title || '',
-      })),
-      additionalInfo: {
-        specialRequests: passData.specialRequests || '',
-        linkedInvoice: invoiceData.invoiceNumber,
-      },
-      totalPrice: rendezvousTotal,
-      subtotal: rendezvousTotal,
-      vatAmount: 0,
-      vatRate: 0,
-      currency: 'EUR',
-      numberOfAttendees: passCount,
-      companyIsFaseMember: isFaseMember,
-      isAsaseMember,
-      membershipType: isAsaseMember ? 'asase' : (isFaseMember ? 'fase' : 'none'),
-      discount: 0,
-      paymentMethod,
-      paymentStatus: 'paid',
-      [`${paymentMethod}PaymentId`]: paymentId,
-      createdAt: new Date(),
-      status: 'confirmed',
-      source: 'membership-invoice-bundled',
-      accountId: invoiceData.accountId,
-    };
-
-    await adminDb.collection('rendezvous-registrations').doc(registrationId).set(registrationRecord);
-    console.log(`✅ Rendezvous registration created from bundled invoice: ${registrationId}`);
-
-    // Send confirmation email
-    try {
-      const emailData = {
-        email: invoiceData.recipientEmail,
-        cc: 'admin@fasemga.com',
-        subject: `MGA Rendezvous 2026 - Registration Confirmed (${registrationId})`,
-        invoiceHTML: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <img src="https://mgarendezvous.com/mga-rendezvous-logo.png" alt="MGA Rendezvous" style="max-width: 200px;">
-            </div>
-            <h2 style="color: #2D5574;">Registration Confirmed</h2>
-            <p>Your MGA Rendezvous 2026 registration has been confirmed as part of your FASE membership invoice.</p>
-            <p><strong>Registration ID:</strong> ${registrationId}</p>
-            <p><strong>Company:</strong> ${invoiceData.accountName}</p>
-            <p><strong>Number of Attendees:</strong> ${passCount}</p>
-            <p><strong>Linked Invoice:</strong> ${invoiceData.invoiceNumber}</p>
-            <p>We look forward to seeing you at MGA Rendezvous 2026!</p>
-            <p>Best regards,<br>The FASE Team</p>
-          </div>
-        `,
-        invoiceNumber: registrationId,
-        organizationName: invoiceData.accountName,
-        totalAmount: rendezvousTotal.toString(),
-      };
-
-      await fetch('https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: emailData }),
-      });
-      console.log('✅ Rendezvous confirmation email sent');
-    } catch (emailError) {
-      console.error('⚠️ Failed to send rendezvous confirmation email:', emailError);
-    }
-
-    return registrationId;
-  } catch (error) {
-    console.error('❌ Failed to create rendezvous registration:', error);
-    return null;
   }
 };
 
@@ -181,7 +69,7 @@ export async function POST(request: NextRequest) {
               'Stripe'
             );
 
-            // Update the invoice in Firestore by invoice_number (unified API) or invoice_id (legacy)
+            // Update the invoice in Firestore by invoice_id or invoice_number
             if (session.metadata.invoice_id) {
               await adminDb.collection('invoices').doc(session.metadata.invoice_id).update({
                 status: 'paid',
@@ -192,7 +80,7 @@ export async function POST(request: NextRequest) {
                 updatedAt: FieldValue.serverTimestamp(),
               });
             } else {
-              // Try to find invoice by invoice_number (unified API)
+              // Try to find invoice by invoice_number
               const invoicesSnapshot = await adminDb.collection('invoices')
                 .where('invoiceNumber', '==', session.metadata.invoice_number)
                 .limit(1)
@@ -200,7 +88,6 @@ export async function POST(request: NextRequest) {
 
               if (!invoicesSnapshot.empty) {
                 const invoiceDoc = invoicesSnapshot.docs[0];
-                const invoiceData = invoiceDoc.data();
 
                 await invoiceDoc.ref.update({
                   status: 'paid',
@@ -211,26 +98,11 @@ export async function POST(request: NextRequest) {
                   updatedAt: FieldValue.serverTimestamp(),
                 });
                 console.log(`✅ Invoice ${session.metadata.invoice_number} marked as paid via Stripe`);
-
-                // Process bundled Rendezvous registration if present
-                if (invoiceData?.rendezvousPassReservation) {
-                  const rendezvousRegId = await processRendezvousRegistration(
-                    { ...invoiceData, invoiceNumber: session.metadata.invoice_number },
-                    'stripe',
-                    session.id
-                  );
-                  if (rendezvousRegId) {
-                    // Update invoice with linked registration
-                    await invoiceDoc.ref.update({
-                      linkedRendezvousRegistration: rendezvousRegId,
-                    });
-                  }
-                }
               }
             }
           }
         } catch (error) {
-          console.error('Failed to update member application:', error);
+          console.error('Failed to process payment:', error);
         }
       } else {
         console.error('No user_id or account_id found in session metadata');
@@ -238,11 +110,10 @@ export async function POST(request: NextRequest) {
       break;
 
     case 'invoice.payment_succeeded':
-      // Subscription invoice payments - just log, no account updates needed
+      // Subscription invoice payments - just log
       const invoice = event.data.object as Stripe.Invoice;
       console.log('Invoice payment succeeded:', invoice.id);
       break;
-
 
     case 'payment_intent.payment_failed':
       const paymentIntent = event.data.object as Stripe.PaymentIntent;

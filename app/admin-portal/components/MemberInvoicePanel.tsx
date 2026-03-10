@@ -18,7 +18,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import { UnifiedMember } from '@/lib/unified-member';
-import { calculateMembershipFee } from '@/lib/pricing';
+import { calculateMembershipFee, calculateRendezvousTotal, getOrgTypeLabel } from '@/lib/pricing';
 
 interface MemberInvoicePanelProps {
   memberData: UnifiedMember;
@@ -49,6 +49,21 @@ interface SentInvoice {
   status: string;
   createdAt: any;
   recipientEmail: string;
+}
+
+interface RendezvousRegistration {
+  registrationId: string;
+  accountId: string;
+  numberOfAttendees: number;
+  billingInfo?: {
+    organizationType?: string;
+  };
+  companyIsFaseMember?: boolean;
+  isAsaseMember?: boolean;
+  status: string;
+  paymentStatus: string;
+  totalPrice: number;
+  attendees?: { firstName: string; lastName: string; email: string; jobTitle: string }[];
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -98,6 +113,10 @@ export default function MemberInvoicePanel({
   const [sentInvoices, setSentInvoices] = useState<SentInvoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
 
+  // Rendezvous registration (pending payment)
+  const [rendezvousRegistration, setRendezvousRegistration] = useState<RendezvousRegistration | null>(null);
+  const [rendezvousIncluded, setRendezvousIncluded] = useState(true);
+
   // UI state
   const [sending, setSending] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -134,6 +153,31 @@ export default function MemberInvoicePanel({
     }
   }, [memberData]);
 
+  // Add Rendezvous line item when registration is found and included
+  useEffect(() => {
+    if (rendezvousRegistration && rendezvousIncluded) {
+      // Check if we already have a rendezvous line item
+      const hasRendezvousItem = lineItems.some(item => item.description.includes('MGA Rendezvous'));
+      if (hasRendezvousItem) return;
+
+      const passOrgType = rendezvousRegistration.billingInfo?.organizationType || memberData?.organizationType || 'MGA';
+      const passCount = rendezvousRegistration.numberOfAttendees || 1;
+      const isFaseMember = rendezvousRegistration.companyIsFaseMember !== false;
+      const isAsaseMember = rendezvousRegistration.isAsaseMember || false;
+      const rendezvousTotal = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+      const passLabel = getOrgTypeLabel(passOrgType);
+
+      if (rendezvousTotal > 0) {
+        setLineItems(prev => [...prev, {
+          id: generateId(),
+          description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
+          quantity: 1,
+          unitPrice: rendezvousTotal,
+        }]);
+      }
+    }
+  }, [rendezvousRegistration, rendezvousIncluded, memberData?.organizationType]);
+
   // Fetch company members
   useEffect(() => {
     const fetchMembers = async () => {
@@ -153,6 +197,29 @@ export default function MemberInvoicePanel({
     };
     fetchMembers();
   }, [companyId]);
+
+  // Fetch pending Rendezvous registration
+  useEffect(() => {
+    const fetchRendezvousRegistration = async () => {
+      if (!memberData?.email && !memberData?.organizationName) return;
+
+      try {
+        const response = await authFetch(
+          `/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.registration && data.registration.status !== 'confirmed' && data.registration.paymentStatus !== 'paid') {
+            setRendezvousRegistration(data.registration);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch rendezvous registration:', error);
+      }
+    };
+
+    fetchRendezvousRegistration();
+  }, [memberData?.email, memberData?.organizationName]);
 
   // Fetch invoice history
   useEffect(() => {
@@ -374,6 +441,37 @@ export default function MemberInvoicePanel({
           />
         </div>
       </div>
+
+      {/* Rendezvous Detection */}
+      {rendezvousRegistration && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold text-amber-800">MGA Rendezvous Registration Detected</h4>
+              <p className="text-sm text-amber-700 mt-1">
+                {rendezvousRegistration.numberOfAttendees} pass{rendezvousRegistration.numberOfAttendees !== 1 ? 'es' : ''} reserved (
+                {rendezvousRegistration.isAsaseMember ? 'ASASE member - complimentary' : `€${rendezvousRegistration.totalPrice?.toLocaleString() || '0'}`}
+                )
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={rendezvousIncluded}
+                onChange={(e) => {
+                  setRendezvousIncluded(e.target.checked);
+                  if (!e.target.checked) {
+                    // Remove rendezvous line item
+                    setLineItems(prev => prev.filter(item => !item.description.includes('MGA Rendezvous')));
+                  }
+                }}
+                className="rounded border-amber-300"
+              />
+              <span className="text-amber-800">Include in invoice</span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* Line Items */}
       <div>
