@@ -81,10 +81,6 @@ const SENDERS = [
   { id: 'aline', label: 'Aline van Maaren', email: 'aline.vanmaaren@fasemga.com' },
 ];
 
-const GENDERS = [
-  { code: 'm', label: 'Mr.' },
-  { code: 'f', label: 'Ms.' },
-];
 
 export default function MemberInvoicePanel({
   memberData,
@@ -595,30 +591,30 @@ export default function MemberInvoicePanel({
           </div>
         </div>
 
-        {/* Greeting field - separate from name for multilingual support */}
-        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Greeting (in email salutation)</label>
+        {/* Greeting and Gender */}
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Greeting name (after salutation)</label>
             <input
               type="text"
               value={greeting}
               onChange={(e) => setGreeting(e.target.value)}
-              placeholder={recipientName || 'e.g., Mr. Smith, Herr Schmidt'}
+              placeholder={recipientName || 'e.g., Herr Schmidt, M. Dupont'}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
             <p className="text-xs text-gray-500 mt-1">Leave blank to use recipient name</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Salutation</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Gender (for salutation)</label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value as 'm' | 'f')}
               className="w-full border border-gray-300 rounded px-3 py-2"
             >
-              {GENDERS.map(g => (
-                <option key={g.code} value={g.code}>{g.label}</option>
-              ))}
+              <option value="m">Masculine</option>
+              <option value="f">Feminine</option>
             </select>
+            <p className="text-xs text-gray-500 mt-1">Used for gendered languages</p>
           </div>
         </div>
       </div>

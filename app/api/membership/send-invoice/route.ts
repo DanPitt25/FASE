@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       accountId,
       recipientEmail,
       recipientName,
+      greeting,
       organizationName,
       lineItems,
       currency = 'EUR',
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
       email: recipientEmail,
       fullName: recipientName || '',
       organizationName,
-      greeting: recipientName || '',
+      greeting: greeting || recipientName || '',
       gender,
       address: address || {
         line1: 'Not provided',
@@ -361,7 +362,7 @@ export async function POST(request: NextRequest) {
         <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${genderAwareWelcome}</h2>
 
         <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-          ${membershipDear} ${recipientName || ''},
+          ${membershipDear} ${greeting || recipientName || ''},
         </p>
 
         <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
@@ -375,7 +376,7 @@ export async function POST(request: NextRequest) {
         ${stripePaymentLinkUrl ? `
         <div style="text-align: center; margin: 30px 0;">
           <a href="${stripePaymentLinkUrl}" style="display: inline-block; background-color: #2D5574; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
-            ${adminEmail.payment_button || 'Pay membership dues'}
+            ${adminEmail.payment_button}
           </a>
         </div>
         ` : ''}
