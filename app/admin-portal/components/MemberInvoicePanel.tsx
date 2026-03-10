@@ -94,16 +94,18 @@ export default function MemberInvoicePanel({
   // Line items state
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
-  // Form state
-  const [selectedRecipientId, setSelectedRecipientId] = useState<string>('account_admin');
+  // Form state - multiple recipient selection
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set(['account_admin']));
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
+  const [greeting, setGreeting] = useState('');
   const [ccEmails, setCcEmails] = useState('');
   const [currency, setCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('EUR');
   const [locale, setLocale] = useState('en');
   const [gender, setGender] = useState<'m' | 'f'>('m');
   const [sender, setSender] = useState('admin');
   const [customMessage, setCustomMessage] = useState('');
+  const [hasOtherAssociations, setHasOtherAssociations] = useState(false);
 
   // Company members for recipient selection
   const [companyMembers, setCompanyMembers] = useState<CompanyMember[]>([]);
@@ -122,6 +124,13 @@ export default function MemberInvoicePanel({
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<{ success?: boolean; message?: string; error?: string } | null>(null);
+
+  // Initialize hasOtherAssociations from memberData
+  useEffect(() => {
+    if (memberData) {
+      setHasOtherAssociations(memberData.hasOtherAssociations || false);
+    }
+  }, [memberData]);
 
   // Initialize with default membership line item
   useEffect(() => {
@@ -198,8 +207,35 @@ export default function MemberInvoicePanel({
     fetchMembers();
   }, [companyId]);
 
-  // Fetch pending Rendezvous registration
+  // Check for Rendezvous - both legacy account field and fetched registration
   useEffect(() => {
+    // First check legacy account-level field (rendezvousPassReservation)
+    const passData = memberData?.rendezvousPassReservation;
+    if (passData?.reserved || passData?.passCount) {
+      // Convert legacy format to RendezvousRegistration format
+      setRendezvousRegistration({
+        registrationId: 'legacy',
+        accountId: companyId,
+        numberOfAttendees: passData.passCount || 1,
+        billingInfo: {
+          organizationType: passData.organizationType || memberData?.organizationType || 'MGA',
+        },
+        companyIsFaseMember: passData.isFaseMember !== false,
+        isAsaseMember: passData.isAsaseMember || false,
+        status: 'pending',
+        paymentStatus: 'pending',
+        totalPrice: calculateRendezvousTotal(
+          passData.organizationType || memberData?.organizationType || 'MGA',
+          passData.passCount || 1,
+          passData.isFaseMember !== false,
+          passData.isAsaseMember || false
+        ).subtotal,
+        attendees: passData.attendees || [],
+      });
+      return; // Don't fetch if legacy data exists
+    }
+
+    // Then fetch from rendezvous-registrations collection
     const fetchRendezvousRegistration = async () => {
       if (!memberData?.email && !memberData?.organizationName) return;
 
@@ -219,7 +255,7 @@ export default function MemberInvoicePanel({
     };
 
     fetchRendezvousRegistration();
-  }, [memberData?.email, memberData?.organizationName]);
+  }, [memberData?.email, memberData?.organizationName, memberData?.rendezvousPassReservation, companyId]);
 
   // Fetch invoice history
   useEffect(() => {
@@ -241,25 +277,10 @@ export default function MemberInvoicePanel({
     fetchInvoices();
   }, [companyId]);
 
-  // Update recipient when selection changes
-  useEffect(() => {
-    if (selectedRecipientId === 'account_admin') {
-      setRecipientEmail(memberData?.email || '');
-      setRecipientName(memberData?.primaryContact?.name || memberData?.personalName || '');
-    } else {
-      const member = companyMembers.find(m => m.id === selectedRecipientId);
-      if (member) {
-        setRecipientEmail(member.email);
-        setRecipientName(member.personalName);
-      }
-    }
-  }, [selectedRecipientId, companyMembers, memberData]);
-
   // Calculate totals
   const subtotal = useMemo(() => {
     return lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
   }, [lineItems]);
-
 
   // Get all available recipients
   const allRecipients = useMemo(() => {
@@ -287,6 +308,44 @@ export default function MemberInvoicePanel({
     return recipients;
   }, [memberData, companyMembers]);
 
+  // Update recipient email/name when selection changes
+  useEffect(() => {
+    const selectedRecipients = allRecipients.filter(r => selectedRecipientIds.has(r.id));
+    if (selectedRecipients.length === 1) {
+      setRecipientEmail(selectedRecipients[0].email);
+      setRecipientName(selectedRecipients[0].name);
+    } else if (selectedRecipients.length > 1) {
+      setRecipientEmail(selectedRecipients.map(r => r.email).join(', '));
+      setRecipientName(`${selectedRecipients.length} recipients`);
+    } else {
+      setRecipientEmail('');
+      setRecipientName('');
+    }
+  }, [selectedRecipientIds, allRecipients]);
+
+  // Toggle recipient selection
+  const toggleRecipient = (id: string) => {
+    setSelectedRecipientIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Select all recipients
+  const selectAllRecipients = () => {
+    setSelectedRecipientIds(new Set(allRecipients.map(r => r.id)));
+  };
+
+  // Deselect all recipients
+  const deselectAllRecipients = () => {
+    setSelectedRecipientIds(new Set());
+  };
+
   // Line item management
   const addLineItem = () => {
     setLineItems([...lineItems, {
@@ -308,7 +367,7 @@ export default function MemberInvoicePanel({
   };
 
   // Build payload for API
-  const buildPayload = (isPreview: boolean) => {
+  const buildPayload = (isPreview: boolean, targetEmail?: string, targetName?: string) => {
     const address = memberData?.invoicingAddress ||
       memberData?.businessAddress ||
       memberData?.registeredAddress || {
@@ -320,8 +379,9 @@ export default function MemberInvoicePanel({
 
     return {
       accountId: companyId,
-      recipientEmail,
-      recipientName,
+      recipientEmail: targetEmail || recipientEmail,
+      recipientName: targetName || recipientName,
+      greeting: greeting || targetName || recipientName,
       organizationName: memberData?.organizationName || '',
       lineItems: lineItems.map(item => ({
         description: item.description,
@@ -336,6 +396,7 @@ export default function MemberInvoicePanel({
       address,
       preview: isPreview,
       gender,
+      hasOtherAssociations,
     };
   };
 
@@ -362,32 +423,105 @@ export default function MemberInvoicePanel({
     }
   };
 
-  // Send invoice
+  // Send invoice to selected recipients
   const handleSend = async () => {
     setSending(true);
     setResult(null);
 
-    try {
-      const payload = buildPayload(false);
-      const response = await authPost('/api/membership/send-invoice', payload);
-      const data = await response.json();
+    // Get list of recipients to send to
+    const selectedRecipients = allRecipients.filter(r => selectedRecipientIds.has(r.id));
 
-      if (data.success) {
+    // If user manually edited email field, parse that instead
+    const emailList = recipientEmail.split(',').map(e => e.trim()).filter(Boolean);
+    const expectedFromPills = selectedRecipients.map(r => r.email).join(', ');
+    const isManuallyEdited = recipientEmail !== expectedFromPills && recipientEmail.trim() !== '';
+
+    let emailsToSend: { email: string; name: string }[];
+    if (isManuallyEdited) {
+      emailsToSend = emailList.map(email => ({ email, name: recipientName }));
+    } else {
+      emailsToSend = selectedRecipients.map(r => ({ email: r.email, name: r.name }));
+    }
+
+    if (emailsToSend.length === 0) {
+      setResult({ error: 'No recipients selected' });
+      setSending(false);
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    const errors: string[] = [];
+    let lastInvoiceNumber = '';
+
+    try {
+      for (let i = 0; i < emailsToSend.length; i++) {
+        const recipient = emailsToSend[i];
+        const payload = buildPayload(false, recipient.email, recipient.name);
+
+        try {
+          const response = await authPost('/api/membership/send-invoice', payload);
+          const data = await response.json();
+
+          if (data.success) {
+            successCount++;
+            lastInvoiceNumber = data.invoiceNumber;
+          } else {
+            failCount++;
+            errors.push(`${recipient.email}: ${data.error || 'Unknown error'}`);
+          }
+
+          // Rate limiting between sends
+          if (i < emailsToSend.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (err: any) {
+          failCount++;
+          errors.push(`${recipient.email}: ${err.message}`);
+        }
+      }
+
+      // Set result summary
+      if (failCount === 0) {
         setResult({
           success: true,
-          message: `Invoice ${data.invoiceNumber} sent successfully to ${recipientEmail}`,
+          message: emailsToSend.length === 1
+            ? `Invoice ${lastInvoiceNumber} sent successfully to ${emailsToSend[0].email}`
+            : `Successfully sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}`,
         });
-        setPreview(null);
-        onInvoiceSent?.();
-
-        // Refresh invoice history
-        const invoicesResponse = await authFetch(`/api/admin/account-invoices?accountId=${companyId}`);
-        if (invoicesResponse.ok) {
-          const invoicesData = await invoicesResponse.json();
-          setSentInvoices(invoicesData.invoices || []);
-        }
+      } else if (successCount === 0) {
+        setResult({ error: `Failed to send to all ${failCount} recipient${failCount !== 1 ? 's' : ''}` });
       } else {
-        setResult({ error: data.error || 'Failed to send invoice' });
+        setResult({
+          success: true,
+          message: `Sent to ${successCount} recipient${successCount !== 1 ? 's' : ''}, ${failCount} failed`,
+        });
+      }
+
+      // Log activity to timeline
+      if (successCount > 0 && companyId) {
+        try {
+          await authPost('/api/admin/activities', {
+            accountId: companyId,
+            type: 'email_sent',
+            title: 'Invoice Sent',
+            description: `Invoice sent to ${successCount} recipient${successCount !== 1 ? 's' : ''} (${lastInvoiceNumber})`,
+            performedBy: 'admin',
+            performedByName: 'Admin'
+          });
+        } catch (activityError) {
+          console.error('Failed to log activity:', activityError);
+        }
+      }
+
+      setPreview(null);
+      onInvoiceSent?.();
+
+      // Refresh invoice history
+      const invoicesResponse = await authFetch(`/api/admin/account-invoices?accountId=${companyId}`);
+      if (invoicesResponse.ok) {
+        const invoicesData = await invoicesResponse.json();
+        setSentInvoices(invoicesData.invoices || []);
       }
     } catch (error: any) {
       setResult({ error: error.message || 'Failed to send invoice' });
@@ -401,44 +535,107 @@ export default function MemberInvoicePanel({
       {/* Recipient Selection */}
       <div className="bg-gray-50 p-4 rounded-lg">
         <h4 className="font-semibold text-fase-navy mb-3">Recipient</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Recipient</label>
+
+        {/* Pills-based recipient selection */}
+        {allRecipients.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Select Recipients</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllRecipients}
+                  className="text-xs text-fase-navy hover:underline"
+                >
+                  Select All
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={deselectAllRecipients}
+                  className="text-xs text-gray-500 hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
             {loadingMembers ? (
-              <div className="text-sm text-gray-500">Loading...</div>
+              <div className="text-sm text-gray-500">Loading members...</div>
             ) : (
-              <select
-                value={selectedRecipientId}
-                onChange={(e) => setSelectedRecipientId(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                {allRecipients.map(r => (
-                  <option key={r.id} value={r.id}>
-                    {r.name} {r.isAdmin ? '(Account Admin)' : ''}
-                  </option>
+              <div className="flex flex-wrap gap-2">
+                {allRecipients.map((recipient) => (
+                  <button
+                    key={recipient.id}
+                    type="button"
+                    onClick={() => toggleRecipient(recipient.id)}
+                    className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                      selectedRecipientIds.has(recipient.id)
+                        ? 'bg-fase-navy text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {recipient.name}
+                    {recipient.isAdmin && <span className="ml-1 opacity-70">(Admin)</span>}
+                  </button>
                 ))}
-              </select>
+              </div>
+            )}
+            {selectedRecipientIds.size > 0 && (
+              <div className="mt-2 text-xs text-gray-500">
+                {selectedRecipientIds.size} recipient{selectedRecipientIds.size !== 1 ? 's' : ''} selected
+              </div>
             )}
           </div>
+        )}
+
+        {/* Email field (manual override) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email{selectedRecipientIds.size > 1 ? 's' : ''}</label>
             <input
-              type="email"
+              type={selectedRecipientIds.size > 1 ? 'text' : 'email'}
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">CC Emails (comma-separated)</label>
+            <input
+              type="text"
+              value={ccEmails}
+              onChange={(e) => setCcEmails(e.target.value)}
+              placeholder="e.g., finance@company.com"
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            />
+          </div>
         </div>
-        <div className="mt-3">
-          <label className="block text-sm font-medium text-gray-700 mb-2">CC Emails (comma-separated)</label>
-          <input
-            type="text"
-            value={ccEmails}
-            onChange={(e) => setCcEmails(e.target.value)}
-            placeholder="e.g., finance@company.com, accounts@company.com"
-            className="w-full border border-gray-300 rounded px-3 py-2"
-          />
+
+        {/* Greeting field - separate from name for multilingual support */}
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Greeting (in email salutation)</label>
+            <input
+              type="text"
+              value={greeting}
+              onChange={(e) => setGreeting(e.target.value)}
+              placeholder={recipientName || 'e.g., Mr. Smith, Herr Schmidt'}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave blank to use recipient name</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Salutation</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value as 'm' | 'f')}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              {GENDERS.map(g => (
+                <option key={g.code} value={g.code}>{g.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -562,7 +759,7 @@ export default function MemberInvoicePanel({
       </div>
 
       {/* Options */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
           <select
@@ -588,18 +785,6 @@ export default function MemberInvoicePanel({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Salutation</label>
-          <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value as 'm' | 'f')}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-          >
-            {GENDERS.map(g => (
-              <option key={g.code} value={g.code}>{g.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Send From</label>
           <select
             value={sender}
@@ -611,6 +796,41 @@ export default function MemberInvoicePanel({
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Multi-association discount toggle */}
+      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+        <input
+          type="checkbox"
+          id="hasOtherAssociations"
+          checked={hasOtherAssociations}
+          onChange={(e) => {
+            setHasOtherAssociations(e.target.checked);
+            // Update line items to add/remove discount
+            const baseFee = lineItems.find(item => item.description === 'FASE Annual Membership')?.unitPrice || 0;
+            const hasDiscountItem = lineItems.some(item => item.description.includes('Multi-Association'));
+
+            if (e.target.checked && !hasDiscountItem && baseFee > 0) {
+              // Add discount line item
+              setLineItems(prev => [...prev, {
+                id: generateId(),
+                description: 'Multi-Association Member Discount (20%)',
+                quantity: 1,
+                unitPrice: -Math.round(baseFee * 0.2),
+              }]);
+            } else if (!e.target.checked && hasDiscountItem) {
+              // Remove discount line item
+              setLineItems(prev => prev.filter(item => !item.description.includes('Multi-Association')));
+            }
+          }}
+          className="rounded border-gray-300"
+        />
+        <label htmlFor="hasOtherAssociations" className="text-sm text-gray-700 cursor-pointer">
+          Has other association memberships (20% discount)
+        </label>
+        {memberData?.hasOtherAssociations && (
+          <span className="text-xs text-gray-500 ml-auto">(from member record)</span>
+        )}
       </div>
 
       {/* Custom Message */}
