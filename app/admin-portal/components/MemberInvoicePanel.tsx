@@ -179,10 +179,6 @@ export default function MemberInvoicePanel({
     if (selectedRecipientId === 'account_admin') {
       setRecipientEmail(memberData?.email || '');
       setRecipientName(memberData?.primaryContact?.name || memberData?.personalName || '');
-      // Set gender from member data if available
-      if (memberData?.gender === 'm' || memberData?.gender === 'f') {
-        setGender(memberData.gender);
-      }
     } else {
       const member = companyMembers.find(m => m.id === selectedRecipientId);
       if (member) {
