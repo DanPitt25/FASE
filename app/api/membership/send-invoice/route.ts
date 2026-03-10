@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
     // =========================================================================
     let stripePaymentLinkId: string | null = null;
     let stripePaymentLinkUrl: string | null = null;
+    let stripeError: string | null = null;
 
     if (total > 0) {
       try {
@@ -230,8 +231,9 @@ export async function POST(request: NextRequest) {
         stripePaymentLinkId = paymentLink.id;
         stripePaymentLinkUrl = paymentLink.url;
         console.log('✅ Stripe Payment Link created:', stripePaymentLinkUrl);
-      } catch (stripeError: any) {
-        console.error('⚠️ Failed to create Stripe Payment Link:', stripeError.message);
+      } catch (err: any) {
+        console.error('⚠️ Failed to create Stripe Payment Link:', err.message);
+        stripeError = err.message;
         // Continue without Stripe link - bank transfer is still available
       }
     }
@@ -425,6 +427,7 @@ export async function POST(request: NextRequest) {
         convertedAmount: paymentCurrency !== 'EUR' ? convertedAmount : undefined,
         paymentCurrency,
         stripePaymentLinkUrl,
+        stripeError,
         pdfUrl,
         pdfBase64: pdfResult.pdfBase64,
         email: {

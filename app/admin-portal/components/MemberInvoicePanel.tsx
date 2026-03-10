@@ -577,6 +577,9 @@ export default function MemberInvoicePanel({
               <div><span className="font-medium text-gray-600">Subject:</span> {preview.email?.subject}</div>
               <div><span className="font-medium text-gray-600">Invoice #:</span> {preview.invoiceNumber}</div>
               <div><span className="font-medium text-gray-600">Total:</span> €{preview.total?.toLocaleString()}</div>
+              {preview.stripeError && (
+                <div className="text-red-600"><span className="font-medium">Stripe Error:</span> {preview.stripeError}</div>
+              )}
             </div>
             {preview.email?.html && (
               <div className="border border-gray-200 rounded bg-white p-3 max-h-64 overflow-auto">
