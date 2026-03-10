@@ -104,9 +104,16 @@ export default function EditInvoiceModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Base Price (€)
+                Unit Price (€)
               </label>
-              <div className="text-lg font-semibold text-gray-900 py-2">€800.00</div>
+              <input
+                type="number"
+                step="0.01"
+                value={unitPrice}
+                onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <p className="text-xs text-gray-500 mt-1">Negative for credit/refund</p>
             </div>
           </div>
 
@@ -119,7 +126,7 @@ export default function EditInvoiceModal({
               className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
             />
             <label htmlFor="memberDiscount" className="text-sm text-gray-700">
-              Apply 50% member discount (FASE/ASASE member)
+              Apply 50% member discount (sets unit price to €400)
             </label>
           </div>
 

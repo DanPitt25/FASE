@@ -1006,15 +1006,15 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
                       <label className="block text-xs font-medium text-amber-700 mb-1">Unit Price (EUR)</label>
                       <input
                         type="number"
-                        min="0"
                         step="0.01"
                         value={formData.rendezvousOverride.unitPrice}
                         onChange={(e) => setFormData(prev => ({
                           ...prev,
-                          rendezvousOverride: { ...prev.rendezvousOverride, unitPrice: Math.max(0, parseFloat(e.target.value) || 0) }
+                          rendezvousOverride: { ...prev.rendezvousOverride, unitPrice: parseFloat(e.target.value) || 0 }
                         }))}
                         className="w-full border border-amber-300 rounded px-3 py-2 text-sm"
                       />
+                      <p className="text-xs text-amber-600 mt-1">Use negative value for credit/refund</p>
                     </div>
                   </div>
                   <div className="text-sm text-amber-700">
