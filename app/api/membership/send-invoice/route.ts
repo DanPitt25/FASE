@@ -485,12 +485,12 @@ export async function POST(request: NextRequest) {
           hasStripeLink: !!stripePaymentLinkUrl,
         },
         performedBy: sender,
-        performedByName: {
+        performedByName: ({
           'admin@fasemga.com': 'FASE Admin',
           'william.pitt@fasemga.com': 'William Pitt',
           'info@fasemga.com': 'FASE Info',
           'media@fasemga.com': 'FASE Media',
-        }[sender] || 'Admin',
+        } as Record<string, string>)[sender] || 'Admin',
         createdAt: FieldValue.serverTimestamp(),
       });
     } catch (activityError: any) {
