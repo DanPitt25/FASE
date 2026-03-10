@@ -455,7 +455,7 @@ export default function MemberInvoicePanel({
               {lineItems.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-gray-500">
-                    No line items. Click "+ Add Item" to get started.
+                    No line items. Click &quot;+ Add Item&quot; to get started.
                   </td>
                 </tr>
               )}
