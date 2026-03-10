@@ -70,7 +70,7 @@
     "payment_text": "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. Your annual membership will then incept with immediate effect.",
     "payment_text_with_rendezvous": "To complete your membership and access our members' portal, please remit your membership dues of €{totalAmount}. This includes your MGA Rendezvous 2026 pass reservation. Your annual membership will then incept with immediate effect.",
     "payment_button": "Pay membership dues",
-    "bank_transfer_text": "If you would prefer to pay with bank transfer, please follow {LINK}this link{/LINK}",
+    "bank_transfer_text": "If you would prefer to pay by bank transfer, payment details are included in the attached invoice.",
     "payment_options": "Payment Options:",
     "paypal_option": "PayPal:",
     "pay_online": "Pay Online",
@@ -224,7 +224,9 @@
     "welcome_text": "We look forward to welcoming you as a FASE member.",
     "contact_text": "If you have any questions, please contact us at admin@fasemga.com.",
     "regards": "Best regards,",
-    "signature": "The FASE Team"
+    "signature": "The FASE Team",
+    "credit_note_subject": "Credit Note {invoiceNumber}",
+    "credit_note_text": "Please find attached a credit note for {organizationName}."
   },
   "lost_invoice": {
     "subject": "Outstanding Invoice for FASE",

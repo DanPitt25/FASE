@@ -97,7 +97,7 @@
     "payment_text": "Pour compléter votre adhésion et accéder à notre portail des membres, veuillez régler votre cotisation d'adhésion de €{totalAmount}. Votre adhésion annuelle prendra alors effet immédiatement.",
     "payment_text_with_rendezvous": "Pour compléter votre adhésion et accéder à notre portail des membres, veuillez régler votre cotisation d'adhésion de €{totalAmount}. Ce montant inclut votre réservation de pass MGA Rendezvous 2026. Votre adhésion annuelle prendra alors effet immédiatement.",
     "payment_button": "Payer la cotisation d'adhésion",
-    "bank_transfer_text": "Si vous préférez payer par virement bancaire, veuillez suivre {LINK}ce lien{/LINK}",
+    "bank_transfer_text": "Si vous préférez payer par virement bancaire, les coordonnées bancaires figurent dans la facture ci-jointe.",
     "payment_options": "Options de paiement :",
     "paypal_option": "PayPal :",
     "pay_online": "Payer en ligne",
@@ -253,7 +253,9 @@
     "welcome_text": "Nous sommes impatients de vous accueillir en tant que membre de FASE.",
     "contact_text": "Si vous avez des questions, veuillez nous contacter à admin@fasemga.com.",
     "regards": "Cordialement,",
-    "signature": "L'équipe FASE"
+    "signature": "L'équipe FASE",
+    "credit_note_subject": "Avoir {invoiceNumber}",
+    "credit_note_text": "Veuillez trouver ci-joint un avoir pour {organizationName}."
   },
   "lost_invoice": {
     "subject": "Facture Impayée pour FASE",

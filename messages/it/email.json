@@ -103,7 +103,7 @@
     "payment_text": "Per completare la Sua iscrizione e accedere al nostro portale membri, La preghiamo di versare la quota associativa di €{totalAmount}. La Sua iscrizione annuale entrerà in vigore con effetto immediato.",
     "payment_text_with_rendezvous": "Per completare la Sua iscrizione e accedere al nostro portale membri, La preghiamo di versare la quota associativa di €{totalAmount}. Questo importo include la Sua prenotazione di pass MGA Rendezvous 2026. La Sua iscrizione annuale entrerà in vigore con effetto immediato.",
     "payment_button": "Paga quota associativa",
-    "bank_transfer_text": "Se preferisce pagare tramite bonifico bancario, La preghiamo di seguire {LINK}questo link{/LINK}",
+    "bank_transfer_text": "Se preferisce pagare tramite bonifico bancario, i dati di pagamento sono inclusi nella fattura allegata.",
     "payment_options": "Opzioni di pagamento:",
     "paypal_option": "PayPal:",
     "pay_online": "Paga online",
@@ -259,7 +259,9 @@
     "welcome_text": "Non vediamo l'ora di darLe il benvenuto come membro FASE.",
     "contact_text": "Se ha domande, La preghiamo di contattarci a admin@fasemga.com.",
     "regards": "Cordiali saluti,",
-    "signature": "Il team FASE"
+    "signature": "Il team FASE",
+    "credit_note_subject": "Nota di credito {invoiceNumber}",
+    "credit_note_text": "Alleghiamo una nota di credito per {organizationName}."
   },
   "lost_invoice": {
     "subject": "Fattura In Sospeso per FASE",

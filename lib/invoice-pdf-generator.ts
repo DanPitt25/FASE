@@ -542,7 +542,7 @@ export async function generateInvoicePDF(data: InvoiceGenerationData): Promise<I
     if (!bankDetails) {
       throw new Error('Wise bank details not available for regular invoices');
     }
-    
+
     const paymentLines = [
       `${invoiceT.reference || 'Reference'}: ${bankDetails.reference}`,
       `${invoiceT.account_holder || 'Account holder'}: ${bankDetails.accountHolder}`,
@@ -729,9 +729,8 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
     // Calculate total
     const calculatedTotal = calculateInvoiceTotal(lineItems);
 
-    if (calculatedTotal <= 0) {
-      throw new Error('Invoice total must be greater than zero');
-    }
+    // Allow zero or negative totals for credit notes
+    // (validation for actual invoices should be done at the API level)
 
     // Currency conversion (after calculating total)
     let currencyConversion = {
@@ -961,55 +960,58 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
     });
 
     const labelX = totalX + 15;
+    const isCredit = calculatedTotal < 0;
+    const totalLabel = isCredit ? 'Total Credit:' : pdfTexts.totalAmountDue;
+    const totalColor = isCredit ? rgb(0.0, 0.6, 0.0) : faseNavy; // Green for credits
 
     if (currencyConversion.convertedCurrency === 'EUR') {
-      firstPage.drawText(pdfTexts.totalAmountDue, {
+      firstPage.drawText(totalLabel, {
         x: labelX,
         y: currentY - 22,
         size: 12,
         font: boldFont,
-        color: faseNavy,
+        color: totalColor,
       });
 
-      const textWidth = boldFont.widthOfTextAtSize(pdfTexts.totalAmountDue, 12);
-      firstPage.drawText(formatEuro(calculatedTotal), {
+      const textWidth = boldFont.widthOfTextAtSize(totalLabel, 12);
+      firstPage.drawText(formatEuro(Math.abs(calculatedTotal)), {
         x: labelX + textWidth + 15,
         y: currentY - 22,
         size: 13,
         font: boldFont,
-        color: faseNavy,
+        color: totalColor,
       });
     } else {
-      firstPage.drawText('Base Amount (EUR):', {
+      firstPage.drawText(isCredit ? 'Base Credit (EUR):' : 'Base Amount (EUR):', {
         x: labelX,
         y: currentY - 18,
         size: 11,
         font: bodyFont,
-        color: faseNavy,
+        color: totalColor,
       });
 
-      firstPage.drawText(formatEuro(calculatedTotal), {
+      firstPage.drawText(formatEuro(Math.abs(calculatedTotal)), {
         x: labelX + 130,
         y: currentY - 18,
         size: 11,
         font: bodyFont,
-        color: faseNavy,
+        color: totalColor,
       });
 
-      firstPage.drawText(pdfTexts.totalAmountDue, {
+      firstPage.drawText(totalLabel, {
         x: labelX,
         y: currentY - 38,
         size: 12,
         font: boldFont,
-        color: faseNavy,
+        color: totalColor,
       });
 
-      firstPage.drawText(formatCurrency(currencyConversion.roundedAmount, currencyConversion.convertedCurrency), {
+      firstPage.drawText(formatCurrency(Math.abs(currencyConversion.roundedAmount), currencyConversion.convertedCurrency), {
         x: labelX + 130,
         y: currentY - 38,
         size: 13,
         font: boldFont,
-        color: faseNavy,
+        color: totalColor,
       });
     }
 

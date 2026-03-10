@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const accountId = searchParams.get('account_id');
+    const accountId = searchParams.get('accountId') || searchParams.get('account_id');
 
     if (!accountId) {
       return NextResponse.json({ error: 'Account ID is required' }, { status: 400 });
@@ -51,14 +51,19 @@ export async function GET(request: NextRequest) {
       return {
         id: doc.id,
         invoiceNumber: data.invoiceNumber,
-        amount: data.amount,
-        currency: data.currency,
+        // Support both old 'amount' field and new 'total' field
+        total: data.total ?? data.amount,
+        amount: data.amount ?? data.total,
+        currency: data.currency || data.paymentCurrency || 'EUR',
         status: data.status,
         type: data.type,
+        recipientEmail: data.recipientEmail || data.sentTo,
+        createdAt: data.createdAt,
         sentAt: data.sentAt?.toDate?.()?.toISOString() || null,
         paidAt: data.paidAt?.toDate?.()?.toISOString() || null,
         paymentMethod: data.paymentMethod,
         pdfUrl: data.pdfUrl,
+        stripePaymentLinkUrl: data.stripePaymentLinkUrl,
       };
     });
 

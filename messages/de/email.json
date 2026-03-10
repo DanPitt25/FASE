@@ -103,7 +103,7 @@
     "payment_text": "Um Ihre Mitgliedschaft zu vervollständigen und Zugang zu unserem Mitgliederportal zu erhalten, zahlen Sie bitte Ihren Mitgliedsbeitrag von €{totalAmount}. Ihre Jahresmitgliedschaft tritt dann mit sofortiger Wirkung in Kraft.",
     "payment_text_with_rendezvous": "Um Ihre Mitgliedschaft zu vervollständigen und Zugang zu unserem Mitgliederportal zu erhalten, zahlen Sie bitte Ihren Mitgliedsbeitrag von €{totalAmount}. Dieser Betrag beinhaltet Ihre MGA Rendezvous 2026-Passreservierung. Ihre Jahresmitgliedschaft tritt dann mit sofortiger Wirkung in Kraft.",
     "payment_button": "Mitgliedsbeitrag bezahlen",
-    "bank_transfer_text": "Wenn Sie lieber per Banküberweisung zahlen möchten, folgen Sie bitte {LINK}diesem Link{/LINK}",
+    "bank_transfer_text": "Wenn Sie lieber per Banküberweisung zahlen möchten, finden Sie die Zahlungsdaten in der beigefügten Rechnung.",
     "payment_options": "Zahlungsoptionen:",
     "paypal_option": "PayPal:",
     "pay_online": "Online bezahlen",
@@ -259,7 +259,9 @@
     "welcome_text": "Wir freuen uns darauf, Sie als FASE-Mitglied begrüßen zu dürfen.",
     "contact_text": "Bei Fragen kontaktieren Sie uns bitte unter admin@fasemga.com.",
     "regards": "Mit freundlichen Grüßen,",
-    "signature": "Das FASE-Team"
+    "signature": "Das FASE-Team",
+    "credit_note_subject": "Gutschrift {invoiceNumber}",
+    "credit_note_text": "Anbei erhalten Sie eine Gutschrift für {organizationName}."
   },
   "lost_invoice": {
     "subject": "Ausstehende Rechnung für FASE",

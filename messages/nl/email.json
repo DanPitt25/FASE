@@ -97,7 +97,7 @@
     "payment_text": "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount} met een van de volgende methoden:",
     "payment_text_with_rendezvous": "Om uw lidmaatschap te voltooien, betaal alstublieft €{totalAmount}. Dit omvat uw MGA Rendezvous 2026-pasreservering. Uw jaarlijks lidmaatschap treedt vervolgens onmiddellijk in werking.",
     "payment_button": "Betaal lidmaatschapscontributie",
-    "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, volgt u alstublieft {LINK}deze link{/LINK}",
+    "bank_transfer_text": "Indien u liever per bankoverschrijving betaalt, vindt u de betalingsgegevens in de bijgevoegde factuur.",
     "payment_options": "Betalingsopties:",
     "paypal_option": "PayPal:",
     "pay_online": "Online betalen",
@@ -251,7 +251,9 @@
     "welcome_text": "We kijken ernaar uit u als FASE-lid te verwelkomen.",
     "contact_text": "Als u vragen heeft, neem dan contact met ons op via admin@fasemga.com.",
     "regards": "Met vriendelijke groet,",
-    "signature": "Het FASE team"
+    "signature": "Het FASE team",
+    "credit_note_subject": "Creditnota {invoiceNumber}",
+    "credit_note_text": "Hierbij ontvangt u een creditnota voor {organizationName}."
   },
   "lost_invoice": {
     "subject": "Openstaande Factuur voor FASE",
