@@ -677,7 +677,9 @@ export async function generateInvoiceFromLineItems(data: LineItemsInvoiceData): 
     }
 
     // Set defaults
-    const fullName = data.fullName || data.greeting || '';
+    // fullName is for "Bill To" section - should NOT fall back to greeting
+    // greeting is for email salutation only
+    const fullName = data.fullName || '';
     const greeting = data.greeting || data.fullName || '';
     const gender = data.gender || 'm';
     const address = data.address || {
