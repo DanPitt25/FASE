@@ -380,16 +380,16 @@ export default function MemberInvoicePanel({
   };
 
   // Build payload for API
-  const buildPayload = (isPreview: boolean, targetEmail?: string, targetName?: string) => {
-    // Get the actual recipient name from the first selected pill (for invoice "Bill To")
+  const buildPayload = (isPreview: boolean, targetEmail?: string) => {
+    // Name ALWAYS comes from selected pill - email field edits don't affect it
     const selectedRecipients = allRecipients.filter(r => selectedRecipientIds.has(r.id));
-    const actualRecipientName = selectedRecipients.length > 0 ? selectedRecipients[0].name : (targetName || recipientName);
+    const recipientNameFromPill = selectedRecipients.length > 0 ? selectedRecipients[0].name : '';
 
     return {
       accountId: companyId,
       recipientEmail: targetEmail || recipientEmail,
-      recipientName: actualRecipientName,
-      greeting: greeting || actualRecipientName,
+      recipientName: recipientNameFromPill,
+      greeting: greeting || recipientNameFromPill,
       organizationName: memberData?.organizationName || '',
       lineItems: lineItems.map(item => ({
         description: item.description,
@@ -465,7 +465,7 @@ export default function MemberInvoicePanel({
     try {
       for (let i = 0; i < emailsToSend.length; i++) {
         const recipient = emailsToSend[i];
-        const payload = buildPayload(false, recipient.email, recipient.name);
+        const payload = buildPayload(false, recipient.email);
 
         try {
           const response = await authPost('/api/membership/send-invoice', payload);
