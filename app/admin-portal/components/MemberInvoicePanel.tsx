@@ -381,11 +381,15 @@ export default function MemberInvoicePanel({
 
   // Build payload for API
   const buildPayload = (isPreview: boolean, targetEmail?: string, targetName?: string) => {
+    // Get the actual recipient name from the first selected pill (for invoice "Bill To")
+    const selectedRecipients = allRecipients.filter(r => selectedRecipientIds.has(r.id));
+    const actualRecipientName = selectedRecipients.length > 0 ? selectedRecipients[0].name : (targetName || recipientName);
+
     return {
       accountId: companyId,
       recipientEmail: targetEmail || recipientEmail,
-      recipientName: targetName || recipientName,
-      greeting: greeting || targetName || recipientName,
+      recipientName: actualRecipientName,
+      greeting: greeting || actualRecipientName,
       organizationName: memberData?.organizationName || '',
       lineItems: lineItems.map(item => ({
         description: item.description,
