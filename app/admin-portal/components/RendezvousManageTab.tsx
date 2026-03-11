@@ -1662,18 +1662,6 @@ export default function RendezvousManageTab() {
                       className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                       disabled={adding}
                     />
-                    <input
-                      type="text"
-                      placeholder="Address"
-                      value={attendee.address || ''}
-                      onChange={(e) => {
-                        const updated = [...newRegistration.attendees];
-                        updated[index].address = e.target.value;
-                        setNewRegistration({ ...newRegistration, attendees: updated });
-                      }}
-                      className="col-span-2 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                      disabled={adding}
-                    />
                   </div>
                 </div>
               ))}
