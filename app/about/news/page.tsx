@@ -32,55 +32,10 @@ export default function NewsPage() {
   useEffect(() => {
     async function loadArticles() {
       try {
-        const baseArticleSlugs = [
-          'am-best-partnership',
-          'bridgehaven-partnership',
-          'mga-rendezvous',
-          'clyde-co-partnership',
-          'fase-formation-announcement'
-        ];
+        const response = await fetch(`/api/news?locale=${locale}&category=fase-news`);
+        if (!response.ok) throw new Error('Failed to fetch articles');
 
-        const articlePromises = baseArticleSlugs.map(async (baseSlug) => {
-          try {
-            const localeSlug = locale === 'en' ? baseSlug : `${baseSlug}-${locale}`;
-            let response = await fetch(`/news/${localeSlug}.md`);
-
-            if (!response.ok && locale !== 'en') {
-              response = await fetch(`/news/${baseSlug}.md`);
-            }
-
-            if (!response.ok) return null;
-
-            const slug = response.url.includes(`${baseSlug}-${locale}`) ? localeSlug : baseSlug;
-
-            const text = await response.text();
-            const lines = text.split('\n');
-
-            const metadata: Record<string, string> = {};
-
-            if (lines[0] === '---') {
-              for (let i = 1; i < lines.length; i++) {
-                if (lines[i] === '---') {
-                  break;
-                }
-                const [key, ...valueParts] = lines[i].split(':');
-                if (key && valueParts.length) {
-                  metadata[key.trim()] = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
-                }
-              }
-            }
-
-            return { slug, metadata: metadata as unknown as ArticleMetadata };
-          } catch (err) {
-            console.error(`Failed to load article ${baseSlug}:`, err);
-            return null;
-          }
-        });
-
-        const loadedArticles = (await Promise.all(articlePromises))
-          .filter(article => article !== null)
-          .sort((a, b) => new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime());
-
+        const loadedArticles = await response.json();
         setArticles(loadedArticles);
       } catch (error) {
         console.error('Error loading articles:', error);
