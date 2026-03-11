@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import Button from '@/components/Button';
-import type { RendezvousRegistration, RendezvousAttendee } from '@/lib/admin-types';
+import type { RendezvousRegistration, RendezvousAttendee, RendezvousBillingInfo } from '@/lib/admin-types';
 
 interface EditAttendeesModalProps {
   isOpen: boolean;
   onClose: () => void;
   registration: RendezvousRegistration | null;
-  onSave: (attendees: RendezvousAttendee[]) => Promise<void>;
+  onSave: (attendees: RendezvousAttendee[], billingInfo?: Partial<RendezvousBillingInfo>) => Promise<void>;
   saving: boolean;
   error: string | null;
 }
@@ -23,25 +23,28 @@ export default function EditAttendeesModal({
   error,
 }: EditAttendeesModalProps) {
   const [editedAttendees, setEditedAttendees] = useState<RendezvousAttendee[]>([]);
+  const [billingAddress, setBillingAddress] = useState('');
 
-  // Initialize attendees when modal opens
+  // Initialize attendees and billing address when modal opens
   useEffect(() => {
     if (isOpen && registration) {
       setEditedAttendees(
         (registration.attendees || []).map(a => ({ ...a }))
       );
+      setBillingAddress(registration.billingInfo?.address || '');
     }
   }, [isOpen, registration]);
 
   const handleClose = () => {
     setEditedAttendees([]);
+    setBillingAddress('');
     onClose();
   };
 
   const handleAddAttendee = () => {
     setEditedAttendees([
       ...editedAttendees,
-      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '', address: '' }
+      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '' }
     ]);
   };
 
@@ -56,7 +59,7 @@ export default function EditAttendeesModal({
   };
 
   const handleSave = () => {
-    onSave(editedAttendees);
+    onSave(editedAttendees, { address: billingAddress });
   };
 
   if (!registration) return null;
@@ -75,6 +78,20 @@ export default function EditAttendeesModal({
           </div>
         )}
 
+        {/* Billing Address Section */}
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <label className="block text-sm font-medium text-blue-800 mb-2">
+            Billing Address (for invoices)
+          </label>
+          <textarea
+            value={billingAddress}
+            onChange={(e) => setBillingAddress(e.target.value)}
+            className="w-full px-3 py-2 border border-blue-300 rounded-md text-sm"
+            rows={3}
+            placeholder="Enter full billing address for invoice generation"
+          />
+        </div>
+
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">
             {editedAttendees.length} attendee{editedAttendees.length !== 1 ? 's' : ''}
@@ -87,7 +104,7 @@ export default function EditAttendeesModal({
           </button>
         </div>
 
-        <div className="space-y-4 max-h-[50vh] overflow-y-auto">
+        <div className="space-y-4 max-h-[40vh] overflow-y-auto">
           {editedAttendees.map((attendee, index) => (
             <div key={attendee.id || index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <div className="flex justify-between items-center mb-3">
@@ -136,16 +153,6 @@ export default function EditAttendeesModal({
                     value={attendee.jobTitle}
                     onChange={(e) => handleUpdateAttendee(index, 'jobTitle', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Address</label>
-                  <input
-                    type="text"
-                    value={attendee.address || ''}
-                    onChange={(e) => handleUpdateAttendee(index, 'address', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Full address for badge/event materials"
                   />
                 </div>
               </div>

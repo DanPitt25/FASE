@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
         lastName: a.lastName,
         email: a.email,
         jobTitle: a.jobTitle,
-        address: a.address || '',
       })),
       additionalInfo: {
         specialRequests: additionalInfo?.specialRequests || '',
@@ -145,7 +144,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const data = await request.json();
-    const { registrationId, attendees } = data;
+    const { registrationId, attendees, billingInfo } = data;
 
     if (!registrationId) {
       return NextResponse.json(
@@ -178,7 +177,6 @@ export async function PATCH(request: NextRequest) {
       lastName: a.lastName.trim(),
       email: a.email.trim(),
       jobTitle: a.jobTitle?.trim() || '',
-      address: a.address?.trim() || '',
     }));
 
     // Update the registration
@@ -192,18 +190,32 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    await docRef.update({
+    // Build update object
+    const updateData: Record<string, any> = {
       attendees: formattedAttendees,
       numberOfAttendees: formattedAttendees.length,
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    };
 
-    console.log(`✅ Updated attendees for registration: ${registrationId}`);
+    // If billingInfo is provided, merge it with existing billingInfo
+    if (billingInfo) {
+      const existingData = doc.data();
+      const existingBillingInfo = existingData?.billingInfo || {};
+      updateData.billingInfo = {
+        ...existingBillingInfo,
+        ...billingInfo,
+      };
+    }
+
+    await docRef.update(updateData);
+
+    console.log(`✅ Updated registration: ${registrationId}`);
 
     return NextResponse.json({
       success: true,
       registrationId,
       attendees: formattedAttendees,
+      billingInfo: updateData.billingInfo,
     });
   } catch (error: any) {
     console.error('Error updating registration:', error);

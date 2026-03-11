@@ -110,7 +110,7 @@ export default function RendezvousManageTab() {
     companyIsFaseMember: false,
     isAsaseMember: false,
     totalPrice: 0,
-    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
+    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
   });
 
   const loadRegistrations = async () => {
@@ -538,7 +538,7 @@ export default function RendezvousManageTab() {
     setShowEditAttendeesModal(true);
   };
 
-  const handleSaveAttendees = async (attendees: Attendee[]) => {
+  const handleSaveAttendees = async (attendees: Attendee[], billingInfo?: { address?: string }) => {
     if (!editingRegistration) return;
 
     // Validate
@@ -559,6 +559,7 @@ export default function RendezvousManageTab() {
         body: JSON.stringify({
           registrationId: editingRegistration.registrationId,
           attendees: attendees,
+          billingInfo: billingInfo,
         }),
       });
 
@@ -572,7 +573,12 @@ export default function RendezvousManageTab() {
       setRegistrations(prev =>
         prev.map(reg =>
           reg.registrationId === editingRegistration.registrationId
-            ? { ...reg, attendees: result.attendees, numberOfAttendees: result.attendees.length }
+            ? {
+                ...reg,
+                attendees: result.attendees,
+                numberOfAttendees: result.attendees.length,
+                billingInfo: result.billingInfo || reg.billingInfo,
+              }
             : reg
         )
       );
@@ -581,7 +587,12 @@ export default function RendezvousManageTab() {
       setSelectedCompanyRegistrations(prev =>
         prev.map(reg =>
           reg.registrationId === editingRegistration.registrationId
-            ? { ...reg, attendees: result.attendees, numberOfAttendees: result.attendees.length }
+            ? {
+                ...reg,
+                attendees: result.attendees,
+                numberOfAttendees: result.attendees.length,
+                billingInfo: result.billingInfo || reg.billingInfo,
+              }
             : reg
         )
       );
@@ -728,7 +739,7 @@ export default function RendezvousManageTab() {
         companyIsFaseMember: false,
         isAsaseMember: false,
         totalPrice: 0,
-        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
+        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
       });
     } catch (error: any) {
       console.error('Error creating registration:', error);
@@ -1469,7 +1480,7 @@ export default function RendezvousManageTab() {
             companyIsFaseMember: false,
             isAsaseMember: false,
             totalPrice: 0,
-            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
+            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
           });
         }}
         title="Add Registration"
@@ -1577,7 +1588,7 @@ export default function RendezvousManageTab() {
                 size="small"
                 onClick={() => setNewRegistration({
                   ...newRegistration,
-                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', address: '' }]
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '' }]
                 })}
                 disabled={adding}
               >
@@ -1690,7 +1701,7 @@ export default function RendezvousManageTab() {
                   companyIsFaseMember: false,
                   isAsaseMember: false,
                   totalPrice: 0,
-                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
+                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
                 });
               }}
               disabled={adding}

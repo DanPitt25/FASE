@@ -141,7 +141,6 @@ export interface RendezvousAttendee {
   lastName: string;
   email: string;
   jobTitle: string;
-  address?: string;
 }
 
 /** Billing information for a registration */
