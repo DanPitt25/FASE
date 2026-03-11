@@ -191,7 +191,7 @@
     "no_members": "Keine Mitglieder Gefunden",
     "no_members_desc": "Keine Teammitglieder für dieses Unternehmen gefunden.",
     "corporate_only": "Mitgliederverwaltung ist nur für Unternehmenskonten verfügbar.",
-    "team_management_desc": "Verwalten Sie die Teammitglieder Ihrer Organisation ({{count}}/3)",
+    "team_management_desc": "Verwalten Sie die Teammitglieder Ihrer Organisation ({{count}}/{{max}})",
     "member_updated": "Mitglied erfolgreich aktualisiert",
     "member_removed": "{{name}} wurde aus Ihrem Team entfernt",
     "remove_team_member": "Teammitglied Entfernen",
