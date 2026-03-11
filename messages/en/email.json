@@ -83,7 +83,7 @@
   "membership_followup": {
     "subject": "Reminder: Outstanding membership dues for {organizationName}",
     "dear": "Dear {fullName},",
-    "intro": "We have yet to receive settlement of {organizationName}'s member dues as a founder member of FASE. Please find attached our updated invoice.",
+    "intro": "We have yet to receive settlement of {organizationName}'s member dues. Please find attached our updated invoice.",
     "portal_access": "As soon as we receive payment, we will be happy to share details on how to access the resources contained in our members' portal.",
     "questions": "If you have any questions relating to your membership, please do not hesitate to contact us.",
     "regards": "Best regards,",
@@ -117,7 +117,7 @@
     "dear": "Dear",
     "dear_m": "Dear",
     "dear_f": "Dear",
-    "welcome_intro": "Welcome to FASE, the pan-European MGA federation. We're delighted to have {organizationName} as a founder member.",
+    "welcome_intro": "Welcome to FASE, the pan-European MGA federation. We're delighted to have {organizationName} as a member.",
     "portal_access": "You can access our member portal here. In the coming weeks, we will continue to release, through the portal, new tools and data resources to support the growth of your business in Europe.",
     "member_directory": "We have now published FASE's member directory. You can use the portal to share relevant details of {organizationName} that you would like to share with other members through the portal and with the broader market through our website.",
     "closing": "Please do not hesitate to reach out if you have any questions.",
