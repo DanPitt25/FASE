@@ -281,7 +281,9 @@ export default function TeamManagementSection({
     if (!member?.organizationId || !newMember.email || !newMember.personalName) return;
     if (!isCurrentUserAdmin) return;
 
-    if (members.length >= 3) {
+    // Internal accounts have no member limit, others limited to 3
+    const maxMembers = member.status === 'internal' ? 100 : 3;
+    if (members.length >= maxMembers) {
       showError(t('manage_profile.errors.member_limit_reached'));
       return;
     }
@@ -372,10 +374,10 @@ export default function TeamManagementSection({
               {t('manage_profile.team_members')}
             </h2>
             <p className="text-sm text-gray-600">
-              {t('manage_profile.team_management_desc', { count: String(members.length) })}
+              {t('manage_profile.team_management_desc', { count: String(members.length), max: String(member.status === 'internal' ? 100 : 3) })}
             </p>
           </div>
-          {isCurrentUserAdmin && members.length < 3 && (
+          {isCurrentUserAdmin && members.length < (member.status === 'internal' ? 100 : 3) && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
               variant="primary"

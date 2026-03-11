@@ -191,7 +191,7 @@
     "no_members": "Aucun Membre Trouvé",
     "no_members_desc": "Aucun membre d'équipe trouvé pour cette entreprise.",
     "corporate_only": "La gestion des membres n'est disponible que pour les comptes d'entreprise.",
-    "team_management_desc": "Gérer les membres de l'équipe de votre organisation ({{count}}/3)",
+    "team_management_desc": "Gérer les membres de l'équipe de votre organisation ({{count}}/{{max}})",
     "member_updated": "Membre mis à jour avec succès",
     "member_removed": "{{name}} a été retiré de votre équipe",
     "remove_team_member": "Retirer un Membre de l'Équipe",
