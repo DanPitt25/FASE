@@ -41,7 +41,7 @@ export default function EditAttendeesModal({
   const handleAddAttendee = () => {
     setEditedAttendees([
       ...editedAttendees,
-      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '' }
+      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '', address: '' }
     ]);
   };
 
@@ -136,6 +136,16 @@ export default function EditAttendeesModal({
                     value={attendee.jobTitle}
                     onChange={(e) => handleUpdateAttendee(index, 'jobTitle', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Address</label>
+                  <input
+                    type="text"
+                    value={attendee.address || ''}
+                    onChange={(e) => handleUpdateAttendee(index, 'address', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="Full address for badge/event materials"
                   />
                 </div>
               </div>

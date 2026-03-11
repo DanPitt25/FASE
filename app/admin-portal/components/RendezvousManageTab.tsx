@@ -110,7 +110,7 @@ export default function RendezvousManageTab() {
     companyIsFaseMember: false,
     isAsaseMember: false,
     totalPrice: 0,
-    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
   });
 
   const loadRegistrations = async () => {
@@ -728,7 +728,7 @@ export default function RendezvousManageTab() {
         companyIsFaseMember: false,
         isAsaseMember: false,
         totalPrice: 0,
-        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
       });
     } catch (error: any) {
       console.error('Error creating registration:', error);
@@ -1469,7 +1469,7 @@ export default function RendezvousManageTab() {
             companyIsFaseMember: false,
             isAsaseMember: false,
             totalPrice: 0,
-            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
           });
         }}
         title="Add Registration"
@@ -1577,7 +1577,7 @@ export default function RendezvousManageTab() {
                 size="small"
                 onClick={() => setNewRegistration({
                   ...newRegistration,
-                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '' }]
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', address: '' }]
                 })}
                 disabled={adding}
               >
@@ -1651,6 +1651,18 @@ export default function RendezvousManageTab() {
                       className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                       disabled={adding}
                     />
+                    <input
+                      type="text"
+                      placeholder="Address"
+                      value={attendee.address || ''}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].address = e.target.value;
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="col-span-2 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
                   </div>
                 </div>
               ))}
@@ -1678,7 +1690,7 @@ export default function RendezvousManageTab() {
                   companyIsFaseMember: false,
                   isAsaseMember: false,
                   totalPrice: 0,
-                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', address: '' }],
                 });
               }}
               disabled={adding}

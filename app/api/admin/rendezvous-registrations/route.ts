@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
         lastName: a.lastName,
         email: a.email,
         jobTitle: a.jobTitle,
+        address: a.address || '',
       })),
       additionalInfo: {
         specialRequests: additionalInfo?.specialRequests || '',
@@ -177,6 +178,7 @@ export async function PATCH(request: NextRequest) {
       lastName: a.lastName.trim(),
       email: a.email.trim(),
       jobTitle: a.jobTitle?.trim() || '',
+      address: a.address?.trim() || '',
     }));
 
     // Update the registration
