@@ -222,7 +222,7 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                   {/* Knowledge Dropdown */}
                   <div className="relative group">
                     <span className={`px-2 lg:px-3 xl:px-4 py-3 text-xs lg:text-sm xl:text-base 2xl:text-lg flex items-center whitespace-nowrap cursor-pointer transition-all duration-200 ${
-                      currentPage === 'knowledge' || currentPage === 'entrepreneurial-underwriter' || currentPage === 'webinars' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
+                      currentPage === 'knowledge' || currentPage === 'entrepreneurial-underwriter' ? 'text-white bg-fase-gold' : 'text-fase-black group-hover:bg-fase-gold group-hover:text-white'
                     }`}>
                       {tNav('knowledge')}
                       <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,9 +234,6 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
                         <a href="/entrepreneurial-underwriter" className={`block px-4 py-2 text-sm ${
                           currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
                         }`}>Entrepreneurial Underwriter</a>
-                        <a href="/webinars" className={`block px-4 py-2 text-sm ${
-                          currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream font-medium' : 'text-fase-black hover:bg-fase-cream'
-                        }`}>{tNav('webinars')}</a>
                       </div>
                     </div>
                   </div>
@@ -352,9 +349,6 @@ export default function Header({ currentPage = '', onLoad }: HeaderProps) {
               <a href="/entrepreneurial-underwriter" className={`block pl-6 pr-3 py-2 text-base font-medium ${
                 currentPage === 'entrepreneurial-underwriter' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
               }`}>Entrepreneurial Underwriter</a>
-              <a href="/webinars" className={`block pl-6 pr-3 py-2 text-base font-medium ${
-                currentPage === 'webinars' ? 'text-fase-navy bg-fase-cream' : 'text-fase-black hover:text-fase-navy hover:bg-fase-cream'
-              }`}>{tNav('webinars')}</a>
             </div>
             {user && (
               <a href="/member-portal" className={`block px-3 py-2 text-base font-medium ${
