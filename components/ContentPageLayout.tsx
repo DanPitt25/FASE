@@ -187,26 +187,22 @@ export default function ContentPageLayout({
                         </h2>
                         {Array.isArray(section.content) ? (
                           section.content.map((paragraph, i) => (
-                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0">
-                              {paragraph}
-                            </p>
+                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0 [&_a]:text-fase-navy [&_a]:underline [&_a]:hover:text-fase-blue" dangerouslySetInnerHTML={{ __html: paragraph }} />
                           ))
                         ) : (
                           section.content.split('\n\n').map((paragraph, i) => (
-                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0">
-                              {paragraph}
-                            </p>
+                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0 [&_a]:text-fase-navy [&_a]:underline [&_a]:hover:text-fase-blue" dangerouslySetInnerHTML={{ __html: paragraph }} />
                           ))
                         )}
                         {section.buttons && (
                           <div className="flex flex-col sm:flex-row gap-4 mt-8">
                             {section.buttons.map((button, buttonIndex) => (
-                              <a 
+                              <a
                                 key={buttonIndex}
-                                href={button.href} 
+                                href={button.href}
                                 className={`inline-flex items-center px-6 py-3 font-semibold transition-colors text-center justify-center ${
-                                  button.variant === 'primary' 
-                                    ? 'bg-fase-navy text-white hover:bg-fase-blue' 
+                                  button.variant === 'primary'
+                                    ? 'bg-fase-navy text-white hover:bg-fase-blue'
                                     : 'border-2 border-fase-navy text-fase-navy hover:bg-fase-navy hover:text-white'
                                 }`}
                               >
@@ -228,15 +224,11 @@ export default function ContentPageLayout({
                         </h2>
                         {Array.isArray(section.content) ? (
                           section.content.map((paragraph, i) => (
-                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0">
-                              {paragraph}
-                            </p>
+                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0 [&_a]:text-fase-navy [&_a]:underline [&_a]:hover:text-fase-blue" dangerouslySetInnerHTML={{ __html: paragraph }} />
                           ))
                         ) : (
                           section.content.split('\n\n').map((paragraph, i) => (
-                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0">
-                              {paragraph}
-                            </p>
+                            <p key={i} className="text-fase-black text-base sm:text-lg leading-relaxed mb-6 last:mb-0 [&_a]:text-fase-navy [&_a]:underline [&_a]:hover:text-fase-blue" dangerouslySetInnerHTML={{ __html: paragraph }} />
                           ))
                         )}
                         {section.buttons && (
