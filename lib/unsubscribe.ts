@@ -1,13 +1,15 @@
 import crypto from 'crypto';
 
-const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET || 'fase-unsubscribe-default-secret';
+function getUnsubscribeSecret(): string {
+  return process.env.UNSUBSCRIBE_SECRET || 'fase-unsubscribe-default-secret';
+}
 
 /**
  * Generate an unsubscribe token for an email address
  */
 export function generateUnsubscribeToken(email: string): string {
   const normalizedEmail = email.toLowerCase().trim();
-  const hmac = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET);
+  const hmac = crypto.createHmac('sha256', getUnsubscribeSecret());
   hmac.update(normalizedEmail);
   return hmac.digest('hex').substring(0, 32); // First 32 chars is enough
 }
