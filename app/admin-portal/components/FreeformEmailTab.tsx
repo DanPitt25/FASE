@@ -700,9 +700,18 @@ export default function FreeformEmailTab() {
                   <p className="text-sm font-medium text-gray-700 mb-3">Recipients ({getAllRecipients().length})</p>
                   <div className="border border-gray-300 rounded-lg max-h-80 overflow-y-auto">
                     {getAllRecipients().map((recipient, index) => (
-                      <div key={recipient.id || index} className="flex items-center justify-between text-sm px-3 py-2 border-b border-gray-100 last:border-b-0">
-                        <span className="font-medium truncate">{recipient.email}</span>
-                        <span className="text-gray-500 text-xs ml-2 shrink-0">{recipient.organizationType}</span>
+                      <div key={recipient.id || index} className="text-sm px-3 py-2 border-b border-gray-100 last:border-b-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium truncate">{recipient.email}</span>
+                          <span className="text-gray-500 text-xs ml-2 shrink-0">{recipient.organizationType}</span>
+                        </div>
+                        {(recipient.contactName || recipient.organizationName) && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {recipient.contactName && <span>{recipient.contactName}</span>}
+                            {recipient.contactName && recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && <span> · </span>}
+                            {recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && <span>{recipient.organizationName}</span>}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
