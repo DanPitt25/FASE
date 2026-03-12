@@ -1,8 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Button from '../../../components/Button';
 import { authFetch, authPost } from '@/lib/auth-fetch';
+
+// Dynamic import to avoid SSR issues with TipTap
+const RichTextEditor = dynamic(() => import('../../../components/RichTextEditor'), {
+  ssr: false,
+  loading: () => <div className="border border-gray-300 rounded-md bg-gray-50 min-h-[250px] flex items-center justify-center text-gray-500">Loading editor...</div>
+});
 
 type OrganizationType = 'MGA' | 'carrier' | 'provider';
 type AccountStatus = 'pending' | 'pending_invoice' | 'invoice_sent' | 'approved' | 'flagged' | 'admin' | 'guest';
@@ -25,6 +32,7 @@ export default function FreeformEmailTab() {
   const [massEmailContent, setMassEmailContent] = useState({
     subject: '',
     body: '',
+    htmlBody: '',
     sender: 'admin@fasemga.com'
   });
   const [massEmailRecipients, setMassEmailRecipients] = useState<MassEmailRecipient[]>([]);
@@ -237,6 +245,7 @@ export default function FreeformEmailTab() {
         recipients: allRecipients.map(r => ({ email: r.email, organizationName: r.organizationName, contactName: r.contactName || '' })),
         subject: massEmailContent.subject,
         body: massEmailContent.body,
+        htmlBody: massEmailContent.htmlBody,
         sender: massEmailContent.sender
       });
 
@@ -457,12 +466,17 @@ export default function FreeformEmailTab() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Message Body *</label>
-              <textarea
-                value={massEmailContent.body}
-                onChange={(e) => setMassEmailContent(prev => ({ ...prev, body: e.target.value }))}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                rows={8}
-                placeholder="Enter your email message... Use {{name}} for personalization"
+              <p className="text-xs text-gray-500 mb-2">Use {"{{name}}"} for personalization</p>
+              <RichTextEditor
+                content={massEmailContent.htmlBody}
+                onChange={(html) => {
+                  // Extract plain text for fallback
+                  const tempDiv = document.createElement('div');
+                  tempDiv.innerHTML = html;
+                  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                  setMassEmailContent(prev => ({ ...prev, htmlBody: html, body: plainText }));
+                }}
+                placeholder="Enter your email message..."
               />
             </div>
           </div>
@@ -472,7 +486,7 @@ export default function FreeformEmailTab() {
             <Button
               type="button"
               variant="primary"
-              disabled={getAllRecipients().length === 0 || !massEmailContent.subject || !massEmailContent.body}
+              disabled={getAllRecipients().length === 0 || !massEmailContent.subject || (!massEmailContent.body && !massEmailContent.htmlBody)}
               onClick={() => setShowConfirmModal(true)}
             >
               Review & Send ({getAllRecipients().length})

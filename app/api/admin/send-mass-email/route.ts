@@ -26,14 +26,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { recipients, subject, body, sender } = await request.json();
+    const { recipients, subject, body, htmlBody, sender } = await request.json();
 
     // Validate required fields
     if (!recipients || recipients.length === 0) {
       return NextResponse.json({ error: 'No recipients provided' }, { status: 400 });
     }
 
-    if (!subject || !body) {
+    if (!subject || (!body && !htmlBody)) {
       return NextResponse.json({ error: 'Subject and body are required' }, { status: 400 });
     }
 
@@ -71,6 +71,11 @@ export async function POST(request: NextRequest) {
 
     const fromAddress = senderMap[sender] || senderMap['admin@fasemga.com'];
 
+    // Determine body content - use rich HTML if provided, otherwise convert plain text
+    const bodyHtml = htmlBody
+      ? htmlBody
+      : (body || '').replace(/\n\n/g, '</p><p style="margin: 0 0 16px 0;">').replace(/\n/g, '<br>').replace(/^/, '<p style="margin: 0 0 16px 0;">').replace(/$/, '</p>');
+
     // Create email content with proper signature
     const htmlContent = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
     </div>
 
     <div style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">
-      ${body.replace(/\n\n/g, '</p><p style="margin: 0 0 16px 0;">').replace(/\n/g, '<br>').replace(/^/, '<p style="margin: 0 0 16px 0;">').replace(/$/, '</p>')}
+      ${bodyHtml}
     </div>
 
     <div style="font-size: 16px; line-height: 1.5; color: #333;">
@@ -97,21 +102,24 @@ export async function POST(request: NextRequest) {
     let failed = 0;
     const errors: string[] = [];
 
+    // Plain text fallback
+    const plainTextBody = body || '';
+
     // Send emails to each recipient
     for (const recipient of recipients) {
       try {
         // Personalize content with recipient name if available
         const recipientName = recipient.contactName || recipient.fullName || '';
-        let personalizedBody = body;
+        let personalizedBody = plainTextBody;
         let personalizedHtml = htmlContent;
 
         if (recipientName) {
           // Replace {{name}} with actual name
-          personalizedBody = body.replace(/\{\{name\}\}/g, recipientName);
+          personalizedBody = plainTextBody.replace(/\{\{name\}\}/g, recipientName);
           personalizedHtml = htmlContent.replace(/\{\{name\}\}/g, recipientName);
         } else {
           // Remove {{name}} placeholder and clean up "Dear ," if no name
-          personalizedBody = body.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
+          personalizedBody = plainTextBody.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
           personalizedHtml = htmlContent.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
         }
 
