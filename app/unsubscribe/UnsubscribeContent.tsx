@@ -59,7 +59,7 @@ export default function UnsubscribeContent() {
             You have been successfully unsubscribed from FASE marketing emails.
           </p>
           <p className="text-sm text-gray-500 mt-4">
-            You will continue to receive transactional emails related to your membership or event registrations.
+            You will continue to receive emails related to your membership or event registrations.
           </p>
         </div>
       )}
