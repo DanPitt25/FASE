@@ -39,7 +39,6 @@ export default function PaymentMatchingTab() {
 
   // Data
   const [pendingItems, setPendingItems] = useState<PendingItemWithMatches[]>([]);
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
 
   // Modal state
   const [selectedItem, setSelectedItem] = useState<PendingItemWithMatches | null>(null);
@@ -84,7 +83,6 @@ export default function PaymentMatchingTab() {
       }
 
       const transactions: Transaction[] = transactionsData.transactions || [];
-      setAllTransactions(transactions);
 
       // Build pending items with possible matches
       const items: PendingItemWithMatches[] = [];
@@ -148,7 +146,7 @@ export default function PaymentMatchingTab() {
     }
   };
 
-  // Liberal matching - find any transaction that could plausibly be from this customer
+  // Match transactions - require meaningful correlation, not just amount
   const findMatchingTransactions = (
     member: PendingMember | null,
     registration: PendingRegistration | null,
@@ -157,8 +155,6 @@ export default function PaymentMatchingTab() {
     const matches: Transaction[] = [];
 
     for (const tx of transactions) {
-      let isMatch = false;
-
       const txSender = (tx.senderName || '').toLowerCase();
       const txEmail = (tx.email || '').toLowerCase();
       const txRef = ((tx.reference || '') + ' ' + (tx.description || '')).toLowerCase();
@@ -166,77 +162,109 @@ export default function PaymentMatchingTab() {
       if (member) {
         const orgName = member.organizationName.toLowerCase();
         const email = member.email.toLowerCase();
+        const emailDomain = email.split('@')[1] || '';
 
-        // Email match (exact or partial)
-        if (txEmail && email && (txEmail.includes(email.split('@')[0]) || email.includes(txEmail.split('@')[0]))) {
-          isMatch = true;
+        // Strong match: email domain matches (same company)
+        if (txEmail && emailDomain && txEmail.endsWith('@' + emailDomain)) {
+          matches.push(tx);
+          continue;
         }
 
-        // Company name match (liberal - any significant word overlap)
-        if (hasWordOverlap(txSender, orgName)) {
-          isMatch = true;
-        }
-
-        // Amount match for membership fees (€995 or with VAT ~€1204)
-        if (tx.amount >= 900 && tx.amount <= 1300) {
-          // Could be a membership payment - check name loosely
-          if (txSender.length > 3 && orgName.includes(txSender.substring(0, 4))) {
-            isMatch = true;
-          }
+        // Strong match: company name appears in sender (must be distinctive part)
+        const nameMatch = getCompanyNameMatch(orgName, txSender);
+        if (nameMatch) {
+          matches.push(tx);
+          continue;
         }
       }
 
       if (registration) {
         const company = registration.company.toLowerCase();
         const email = registration.billingEmail.toLowerCase();
+        const emailDomain = email.split('@')[1] || '';
         const invoiceNum = registration.invoiceNumber.toLowerCase();
 
-        // Invoice number in reference
-        if (invoiceNum && txRef.includes(invoiceNum)) {
-          isMatch = true;
+        // Strong match: invoice number in reference
+        if (invoiceNum && invoiceNum.length > 5 && txRef.includes(invoiceNum)) {
+          matches.push(tx);
+          continue;
         }
 
-        // Email match
-        if (txEmail && email && (txEmail.includes(email.split('@')[0]) || email.includes(txEmail.split('@')[0]))) {
-          isMatch = true;
+        // Strong match: email domain matches
+        if (txEmail && emailDomain && txEmail.endsWith('@' + emailDomain)) {
+          matches.push(tx);
+          continue;
         }
 
-        // Company name match
-        if (hasWordOverlap(txSender, company)) {
-          isMatch = true;
+        // Strong match: company name appears in sender
+        const nameMatch = getCompanyNameMatch(company, txSender);
+        if (nameMatch) {
+          matches.push(tx);
+          continue;
         }
 
-        // Amount match (within 10% of expected amount)
+        // Amount match ONLY if there's also partial name similarity
         const expectedAmount = registration.subtotal;
-        if (expectedAmount > 0 && Math.abs(tx.amount - expectedAmount) / expectedAmount < 0.15) {
-          isMatch = true;
+        if (expectedAmount > 0 && Math.abs(tx.amount - expectedAmount) / expectedAmount < 0.05) {
+          // 5% tolerance, but need some name correlation
+          if (hasWeakNameCorrelation(company, txSender)) {
+            matches.push(tx);
+            continue;
+          }
         }
-      }
-
-      if (isMatch) {
-        matches.push(tx);
       }
     }
 
     return matches;
   };
 
-  // Check if two strings share significant words
-  const hasWordOverlap = (str1: string, str2: string): boolean => {
-    const stopWords = new Set(['the', 'and', 'ltd', 'llc', 'inc', 'gmbh', 'bv', 'ag', 'sa', 'srl', 'limited', 'insurance', 'group', 'holding', 'holdings', 'company', 'co', 'services']);
+  // Get distinctive company name match - not generic industry words
+  const getCompanyNameMatch = (companyName: string, senderName: string): boolean => {
+    // Words that are too common in insurance/MGA industry to be distinctive
+    const industryWords = new Set([
+      'the', 'and', 'ltd', 'llc', 'inc', 'gmbh', 'bv', 'ag', 'sa', 'srl', 'limited',
+      'insurance', 'group', 'holding', 'holdings', 'company', 'co', 'services',
+      'underwriting', 'underwriters', 'risk', 'risks', 'reinsurance', 'specialty',
+      'international', 'global', 'europe', 'european', 'solutions', 'partners',
+      'management', 'consulting', 'advisory', 'financial', 'capital', 'assurance'
+    ]);
 
-    const words1 = str1.split(/[\s\-_.,&]+/).filter(w => w.length > 2 && !stopWords.has(w));
-    const words2 = str2.split(/[\s\-_.,&]+/).filter(w => w.length > 2 && !stopWords.has(w));
+    // Extract distinctive words (4+ chars, not industry generic)
+    const companyWords = companyName.split(/[\s\-_.,&()]+/)
+      .map(w => w.toLowerCase())
+      .filter(w => w.length >= 4 && !industryWords.has(w));
 
-    for (const w1 of words1) {
-      for (const w2 of words2) {
-        // Exact match or one contains the other
-        if (w1 === w2 || (w1.length > 3 && w2.includes(w1)) || (w2.length > 3 && w1.includes(w2))) {
-          return true;
+    const senderWords = senderName.split(/[\s\-_.,&()]+/)
+      .map(w => w.toLowerCase())
+      .filter(w => w.length >= 4 && !industryWords.has(w));
+
+    // Need at least one distinctive word match
+    for (const cw of companyWords) {
+      for (const sw of senderWords) {
+        // Exact match or one is a clear substring of the other (80%+ overlap)
+        if (cw === sw) return true;
+        if (cw.length >= 5 && sw.length >= 5) {
+          if (sw.includes(cw) || cw.includes(sw)) return true;
         }
       }
     }
     return false;
+  };
+
+  // Weak correlation for amount-matching backup
+  const hasWeakNameCorrelation = (company: string, sender: string): boolean => {
+    // Check if first 3 meaningful characters match
+    const getFirstMeaningfulChars = (str: string): string => {
+      const cleaned = str.replace(/[^a-z]/gi, '').toLowerCase();
+      return cleaned.substring(0, 4);
+    };
+
+    const companyStart = getFirstMeaningfulChars(company);
+    const senderStart = getFirstMeaningfulChars(sender);
+
+    return companyStart.length >= 3 && senderStart.length >= 3 &&
+           (companyStart.startsWith(senderStart.substring(0, 3)) ||
+            senderStart.startsWith(companyStart.substring(0, 3)));
   };
 
   const handleConfirmMatch = async () => {
@@ -286,7 +314,6 @@ export default function PaymentMatchingTab() {
         }
       }));
 
-      setAllTransactions(prev => prev.filter(t => t.id !== selectedTransaction.id));
       setSelectedItem(null);
       setSelectedTransaction(null);
     } catch (err: any) {
