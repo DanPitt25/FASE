@@ -32,16 +32,20 @@ export default function EditInvoiceModal({
   const [currency, setCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('auto');
   const [vatNumber, setVatNumber] = useState('');
 
-  // Initialize form when modal opens
+  // Initialize form when modal opens - use actual registration values
   useEffect(() => {
     if (isOpen && registration) {
-      setTicketCount(registration.numberOfAttendees || 1);
-      const basePrice = 800;
+      const numAttendees = registration.numberOfAttendees || 1;
+      setTicketCount(numAttendees);
+      // Calculate unit price from actual registration subtotal
+      const actualUnitPrice = registration.subtotal
+        ? registration.subtotal / numAttendees
+        : 800;
+      setUnitPrice(actualUnitPrice);
       const hasMemberDiscount = registration.companyIsFaseMember ||
         registration.isAsaseMember ||
         (registration.discount !== undefined && registration.discount > 0);
       setMemberDiscount(hasMemberDiscount);
-      setUnitPrice(hasMemberDiscount ? basePrice * 0.5 : basePrice);
       setCurrency('auto');
       setVatNumber(registration.billingInfo?.vatNumber || '');
     }
@@ -49,7 +53,12 @@ export default function EditInvoiceModal({
 
   const handleMemberDiscountChange = (checked: boolean) => {
     setMemberDiscount(checked);
-    setUnitPrice(checked ? 400 : 800);
+    // Apply or remove 50% discount from current unit price
+    if (checked && !memberDiscount) {
+      setUnitPrice(unitPrice * 0.5);
+    } else if (!checked && memberDiscount) {
+      setUnitPrice(unitPrice * 2);
+    }
   };
 
   const handleGenerate = () => {
