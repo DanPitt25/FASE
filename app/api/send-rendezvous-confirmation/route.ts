@@ -215,7 +215,6 @@ export async function POST(request: NextRequest) {
 
     const senderMap: Record<string, string> = {
       'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
-      'aline.sullivan@fasemga.com': 'Aline Sullivan <aline.sullivan@fasemga.com>',
       'william.pitt@fasemga.com': 'William Pitt <william.pitt@fasemga.com>',
       'info@fasemga.com': 'FASE Info <info@fasemga.com>',
       'media@fasemga.com': 'FASE Media <media@fasemga.com>'

@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
     // Get signature based on sender
     const senderSignatureMap: Record<string, string> = {
       'william.pitt@fasemga.com': 'william_pitt',
-      'aline.sullivan@fasemga.com': 'aline_sullivan',
       'admin@fasemga.com': 'admin_team',
       'info@fasemga.com': 'info_team',
       'media@fasemga.com': 'media_team'
@@ -65,7 +64,6 @@ export async function POST(request: NextRequest) {
     // Map sender email to proper from address
     const senderMap: Record<string, string> = {
       'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
-      'aline.sullivan@fasemga.com': 'Aline Sullivan <aline.sullivan@fasemga.com>',
       'william.pitt@fasemga.com': 'William Pitt <william.pitt@fasemga.com>',
       'info@fasemga.com': 'FASE Info <info@fasemga.com>',
       'media@fasemga.com': 'FASE Media <media@fasemga.com>'
