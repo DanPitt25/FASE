@@ -36,7 +36,7 @@ export default function FreeformEmailTab() {
     sender: 'admin@fasemga.com'
   });
   const [massEmailRecipients, setMassEmailRecipients] = useState<MassEmailRecipient[]>([]);
-  const [manualRecipients, setManualRecipients] = useState<string>('');
+  const [manualRecipients, setManualRecipients] = useState<Array<{ name: string; email: string }>>([{ name: '', email: '' }]);
   const [csvRecipients, setCsvRecipients] = useState<MassEmailRecipient[]>([]);
   const [csvFileName, setCsvFileName] = useState<string>('');
   const [csvError, setCsvError] = useState<string>('');
@@ -131,18 +131,32 @@ export default function FreeformEmailTab() {
   };
 
   const parseManualRecipients = (): MassEmailRecipient[] => {
-    if (!manualRecipients.trim()) return [];
-    const emails = manualRecipients
-      .split(/[,;\n]+/)
-      .map(e => e.trim())
-      .filter(e => e && e.includes('@'));
-    return emails.map(email => ({
-      id: `manual-${email}`,
-      email,
-      organizationName: 'Manual Entry',
-      organizationType: 'MGA' as OrganizationType,
-      status: 'approved' as AccountStatus
-    }));
+    return manualRecipients
+      .filter(r => r.email.trim() && r.email.includes('@'))
+      .map(r => ({
+        id: `manual-${r.email}`,
+        email: r.email.trim(),
+        organizationName: 'Manual Entry',
+        organizationType: 'MGA' as OrganizationType,
+        status: 'approved' as AccountStatus,
+        contactName: r.name.trim() || undefined
+      }));
+  };
+
+  const updateManualRecipient = (index: number, field: 'name' | 'email', value: string) => {
+    setManualRecipients(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const addManualRecipientRow = () => {
+    setManualRecipients(prev => [...prev, { name: '', email: '' }]);
+  };
+
+  const removeManualRecipientRow = (index: number) => {
+    setManualRecipients(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -435,15 +449,44 @@ export default function FreeformEmailTab() {
           {/* Manual Recipients */}
           <div>
             <h4 className="text-sm font-semibold mb-2 text-gray-700">Additional Recipients</h4>
-            <textarea
-              value={manualRecipients}
-              onChange={(e) => setManualRecipients(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              rows={3}
-              placeholder="Enter additional email addresses (comma, semicolon, or newline separated)"
-            />
+            <div className="space-y-2">
+              {manualRecipients.map((recipient, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={recipient.name}
+                    onChange={(e) => updateManualRecipient(index, 'name', e.target.value)}
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="Name"
+                  />
+                  <input
+                    type="email"
+                    value={recipient.email}
+                    onChange={(e) => updateManualRecipient(index, 'email', e.target.value)}
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    placeholder="Email"
+                  />
+                  {manualRecipients.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeManualRecipientRow(index)}
+                      className="text-red-500 hover:text-red-700 px-2"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addManualRecipientRow}
+                className="text-sm text-fase-navy hover:text-fase-gold"
+              >
+                + Add another
+              </button>
+            </div>
             {parseManualRecipients().length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-2">
                 {parseManualRecipients().length} manual recipient{parseManualRecipients().length !== 1 ? 's' : ''} added
               </p>
             )}
