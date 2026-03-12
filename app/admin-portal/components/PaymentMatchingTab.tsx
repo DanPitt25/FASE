@@ -467,56 +467,6 @@ export default function PaymentMatchingTab() {
           })
         )}
       </div>
-
-      {/* Confirmation Modal */}
-      {selectedItem && selectedTransaction && (
-        <Modal
-          isOpen={true}
-          onClose={() => { setSelectedItem(null); setSelectedTransaction(null); }}
-          title="Confirm Payment Match"
-          maxWidth="md"
-        >
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Mark this as paid? This will update the status and suppress the transaction.
-            </p>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-xs text-gray-500 mb-1">
-                {selectedItem.type === 'member' ? 'Member' : 'Registration'}
-              </div>
-              <div className="font-medium">
-                {selectedItem.type === 'member'
-                  ? (selectedItem.data as PendingMember).organizationName
-                  : (selectedItem.data as PendingRegistration).company}
-              </div>
-              <div className="text-sm text-gray-600">
-                {selectedItem.type === 'member'
-                  ? (selectedItem.data as PendingMember).email
-                  : `${(selectedItem.data as PendingRegistration).invoiceNumber} • ${formatCurrency((selectedItem.data as PendingRegistration).subtotal)}`}
-              </div>
-            </div>
-
-            <div className="text-center text-gray-400">↓ paid via ↓</div>
-
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-xs text-gray-500 mb-1">Transaction</div>
-              <div className="font-medium">{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</div>
-              <div className="text-sm text-gray-600">{selectedTransaction.senderName || 'Unknown'}</div>
-              <div className="text-xs text-gray-400">Bank transfer • {formatDate(selectedTransaction.date)}</div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="secondary" onClick={() => { setSelectedItem(null); setSelectedTransaction(null); }}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleConfirmMatch} disabled={confirming}>
-                {confirming ? 'Confirming...' : 'Confirm Payment'}
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }
