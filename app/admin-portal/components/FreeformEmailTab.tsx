@@ -735,13 +735,17 @@ export default function FreeformEmailTab() {
                           <span className="font-medium truncate">{recipient.email}</span>
                           <span className="text-gray-500 text-xs ml-2 shrink-0">{recipient.organizationType}</span>
                         </div>
-                        {(recipient.contactName || recipient.organizationName) && (
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {recipient.contactName && <span>{recipient.contactName}</span>}
-                            {recipient.contactName && recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && <span> · </span>}
-                            {recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && <span>{recipient.organizationName}</span>}
-                          </div>
-                        )}
+                        <div className="text-xs mt-0.5 flex items-center gap-1">
+                          <span className="text-gray-400">{"{{name}}"}:</span>
+                          {recipient.contactName ? (
+                            <span className="text-gray-600">{recipient.contactName}</span>
+                          ) : (
+                            <span className="text-red-600 font-medium">NO NAME</span>
+                          )}
+                          {recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && (
+                            <span className="text-gray-400 ml-1">· {recipient.organizationName}</span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
