@@ -29,6 +29,9 @@ export default function FreeformEmailTab() {
   });
   const [massEmailRecipients, setMassEmailRecipients] = useState<MassEmailRecipient[]>([]);
   const [manualRecipients, setManualRecipients] = useState<string>('');
+  const [csvRecipients, setCsvRecipients] = useState<MassEmailRecipient[]>([]);
+  const [csvFileName, setCsvFileName] = useState<string>('');
+  const [csvError, setCsvError] = useState<string>('');
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sendingMassEmail, setSendingMassEmail] = useState(false);
@@ -114,9 +117,107 @@ export default function FreeformEmailTab() {
     }));
   };
 
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setCsvError('');
+    setCsvFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+        if (lines.length === 0) {
+          setCsvError('CSV file is empty');
+          setCsvRecipients([]);
+          return;
+        }
+
+        // Parse header to find column indices
+        const headerLine = lines[0].toLowerCase();
+        const headers = headerLine.split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+
+        const emailIndex = headers.findIndex(h => h === 'email' || h === 'e-mail' || h === 'email address');
+        const nameIndex = headers.findIndex(h => h === 'name' || h === 'contact' || h === 'contact name' || h === 'contactname');
+        const orgIndex = headers.findIndex(h => h === 'organization' || h === 'organisation' || h === 'company' || h === 'org');
+
+        if (emailIndex === -1) {
+          setCsvError('CSV must have an "email" column');
+          setCsvRecipients([]);
+          return;
+        }
+
+        const parsed: MassEmailRecipient[] = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          // Simple CSV parsing (handles quoted fields)
+          const values: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          for (const char of line) {
+            if (char === '"' && !inQuotes) {
+              inQuotes = true;
+            } else if (char === '"' && inQuotes) {
+              inQuotes = false;
+            } else if (char === ',' && !inQuotes) {
+              values.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          values.push(current.trim());
+
+          const email = values[emailIndex]?.replace(/^["']|["']$/g, '').trim();
+          if (!email || !email.includes('@')) continue;
+
+          const name = nameIndex >= 0 ? values[nameIndex]?.replace(/^["']|["']$/g, '').trim() : '';
+          const org = orgIndex >= 0 ? values[orgIndex]?.replace(/^["']|["']$/g, '').trim() : 'CSV Import';
+
+          parsed.push({
+            id: `csv-${email}`,
+            email,
+            organizationName: org || 'CSV Import',
+            organizationType: 'MGA' as OrganizationType,
+            status: 'approved' as AccountStatus,
+            contactName: name || undefined
+          });
+        }
+
+        if (parsed.length === 0) {
+          setCsvError('No valid email addresses found in CSV');
+          setCsvRecipients([]);
+          return;
+        }
+
+        setCsvRecipients(parsed);
+      } catch (err) {
+        setCsvError('Failed to parse CSV file');
+        setCsvRecipients([]);
+      }
+    };
+
+    reader.onerror = () => {
+      setCsvError('Failed to read file');
+      setCsvRecipients([]);
+    };
+
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const clearCsv = () => {
+    setCsvRecipients([]);
+    setCsvFileName('');
+    setCsvError('');
+  };
+
   const getAllRecipients = (): MassEmailRecipient[] => {
     const manual = parseManualRecipients();
-    const combined = [...massEmailRecipients, ...manual];
+    const combined = [...massEmailRecipients, ...csvRecipients, ...manual];
     const seen = new Set<string>();
     return combined.filter(r => {
       if (seen.has(r.email.toLowerCase())) return false;
@@ -242,6 +343,55 @@ export default function FreeformEmailTab() {
                   </label>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* CSV Upload */}
+          <div>
+            <h4 className="text-sm font-semibold mb-2 text-gray-700">CSV Upload</h4>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              {csvRecipients.length === 0 ? (
+                <div className="text-center">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    className="hidden"
+                    id="csv-upload"
+                  />
+                  <label
+                    htmlFor="csv-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 text-fase-navy hover:text-fase-gold"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span className="text-sm font-medium">Upload CSV file</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    CSV must have an &quot;email&quot; column. Optional: &quot;name&quot;, &quot;organization&quot;
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">{csvFileName}</p>
+                    <p className="text-xs text-green-600">
+                      {csvRecipients.length} recipient{csvRecipients.length !== 1 ? 's' : ''} loaded
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearCsv}
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              {csvError && (
+                <p className="text-xs text-red-600 mt-2">{csvError}</p>
+              )}
             </div>
           </div>
 
