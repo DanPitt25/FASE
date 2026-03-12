@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs';
-import * as path from 'path';
 import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
 
 export const runtime = 'nodejs';
-
-// Load email translations from JSON files
-function loadEmailTranslations(language: string): any {
-  try {
-    const filePath = path.join(process.cwd(), 'messages', language, 'email.json');
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    if (language !== 'en') {
-      return loadEmailTranslations('en');
-    }
-    return {};
-  }
-}
 
 export async function POST(request: NextRequest) {
   const authResult = await verifyAdminAccess(request);
@@ -42,25 +26,6 @@ export async function POST(request: NextRequest) {
       throw new Error('RESEND_API_KEY environment variable is not configured');
     }
 
-    // Load English signatures for mass emails
-    const emailTranslations = loadEmailTranslations('en');
-    const signatures = emailTranslations.signatures || {};
-
-    // Get signature based on sender
-    const senderSignatureMap: Record<string, string> = {
-      'william.pitt@fasemga.com': 'william_pitt',
-      'admin@fasemga.com': 'admin_team',
-      'info@fasemga.com': 'info_team',
-      'media@fasemga.com': 'media_team'
-    };
-
-    const signatureKey = senderSignatureMap[sender] || 'admin_team';
-    const signature = signatures[signatureKey] || signatures['admin_team'] || {
-      regards: 'Best regards,',
-      name: 'The FASE Team',
-      title: ''
-    };
-
     // Map sender email to proper from address
     const senderMap: Record<string, string> = {
       'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
@@ -76,7 +41,7 @@ export async function POST(request: NextRequest) {
       ? htmlBody
       : (body || '').replace(/\n\n/g, '</p><p style="margin: 0 0 16px 0;">').replace(/\n/g, '<br>').replace(/^/, '<p style="margin: 0 0 16px 0;">').replace(/$/, '</p>');
 
-    // Create email content with proper signature
+    // Create email content - no automatic signature, user includes sign-off in body
     const htmlContent = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
   <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
@@ -84,14 +49,8 @@ export async function POST(request: NextRequest) {
       <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 280px; height: auto;">
     </div>
 
-    <div style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">
+    <div style="font-size: 16px; line-height: 1.6; color: #333;">
       ${bodyHtml}
-    </div>
-
-    <div style="font-size: 16px; line-height: 1.5; color: #333;">
-      <p style="margin: 0 0 5px 0;">${signature.regards}</p>
-      <p style="margin: 0 0 3px 0;"><strong>${signature.name}</strong></p>
-      ${signature.title ? `<p style="margin: 0; color: #666; font-style: italic;">${signature.title}</p>` : ''}
     </div>
   </div>
 </div>`;
