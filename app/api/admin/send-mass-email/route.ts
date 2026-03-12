@@ -75,9 +75,10 @@ export async function POST(request: NextRequest) {
       ${bodyHtml}
     </div>
   </div>
-  <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-    <p style="font-size: 12px; color: #6b7280; margin: 0;">
-      <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from marketing emails
+  <div style="text-align: center; margin-top: 20px; padding-top: 20px;">
+    <p style="font-size: 11px; color: #9ca3af; margin: 0; line-height: 1.6;">
+      This email was sent by FASE (Fédération des Agences de Souscription Européennes).<br>
+      <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a> · <a href="mailto:admin@fasemga.com" style="color: #9ca3af; text-decoration: underline;">Contact</a>
     </p>
   </div>
 </div>`;
