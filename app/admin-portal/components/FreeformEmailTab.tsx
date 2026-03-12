@@ -709,7 +709,10 @@ export default function FreeformEmailTab() {
                                 <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 200px; height: auto;">
                               </div>
                               <div style="font-size: 14px; line-height: 1.6; color: #333;">
-                                ${massEmailContent.htmlBody || '<p style="color: #999; font-style: italic;">No content</p>'}
+                                ${(massEmailContent.htmlBody || '<p style="color: #999; font-style: italic;">No content</p>').replace(
+                                  /\{\{name\}\}/g,
+                                  '<span style="background-color: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 3px; font-family: monospace;">{{name}}</span>'
+                                )}
                               </div>
                             </div>
                           </div>
