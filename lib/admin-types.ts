@@ -150,6 +150,7 @@ export interface RendezvousBillingInfo {
   country: string;
   address?: string;
   organizationType: string;
+  vatNumber?: string;
 }
 
 /** Additional registration info */

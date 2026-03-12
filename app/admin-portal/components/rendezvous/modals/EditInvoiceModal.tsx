@@ -14,6 +14,7 @@ interface EditInvoiceModalProps {
     unitPrice: number;
     memberDiscount: boolean;
     currency: 'auto' | 'EUR' | 'GBP' | 'USD';
+    vatNumber?: string;
   }) => Promise<void>;
   generating: boolean;
 }
@@ -29,6 +30,7 @@ export default function EditInvoiceModal({
   const [unitPrice, setUnitPrice] = useState(800);
   const [memberDiscount, setMemberDiscount] = useState(false);
   const [currency, setCurrency] = useState<'auto' | 'EUR' | 'GBP' | 'USD'>('auto');
+  const [vatNumber, setVatNumber] = useState('');
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function EditInvoiceModal({
       setMemberDiscount(hasMemberDiscount);
       setUnitPrice(hasMemberDiscount ? basePrice * 0.5 : basePrice);
       setCurrency('auto');
+      setVatNumber(registration.billingInfo?.vatNumber || '');
     }
   }, [isOpen, registration]);
 
@@ -55,6 +58,7 @@ export default function EditInvoiceModal({
       unitPrice,
       memberDiscount,
       currency,
+      vatNumber: vatNumber.trim() || undefined,
     });
   };
 
@@ -144,6 +148,20 @@ export default function EditInvoiceModal({
               <option value="GBP">GBP - Wise UK (Sort: 60-84-64, Acc: 34068846)</option>
               <option value="USD">USD - Wise US Inc (Routing: 101019628, Acc: 218936745391)</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Client VAT Number (optional)
+            </label>
+            <input
+              type="text"
+              value={vatNumber}
+              onChange={(e) => setVatNumber(e.target.value)}
+              placeholder="e.g., NL123456789B01"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+            <p className="text-xs text-gray-500 mt-1">Will appear on invoice under company details</p>
           </div>
         </div>
 

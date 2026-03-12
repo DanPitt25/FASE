@@ -12,6 +12,7 @@ export interface RendezvousInvoiceData {
   billingEmail: string;
   address?: string;
   country: string;
+  vatNumber?: string;
 
   // Attendees
   attendees: Array<{
@@ -203,6 +204,11 @@ export async function generateRendezvousInvoicePDF(data: RendezvousInvoiceData):
 
     // Country
     billToLines.push({ text: data.country, bold: false });
+
+    // VAT number if provided
+    if (data.vatNumber && data.vatNumber.trim() !== '') {
+      billToLines.push({ text: `VAT: ${data.vatNumber.trim()}`, bold: false });
+    }
 
     billToLines.forEach((line, index) => {
       firstPage.drawText(line.text, {
@@ -733,6 +739,11 @@ export async function generateRendezvousPaidInvoicePDF(data: RendezvousInvoiceDa
     }
 
     billToLines.push({ text: data.country, bold: false });
+
+    // VAT number if provided
+    if (data.vatNumber && data.vatNumber.trim() !== '') {
+      billToLines.push({ text: `VAT: ${data.vatNumber.trim()}`, bold: false });
+    }
 
     billToLines.forEach((line, index) => {
       firstPage.drawText(line.text, {

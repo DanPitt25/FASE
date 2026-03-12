@@ -31,6 +31,7 @@ interface RequestData {
   isAsaseMember: boolean;
   organizationType: string;
   forceCurrency?: 'EUR' | 'GBP' | 'USD';
+  vatNumber?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
       isAsaseMember: data.isAsaseMember,
       organizationType: data.organizationType,
       forceCurrency: data.forceCurrency,
+      vatNumber: data.vatNumber,
     };
 
     // Generate the PDF

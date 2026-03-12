@@ -618,6 +618,7 @@ export default function RendezvousManageTab() {
     unitPrice: number;
     memberDiscount: boolean;
     currency: 'auto' | 'EUR' | 'GBP' | 'USD';
+    vatNumber?: string;
   }) => {
     if (!invoiceEditRegistration) return;
 
@@ -644,7 +645,8 @@ export default function RendezvousManageTab() {
         isFaseMember: options.memberDiscount,
         isAsaseMember: false,
         organizationType: invoiceEditRegistration.billingInfo?.organizationType || 'mga',
-        forceCurrency: options.currency === 'auto' ? undefined : options.currency
+        forceCurrency: options.currency === 'auto' ? undefined : options.currency,
+        vatNumber: options.vatNumber
       });
 
       const result = await response.json();
