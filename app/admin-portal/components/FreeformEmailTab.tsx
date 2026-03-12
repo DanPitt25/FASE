@@ -44,6 +44,7 @@ export default function FreeformEmailTab() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sendingMassEmail, setSendingMassEmail] = useState(false);
   const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; excluded?: number; error?: string } | null>(null);
+  const [unsubscribedEmails, setUnsubscribedEmails] = useState<Set<string>>(new Set());
 
   // Single freeform email state
   const [singleEmail, setSingleEmail] = useState({
@@ -87,6 +88,25 @@ export default function FreeformEmailTab() {
   useEffect(() => {
     fetchRecipients();
   }, [fetchRecipients]);
+
+  // Fetch unsubscribed emails on mount
+  useEffect(() => {
+    const fetchUnsubscribed = async () => {
+      try {
+        const response = await authFetch('/api/admin/get-unsubscribed');
+        if (response.ok) {
+          const data = await response.json();
+          const emails = new Set<string>(
+            (data.unsubscribed || []).map((u: { email: string }) => u.email.toLowerCase())
+          );
+          setUnsubscribedEmails(emails);
+        }
+      } catch (error) {
+        console.error('Error fetching unsubscribed emails:', error);
+      }
+    };
+    fetchUnsubscribed();
+  }, []);
 
   const toggleOrganizationType = (type: OrganizationType) => {
     setMassEmailFilters(prev => ({
@@ -232,6 +252,14 @@ export default function FreeformEmailTab() {
       seen.add(r.email.toLowerCase());
       return true;
     });
+  };
+
+  const getExcludedRecipients = (): MassEmailRecipient[] => {
+    return getAllRecipients().filter(r => unsubscribedEmails.has(r.email.toLowerCase()));
+  };
+
+  const getActiveRecipients = (): MassEmailRecipient[] => {
+    return getAllRecipients().filter(r => !unsubscribedEmails.has(r.email.toLowerCase()));
   };
 
   const handleSendMassEmail = async () => {
@@ -489,7 +517,7 @@ export default function FreeformEmailTab() {
               disabled={getAllRecipients().length === 0 || !massEmailContent.subject || (!massEmailContent.body && !massEmailContent.htmlBody)}
               onClick={() => setShowConfirmModal(true)}
             >
-              Review & Send ({getAllRecipients().length})
+              Review & Send
             </Button>
           </div>
 
@@ -697,9 +725,11 @@ export default function FreeformEmailTab() {
 
                 {/* Recipients List */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-3">Recipients ({getAllRecipients().length})</p>
-                  <div className="border border-gray-300 rounded-lg max-h-80 overflow-y-auto">
-                    {getAllRecipients().map((recipient, index) => (
+                  <p className="text-sm font-medium text-gray-700 mb-3">
+                    Will receive ({getActiveRecipients().length})
+                  </p>
+                  <div className="border border-gray-300 rounded-lg max-h-60 overflow-y-auto">
+                    {getActiveRecipients().map((recipient, index) => (
                       <div key={recipient.id || index} className="text-sm px-3 py-2 border-b border-gray-100 last:border-b-0">
                         <div className="flex items-center justify-between">
                           <span className="font-medium truncate">{recipient.email}</span>
@@ -715,6 +745,27 @@ export default function FreeformEmailTab() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Excluded (Unsubscribed) Recipients */}
+                  {getExcludedRecipients().length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-red-600 mb-2">
+                        Excluded - Unsubscribed ({getExcludedRecipients().length})
+                      </p>
+                      <div className="border border-red-200 bg-red-50 rounded-lg max-h-32 overflow-y-auto">
+                        {getExcludedRecipients().map((recipient, index) => (
+                          <div key={recipient.id || index} className="text-sm px-3 py-2 border-b border-red-100 last:border-b-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium truncate text-red-700">{recipient.email}</span>
+                            </div>
+                            {recipient.organizationName && recipient.organizationName !== 'Manual Entry' && recipient.organizationName !== 'CSV Import' && (
+                              <div className="text-xs text-red-500 mt-0.5">{recipient.organizationName}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -734,7 +785,7 @@ export default function FreeformEmailTab() {
                 onClick={handleSendMassEmail}
                 disabled={sendingMassEmail}
               >
-                {sendingMassEmail ? 'Sending...' : `Send to ${getAllRecipients().length} recipient${getAllRecipients().length !== 1 ? 's' : ''}`}
+                {sendingMassEmail ? 'Sending...' : `Send to ${getActiveRecipients().length} recipient${getActiveRecipients().length !== 1 ? 's' : ''}`}
               </Button>
             </div>
           </div>
