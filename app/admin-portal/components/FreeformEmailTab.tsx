@@ -660,27 +660,52 @@ export default function FreeformEmailTab() {
       {/* Confirmation Modal for Mass Email */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Confirm Mass Email</h3>
-              <p className="text-sm text-gray-600 mt-1">Review the recipients before sending</p>
+              <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">Review & Send Mass Email</h3>
             </div>
 
-            <div className="p-6 max-h-[50vh] overflow-y-auto">
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700">Subject: <span className="font-normal">{massEmailContent.subject}</span></p>
-                <p className="text-sm font-medium text-gray-700 mt-2">From: <span className="font-normal">{massEmailContent.sender}</span></p>
-              </div>
+            <div className="p-6 max-h-[65vh] overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Email Preview */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-3">Email Preview</p>
+                  <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-100 p-2">
+                    <div
+                      className="bg-white"
+                      dangerouslySetInnerHTML={{
+                        __html: `
+                          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                            <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
+                              <div style="text-align: center; margin-bottom: 30px;">
+                                <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 200px; height: auto;">
+                              </div>
+                              <div style="font-size: 14px; line-height: 1.6; color: #333;">
+                                ${massEmailContent.htmlBody || '<p style="color: #999; font-style: italic;">No content</p>'}
+                              </div>
+                            </div>
+                          </div>
+                        `
+                      }}
+                    />
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500 space-y-1">
+                    <p><strong>Subject:</strong> {massEmailContent.subject}</p>
+                    <p><strong>From:</strong> {massEmailContent.sender}</p>
+                  </div>
+                </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">Recipients ({getAllRecipients().length}):</p>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {getAllRecipients().map((recipient, index) => (
-                    <div key={recipient.id || index} className="flex items-center justify-between text-sm bg-gray-50 rounded px-3 py-2">
-                      <span className="font-medium">{recipient.email}</span>
-                      <span className="text-gray-500 text-xs">{recipient.organizationName} ({recipient.organizationType})</span>
-                    </div>
-                  ))}
+                {/* Recipients List */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-3">Recipients ({getAllRecipients().length})</p>
+                  <div className="border border-gray-300 rounded-lg max-h-80 overflow-y-auto">
+                    {getAllRecipients().map((recipient, index) => (
+                      <div key={recipient.id || index} className="flex items-center justify-between text-sm px-3 py-2 border-b border-gray-100 last:border-b-0">
+                        <span className="font-medium truncate">{recipient.email}</span>
+                        <span className="text-gray-500 text-xs ml-2 shrink-0">{recipient.organizationType}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
