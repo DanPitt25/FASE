@@ -5,14 +5,17 @@ import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import type { Transaction } from '@/lib/admin-types';
+import { calculateMembershipFee } from '@/lib/pricing';
 
 interface PendingMember {
   id: string;
   organizationName: string;
   organizationType: string;
+  gwpBand: string;
   email: string;
   status: string;
   contactName?: string;
+  expectedAmount: number; // Calculated from organizationType + gwpBand using pricing.ts
 }
 
 interface PendingRegistration {
@@ -32,6 +35,17 @@ interface PendingItemWithMatches {
   data: PendingMember | PendingRegistration;
   possibleMatches: Transaction[];
 }
+
+// Check if amount matches the member's expected invoice (with tolerance)
+const isPlausibleMembershipAmount = (amount: number, expectedAmount: number): boolean => {
+  if (!expectedAmount) return false;
+  return Math.abs(amount - expectedAmount) <= 100; // €100 tolerance
+};
+
+// Check if amount is plausible for rendezvous
+const isPlausibleRendezvousAmount = (amount: number, expectedSubtotal: number): boolean => {
+  return Math.abs(amount - expectedSubtotal) <= 100; // €100 tolerance
+};
 
 export default function PaymentMatchingTab() {
   const [loading, setLoading] = useState(true);
@@ -60,11 +74,12 @@ export default function PaymentMatchingTab() {
       setError(null);
 
       // Load last 365 days of transactions for matching
+      // ONLY fetch Wise (bank transfer) transactions - Stripe payments are already linked automatically
       const fromDate = new Date();
       fromDate.setDate(fromDate.getDate() - 365);
 
       const [transactionsRes, membersRes, registrationsRes] = await Promise.all([
-        authFetch(`/api/admin/finance/transactions?source=all&from=${fromDate.toISOString()}&hideSuppressed=true`),
+        authFetch(`/api/admin/finance/transactions?source=wise&from=${fromDate.toISOString()}&hideSuppressed=true`),
         authPost('/api/admin/get-filtered-accounts', {
           organizationTypes: [],
           accountStatuses: ['invoice_sent']
@@ -82,29 +97,39 @@ export default function PaymentMatchingTab() {
         throw new Error(transactionsData.error || 'Failed to load transactions');
       }
 
-      const transactions: Transaction[] = transactionsData.transactions || [];
+      const allTransactions: Transaction[] = transactionsData.transactions || [];
 
       // Build pending items with possible matches
       const items: PendingItemWithMatches[] = [];
 
-      // Process members
+      // Process members - only match against membership-plausible transactions
       if (membersData.success && membersData.accounts) {
         for (const m of membersData.accounts) {
+          const orgType = m.organizationType || 'MGA';
+          const gwpBand = m.gwpBand || '<10m';
+          const expectedAmount = calculateMembershipFee(orgType, gwpBand, false);
+
           const member: PendingMember = {
             id: m.id,
             organizationName: m.organizationName || 'Unknown',
-            organizationType: m.organizationType || 'MGA',
+            organizationType: orgType,
+            gwpBand: gwpBand,
             email: m.email || '',
             status: m.status,
             contactName: m.contactName || '',
+            expectedAmount: expectedAmount,
           };
 
-          const matches = findMatchingTransactions(member, null, transactions);
+          // Only match transactions that are close to this member's expected invoice amount
+          const plausibleTransactions = allTransactions.filter(tx =>
+            isPlausibleMembershipAmount(tx.amount, member.expectedAmount)
+          );
+          const matches = findMatchingTransactions(member, null, plausibleTransactions);
           items.push({ type: 'member', data: member, possibleMatches: matches });
         }
       }
 
-      // Process registrations - filter to unpaid only
+      // Process registrations - filter to unpaid bank transfer only
       const unpaidStatuses = ['pending_bank_transfer', 'pending'];
       if (registrationsData.success && registrationsData.registrations) {
         for (const r of registrationsData.registrations) {
@@ -122,7 +147,11 @@ export default function PaymentMatchingTab() {
             country: r.billingInfo?.country || '',
           };
 
-          const matches = findMatchingTransactions(null, reg, transactions);
+          // Only match transactions that are plausible for this registration's amount
+          const plausibleTransactions = allTransactions.filter((tx: Transaction) =>
+            isPlausibleRendezvousAmount(tx.amount, reg.subtotal)
+          );
+          const matches = findMatchingTransactions(null, reg, plausibleTransactions);
           items.push({ type: 'registration', data: reg, possibleMatches: matches });
         }
       }
@@ -461,6 +490,11 @@ export default function PaymentMatchingTab() {
                       )}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">{email}</div>
+                    {isMember && (
+                      <div className="text-sm text-gray-500">
+                        Expected: {formatCurrency((item.data as PendingMember).expectedAmount)}
+                      </div>
+                    )}
                     {!isMember && (
                       <div className="text-sm text-gray-500">
                         {(item.data as PendingRegistration).invoiceNumber} • {formatCurrency((item.data as PendingRegistration).subtotal)} • {(item.data as PendingRegistration).numberOfAttendees} attendee{(item.data as PendingRegistration).numberOfAttendees !== 1 ? 's' : ''}
@@ -476,10 +510,8 @@ export default function PaymentMatchingTab() {
                       <div key={`${tx.source}-${tx.id}`} className="flex items-center justify-between bg-green-50 rounded p-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs px-1 py-0.5 rounded ${
-                              tx.source === 'stripe' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              {tx.source}
+                            <span className="text-xs px-1 py-0.5 rounded bg-blue-100 text-blue-700">
+                              bank
                             </span>
                             <span className="font-medium text-sm">{formatCurrency(tx.amount, tx.currency)}</span>
                             <span className="text-xs text-gray-500">{formatDate(tx.date)}</span>
@@ -544,7 +576,7 @@ export default function PaymentMatchingTab() {
               <div className="text-xs text-gray-500 mb-1">Transaction</div>
               <div className="font-medium">{formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}</div>
               <div className="text-sm text-gray-600">{selectedTransaction.senderName || 'Unknown'}</div>
-              <div className="text-xs text-gray-400">{selectedTransaction.source} • {formatDate(selectedTransaction.date)}</div>
+              <div className="text-xs text-gray-400">Bank transfer • {formatDate(selectedTransaction.date)}</div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
