@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
+import { adminDb } from '../../../../lib/firebase-admin';
+import { generateUnsubscribeUrl } from '../../../../lib/unsubscribe';
 
 export const runtime = 'nodejs';
 
@@ -26,6 +28,26 @@ export async function POST(request: NextRequest) {
       throw new Error('RESEND_API_KEY environment variable is not configured');
     }
 
+    // Get unsubscribed emails
+    const unsubscribedSnapshot = await adminDb.collection('email-unsubscribes').get();
+    const unsubscribedEmails = new Set(
+      unsubscribedSnapshot.docs.map(doc => doc.data().email?.toLowerCase())
+    );
+
+    // Filter out unsubscribed recipients
+    const filteredRecipients = recipients.filter(
+      (r: any) => !unsubscribedEmails.has(r.email?.toLowerCase())
+    );
+    const excludedCount = recipients.length - filteredRecipients.length;
+
+    if (filteredRecipients.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'All recipients have unsubscribed',
+        excluded: excludedCount
+      }, { status: 400 });
+    }
+
     // Map sender email to proper from address
     const senderMap: Record<string, string> = {
       'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
@@ -41,8 +63,8 @@ export async function POST(request: NextRequest) {
       ? htmlBody
       : (body || '').replace(/\n\n/g, '</p><p style="margin: 0 0 16px 0;">').replace(/\n/g, '<br>').replace(/^/, '<p style="margin: 0 0 16px 0;">').replace(/$/, '</p>');
 
-    // Create email content - no automatic signature, user includes sign-off in body
-    const htmlContent = `
+    // Base email template - unsubscribe link added per-recipient
+    const createHtmlContent = (unsubscribeUrl: string) => `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
   <div style="border: 1px solid #e5e7eb; padding: 30px; border-radius: 6px;">
     <div style="text-align: center; margin-bottom: 30px;">
@@ -53,9 +75,14 @@ export async function POST(request: NextRequest) {
       ${bodyHtml}
     </div>
   </div>
+  <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+    <p style="font-size: 12px; color: #6b7280; margin: 0;">
+      <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from marketing emails
+    </p>
+  </div>
 </div>`;
 
-    console.log(`Sending mass email to ${recipients.length} recipients...`);
+    console.log(`Sending mass email to ${filteredRecipients.length} recipients (${excludedCount} excluded)...`);
 
     let sent = 0;
     let failed = 0;
@@ -65,8 +92,12 @@ export async function POST(request: NextRequest) {
     const plainTextBody = body || '';
 
     // Send emails to each recipient
-    for (const recipient of recipients) {
+    for (const recipient of filteredRecipients) {
       try {
+        // Generate unsubscribe URL for this recipient
+        const unsubscribeUrl = generateUnsubscribeUrl(recipient.email);
+        const htmlContent = createHtmlContent(unsubscribeUrl);
+
         // Personalize content with recipient name if available
         const recipientName = recipient.contactName || recipient.fullName || '';
         let personalizedBody = plainTextBody;
@@ -81,6 +112,9 @@ export async function POST(request: NextRequest) {
           personalizedBody = plainTextBody.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
           personalizedHtml = htmlContent.replace(/\{\{name\}\}/g, '').replace(/Dear\s*,/g, 'Dear Member,');
         }
+
+        // Add unsubscribe note to plain text
+        personalizedBody += `\n\n---\nUnsubscribe from marketing emails: ${unsubscribeUrl}`;
 
         const emailPayload = {
           from: fromAddress,
@@ -117,12 +151,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Mass email complete: ${sent} sent, ${failed} failed`);
+    console.log(`Mass email complete: ${sent} sent, ${failed} failed, ${excludedCount} excluded`);
 
     return NextResponse.json({
       success: true,
       sent,
       failed,
+      excluded: excludedCount,
       total: recipients.length,
       errors: errors.length > 0 ? errors : undefined
     });

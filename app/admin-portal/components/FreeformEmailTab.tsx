@@ -43,7 +43,7 @@ export default function FreeformEmailTab() {
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [sendingMassEmail, setSendingMassEmail] = useState(false);
-  const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; error?: string } | null>(null);
+  const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; excluded?: number; error?: string } | null>(null);
 
   // Single freeform email state
   const [singleEmail, setSingleEmail] = useState({
@@ -498,7 +498,7 @@ export default function FreeformEmailTab() {
             <div className={`p-4 rounded-lg ${massEmailResult.error ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
               {massEmailResult.error
                 ? `Error: ${massEmailResult.error}`
-                : `Successfully sent ${massEmailResult.sent} email${massEmailResult.sent !== 1 ? 's' : ''}${massEmailResult.failed ? `, ${massEmailResult.failed} failed` : ''}`}
+                : `Successfully sent ${massEmailResult.sent} email${massEmailResult.sent !== 1 ? 's' : ''}${massEmailResult.failed ? `, ${massEmailResult.failed} failed` : ''}${massEmailResult.excluded ? ` (${massEmailResult.excluded} excluded - unsubscribed)` : ''}`}
             </div>
           )}
         </div>
