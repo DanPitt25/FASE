@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Button from '../../../components/Button';
-import Modal from '../../../components/Modal';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import type { Transaction } from '@/lib/admin-types';
 import { calculateMembershipFee } from '@/lib/pricing';
@@ -54,10 +52,6 @@ export default function PaymentMatchingTab() {
   // Data
   const [pendingItems, setPendingItems] = useState<PendingItemWithMatches[]>([]);
 
-  // Modal state
-  const [selectedItem, setSelectedItem] = useState<PendingItemWithMatches | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [confirming, setConfirming] = useState(false);
 
   // Filters
   const [filter, setFilter] = useState<'all' | 'with-matches' | 'no-matches'>('all');
@@ -296,63 +290,6 @@ export default function PaymentMatchingTab() {
             senderStart.startsWith(companyStart.substring(0, 3)));
   };
 
-  const handleConfirmMatch = async () => {
-    if (!selectedItem || !selectedTransaction) return;
-
-    setConfirming(true);
-    try {
-      if (selectedItem.type === 'registration') {
-        const reg = selectedItem.data as PendingRegistration;
-        const response = await authPost('/api/admin/update-rendezvous-status', {
-          registrationId: reg.registrationId,
-          status: 'paid',
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to update registration');
-        }
-      } else {
-        const member = selectedItem.data as PendingMember;
-        const response = await authPost('/api/admin/members/confirm-payment', {
-          memberId: member.id,
-          transactionId: selectedTransaction.id,
-          transactionSource: selectedTransaction.source,
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to update member');
-        }
-      }
-
-      // Suppress the transaction
-      await authPost('/api/admin/finance/suppress', {
-        transactionId: selectedTransaction.id,
-        source: selectedTransaction.source,
-        suppressed: true,
-      });
-
-      // Remove from lists
-      setPendingItems(prev => prev.filter(item => {
-        if (item.type !== selectedItem.type) return true;
-        if (item.type === 'member') {
-          return (item.data as PendingMember).id !== (selectedItem.data as PendingMember).id;
-        } else {
-          return (item.data as PendingRegistration).id !== (selectedItem.data as PendingRegistration).id;
-        }
-      }));
-
-      setSelectedItem(null);
-      setSelectedTransaction(null);
-    } catch (err: any) {
-      console.error('Failed to confirm match:', err);
-      alert(`Error: ${err.message}`);
-    } finally {
-      setConfirming(false);
-    }
-  };
-
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('en-EU', { style: 'currency', currency }).format(amount);
   };
@@ -518,16 +455,6 @@ export default function PaymentMatchingTab() {
                           </div>
                           <div className="text-xs text-gray-600 truncate">{tx.senderName || 'Unknown'}</div>
                         </div>
-                        <Button
-                          variant="primary"
-                          size="small"
-                          onClick={() => {
-                            setSelectedItem(item);
-                            setSelectedTransaction(tx);
-                          }}
-                        >
-                          Match
-                        </Button>
                       </div>
                     ))}
                     {item.possibleMatches.length > 3 && (
