@@ -566,6 +566,14 @@ export async function generateRendezvousInvoicePDF(data: RendezvousInvoiceData):
       color: faseBlack,
     });
 
+    firstPage.drawText('admin@fasemga.com', {
+      x: companyInfoX,
+      y: companyInfoY - 70,
+      size: 10,
+      font: bodyFont,
+      color: faseBlack,
+    });
+
     // Generate PDF bytes
     const pdfBytes = await pdfDoc.save();
     const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
@@ -1022,7 +1030,8 @@ export async function generateRendezvousPaidInvoicePDF(data: RendezvousInvoiceDa
       'FASE B.V.',
       'Herengracht 124-128',
       '1015 BT Amsterdam, The Netherlands',
-      'Email: rendezvous@fasemga.com'
+      'Reg: 98582151',
+      'admin@fasemga.com'
     ];
 
     contactLines.forEach((line, index) => {
