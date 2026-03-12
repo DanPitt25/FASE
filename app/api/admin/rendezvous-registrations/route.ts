@@ -11,11 +11,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Fetch all rendezvous registrations
-    const registrationsSnapshot = await adminDb
-      .collection('rendezvous-registrations')
-      .orderBy('createdAt', 'desc')
-      .get();
+    const { searchParams } = new URL(request.url);
+    const paymentStatusFilter = searchParams.get('paymentStatus');
+
+    // Build query - filter by payment status if provided
+    let registrationsSnapshot;
+    if (paymentStatusFilter) {
+      registrationsSnapshot = await adminDb
+        .collection('rendezvous-registrations')
+        .where('paymentStatus', '==', paymentStatusFilter)
+        .orderBy('createdAt', 'desc')
+        .get();
+    } else {
+      registrationsSnapshot = await adminDb
+        .collection('rendezvous-registrations')
+        .orderBy('createdAt', 'desc')
+        .get();
+    }
 
     const registrations = registrationsSnapshot.docs.map(doc => ({
       id: doc.id,
