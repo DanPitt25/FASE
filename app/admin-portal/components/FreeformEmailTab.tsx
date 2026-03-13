@@ -46,6 +46,12 @@ export default function FreeformEmailTab() {
   const [massEmailResult, setMassEmailResult] = useState<{ success?: boolean; sent?: number; failed?: number; excluded?: number; error?: string } | null>(null);
   const [unsubscribedEmails, setUnsubscribedEmails] = useState<Set<string>>(new Set());
 
+  // Step-through mode state
+  const [stepThroughMode, setStepThroughMode] = useState(false);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [stepResults, setStepResults] = useState<Array<{ email: string; success: boolean; error?: string }>>([]);
+  const [sendingCurrentStep, setSendingCurrentStep] = useState(false);
+
   // Single freeform email state
   const [singleEmail, setSingleEmail] = useState({
     to: '',
@@ -302,6 +308,69 @@ export default function FreeformEmailTab() {
     } finally {
       setSendingMassEmail(false);
     }
+  };
+
+  // Step-through mode: send one email at a time
+  const startStepThroughMode = () => {
+    setStepThroughMode(true);
+    setCurrentStepIndex(0);
+    setStepResults([]);
+  };
+
+  const exitStepThroughMode = () => {
+    setStepThroughMode(false);
+    setCurrentStepIndex(0);
+    setShowConfirmModal(false);
+  };
+
+  const handleSendCurrentStep = async () => {
+    const activeRecipients = getActiveRecipients();
+    const recipient = activeRecipients[currentStepIndex];
+    if (!recipient) return;
+
+    setSendingCurrentStep(true);
+
+    try {
+      const response = await authPost('/api/admin/send-mass-email', {
+        recipients: [{ email: recipient.email, organizationName: recipient.organizationName, contactName: recipient.contactName || '' }],
+        subject: massEmailContent.subject,
+        body: massEmailContent.body,
+        htmlBody: massEmailContent.htmlBody,
+        sender: massEmailContent.sender
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStepResults(prev => [...prev, { email: recipient.email, success: true }]);
+        // Auto-advance to next
+        if (currentStepIndex < activeRecipients.length - 1) {
+          setCurrentStepIndex(prev => prev + 1);
+        }
+      } else {
+        setStepResults(prev => [...prev, { email: recipient.email, success: false, error: data.error || 'Failed' }]);
+      }
+    } catch (error) {
+      setStepResults(prev => [...prev, { email: recipient.email, success: false, error: 'Network error' }]);
+    } finally {
+      setSendingCurrentStep(false);
+    }
+  };
+
+  const handleSkipCurrentStep = () => {
+    const activeRecipients = getActiveRecipients();
+    const recipient = activeRecipients[currentStepIndex];
+    if (recipient) {
+      setStepResults(prev => [...prev, { email: recipient.email, success: false, error: 'Skipped' }]);
+    }
+    if (currentStepIndex < activeRecipients.length - 1) {
+      setCurrentStepIndex(prev => prev + 1);
+    }
+  };
+
+  const getPersonalizedHtml = (html: string, name: string | undefined) => {
+    const displayName = name || '{{name}}';
+    return html.replace(/\{\{name\}\}/g, displayName);
   };
 
   const handleSendSingleEmail = async () => {
@@ -729,7 +798,7 @@ export default function FreeformEmailTab() {
       </div>
 
       {/* Confirmation Modal for Mass Email */}
-      {showConfirmModal && (
+      {showConfirmModal && !stepThroughMode && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
             <div className="p-6 border-b border-gray-200">
@@ -826,7 +895,7 @@ export default function FreeformEmailTab() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-4">
+            <div className="p-6 border-t border-gray-200 flex justify-between">
               <Button
                 type="button"
                 variant="secondary"
@@ -835,15 +904,174 @@ export default function FreeformEmailTab() {
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={handleSendMassEmail}
-                disabled={sendingMassEmail}
-              >
-                {sendingMassEmail ? 'Sending...' : `Send to ${getActiveRecipients().length} recipient${getActiveRecipients().length !== 1 ? 's' : ''}`}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={startStepThroughMode}
+                  disabled={sendingMassEmail}
+                >
+                  Send One-by-One
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleSendMassEmail}
+                  disabled={sendingMassEmail}
+                >
+                  {sendingMassEmail ? 'Sending...' : `Send All (${getActiveRecipients().length})`}
+                </Button>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step-Through Modal */}
+      {showConfirmModal && stepThroughMode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            {(() => {
+              const activeRecipients = getActiveRecipients();
+              const currentRecipient = activeRecipients[currentStepIndex];
+              const isComplete = currentStepIndex >= activeRecipients.length || !currentRecipient;
+              const alreadySent = stepResults.some(r => r.email === currentRecipient?.email);
+
+              return (
+                <>
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
+                        {isComplete ? 'Sending Complete' : `Sending Email ${currentStepIndex + 1} of ${activeRecipients.length}`}
+                      </h3>
+                      <div className="text-sm text-gray-500">
+                        {stepResults.filter(r => r.success).length} sent · {stepResults.filter(r => !r.success && r.error !== 'Skipped').length} failed · {stepResults.filter(r => r.error === 'Skipped').length} skipped
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-fase-navy transition-all duration-300"
+                        style={{ width: `${(stepResults.length / activeRecipients.length) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-6 max-h-[60vh] overflow-y-auto">
+                    {isComplete ? (
+                      <div className="space-y-4">
+                        <div className="text-center py-8">
+                          <div className="text-5xl mb-4">✓</div>
+                          <p className="text-lg font-medium text-gray-800">All emails processed</p>
+                          <p className="text-sm text-gray-600 mt-2">
+                            {stepResults.filter(r => r.success).length} sent successfully
+                            {stepResults.filter(r => !r.success).length > 0 && `, ${stepResults.filter(r => !r.success).length} not sent`}
+                          </p>
+                        </div>
+                        {/* Results summary */}
+                        <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                          {stepResults.map((result, idx) => (
+                            <div key={idx} className={`text-sm px-3 py-2 border-b border-gray-100 last:border-b-0 flex items-center justify-between ${result.success ? 'bg-green-50' : 'bg-red-50'}`}>
+                              <span className="truncate">{result.email}</span>
+                              <span className={`text-xs font-medium ${result.success ? 'text-green-600' : 'text-red-600'}`}>
+                                {result.success ? 'Sent' : result.error || 'Failed'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Current recipient info */}
+                        <div>
+                          <div className="mb-4 p-4 bg-fase-navy/5 rounded-lg border border-fase-navy/20">
+                            <p className="text-sm font-medium text-fase-navy mb-1">Sending to:</p>
+                            <p className="text-lg font-semibold text-gray-900">{currentRecipient?.email}</p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Name: <span className={currentRecipient?.contactName ? 'font-medium' : 'text-red-600'}>{currentRecipient?.contactName || 'NO NAME'}</span>
+                            </p>
+                            {currentRecipient?.organizationName && currentRecipient.organizationName !== 'Manual Entry' && currentRecipient.organizationName !== 'CSV Import' && (
+                              <p className="text-sm text-gray-500">{currentRecipient.organizationName}</p>
+                            )}
+                          </div>
+
+                          {/* Recent results */}
+                          {stepResults.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 mb-2">Recent:</p>
+                              <div className="border border-gray-200 rounded-lg max-h-32 overflow-y-auto">
+                                {stepResults.slice(-5).reverse().map((result, idx) => (
+                                  <div key={idx} className={`text-sm px-3 py-1.5 border-b border-gray-100 last:border-b-0 flex items-center justify-between ${result.success ? 'text-green-700' : 'text-red-700'}`}>
+                                    <span className="truncate text-xs">{result.email}</span>
+                                    <span className="text-xs">{result.success ? '✓' : '✗'}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Personalized preview */}
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-3">Preview for this recipient:</p>
+                          <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-100 p-2 max-h-80 overflow-y-auto">
+                            <div
+                              className="bg-white text-sm"
+                              dangerouslySetInnerHTML={{
+                                __html: `
+                                  <div style="font-family: Arial, sans-serif; padding: 15px; background-color: #ffffff;">
+                                    <div style="font-size: 13px; line-height: 1.5; color: #333;" class="email-preview-content">
+                                      <style>
+                                        .email-preview-content p { margin: 0 0 0.8em 0; }
+                                        .email-preview-content p:last-child { margin-bottom: 0; }
+                                      </style>
+                                      ${getPersonalizedHtml(
+                                        massEmailContent.htmlBody || '<p style="color: #999;">No content</p>',
+                                        currentRecipient?.contactName
+                                      )}
+                                    </div>
+                                  </div>
+                                `
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-6 border-t border-gray-200 flex justify-between">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={exitStepThroughMode}
+                    >
+                      {isComplete ? 'Close' : 'Stop & Exit'}
+                    </Button>
+                    {!isComplete && !alreadySent && (
+                      <div className="flex gap-3">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleSkipCurrentStep}
+                          disabled={sendingCurrentStep}
+                        >
+                          Skip
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={handleSendCurrentStep}
+                          disabled={sendingCurrentStep}
+                        >
+                          {sendingCurrentStep ? 'Sending...' : 'Send This Email'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
