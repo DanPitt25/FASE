@@ -32,11 +32,13 @@ import {
   EditAttendeesModal,
   EditInvoiceModal,
 } from './rendezvous/modals';
+import { useInvoice, InvoiceData, generateLineItemId } from '@/lib/contexts/InvoiceContext';
 
 type Attendee = RendezvousAttendee;
 type PaymentStatus = RendezvousPaymentStatus;
 
 export default function RendezvousManageTab() {
+  const { prepareInvoice } = useInvoice();
   const [registrations, setRegistrations] = useState<RendezvousRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
@@ -424,111 +426,115 @@ export default function RendezvousManageTab() {
     }
   };
 
-  // Invoice generation
-  const handleGeneratePaidInvoice = async (registration: RendezvousRegistration) => {
-    try {
-      setGeneratingInvoice(true);
+  // Invoice generation - opens unified Invoice Generator with pre-populated data
+  const handleGeneratePaidInvoice = (registration: RendezvousRegistration) => {
+    const pricePerTicket = registration.subtotal / (registration.numberOfAttendees || 1);
 
-      const response = await authPost('/api/admin/generate-paid-invoice', {
-        invoiceNumber: registration.invoiceNumber,
-        registrationId: registration.registrationId,
-        companyName: registration.billingInfo?.company || '',
-        billingEmail: registration.billingInfo?.billingEmail || '',
-        address: registration.billingInfo?.address || '',
+    // Parse address if it's a single string
+    const addressString = registration.billingInfo?.address || '';
+
+    const invoiceData: InvoiceData = {
+      type: 'rendezvous_paid',
+      isPaid: true,
+      sourceType: 'rendezvous',
+      sourceId: registration.registrationId,
+
+      // Bill To
+      organizationName: registration.billingInfo?.company || '',
+      email: registration.billingInfo?.billingEmail || '',
+      address: {
+        line1: addressString,
+        line2: '',
+        city: '',
+        postcode: '',
         country: registration.billingInfo?.country || '',
-        attendees: registration.attendees || [],
-        pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
-        numberOfTickets: registration.numberOfAttendees || 1,
-        subtotal: registration.subtotal || 0,
-        vatAmount: registration.vatAmount || 0,
-        vatRate: 21,
-        totalPrice: registration.totalPrice || 0,
-        discount: registration.discount || 0,
-        isFaseMember: registration.companyIsFaseMember || false,
-        isAsaseMember: registration.isAsaseMember || false,
-        organizationType: registration.billingInfo?.organizationType || 'mga'
-      });
+      },
+      vatNumber: registration.billingInfo?.vatNumber || '',
 
-      const result = await response.json();
+      // Line Items
+      lineItems: [{
+        id: generateLineItemId(),
+        description: `MGA Rendezvous 2026 - ${registration.billingInfo?.organizationType === 'mga' ? 'MGA' : registration.billingInfo?.organizationType === 'carrier_broker' ? 'Carrier/Broker' : 'Service Provider'} Pass`,
+        quantity: registration.numberOfAttendees || 1,
+        unitPrice: pricePerTicket,
+      }],
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate invoice');
-      }
+      // Settings
+      currency: 'EUR',
+      locale: 'en',
 
-      // Download the PDF
-      const pdfBlob = new Blob(
-        [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
-        { type: 'application/pdf' }
-      );
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.filename || `${registration.invoiceNumber}-PAID.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Rendezvous-specific
+      organizationType: (registration.billingInfo?.organizationType as 'mga' | 'carrier_broker' | 'service_provider') || 'mga',
+      isFaseMember: registration.companyIsFaseMember || false,
+      isAsaseMember: registration.isAsaseMember || false,
+      invoiceNumber: registration.invoiceNumber,
+      registrationId: registration.registrationId,
 
-    } catch (error: any) {
-      console.error('Error generating paid invoice:', error);
-      alert('Failed to generate invoice: ' + (error.message || 'Unknown error'));
-    } finally {
-      setGeneratingInvoice(false);
-    }
+      // Attendees for reference
+      attendees: registration.attendees?.map(a => ({
+        firstName: a.firstName,
+        lastName: a.lastName,
+        email: a.email,
+        jobTitle: a.jobTitle,
+      })) || [],
+    };
+
+    prepareInvoice(invoiceData);
   };
 
-  const handleRegenerateUnpaidInvoice = async (registration: RendezvousRegistration) => {
-    try {
-      setGeneratingInvoice(true);
+  const handleRegenerateUnpaidInvoice = (registration: RendezvousRegistration) => {
+    const pricePerTicket = registration.subtotal / (registration.numberOfAttendees || 1);
 
-      const response = await authPost('/api/admin/regenerate-rendezvous-invoice', {
-        invoiceNumber: registration.invoiceNumber,
-        registrationId: registration.registrationId,
-        companyName: registration.billingInfo?.company || '',
-        billingEmail: registration.billingInfo?.billingEmail || '',
-        address: registration.billingInfo?.address || '',
+    // Parse address if it's a single string
+    const addressString = registration.billingInfo?.address || '';
+
+    const invoiceData: InvoiceData = {
+      type: 'rendezvous',
+      isPaid: false,
+      sourceType: 'rendezvous',
+      sourceId: registration.registrationId,
+
+      // Bill To
+      organizationName: registration.billingInfo?.company || '',
+      email: registration.billingInfo?.billingEmail || '',
+      address: {
+        line1: addressString,
+        line2: '',
+        city: '',
+        postcode: '',
         country: registration.billingInfo?.country || '',
-        attendees: registration.attendees || [],
-        pricePerTicket: registration.subtotal / (registration.numberOfAttendees || 1),
-        numberOfTickets: registration.numberOfAttendees || 1,
-        subtotal: registration.subtotal || 0,
-        vatAmount: registration.vatAmount || 0,
-        vatRate: 21,
-        totalPrice: registration.totalPrice || 0,
-        discount: registration.discount || 0,
-        isFaseMember: registration.companyIsFaseMember || false,
-        isAsaseMember: registration.isAsaseMember || false,
-        organizationType: registration.billingInfo?.organizationType || 'mga'
-      });
+      },
+      vatNumber: registration.billingInfo?.vatNumber || '',
 
-      const result = await response.json();
+      // Line Items
+      lineItems: [{
+        id: generateLineItemId(),
+        description: `MGA Rendezvous 2026 - ${registration.billingInfo?.organizationType === 'mga' ? 'MGA' : registration.billingInfo?.organizationType === 'carrier_broker' ? 'Carrier/Broker' : 'Service Provider'} Pass`,
+        quantity: registration.numberOfAttendees || 1,
+        unitPrice: pricePerTicket,
+      }],
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to regenerate invoice');
-      }
+      // Settings
+      currency: 'EUR',
+      locale: 'en',
 
-      // Download the PDF
-      const pdfBlob = new Blob(
-        [Uint8Array.from(atob(result.pdfBase64), c => c.charCodeAt(0))],
-        { type: 'application/pdf' }
-      );
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.filename || `${registration.invoiceNumber}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Rendezvous-specific
+      organizationType: (registration.billingInfo?.organizationType as 'mga' | 'carrier_broker' | 'service_provider') || 'mga',
+      isFaseMember: registration.companyIsFaseMember || false,
+      isAsaseMember: registration.isAsaseMember || false,
+      invoiceNumber: registration.invoiceNumber,
+      registrationId: registration.registrationId,
 
-      loadRegistrations();
+      // Attendees for reference
+      attendees: registration.attendees?.map(a => ({
+        firstName: a.firstName,
+        lastName: a.lastName,
+        email: a.email,
+        jobTitle: a.jobTitle,
+      })) || [],
+    };
 
-    } catch (error: any) {
-      console.error('Error regenerating invoice:', error);
-      alert('Failed to regenerate invoice: ' + (error.message || 'Unknown error'));
-    } finally {
-      setGeneratingInvoice(false);
-    }
+    prepareInvoice(invoiceData);
   };
 
   // Edit attendees

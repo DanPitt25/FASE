@@ -1,567 +1,924 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { authFetch, authPost } from '@/lib/auth-fetch';
+/**
+ * InvoicesTab - Unified Invoice Generator
+ *
+ * Supports all invoice types:
+ * - Membership invoices (regular and paid)
+ * - Rendezvous invoices (regular and paid)
+ * - Custom/freeform invoices
+ * - Credit notes
+ *
+ * Can be pre-populated via InvoiceContext when linked from other tabs.
+ */
 
-interface StorageInvoice {
-  id: string;
-  invoiceNumber: string;
-  organizationName: string;
-  organizationSlug: string;
-  url: string;
-  uploadedAt: string | null;
-  size: number;
-}
+import { useState, useEffect, useMemo } from 'react';
+import { authPost } from '@/lib/auth-fetch';
+import Button from '@/components/Button';
+import {
+  useInvoice,
+  InvoiceData,
+  InvoiceLineItem,
+  InvoiceType,
+  generateLineItemId,
+} from '@/lib/contexts/InvoiceContext';
 
-interface LineItem {
-  id: string;
-  description: string;
-  amount: string;
-  isDiscount: boolean;
-}
+// ============================================================================
+// Constants
+// ============================================================================
 
-interface CustomInvoiceForm {
-  recipientName: string;
-  recipientEmail: string;
-  organizationName: string;
-  address: {
-    line1: string;
-    line2: string;
-    city: string;
-    postcode: string;
-    country: string;
-  };
-  lineItems: LineItem[];
-  paymentCurrency: string; // Currency for payment (EUR base, convert to GBP/USD)
-  locale: string;
-}
-
-const createLineItem = (description = '', amount = '', isDiscount = false): LineItem => ({
-  id: Math.random().toString(36).substr(2, 9),
-  description,
-  amount,
-  isDiscount
-});
-
-const initialFormState: CustomInvoiceForm = {
-  recipientName: '',
-  recipientEmail: '',
-  organizationName: '',
-  address: {
-    line1: '',
-    line2: '',
-    city: '',
-    postcode: '',
-    country: ''
-  },
-  lineItems: [createLineItem('FASE Annual Membership', '')],
-  paymentCurrency: 'EUR',
-  locale: 'en'
+const INVOICE_TYPE_LABELS: Record<InvoiceType, string> = {
+  membership: 'Membership Invoice',
+  membership_paid: 'Membership PAID Confirmation',
+  rendezvous: 'Rendezvous Invoice',
+  rendezvous_paid: 'Rendezvous PAID Confirmation',
+  custom: 'Custom Invoice',
+  credit_note: 'Credit Note',
 };
 
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'nl', label: 'Nederlands' },
+];
+
+const CURRENCIES = [
+  { code: 'auto', label: 'Auto (based on country)' },
+  { code: 'EUR', label: 'EUR - Wise Belgium' },
+  { code: 'GBP', label: 'GBP - Wise UK' },
+  { code: 'USD', label: 'USD - Wise US' },
+];
+
+const ORG_TYPES = [
+  { code: 'mga', label: 'MGA' },
+  { code: 'carrier_broker', label: 'Carrier/Broker' },
+  { code: 'service_provider', label: 'Service Provider' },
+];
+
+// ============================================================================
+// Component
+// ============================================================================
+
 export default function InvoicesTab() {
-  const [invoices, setInvoices] = useState<StorageInvoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Context for pre-population
+  const { pendingInvoice, clearPendingInvoice, showToast } = useInvoice();
+
+  // Form state
+  const [invoiceType, setInvoiceType] = useState<InvoiceType>('custom');
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Bill To
+  const [organizationName, setOrganizationName] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [email, setEmail] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [city, setCity] = useState('');
+  const [county, setCounty] = useState('');
+  const [postcode, setPostcode] = useState('');
+  const [country, setCountry] = useState('');
+  const [vatNumber, setVatNumber] = useState('');
+
+  // Line Items
+  const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([
+    { id: generateLineItemId(), description: '', quantity: 1, unitPrice: 0 },
+  ]);
+
+  // Settings
+  const [currency, setCurrency] = useState<'EUR' | 'GBP' | 'USD' | 'auto'>('EUR');
+  const [locale, setLocale] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
+
+  // Rendezvous-specific
+  const [organizationType, setOrganizationType] = useState<'mga' | 'carrier_broker' | 'service_provider'>('mga');
+  const [isFaseMember, setIsFaseMember] = useState(false);
+  const [isAsaseMember, setIsAsaseMember] = useState(false);
+  const [registrationId, setRegistrationId] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+
+  // PAID invoice fields
+  const [paidAt, setPaidAt] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+
+  // UI State
+  const [generating, setGenerating] = useState(false);
+  const [generatedResult, setGeneratedResult] = useState<{
+    pdfUrl?: string;
+    pdfBase64?: string;
+    invoiceNumber: string;
+    filename?: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Custom invoice modal state
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState<CustomInvoiceForm>(initialFormState);
-  const [generating, setGenerating] = useState(false);
-  const [generatedInvoice, setGeneratedInvoice] = useState<{ pdfUrl: string; invoiceNumber: string } | null>(null);
+  // ============================================================================
+  // Handle pending invoice from context
+  // ============================================================================
 
   useEffect(() => {
-    loadInvoices();
-  }, []);
-
-  const loadInvoices = async () => {
-    try {
-      setLoading(true);
-      const response = await authFetch('/api/admin/storage-invoices');
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to load invoices');
-      }
-      setInvoices(data.invoices);
-      setError(null);
-    } catch (err: any) {
-      console.error('Failed to load invoices:', err);
-      setError(err.message || 'Failed to load invoices');
-    } finally {
-      setLoading(false);
+    if (pendingInvoice) {
+      populateFromData(pendingInvoice);
+      clearPendingInvoice();
     }
+  }, [pendingInvoice, clearPendingInvoice]);
+
+  const populateFromData = (data: InvoiceData) => {
+    setInvoiceType(data.type);
+    setIsPaid(data.isPaid);
+
+    // Bill To
+    setOrganizationName(data.organizationName || '');
+    setContactName(data.contactName || '');
+    setEmail(data.email || '');
+    setAddressLine1(data.address?.line1 || '');
+    setAddressLine2(data.address?.line2 || '');
+    setCity(data.address?.city || '');
+    setCounty(data.address?.county || '');
+    setPostcode(data.address?.postcode || '');
+    setCountry(data.address?.country || '');
+    setVatNumber(data.vatNumber || '');
+
+    // Line items
+    if (data.lineItems.length > 0) {
+      setLineItems(data.lineItems);
+    }
+
+    // Settings
+    setCurrency(data.currency || 'EUR');
+    setLocale(data.locale || 'en');
+
+    // Rendezvous-specific
+    if (data.organizationType) setOrganizationType(data.organizationType);
+    setIsFaseMember(data.isFaseMember || false);
+    setIsAsaseMember(data.isAsaseMember || false);
+    setRegistrationId(data.registrationId || '');
+    setInvoiceNumber(data.invoiceNumber || '');
+
+    // PAID fields
+    setPaidAt(data.paidAt || '');
+    setPaymentMethod(data.paymentMethod || '');
+    setPaymentReference(data.paymentReference || '');
   };
 
-  // Calculate total from line items
-  const calculateTotal = () => {
-    return formData.lineItems.reduce((sum, item) => {
-      const amount = parseFloat(item.amount) || 0;
-      return sum + (item.isDiscount ? -Math.abs(amount) : amount);
+  // ============================================================================
+  // Calculate totals
+  // ============================================================================
+
+  const { subtotal, total } = useMemo(() => {
+    const sub = lineItems.reduce((sum, item) => {
+      const itemTotal = item.quantity * item.unitPrice;
+      return sum + itemTotal;
     }, 0);
-  };
+    return { subtotal: sub, total: sub };
+  }, [lineItems]);
+
+  // ============================================================================
+  // Line item management
+  // ============================================================================
 
   const addLineItem = (isDiscount = false) => {
-    setFormData({
-      ...formData,
-      lineItems: [...formData.lineItems, createLineItem('', '', isDiscount)]
-    });
+    setLineItems([
+      ...lineItems,
+      {
+        id: generateLineItemId(),
+        description: isDiscount ? '' : '',
+        quantity: 1,
+        unitPrice: 0,
+        isDiscount,
+      },
+    ]);
+  };
+
+  const updateLineItem = (id: string, field: keyof InvoiceLineItem, value: any) => {
+    setLineItems(
+      lineItems.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
   };
 
   const removeLineItem = (id: string) => {
-    if (formData.lineItems.length <= 1) return;
-    setFormData({
-      ...formData,
-      lineItems: formData.lineItems.filter(item => item.id !== id)
-    });
+    if (lineItems.length <= 1) return;
+    setLineItems(lineItems.filter((item) => item.id !== id));
   };
 
-  const updateLineItem = (id: string, field: keyof LineItem, value: string | boolean) => {
-    setFormData({
-      ...formData,
-      lineItems: formData.lineItems.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    });
+  // ============================================================================
+  // Reset form
+  // ============================================================================
+
+  const resetForm = () => {
+    setInvoiceType('custom');
+    setIsPaid(false);
+    setOrganizationName('');
+    setContactName('');
+    setEmail('');
+    setAddressLine1('');
+    setAddressLine2('');
+    setCity('');
+    setCounty('');
+    setPostcode('');
+    setCountry('');
+    setVatNumber('');
+    setLineItems([{ id: generateLineItemId(), description: '', quantity: 1, unitPrice: 0 }]);
+    setCurrency('EUR');
+    setLocale('en');
+    setOrganizationType('mga');
+    setIsFaseMember(false);
+    setIsAsaseMember(false);
+    setRegistrationId('');
+    setInvoiceNumber('');
+    setPaidAt('');
+    setPaymentMethod('');
+    setPaymentReference('');
+    setGeneratedResult(null);
+    setError(null);
   };
 
-  const handleGenerateInvoice = async () => {
-    if (!formData.organizationName.trim()) {
-      alert('Organization name is required');
+  // ============================================================================
+  // Generate invoice
+  // ============================================================================
+
+  const handleGenerate = async () => {
+    // Validate
+    if (!organizationName.trim()) {
+      setError('Organization name is required');
       return;
     }
 
-    const total = calculateTotal();
-    if (total <= 0) {
-      alert('Total amount must be greater than zero');
-      return;
-    }
-
-    // Check that at least one line item has description and amount
-    const validItems = formData.lineItems.filter(item =>
-      item.description.trim() && (parseFloat(item.amount) || 0) !== 0
+    const validItems = lineItems.filter(
+      (item) => item.description.trim() && item.unitPrice !== 0
     );
     if (validItems.length === 0) {
-      alert('At least one line item with description and amount is required');
+      setError('At least one line item with description and amount is required');
       return;
     }
 
     setGenerating(true);
-    setGeneratedInvoice(null);
+    setError(null);
+    setGeneratedResult(null);
 
     try {
-      // Convert line items to the format expected by the API
-      const lineItemsPayload = formData.lineItems
-        .filter(item => item.description.trim() && (parseFloat(item.amount) || 0) !== 0)
-        .map(item => ({
-          description: item.description,
-          amount: item.isDiscount ? -Math.abs(parseFloat(item.amount) || 0) : parseFloat(item.amount) || 0,
-          isDiscount: item.isDiscount
-        }));
+      let endpoint: string;
+      let payload: Record<string, any>;
 
-      const payload = {
-        recipientName: formData.recipientName,
-        email: formData.recipientEmail,
-        organizationName: formData.organizationName,
-        fullName: formData.recipientName,
-        address: formData.address,
-        lineItems: lineItemsPayload,
-        paymentCurrency: formData.paymentCurrency,
-        locale: formData.locale
-      };
+      const isRendezvous = invoiceType === 'rendezvous' || invoiceType === 'rendezvous_paid';
 
-      const response = await authPost('/api/generate-invoice-pdf', payload);
+      if (isRendezvous && isPaid) {
+        // Rendezvous PAID invoice
+        endpoint = '/api/admin/generate-paid-invoice';
+        payload = {
+          invoiceNumber: invoiceNumber || undefined,
+          registrationId: registrationId || undefined,
+          companyName: organizationName,
+          billingEmail: email,
+          address: [addressLine1, addressLine2, city, postcode].filter(Boolean).join(', '),
+          country: country,
+          attendees: [], // Not needed for invoice generation
+          pricePerTicket: validItems[0]?.unitPrice || 0,
+          numberOfTickets: validItems[0]?.quantity || 1,
+          subtotal: subtotal,
+          vatAmount: 0,
+          vatRate: 21,
+          totalPrice: total,
+          discount: 0,
+          isFaseMember,
+          isAsaseMember,
+          organizationType,
+        };
+      } else if (isRendezvous) {
+        // Rendezvous unpaid invoice
+        endpoint = '/api/admin/regenerate-rendezvous-invoice';
+        payload = {
+          invoiceNumber: invoiceNumber || undefined,
+          registrationId: registrationId || undefined,
+          companyName: organizationName,
+          billingEmail: email,
+          address: [addressLine1, addressLine2, city, postcode].filter(Boolean).join(', '),
+          country: country,
+          attendees: [],
+          pricePerTicket: validItems[0]?.unitPrice || 0,
+          numberOfTickets: validItems[0]?.quantity || 1,
+          subtotal: subtotal,
+          vatAmount: 0,
+          vatRate: 21,
+          totalPrice: total,
+          discount: isFaseMember ? 50 : 0,
+          isFaseMember,
+          isAsaseMember,
+          organizationType,
+          forceCurrency: currency === 'auto' ? undefined : currency,
+          vatNumber: vatNumber || undefined,
+        };
+      } else {
+        // Membership or custom invoice (line-items based)
+        endpoint = '/api/generate-invoice-pdf';
+        payload = {
+          email: email,
+          organizationName: organizationName,
+          fullName: contactName,
+          address: {
+            line1: addressLine1,
+            line2: addressLine2,
+            city: city,
+            postcode: postcode,
+            country: country,
+          },
+          lineItems: validItems.map((item) => ({
+            description: item.description,
+            amount: item.quantity * item.unitPrice,
+            isDiscount: item.isDiscount || item.unitPrice < 0,
+          })),
+          paymentCurrency: currency === 'auto' ? 'EUR' : currency,
+          locale: locale,
+        };
+      }
 
+      const response = await authPost(endpoint, payload);
       const data = await response.json();
 
-      if (!data.success) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Failed to generate invoice');
       }
 
-      setGeneratedInvoice({
-        pdfUrl: data.pdfUrl,
-        invoiceNumber: data.invoiceNumber
-      });
+      // Handle response
+      if (data.pdfBase64) {
+        // Download the PDF directly
+        const pdfBlob = new Blob(
+          [Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0))],
+          { type: 'application/pdf' }
+        );
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = data.filename || `${data.invoiceNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
 
-      loadInvoices();
+        setGeneratedResult({
+          invoiceNumber: data.invoiceNumber,
+          filename: data.filename,
+        });
+      } else if (data.pdfUrl) {
+        setGeneratedResult({
+          pdfUrl: data.pdfUrl,
+          invoiceNumber: data.invoiceNumber,
+        });
+      }
 
+      showToast('success', `Invoice ${data.invoiceNumber} generated successfully`);
     } catch (err: any) {
       console.error('Failed to generate invoice:', err);
-      alert(err.message || 'Failed to generate invoice');
+      setError(err.message || 'Failed to generate invoice');
+      showToast('error', err.message || 'Failed to generate invoice');
     } finally {
       setGenerating(false);
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setFormData(initialFormState);
-    setGeneratedInvoice(null);
-  };
+  const isRendezvousType = invoiceType === 'rendezvous' || invoiceType === 'rendezvous_paid';
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'N/A';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2">Loading invoices...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <div className="text-red-800 font-medium">Error loading invoices</div>
-        <div className="text-red-600 text-sm mt-1">{error}</div>
-        <button onClick={loadInvoices} className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-          Retry
-        </button>
-      </div>
-    );
-  }
+  // ============================================================================
+  // Render
+  // ============================================================================
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Invoice PDFs ({invoices.length})</h2>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-          >
-            Generate Custom Invoice
-          </button>
-          <button
-            onClick={loadInvoices}
-            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-          >
-            Refresh
-          </button>
-        </div>
+        <h2 className="text-xl font-semibold text-fase-navy">Invoice Generator</h2>
+        <Button variant="secondary" size="small" onClick={resetForm}>
+          Reset Form
+        </Button>
       </div>
 
-      {/* Custom Invoice Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Generate Custom Invoice</h3>
-                <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+      {/* Generator Form */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+        {/* Invoice Type */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Invoice Type
+            </label>
+            <select
+              value={invoiceType}
+              onChange={(e) => {
+                const type = e.target.value as InvoiceType;
+                setInvoiceType(type);
+                setIsPaid(type.endsWith('_paid'));
+              }}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            >
+              {Object.entries(INVOICE_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Language
+            </label>
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as typeof locale)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            >
+              {LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Currency
+            </label>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as typeof currency)}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            >
+              {CURRENCIES.map((curr) => (
+                <option key={curr.code} value={curr.code}>
+                  {curr.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-              {generatedInvoice ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Invoice Generated</h4>
-                  <p className="text-gray-600 mb-4">Invoice {generatedInvoice.invoiceNumber}</p>
-                  <div className="flex justify-center gap-4">
-                    <a
-                      href={generatedInvoice.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Download PDF
-                    </a>
-                    <button onClick={closeModal} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-                      Close
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Recipient Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
-                      <input
-                        type="text"
-                        value={formData.recipientName}
-                        onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                        placeholder="John Smith"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
-                      <input
-                        type="email"
-                        value={formData.recipientEmail}
-                        onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                        placeholder="john@company.com"
-                      />
-                    </div>
-                  </div>
+        {/* Bill To Section */}
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-semibold text-fase-navy mb-3">Bill To</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                Organization Name *
+              </label>
+              <input
+                type="text"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="Company Ltd"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                Contact Name
+              </label>
+              <input
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="John Smith"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="billing@company.com"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                VAT Number
+              </label>
+              <input
+                type="text"
+                value={vatNumber}
+                onChange={(e) => setVatNumber(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="NL123456789B01"
+              />
+            </div>
+          </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
-                    <input
-                      type="text"
-                      value={formData.organizationName}
-                      onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                      placeholder="Company Ltd"
-                      required
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Address</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <input
-                          type="text"
-                          value={formData.address.line1}
-                          onChange={(e) => setFormData({ ...formData, address: { ...formData.address, line1: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="Address Line 1"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <input
-                          type="text"
-                          value={formData.address.line2}
-                          onChange={(e) => setFormData({ ...formData, address: { ...formData.address, line2: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="Address Line 2"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          value={formData.address.city}
-                          onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="City"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          value={formData.address.postcode}
-                          onChange={(e) => setFormData({ ...formData, address: { ...formData.address, postcode: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="Postcode"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <input
-                          type="text"
-                          value={formData.address.country}
-                          onChange={(e) => setFormData({ ...formData, address: { ...formData.address, country: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                          placeholder="Country"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Line Items */}
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-sm font-medium text-gray-700">Line Items (EUR)</h4>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => addLineItem(false)}
-                          className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                        >
-                          + Add Item
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => addLineItem(true)}
-                          className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                        >
-                          + Add Discount
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {formData.lineItems.map((item, index) => (
-                        <div key={item.id} className={`flex gap-2 items-center p-2 rounded ${item.isDiscount ? 'bg-green-50' : 'bg-gray-50'}`}>
-                          <div className="flex-grow">
-                            <input
-                              type="text"
-                              value={item.description}
-                              onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                              placeholder={item.isDiscount ? "Discount description" : "Item description"}
-                            />
-                          </div>
-                          <div className="w-28">
-                            <div className="relative">
-                              <span className={`absolute left-3 top-2 ${item.isDiscount ? 'text-green-600' : 'text-gray-500'}`}>
-                                {item.isDiscount ? '-€' : '€'}
-                              </span>
-                              <input
-                                type="number"
-                                value={item.amount}
-                                onChange={(e) => updateLineItem(item.id, 'amount', e.target.value)}
-                                className={`w-full pl-8 pr-3 py-2 border rounded text-sm ${item.isDiscount ? 'border-green-300 text-green-700' : 'border-gray-300'}`}
-                                placeholder="0"
-                              />
-                            </div>
-                          </div>
-                          {formData.lineItems.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeLineItem(item.id)}
-                              className="text-red-500 hover:text-red-700 p-1"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Total Display */}
-                    <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700">Total (EUR):</span>
-                      <span className={`text-lg font-bold ${calculateTotal() > 0 ? 'text-gray-900' : 'text-red-600'}`}>
-                        €{calculateTotal().toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Settings Row */}
-                  <div className="border-t pt-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Invoice Language</label>
-                        <select
-                          value={formData.locale}
-                          onChange={(e) => setFormData({ ...formData, locale: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="en">English</option>
-                          <option value="de">German</option>
-                          <option value="fr">French</option>
-                          <option value="es">Spanish</option>
-                          <option value="it">Italian</option>
-                          <option value="nl">Dutch</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Payment Currency</label>
-                        <select
-                          value={formData.paymentCurrency}
-                          onChange={(e) => setFormData({ ...formData, paymentCurrency: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                        >
-                          <option value="EUR">EUR (no conversion)</option>
-                          <option value="GBP">GBP (convert to British Pounds)</option>
-                          <option value="USD">USD (convert to US Dollars)</option>
-                        </select>
-                        {formData.paymentCurrency !== 'EUR' && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Invoice shows EUR base + converted {formData.paymentCurrency} total
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="border-t pt-4 flex justify-end gap-3">
-                    <button
-                      onClick={closeModal}
-                      className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleGenerateInvoice}
-                      disabled={generating}
-                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                    >
-                      {generating ? 'Generating...' : 'Generate Invoice'}
-                    </button>
-                  </div>
-                </div>
-              )}
+          {/* Address */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-2">
+              <input
+                type="text"
+                value={addressLine1}
+                onChange={(e) => setAddressLine1(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="Address Line 1"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={addressLine2}
+                onChange={(e) => setAddressLine2(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="Address Line 2"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="City"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="Postcode"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                placeholder="Country"
+              />
             </div>
           </div>
         </div>
-      )}
 
-      {invoices.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
-          <div className="text-gray-600">No invoice PDFs found in storage</div>
-        </div>
-      ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+        {/* Rendezvous-specific options */}
+        {isRendezvousType && (
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-semibold text-fase-navy mb-3">
+              Rendezvous Options
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Organization Type
+                </label>
+                <select
+                  value={organizationType}
+                  onChange={(e) =>
+                    setOrganizationType(e.target.value as typeof organizationType)
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                >
+                  {ORG_TYPES.map((type) => (
+                    <option key={type.code} value={type.code}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Invoice Number (optional)
+                </label>
+                <input
+                  type="text"
+                  value={invoiceNumber}
+                  onChange={(e) => setInvoiceNumber(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono"
+                  placeholder="RDV-2026-XXXXXXXX"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Registration ID (optional)
+                </label>
+                <input
+                  type="text"
+                  value={registrationId}
+                  onChange={(e) => setRegistrationId(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono"
+                  placeholder="abc12345"
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex gap-6">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isFaseMember}
+                  onChange={(e) => setIsFaseMember(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                FASE Member (50% discount)
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={isAsaseMember}
+                  onChange={(e) => setIsAsaseMember(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                ASASE Member (Complimentary)
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* PAID invoice options */}
+        {isPaid && (
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-semibold text-green-700 mb-3">
+              Payment Confirmation Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  value={paidAt}
+                  onChange={(e) => setPaidAt(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Payment Method
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                >
+                  <option value="">Select...</option>
+                  <option value="stripe">Stripe (Card)</option>
+                  <option value="wise">Wise (Bank Transfer)</option>
+                  <option value="bank_transfer">Other Bank Transfer</option>
+                  <option value="paypal">PayPal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Payment Reference
+                </label>
+                <input
+                  type="text"
+                  value={paymentReference}
+                  onChange={(e) => setPaymentReference(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  placeholder="Transaction ID"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Line Items */}
+        <div className="border-t pt-4">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-semibold text-fase-navy">Line Items</h3>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => addLineItem(false)}
+                className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+              >
+                + Add Item
+              </button>
+              <button
+                type="button"
+                onClick={() => addLineItem(true)}
+                className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+              >
+                + Add Discount
+              </button>
+            </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PDF</th>
+                  <th className="px-3 py-2 text-left font-medium text-gray-700">
+                    Description
+                  </th>
+                  <th className="px-3 py-2 text-center font-medium text-gray-700 w-20">
+                    Qty
+                  </th>
+                  <th className="px-3 py-2 text-right font-medium text-gray-700 w-32">
+                    Unit Price (€)
+                  </th>
+                  <th className="px-3 py-2 text-right font-medium text-gray-700 w-28">
+                    Total
+                  </th>
+                  <th className="px-3 py-2 w-10"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {invoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{invoice.invoiceNumber}</td>
-                    <td className="px-3 py-4 text-sm text-gray-900">{invoice.organizationName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(invoice.uploadedAt)}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{formatSize(invoice.size)}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      <a
-                        href={invoice.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                        title="Download PDF"
+              <tbody className="divide-y divide-gray-200">
+                {lineItems.map((item) => {
+                  const itemTotal = item.quantity * item.unitPrice;
+                  const isNegative = item.unitPrice < 0 || item.isDiscount;
+                  return (
+                    <tr
+                      key={item.id}
+                      className={isNegative ? 'bg-green-50' : ''}
+                    >
+                      <td className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) =>
+                            updateLineItem(item.id, 'description', e.target.value)
+                          }
+                          placeholder="Enter description..."
+                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateLineItem(
+                              item.id,
+                              'quantity',
+                              parseInt(e.target.value) || 1
+                            )
+                          }
+                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm text-center"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={item.unitPrice}
+                          onChange={(e) =>
+                            updateLineItem(
+                              item.id,
+                              'unitPrice',
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          className="w-full border border-gray-200 rounded px-2 py-1 text-sm text-right"
+                        />
+                      </td>
+                      <td
+                        className={`px-3 py-2 text-right font-medium ${
+                          isNegative ? 'text-green-600' : ''
+                        }`}
                       >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download
-                      </a>
-                    </td>
-                  </tr>
-                ))}
+                        €
+                        {itemTotal.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="px-3 py-2">
+                        {lineItems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeLineItem(item.id)}
+                            className="text-gray-400 hover:text-red-500"
+                            title="Remove item"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Use negative unit prices for credits/discounts/refunds.
+          </p>
         </div>
-      )}
+
+        {/* Total */}
+        <div
+          className={`p-4 rounded-lg ${
+            isPaid ? 'bg-green-700' : 'bg-fase-navy'
+          } text-white`}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-sm opacity-80">
+                {lineItems.filter((i) => i.description.trim()).length} item
+                {lineItems.filter((i) => i.description.trim()).length !== 1
+                  ? 's'
+                  : ''}
+              </div>
+              {isPaid && (
+                <div className="text-fase-gold text-xs mt-1">
+                  PAID Confirmation
+                </div>
+              )}
+              {total < 0 && (
+                <div className="text-fase-gold text-xs mt-1">Credit Note</div>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="text-sm opacity-80">Total</div>
+              <div className="text-2xl font-bold">
+                €
+                {total.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 text-red-800 p-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Success */}
+        {generatedResult && (
+          <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-green-800">
+                  Invoice Generated: {generatedResult.invoiceNumber}
+                </div>
+                {generatedResult.filename && (
+                  <div className="text-sm text-green-600">
+                    Downloaded: {generatedResult.filename}
+                  </div>
+                )}
+              </div>
+              {generatedResult.pdfUrl && (
+                <a
+                  href={generatedResult.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                >
+                  Download PDF
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="secondary" onClick={resetForm}>
+            Clear
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating
+              ? 'Generating...'
+              : isPaid
+              ? 'Generate PAID Invoice'
+              : 'Generate Invoice'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

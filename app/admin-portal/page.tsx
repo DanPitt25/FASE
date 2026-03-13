@@ -30,6 +30,8 @@ import PaymentMatchingTab from './components/PaymentMatchingTab';
 // Error boundary and context providers
 import { AdminErrorBoundary } from './components/AdminErrorBoundary';
 import { EmailProvider, EmailToast } from '../../lib/contexts/EmailContext';
+import { InvoiceProvider, useInvoice, InvoiceToast } from '../../lib/contexts/InvoiceContext';
+import type { AdminSection } from '../../components/AdminConsoleDashboard';
 
 // Icons for tiles
 const MembersIcon = (
@@ -98,9 +100,18 @@ const MatchingIcon = (
   </svg>
 );
 
-export default function AdminPortalPage() {
+// Inner component that uses InvoiceContext
+function AdminPortalContent() {
   const { user, loading: authLoading, isAdmin } = useUnifiedAuth();
   const router = useRouter();
+  const { setNavigateCallback } = useInvoice();
+
+  // Handle navigation ready callback from AdminConsoleDashboard
+  const handleNavigationReady = useCallback((navigate: (section: AdminSection, tileId: string) => void) => {
+    setNavigateCallback(() => {
+      navigate('manage', 'invoices');
+    });
+  }, [setNavigateCallback]);
 
   // State for data
   const [memberApplications, setMemberApplications] = useState<UnifiedMember[]>([]);
@@ -402,7 +413,7 @@ export default function AdminPortalPage() {
   ];
 
   return (
-    <EmailProvider>
+    <>
       <AdminConsoleDashboard
         title="Admin Portal"
         bannerImage="/conferenceWood.jpg"
@@ -412,8 +423,21 @@ export default function AdminPortalPage() {
         currentPage="admin-portal"
         defaultSection="view"
         defaultActiveTile="members"
+        onNavigationReady={handleNavigationReady}
       />
       <EmailToast />
+      <InvoiceToast />
+    </>
+  );
+}
+
+// Wrapper component with providers
+export default function AdminPortalPage() {
+  return (
+    <EmailProvider>
+      <InvoiceProvider>
+        <AdminPortalContent />
+      </InvoiceProvider>
     </EmailProvider>
   );
 }

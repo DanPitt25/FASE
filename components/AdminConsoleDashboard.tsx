@@ -24,6 +24,7 @@ interface AdminConsoleDashboardProps {
   currentPage: string;
   defaultSection?: AdminSection;
   defaultActiveTile?: string;
+  onNavigationReady?: (navigate: (section: AdminSection, tileId: string) => void) => void;
 }
 
 export default function AdminConsoleDashboard({
@@ -35,6 +36,7 @@ export default function AdminConsoleDashboard({
   currentPage,
   defaultSection = 'view',
   defaultActiveTile,
+  onNavigationReady,
 }: AdminConsoleDashboardProps) {
   const [activeSection, setActiveSection] = useState<AdminSection>(defaultSection);
   const [activeTileId, setActiveTileId] = useState<string>(
@@ -43,6 +45,19 @@ export default function AdminConsoleDashboard({
 
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Expose navigation function to parent - use ref to track if already called
+  const navigationReadyCalledRef = useRef(false);
+  useEffect(() => {
+    if (onNavigationReady && !navigationReadyCalledRef.current) {
+      navigationReadyCalledRef.current = true;
+      const navigate = (section: AdminSection, tileId: string) => {
+        setActiveSection(section);
+        setActiveTileId(tileId);
+      };
+      onNavigationReady(navigate);
+    }
+  }, [onNavigationReady]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
