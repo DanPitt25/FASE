@@ -42,10 +42,8 @@ function ToolbarButton({
   );
 }
 
-function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+function Toolbar({ editor }: { editor: NonNullable<ReturnType<typeof useEditor>> }) {
   const setLink = useCallback(() => {
-    if (!editor) return;
-
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('Enter URL:', previousUrl || 'https://');
 
@@ -251,7 +249,7 @@ export default function RichTextEditor({
 
   return (
     <div className={`border border-gray-300 rounded-md bg-white ${className}`}>
-      <Toolbar editor={editor} />
+      {editor && <Toolbar editor={editor} />}
       <EditorContent
         editor={editor}
         className="[&_.ProseMirror]:min-h-[200px] [&_.ProseMirror]:p-4 [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_p]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-5 [&_.ProseMirror_h2]:text-lg [&_.ProseMirror_h2]:font-bold [&_.ProseMirror_h2]:my-3 [&_.ProseMirror_a]:text-fase-navy [&_.ProseMirror_a]:underline"
