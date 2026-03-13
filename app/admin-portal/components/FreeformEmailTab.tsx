@@ -751,7 +751,13 @@ export default function FreeformEmailTab() {
                               <div style="text-align: center; margin-bottom: 30px;">
                                 <img src="https://fasemga.com/FASE-Logo-Lockup-RGB.png" alt="FASE Logo" style="max-width: 200px; height: auto;">
                               </div>
-                              <div style="font-size: 14px; line-height: 1.6; color: #333;">
+                              <div style="font-size: 14px; line-height: 1.6; color: #333;" class="email-preview-content">
+                                <style>
+                                  .email-preview-content p { margin: 0 0 1em 0; }
+                                  .email-preview-content p:last-child { margin-bottom: 0; }
+                                  .email-preview-content ul, .email-preview-content ol { margin: 0 0 1em 0; padding-left: 1.5em; }
+                                  .email-preview-content h2 { margin: 1em 0 0.5em 0; font-size: 1.25em; font-weight: bold; }
+                                </style>
                                 ${(massEmailContent.htmlBody || '<p style="color: #999; font-style: italic;">No content</p>').replace(
                                   /\{\{name\}\}/g,
                                   '<span style="background-color: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 3px; font-family: monospace;">{{name}}</span>'
