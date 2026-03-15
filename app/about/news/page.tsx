@@ -33,6 +33,8 @@ export default function NewsPage() {
     async function loadArticles() {
       try {
         const baseArticleSlugs = [
+          'loro-partnership',
+          'accelerant-partnership',
           'am-best-partnership',
           'bridgehaven-partnership',
           'mga-rendezvous',
