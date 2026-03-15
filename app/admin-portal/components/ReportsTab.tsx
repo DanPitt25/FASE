@@ -151,7 +151,7 @@ type TypeFilter = 'all' | 'MGA' | 'carrier' | 'provider';
 
 // Donut/Pie Chart Component
 function DonutChart({ data, total, size = 180 }: { data: Record<string, number>; total: number; size?: number }) {
-  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0 || total === 0) {
     return <div className="flex items-center justify-center h-full text-gray-400 text-sm">No data</div>;
   }
@@ -205,25 +205,22 @@ function DonutChart({ data, total, size = 180 }: { data: Record<string, number>;
         <text x={center} y={center - 5} textAnchor="middle" className="text-2xl font-bold fill-gray-800">{total}</text>
         <text x={center} y={center + 15} textAnchor="middle" className="text-xs fill-gray-500">total</text>
       </svg>
-      <div className="flex-1 space-y-1 min-w-0">
-        {segments.slice(0, 6).map((seg, i) => (
+      <div className="flex-1 space-y-1 min-w-0 max-h-64 overflow-y-auto">
+        {segments.map((seg, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
             <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: seg.color }} />
             <span className="text-gray-600" title={seg.label}>{seg.label}</span>
             <span className="ml-auto font-medium text-gray-800 flex-shrink-0">{seg.percentage.toFixed(0)}%</span>
           </div>
         ))}
-        {sorted.length > 6 && (
-          <div className="text-xs text-gray-400 pl-5">+{sorted.length - 6} more</div>
-        )}
       </div>
     </div>
   );
 }
 
 // Enhanced Bar Chart with colors
-function ColoredBarChart({ data, total, maxItems = 10 }: { data: Record<string, number>; total: number; maxItems?: number }) {
-  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, maxItems);
+function ColoredBarChart({ data, total }: { data: Record<string, number>; total: number }) {
+  const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0) {
     return <p className="text-sm text-gray-500 italic">No data available</p>;
   }
@@ -1469,7 +1466,7 @@ export default function ReportsTab() {
                     <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                       <h4 className="text-lg font-semibold text-gray-800 mb-4">Lines of Business</h4>
                       <div className="max-h-72 overflow-y-auto">
-                        <ColoredBarChart data={reportData.mgaByLinesOfBusiness} total={reportData.mgas.length} maxItems={12} />
+                        <ColoredBarChart data={reportData.mgaByLinesOfBusiness} total={reportData.mgas.length} />
                       </div>
                     </div>
                   </div>
@@ -1477,7 +1474,7 @@ export default function ReportsTab() {
                   <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                     <h4 className="text-lg font-semibold text-gray-800 mb-4">Target Markets</h4>
                     <div className="max-h-72 overflow-y-auto">
-                      <ColoredBarChart data={reportData.mgaByMarket} total={reportData.mgas.length} maxItems={15} />
+                      <ColoredBarChart data={reportData.mgaByMarket} total={reportData.mgas.length} />
                     </div>
                   </div>
                 </>
