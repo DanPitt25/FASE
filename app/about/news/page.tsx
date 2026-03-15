@@ -34,6 +34,7 @@ export default function NewsPage() {
       try {
         const baseArticleSlugs = [
           'loro-partnership',
+          'accredited-partnership',
           'accelerant-partnership',
           'am-best-partnership',
           'bridgehaven-partnership',
