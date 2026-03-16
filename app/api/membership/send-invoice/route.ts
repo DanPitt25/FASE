@@ -448,33 +448,59 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // SEND EMAIL VIA FIREBASE FUNCTION
+    // SEND EMAIL VIA RESEND
     // =========================================================================
-    const emailData = {
-      email: recipientEmail,
-      cc: ccEmails?.join(',') || undefined,
-      subject,
-      invoiceHTML: fullEmailHtml,
-      invoiceNumber,
-      organizationName,
-      totalAmount: total.toString(),
-      pdfAttachment: pdfResult.pdfBase64,
-      pdfFilename: `Invoice-${invoiceNumber}.pdf`,
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not configured');
+    }
+
+    // Map sender ID to full "From" format
+    const senderMap: Record<string, string> = {
+      'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
+      'william.pitt@fasemga.com': 'William Pitt <william.pitt@fasemga.com>',
+      'info@fasemga.com': 'FASE Info <info@fasemga.com>',
+      'media@fasemga.com': 'FASE Media <media@fasemga.com>',
     };
 
-    const response = await fetch('https://us-central1-fase-site.cloudfunctions.net/sendInvoiceEmail', {
+    const emailPayload: any = {
+      from: senderMap[sender] || senderMap['admin@fasemga.com'],
+      to: recipientEmail,
+      subject,
+      html: fullEmailHtml,
+    };
+
+    // Add CC if provided
+    if (ccEmails && ccEmails.length > 0) {
+      emailPayload.cc = ccEmails;
+    }
+
+    // Add PDF attachment
+    if (pdfResult.pdfBase64) {
+      emailPayload.attachments = [{
+        filename: `Invoice-${invoiceNumber}.pdf`,
+        content: pdfResult.pdfBase64,
+        type: 'application/pdf',
+        disposition: 'attachment'
+      }];
+    }
+
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: emailData }),
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailPayload),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Firebase Function error: ${response.status} - ${errorText}`);
+      throw new Error(`Resend API error: ${response.status} - ${errorText}`);
     }
 
     const emailResult = await response.json();
-    console.log('✅ Invoice email sent successfully');
+    console.log('✅ Invoice email sent successfully via Resend:', emailResult.id);
 
     // =========================================================================
     // LOG ACTIVITY TO ACCOUNT
