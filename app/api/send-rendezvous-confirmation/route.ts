@@ -69,6 +69,10 @@ function generateConfirmationEmail(
   }
 
   const subject = replaceTemplateVars(t.subject, { companyName: details.companyName });
+
+  // Determine if this is a free/complimentary registration
+  const isFreeRegistration = details.isComplimentary || details.totalAmount === 0;
+
   const formattedAmount = details.isComplimentary
     ? 'Complimentary (ASASE Member)'
     : formatCurrencyForLocale(details.totalAmount, language);
@@ -77,6 +81,22 @@ function generateConfirmationEmail(
   const attendeesList = details.attendeeNames
     ? details.attendeeNames.split(', ').map((name: string) => `<li style="margin-bottom: 4px;">${name}</li>`).join('')
     : '';
+
+  // Build payment section - only show if not free
+  const paymentSection = isFreeRegistration ? '' : `
+    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 20px 0;">
+      ${t.payment_confirmed}
+    </p>`;
+
+  // Build summary box - exclude payment info for free registrations
+  const summaryBox = isFreeRegistration ? `
+    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 20px 0;">
+      <p style="margin: 0; color: #2D5574;"><strong>${t.tickets}</strong> ${details.numberOfAttendees}</p>
+    </div>` : `
+    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0; color: #2D5574;"><strong>${t.tickets}</strong> ${details.numberOfAttendees}</p>
+      <p style="margin: 0; color: #2D5574;"><strong>${t.total_paid}</strong> ${formattedAmount}</p>
+    </div>`;
 
   const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
@@ -90,15 +110,8 @@ function generateConfirmationEmail(
     <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
       ${t.thank_you}
     </p>
-
-    <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 20px 0;">
-      ${t.payment_confirmed}
-    </p>
-
-    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin: 20px 0;">
-      <p style="margin: 0 0 10px 0; color: #2D5574;"><strong>${t.tickets}</strong> ${details.numberOfAttendees}</p>
-      <p style="margin: 0; color: #2D5574;"><strong>${t.total_paid}</strong> ${formattedAmount}</p>
-    </div>
+${paymentSection}
+${summaryBox}
 
     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
       <h3 style="color: #2D5574; margin: 0 0 15px 0; font-size: 16px;">${t.event_info}</h3>
