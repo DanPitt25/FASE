@@ -7,15 +7,12 @@ export default function LeadershipPage() {
   const t = useTranslations('leadership');
   const sections = [
     {
-      type: 'split' as const,
+      type: 'content' as const,
       title: t('advisory_board.title'),
       content: [
         t('advisory_board.content.paragraph1'),
         t('advisory_board.content.paragraph2')
-      ],
-      image: '/consideration.jpg',
-      imageAlt: t('advisory_board.image_alt'),
-      imagePosition: 'right' as const
+      ]
     },
     {
       type: 'people' as const,
