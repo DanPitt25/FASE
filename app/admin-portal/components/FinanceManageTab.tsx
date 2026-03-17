@@ -53,6 +53,7 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   const [invoicePostcode, setInvoicePostcode] = useState('');
   const [invoiceCountry, setInvoiceCountry] = useState('');
   const [invoiceVatNumber, setInvoiceVatNumber] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');  // Optional: override auto-generated number
   const [invoiceLineItems, setInvoiceLineItems] = useState<{ description: string; quantity: number; unitPrice: number }[]>([
     { description: 'FASE Annual Membership', quantity: 1, unitPrice: 0 }
   ]);
@@ -239,6 +240,7 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     setInvoicePostcode('');
     setInvoiceCountry('');
     setInvoiceVatNumber('');
+    setInvoiceNumber('');
   };
 
   const handleGeneratePaidInvoice = async () => {
@@ -267,6 +269,7 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
           country: invoiceCountry,
         },
         vatNumber: invoiceVatNumber || undefined,
+        invoiceNumber: invoiceNumber || undefined,  // Optional: use existing invoice number
       });
 
       const data = await response.json();
@@ -838,6 +841,17 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                           onChange={(e) => setInvoiceVatNumber(e.target.value)}
                           className="w-full border border-gray-300 rounded p-2 text-sm"
                           placeholder="e.g. GB123456789"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Invoice Number (optional)</label>
+                        <input
+                          type="text"
+                          value={invoiceNumber}
+                          onChange={(e) => setInvoiceNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm"
+                          placeholder="Leave blank to auto-generate, or enter existing invoice # to create revision"
                         />
                       </div>
                     </div>

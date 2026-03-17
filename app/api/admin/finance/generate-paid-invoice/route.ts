@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       contactName,
       address,
       vatNumber,
+      invoiceNumber: customInvoiceNumber,  // Optional: use existing invoice number
     } = body;
 
     if (!transactionId || !source || !organizationName || !lineItems || lineItems.length === 0) {
@@ -54,7 +55,8 @@ export async function POST(request: NextRequest) {
     }));
 
     const totalAmount = processedLineItems.reduce((sum, item) => sum + item.total, 0);
-    const invoiceNumber = generateInvoiceNumber({ type: 'finance_paid' });
+    // Use custom invoice number if provided, otherwise auto-generate
+    const invoiceNumber = customInvoiceNumber || generateInvoiceNumber({ type: 'finance_paid' });
     const paymentKey = `${source}_${transactionId}`;
 
     // Generate, upload, record, and log in one operation
