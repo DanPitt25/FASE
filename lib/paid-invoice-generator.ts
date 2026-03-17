@@ -126,7 +126,8 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       color: faseNavy,
     });
 
-    firstPage.drawText(data.vatNumber ? `VAT: ${data.vatNumber}` : 'VAT Number Pending', {
+    // FASE's VAT status (right side - our info)
+    firstPage.drawText('VAT Number Pending', {
       x: invoiceDetailsX,
       y: currentY - 48,
       size: 10,
@@ -144,6 +145,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       data.address?.line2,
       [data.address?.city, data.address?.postcode].filter(Boolean).join(' '),
       data.address?.country,
+      data.vatNumber ? `VAT: ${data.vatNumber}` : null,  // Client's VAT number (optional)
     ].filter(line => line && line.trim() !== '');
 
     billToLines.forEach((line, index) => {
