@@ -37,6 +37,11 @@ const getLinesOfBusiness = (member: UnifiedMember): string[] => {
   return member.linesOfBusiness || (member as any).portfolio?.linesOfBusiness || [];
 };
 
+// Helper to get other lines of business custom values
+const getOtherLinesOfBusiness = (member: UnifiedMember): { other1?: string; other2?: string; other3?: string } | undefined => {
+  return (member as any).portfolio?.otherLinesOfBusiness;
+};
+
 // Helper to get localized company bio
 const getLocalizedBio = (member: UnifiedMember, locale: string): string | null => {
   const summary = member.companySummary;
@@ -315,7 +320,7 @@ export default function LinesOfBusinessDirectory({ translations }: LinesOfBusine
                           key={idx}
                           className="px-2 py-0.5 text-xs bg-fase-navy text-white rounded-full"
                         >
-                          {getLineOfBusinessDisplay(line, locale)}
+                          {getLineOfBusinessDisplay(line, locale, getOtherLinesOfBusiness(org))}
                         </span>
                       ))}
                       {matchingLines.length > 3 && (
@@ -433,7 +438,7 @@ export default function LinesOfBusinessDirectory({ translations }: LinesOfBusine
                               : 'bg-gray-100 text-gray-700'
                           }`}
                         >
-                          {getLineOfBusinessDisplay(line, locale)}
+                          {getLineOfBusinessDisplay(line, locale, getOtherLinesOfBusiness(selectedOrg))}
                         </span>
                       ))}
                     </div>

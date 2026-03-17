@@ -27,6 +27,11 @@ const getLinesOfBusiness = (member: UnifiedMember): string[] => {
   return member.linesOfBusiness || (member as any).portfolio?.linesOfBusiness || [];
 };
 
+// Helper to get other lines of business custom values
+const getOtherLinesOfBusiness = (member: UnifiedMember): { other1?: string; other2?: string; other3?: string } | undefined => {
+  return (member as any).portfolio?.otherLinesOfBusiness;
+};
+
 // Helper to get localized company bio
 const getLocalizedBio = (member: UnifiedMember, locale: string): string | null => {
   const summary = member.companySummary;
@@ -158,7 +163,7 @@ function OrganizationCard({
                       key={idx}
                       className="px-2 py-0.5 text-xs bg-fase-navy/10 text-fase-navy rounded-full"
                     >
-                      {getLineOfBusinessDisplay(line, translations.locale || 'en')}
+                      {getLineOfBusinessDisplay(line, translations.locale || 'en', getOtherLinesOfBusiness(organization))}
                     </span>
                   ))}
                   {getLinesOfBusiness(organization).length > 3 && (
@@ -214,11 +219,13 @@ function OrganizationCard({
               {getLinesOfBusiness(organization) && getLinesOfBusiness(organization).length > 0 && (
                 <div>
                   <div className="text-xs font-medium text-gray-700 mb-1">{translations.lines_of_business || 'Lines of Business'}</div>
-                  <div className="text-sm text-gray-900">
+                  <div className="flex flex-wrap gap-1">
                     {getLinesOfBusiness(organization).map((line: string, index: number) => (
-                      <span key={index}>
-                        {getLineOfBusinessDisplay(line, translations.locale || 'en')}
-                        {index < getLinesOfBusiness(organization)!.length - 1 && ', '}
+                      <span
+                        key={index}
+                        className="px-2 py-0.5 text-xs bg-fase-navy/10 text-fase-navy rounded-full"
+                      >
+                        {getLineOfBusinessDisplay(line, translations.locale || 'en', getOtherLinesOfBusiness(organization))}
                       </span>
                     ))}
                   </div>

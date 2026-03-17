@@ -189,8 +189,34 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
   },
 };
 
+// Map linesOfBusiness keys to otherLinesOfBusiness keys
+const OTHER_KEY_MAP: Record<string, string> = {
+  other: 'other1',
+  other_2: 'other2',
+  other_3: 'other3',
+};
+
+// Import custom LOB translations
+import { getCustomLOBTranslation } from './custom-lines-of-business';
+
 // Convert a key to display name for the given locale
-export function getLineOfBusinessDisplay(key: string, locale: string = 'en'): string {
+// If otherLinesOfBusiness is provided and the key is "other", "other_2", or "other_3",
+// it will return the custom value from otherLinesOfBusiness if available
+export function getLineOfBusinessDisplay(
+  key: string,
+  locale: string = 'en',
+  otherLinesOfBusiness?: { other1?: string; other2?: string; other3?: string }
+): string {
+  // Check if this is an "other" key and we have custom values
+  if (otherLinesOfBusiness && OTHER_KEY_MAP[key]) {
+    const otherKey = OTHER_KEY_MAP[key] as keyof typeof otherLinesOfBusiness;
+    const customValue = otherLinesOfBusiness[otherKey];
+    if (customValue && customValue.trim()) {
+      // Try to get a translation for this custom value
+      return getCustomLOBTranslation(customValue, locale);
+    }
+  }
+
   const translations = TRANSLATIONS[locale] || TRANSLATIONS.en;
   return translations[key] || TRANSLATIONS.en[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }

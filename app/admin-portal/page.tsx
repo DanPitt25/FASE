@@ -26,6 +26,7 @@ import BioReviewTab from './components/BioReviewTab';
 import SponsorsTab from './components/SponsorsTab';
 import TempAccountTab from './components/TempAccountTab';
 import PaymentMatchingTab from './components/PaymentMatchingTab';
+import LinesOfBusinessTab from './components/LinesOfBusinessTab';
 
 // Error boundary and context providers
 import { AdminErrorBoundary } from './components/AdminErrorBoundary';
@@ -97,6 +98,12 @@ const DirectoryIcon = (
 const MatchingIcon = (
   <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+  </svg>
+);
+
+const LinesOfBusinessIcon = (
+  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
   </svg>
 );
 
@@ -407,6 +414,16 @@ function AdminPortalContent() {
       content: (
         <AdminErrorBoundary tabName="Directory">
           <TempAccountTab />
+        </AdminErrorBoundary>
+      ),
+    },
+    {
+      id: 'lines-of-business',
+      title: 'Lines of Business',
+      icon: LinesOfBusinessIcon,
+      content: (
+        <AdminErrorBoundary tabName="Lines of Business">
+          <LinesOfBusinessTab />
         </AdminErrorBoundary>
       ),
     },

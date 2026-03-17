@@ -28,7 +28,7 @@ This project uses the Firebase Admin SDK (server-side) with the `FIREBASE_SERVIC
 ### API Route Firebase Usage - IMPORTANT
 **ALWAYS use the shared Firebase Admin exports from `lib/firebase-admin.ts`:**
 ```typescript
-import { adminDb, adminAuth, adminStorage, FieldValue } from '../../../lib/firebase-admin';
+import { adminDb, adminAuth, adminStorage, FieldValue } from '../../../../lib/firebase-admin';
 
 // Then use directly:
 const db = adminDb;
@@ -36,6 +36,32 @@ await db.collection('accounts').doc(id).update({ ... });
 ```
 
 **NEVER create your own `initializeAdmin()` function or call `admin.initializeApp()` in API routes.** The shared module uses a named app (`fase-admin`), and custom initialization will conflict with it, causing "The default Firebase app does not exist" errors.
+
+### Admin API Routes - CRITICAL
+**When creating new admin API routes, ALWAYS follow this pattern:**
+
+1. **Use relative imports** (not `@/lib/...`) for consistency with existing routes
+2. **Use the shared admin auth helpers** from `lib/admin-auth.ts`:
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '../../../../lib/firebase-admin';
+import { verifyAdminAccess, isAuthError } from '../../../../lib/admin-auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  const authResult = await verifyAdminAccess(request);
+  if (isAuthError(authResult)) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
+  // Your code here...
+}
+```
+
+3. **NEVER write your own admin authentication logic** - always use `verifyAdminAccess` and `isAuthError`
+4. **ALWAYS add `export const dynamic = 'force-dynamic';`** to prevent caching issues
+5. **Look at existing admin routes** in `app/api/admin/` for reference before creating new ones
 
 ## MGA Rendezvous Subsite
 - Located at `mga-rendezvous/` - a separate git repo within this project
