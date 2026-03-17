@@ -362,13 +362,21 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     const config = actionConfig[selectedAction];
 
     const rendezvousPassData = getRendezvousPassData();
-    // Don't include auto-detected rendezvous data if override is enabled
+    // Include rendezvous data if: auto-detected and not overridden, OR override is enabled with passes > 0
     const shouldIncludeRendezvous = rendezvousPassData && !formData.rendezvousOverride.enabled;
+    const overrideHasPasses = formData.rendezvousOverride.enabled && formData.rendezvousOverride.passCount > 0;
     const payload: any = {
       preview: isPreview,
       ...formData,
       greeting: formData.greeting || formData.fullName,
-      ...(shouldIncludeRendezvous && { rendezvousPassReservation: rendezvousPassData })
+      ...(shouldIncludeRendezvous && { rendezvousPassReservation: rendezvousPassData }),
+      // When override is enabled with passes, still send pass data so email text mentions Rendezvous
+      ...(overrideHasPasses && { rendezvousPassReservation: {
+        reserved: true,
+        passCount: formData.rendezvousOverride.passCount,
+        organizationType: formData.organizationType,
+        isFaseMember: true
+      }})
     };
 
     if (selectedAction === 'rendezvous') {
