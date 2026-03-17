@@ -15,6 +15,7 @@
     "alerts": "Benachrichtigungen",
     "map": "MGA-Mitgliederkarte",
     "directory": "Mitgliederverzeichnis",
+    "lines_of_business": "Geschäftsbereiche",
     "profile": "Profil Verwalten"
   },
   "home": {
@@ -357,6 +358,17 @@
       "title": "So verwenden Sie die Karte:",
       "instructions": "Klicken Sie auf farbige Länder, um dort tätige MGAs zu sehen. Verwenden Sie den Filter, um Hauptsitz-Standorte oder Marktgebiete anzuzeigen. Suchen Sie nach bestimmten Unternehmen über das Suchfeld oben."
     }
+  },
+  "lines_of_business": {
+    "title": "Suche nach Geschäftsbereichen",
+    "description": "Wählen Sie Geschäftsbereiche aus, um FASE-Mitglieder in diesen Bereichen zu finden.",
+    "loading": "Laden...",
+    "select_lines": "Geschäftsbereiche auswählen:",
+    "clear_all": "Alle löschen",
+    "lines_selected": "ausgewählt",
+    "organizations_found": "Organisationen gefunden",
+    "no_results": "Keine Organisationen gefunden",
+    "no_results_desc": "Keine Organisationen entsprechen den ausgewählten Geschäftsbereichen."
   },
   "directory": {
     "title": "Mitgliederverzeichnis",

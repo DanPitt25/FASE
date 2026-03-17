@@ -1034,39 +1034,15 @@ export default function MemberMap({ translations }: MemberMapProps) {
 
 
 
-  if (loading) {
+  if (loading || !leafletLoaded) {
     return (
       <div className="space-y-6">
-        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-          <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">
-            {translations.title}
-          </h2>
-          <p className="text-fase-black mb-6">{translations.description}</p>
-          <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto mb-4"></div>
-              <p className="text-fase-black">{translations.loading}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!leafletLoaded) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-          <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">
-            {translations.title}
-          </h2>
-          <p className="text-fase-black mb-6">{translations.description}</p>
-          <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy mx-auto mb-4"></div>
-              <p className="text-fase-black">{translations.loading_map || 'Loading map...'}</p>
-            </div>
-          </div>
+        <h4 className="text-lg font-semibold text-fase-navy">
+          {translations.title}
+        </h4>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
+          <p className="text-fase-black">{translations.loading}</p>
         </div>
       </div>
     );
@@ -1074,13 +1050,11 @@ export default function MemberMap({ translations }: MemberMapProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-fase-light-gold rounded-lg p-6">
-        <h2 className="text-2xl font-noto-serif font-bold text-fase-navy mb-4">
-          {translations.title}
-        </h2>
-        <p className="text-fase-black mb-6">{translations.description}</p>
-        
-        {/* Company Search */}
+      <h4 className="text-lg font-semibold text-fase-navy">
+        {translations.title}
+      </h4>
+
+      {/* Company Search */}
         <div className="mb-6">
           <div className="relative">
             <input
@@ -1505,11 +1479,8 @@ export default function MemberMap({ translations }: MemberMapProps) {
                 </div>
               )}
             </div>
-
-
           </div>
         )}
-      </div>
     </div>
   );
 }

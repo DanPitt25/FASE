@@ -15,6 +15,7 @@
     "alerts": "Meldingen",
     "map": "MGA-Ledenkaart",
     "directory": "Ledengids",
+    "lines_of_business": "Branches",
     "profile": "Profiel Beheren"
   },
   "home": {
@@ -368,6 +369,17 @@
       "title": "Hoe de kaart te gebruiken:",
       "instructions": "Klik op gekleurde landen om GA's te zien die daar actief zijn. Gebruik het filter om hoofdkantoorlocaties of marktgebieden te bekijken. Zoek naar specifieke bedrijven met behulp van het zoekveld hierboven."
     }
+  },
+  "lines_of_business": {
+    "title": "Zoeken op Branche",
+    "description": "Selecteer branches om FASE-leden te vinden die in die gebieden actief zijn.",
+    "loading": "Laden...",
+    "select_lines": "Selecteer branches:",
+    "clear_all": "Alles wissen",
+    "lines_selected": "geselecteerd",
+    "organizations_found": "organisaties gevonden",
+    "no_results": "Geen organisaties gevonden",
+    "no_results_desc": "Geen organisaties komen overeen met de geselecteerde branches."
   },
   "directory": {
     "title": "Ledengids",

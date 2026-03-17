@@ -366,8 +366,8 @@ export default function TeamManagementSection({
   };
 
   return (
-    <div className="bg-white border border-fase-light-gold rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-fase-light-gold">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-1">
@@ -391,7 +391,7 @@ export default function TeamManagementSection({
 
       {/* Inline Message */}
       {inlineMessage && (
-        <div className={`px-6 py-4 border-b border-fase-light-gold ${
+        <div className={`px-6 py-4 border-b border-gray-200 ${
           inlineMessage.type === 'success' ? 'bg-green-50' :
           inlineMessage.type === 'error' ? 'bg-red-50' : 'bg-blue-50'
         }`}>
@@ -431,7 +431,7 @@ export default function TeamManagementSection({
 
       {/* Add Member Form */}
       {showAddForm && (
-        <div className="px-6 py-6 border-b border-fase-light-gold bg-gray-50">
+        <div className="px-6 py-6 border-b border-gray-200 bg-gray-50">
           <h3 className="text-lg font-medium text-fase-navy mb-4">{t('manage_profile.add_new_member')}</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,7 +443,7 @@ export default function TeamManagementSection({
                   type="email"
                   value={newMember.email}
                   onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                   placeholder={t('manage_profile.placeholders.email')}
                   required
                 />
@@ -456,7 +456,7 @@ export default function TeamManagementSection({
                   type="text"
                   value={newMember.personalName}
                   onChange={(e) => setNewMember(prev => ({ ...prev, personalName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                   placeholder={t('manage_profile.placeholders.name')}
                   required
                 />
@@ -470,7 +470,7 @@ export default function TeamManagementSection({
                 type="text"
                 value={newMember.jobTitle}
                 onChange={(e) => setNewMember(prev => ({ ...prev, jobTitle: e.target.value }))}
-                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                 placeholder={t('manage_profile.placeholders.job_title')}
               />
             </div>
@@ -498,7 +498,7 @@ export default function TeamManagementSection({
         </div>
       )}
 
-      <div className="divide-y divide-fase-light-gold">
+      <div className="divide-y divide-gray-200">
         {members.map((memberItem) => (
           <div key={memberItem.id} className="p-6">
             {editingMember?.id === memberItem.id ? (
@@ -515,7 +515,7 @@ export default function TeamManagementSection({
                       onChange={(e) => setEditingMember(prev =>
                         prev ? { ...prev, personalName: e.target.value } : null
                       )}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                     />
                   </div>
                   <div>
@@ -528,7 +528,7 @@ export default function TeamManagementSection({
                       onChange={(e) => setEditingMember(prev =>
                         prev ? { ...prev, jobTitle: e.target.value } : null
                       )}
-                      className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                     />
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function TeamManagementSection({
                     onChange={(e) => setEditingMember(prev =>
                       prev ? { ...prev, isAccountAdministrator: e.target.checked } : null
                     )}
-                    className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-fase-light-gold rounded"
+                    className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-200 rounded"
                   />
                   <label htmlFor={`admin-${memberItem.id}`} className="ml-2 text-sm text-fase-black">
                     {t('manage_profile.account_administrator')}

@@ -206,7 +206,7 @@ export default function CompanyProfileSection({
   return (
     <div className="space-y-8">
       {/* Company Information */}
-      <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-4">{t('manage_profile.company_profile')}</h2>
 
         <div className="text-sm text-gray-600 mb-4">
@@ -266,7 +266,7 @@ export default function CompanyProfileSection({
                   placeholder={t('manage_profile.bio_placeholder')}
                   rows={4}
                   maxLength={500}
-                  className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy resize-none text-sm mb-2"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy resize-none text-sm mb-2"
                 />
 
                 <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
@@ -327,7 +327,7 @@ export default function CompanyProfileSection({
                     value={websiteUrl}
                     onChange={(e) => setWebsiteUrl(e.target.value)}
                     placeholder={t('manage_profile.website_placeholder')}
-                    className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy text-sm"
                   />
                   <div className="flex space-x-2">
                     <Button

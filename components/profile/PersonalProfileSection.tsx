@@ -92,7 +92,7 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
   };
 
   return (
-    <div className="bg-white border border-fase-light-gold rounded-lg p-6">
+    <div className="bg-white border border-gray-200 rounded-lg p-6">
       <h2 className="text-xl font-noto-serif font-semibold text-fase-navy mb-6">{t('manage_profile.your_profile')}</h2>
 
       <div className="space-y-6">
@@ -105,7 +105,7 @@ export default function PersonalProfileSection({ user, member, showSuccess, show
                 type="text"
                 value={profileData.personalName}
                 onChange={(e) => setProfileData(prev => ({ ...prev, personalName: e.target.value }))}
-                className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy"
                 placeholder={t('manage_profile.enter_name_placeholder')}
               />
               <div className="flex space-x-2">

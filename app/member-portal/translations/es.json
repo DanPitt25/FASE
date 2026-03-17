@@ -15,6 +15,7 @@
     "alerts": "Alertas",
     "map": "Mapa de Miembros MGA",
     "directory": "Directorio de Miembros",
+    "lines_of_business": "Líneas de Negocio",
     "profile": "Gestionar Perfil"
   },
   "home": {
@@ -358,6 +359,17 @@
       "title": "Cómo usar el mapa:",
       "instructions": "Haga clic en los países coloreados para ver las Agencias de Suscripción que operan allí. Use el filtro para ver las ubicaciones de las sedes o los territorios de mercado. Busque empresas específicas usando el cuadro de búsqueda de arriba."
     }
+  },
+  "lines_of_business": {
+    "title": "Buscar por Líneas de Negocio",
+    "description": "Seleccione líneas de negocio para encontrar miembros de FASE que operan en esas áreas.",
+    "loading": "Cargando...",
+    "select_lines": "Seleccione líneas de negocio:",
+    "clear_all": "Borrar todo",
+    "lines_selected": "seleccionadas",
+    "organizations_found": "organizaciones encontradas",
+    "no_results": "No se encontraron organizaciones",
+    "no_results_desc": "Ninguna organización coincide con las líneas de negocio seleccionadas."
   },
   "directory": {
     "title": "Directorio de Miembros",

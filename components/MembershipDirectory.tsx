@@ -387,15 +387,10 @@ export default function MembershipDirectory({ translations }: MembershipDirector
 
   return (
     <div className="space-y-6">
-      <div>
-        <h4 className="text-lg font-semibold text-fase-navy mb-2">
-          {translations.title || 'Member Directory'}
-        </h4>
-        <p className="text-sm text-gray-600 mb-4">
-          {translations.description || 'Connect with FASE members across Europe. Contact information is only visible to logged-in members.'}
-        </p>
-      </div>
-      
+      <h4 className="text-lg font-semibold text-fase-navy">
+        {translations.title || 'Member Directory'}
+      </h4>
+
       {/* Search and Filter Controls */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">

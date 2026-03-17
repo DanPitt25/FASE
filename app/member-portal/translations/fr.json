@@ -15,6 +15,7 @@
     "alerts": "Alertes",
     "map": "Carte des Membres MGA",
     "directory": "Répertoire des Membres",
+    "lines_of_business": "Branches d'Activité",
     "profile": "Gérer le Profil"
   },
   "home": {
@@ -357,6 +358,17 @@
       "title": "Comment utiliser la carte :",
       "instructions": "Cliquez sur les pays colorés pour voir les Agences de Souscription qui y opèrent. Utilisez le filtre pour afficher les emplacements des sièges ou les territoires de marché. Recherchez des entreprises spécifiques en utilisant le champ de recherche ci-dessus."
     }
+  },
+  "lines_of_business": {
+    "title": "Recherche par Branche d'Activité",
+    "description": "Sélectionnez des branches d'activité pour trouver des membres FASE opérant dans ces domaines.",
+    "loading": "Chargement...",
+    "select_lines": "Sélectionnez les branches d'activité :",
+    "clear_all": "Tout effacer",
+    "lines_selected": "sélectionnées",
+    "organizations_found": "organisations trouvées",
+    "no_results": "Aucune organisation trouvée",
+    "no_results_desc": "Aucune organisation ne correspond aux branches d'activité sélectionnées."
   },
   "directory": {
     "title": "Répertoire des Membres",

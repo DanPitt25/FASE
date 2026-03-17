@@ -15,6 +15,7 @@
     "alerts": "Avvisi",
     "map": "Mappa dei Membri MGA",
     "directory": "Elenco dei Membri",
+    "lines_of_business": "Rami Assicurativi",
     "profile": "Gestisci Profilo"
   },
   "home": {
@@ -357,6 +358,17 @@
       "title": "Come usare la mappa:",
       "instructions": "Clicca sui paesi colorati per vedere le Agenzie di Sottoscrizione che operano lì. Usa il filtro per visualizzare le sedi principali o i territori di mercato. Cerca aziende specifiche usando la casella di ricerca sopra."
     }
+  },
+  "lines_of_business": {
+    "title": "Cerca per Rami Assicurativi",
+    "description": "Seleziona i rami assicurativi per trovare membri FASE che operano in quelle aree.",
+    "loading": "Caricamento...",
+    "select_lines": "Seleziona i rami assicurativi:",
+    "clear_all": "Cancella tutto",
+    "lines_selected": "selezionati",
+    "organizations_found": "organizzazioni trovate",
+    "no_results": "Nessuna organizzazione trovata",
+    "no_results_desc": "Nessuna organizzazione corrisponde ai rami assicurativi selezionati."
   },
   "directory": {
     "title": "Elenco dei Membri",

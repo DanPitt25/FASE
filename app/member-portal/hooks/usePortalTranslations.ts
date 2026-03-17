@@ -15,6 +15,7 @@ interface PortalTranslations {
   manage_profile: any;
   directory?: any;
   bulletin?: any;
+  lines_of_business?: any;
 }
 
 const translationsCache = new Map<Locale, PortalTranslations>();

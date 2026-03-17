@@ -14,6 +14,7 @@
     "alerts": "Alerts",
     "map": "MGA Member Map",
     "directory": "Member Directory",
+    "lines_of_business": "Lines of Business",
     "profile": "Manage Profile"
   },
   "home": {
@@ -359,6 +360,17 @@
       "title": "How to use the map:",
       "instructions": "Click on colored countries to see MGAs operating there. Use the filter to view headquarters locations or market territories. Search for specific companies using the search box above."
     }
+  },
+  "lines_of_business": {
+    "title": "Find by Lines of Business",
+    "description": "Select lines of business to find FASE members operating in those areas.",
+    "loading": "Loading...",
+    "select_lines": "Select lines of business:",
+    "clear_all": "Clear all",
+    "lines_selected": "selected",
+    "organizations_found": "organizations found",
+    "no_results": "No organizations found",
+    "no_results_desc": "No organizations match the selected lines of business."
   },
   "directory": {
     "title": "Member Directory",
