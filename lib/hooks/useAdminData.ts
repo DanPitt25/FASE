@@ -20,7 +20,6 @@ import type {
   PaymentNote,
   FinanceFilterSource,
   FinanceDateRange,
-  MemberSearchResult,
   Sponsor,
   AdminTask,
   PendingReviewAccount,
@@ -449,50 +448,6 @@ export function usePaymentCrmData(): UsePaymentCrmDataResult {
   }, []);
 
   return { activities, notes, loading, load, addNote, deleteNote };
-}
-
-// ============== MEMBER SEARCH HOOK ==============
-
-interface UseMemberSearchResult {
-  results: MemberSearchResult[];
-  searching: boolean;
-  search: (query: string) => Promise<void>;
-  clear: () => void;
-}
-
-/**
- * Hook for searching members (used in finance tab for linking payments)
- */
-export function useMemberSearch(): UseMemberSearchResult {
-  const [results, setResults] = useState<MemberSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-
-  const search = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setSearching(true);
-    try {
-      const response = await authFetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`);
-      const data = await response.json();
-
-      if (data.success) {
-        setResults(data.accounts || []);
-      }
-    } catch (err) {
-      console.error('Member search failed:', err);
-    } finally {
-      setSearching(false);
-    }
-  }, []);
-
-  const clear = useCallback(() => {
-    setResults([]);
-  }, []);
-
-  return { results, searching, search, clear };
 }
 
 // ============== TASKS HOOK ==============

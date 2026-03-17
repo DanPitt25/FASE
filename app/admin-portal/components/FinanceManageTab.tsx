@@ -8,20 +8,24 @@ import type {
   Transaction,
   PaymentActivity,
   PaymentNote,
-  MemberSearchResult,
   FinanceFilterSource,
   FinanceDateRange,
   FinanceSortField,
   FinanceModalTab,
   SortDirection,
 } from '@/lib/admin-types';
+import type { UnifiedMember } from '@/lib/unified-member';
 
 type FilterSource = FinanceFilterSource;
 type DateRange = FinanceDateRange;
 type SortField = FinanceSortField;
 type ModalTab = FinanceModalTab;
 
-export default function FinanceManageTab() {
+interface FinanceManageTabProps {
+  memberApplications: UnifiedMember[];
+}
+
+export default function FinanceManageTab({ memberApplications }: FinanceManageTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -48,17 +52,15 @@ export default function FinanceManageTab() {
   const [invoiceCity, setInvoiceCity] = useState('');
   const [invoicePostcode, setInvoicePostcode] = useState('');
   const [invoiceCountry, setInvoiceCountry] = useState('');
+  const [invoiceVatNumber, setInvoiceVatNumber] = useState('');
   const [invoiceLineItems, setInvoiceLineItems] = useState<{ description: string; quantity: number; unitPrice: number }[]>([
     { description: 'FASE Annual Membership', quantity: 1, unitPrice: 0 }
   ]);
 
-  // Member search state
+  // Member search state (client-side filtering of memberApplications)
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
-  const [memberSearchResults, setMemberSearchResults] = useState<MemberSearchResult[]>([]);
-  const [selectedMember, setSelectedMember] = useState<MemberSearchResult | null>(null);
-  const [searchingMembers, setSearchingMembers] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<UnifiedMember | null>(null);
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
-  const [loadingMemberDetails, setLoadingMemberDetails] = useState(false);
 
   // Note form state
   const [newNote, setNewNote] = useState('');
@@ -136,8 +138,7 @@ export default function FinanceManageTab() {
     setInvoiceCountry('');
     setSelectedMember(null);
     setMemberSearchQuery('');
-    setMemberSearchResults([]);
-    loadPaymentCrmData(tx.id, tx.source);
+        loadPaymentCrmData(tx.id, tx.source);
   };
 
   const closeModal = () => {
@@ -147,8 +148,7 @@ export default function FinanceManageTab() {
     setNewNote('');
     setSelectedMember(null);
     setMemberSearchQuery('');
-    setMemberSearchResults([]);
-    setInvoiceContactName('');
+        setInvoiceContactName('');
     setInvoiceAddressLine1('');
     setInvoiceAddressLine2('');
     setInvoiceCity('');
@@ -189,71 +189,43 @@ export default function FinanceManageTab() {
     }
   };
 
-  // Member search function
-  const searchMembers = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setMemberSearchResults([]);
-      return;
-    }
+  // Client-side member search (filters memberApplications prop)
+  const memberSearchResults = memberSearchQuery.length >= 2
+    ? memberApplications.filter(member => {
+        const query = memberSearchQuery.toLowerCase();
+        const orgName = (member.organizationName || '').toLowerCase();
+        const contactName = (member.primaryContact?.name || member.personalName || '').toLowerCase();
+        const email = (member.email || member.primaryContact?.email || '').toLowerCase();
+        return orgName.includes(query) || contactName.includes(query) || email.includes(query);
+      }).slice(0, 10)
+    : [];
 
-    setSearchingMembers(true);
-    try {
-      const response = await authFetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`);
-      const data = await response.json();
-
-      if (data.success && data.results) {
-        setMemberSearchResults(data.results);
-        setShowMemberDropdown(true);
-      }
-    } catch (err) {
-      console.error('Failed to search members:', err);
-    } finally {
-      setSearchingMembers(false);
-    }
-  }, []);
-
-  // Debounced search
+  // Show dropdown when we have results and query is long enough
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (memberSearchQuery.length >= 2) {
-        searchMembers(memberSearchQuery);
-      } else {
-        setMemberSearchResults([]);
-        setShowMemberDropdown(false);
-      }
-    }, 300);
+    if (memberSearchQuery.length >= 2 && memberSearchResults.length > 0) {
+      setShowMemberDropdown(true);
+    } else if (memberSearchQuery.length < 2) {
+      setShowMemberDropdown(false);
+    }
+  }, [memberSearchQuery, memberSearchResults.length]);
 
-    return () => clearTimeout(timer);
-  }, [memberSearchQuery, searchMembers]);
-
-  const selectMember = async (member: MemberSearchResult) => {
+  const selectMember = (member: UnifiedMember) => {
     setSelectedMember(member);
-    setInvoiceOrganization(member.organizationName);
-    setMemberSearchQuery(member.organizationName);
+    setInvoiceOrganization(member.organizationName || '');
+    setMemberSearchQuery(member.organizationName || '');
     setShowMemberDropdown(false);
 
-    setLoadingMemberDetails(true);
-    try {
-      const response = await authFetch(`/api/admin/account/${member.id}`);
-      const data = await response.json();
+    // Populate fields directly from the member data
+    const address = (member as any).businessAddress || member.registeredAddress || {};
+    const contactName = (member as any).accountAdministrator?.name || member.primaryContact?.name || '';
 
-      if (data.success && data.account) {
-        const account = data.account;
-        const address = account.businessAddress || account.registeredAddress || {};
-        const contactName = account.accountAdministrator?.name || account.primaryContact?.name || '';
-
-        setInvoiceContactName(contactName);
-        setInvoiceAddressLine1(address.line1 || '');
-        setInvoiceAddressLine2(address.line2 || '');
-        setInvoiceCity(address.city || '');
-        setInvoicePostcode(address.postcode || '');
-        setInvoiceCountry(address.country || '');
-      }
-    } catch (err) {
-      console.error('Failed to fetch member details:', err);
-    } finally {
-      setLoadingMemberDetails(false);
-    }
+    setInvoiceContactName(contactName);
+    setInvoiceAddressLine1(address.line1 || '');
+    setInvoiceAddressLine2(address.line2 || '');
+    setInvoiceCity(address.city || '');
+    setInvoicePostcode(address.postcode || '');
+    setInvoiceCountry(address.country || '');
+    setInvoiceVatNumber((member as any).vatNumber || '');
   };
 
   const clearSelectedMember = () => {
@@ -266,6 +238,7 @@ export default function FinanceManageTab() {
     setInvoiceCity('');
     setInvoicePostcode('');
     setInvoiceCountry('');
+    setInvoiceVatNumber('');
   };
 
   const handleGeneratePaidInvoice = async () => {
@@ -293,6 +266,7 @@ export default function FinanceManageTab() {
           postcode: invoicePostcode,
           country: invoiceCountry,
         },
+        vatNumber: invoiceVatNumber || undefined,
       });
 
       const data = await response.json();
@@ -753,11 +727,6 @@ export default function FinanceManageTab() {
                               className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                               placeholder="Search by organization name, email, or contact..."
                             />
-                            {searchingMembers && (
-                              <div className="absolute right-3 top-2.5">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-fase-navy"></div>
-                              </div>
-                            )}
                             {showMemberDropdown && memberSearchResults.length > 0 && (
                               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                 {memberSearchResults.map((member) => (
@@ -785,13 +754,6 @@ export default function FinanceManageTab() {
                         )}
                       </div>
                     </div>
-
-                    {loadingMemberDetails && (
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-fase-navy"></div>
-                        Loading member details...
-                      </div>
-                    )}
 
                     {/* Bill To Section */}
                     <div className="border border-gray-200 rounded-lg p-4 space-y-3">
@@ -866,6 +828,17 @@ export default function FinanceManageTab() {
                             className="w-full border border-gray-300 rounded p-2 text-sm"
                           />
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">VAT Number (optional)</label>
+                        <input
+                          type="text"
+                          value={invoiceVatNumber}
+                          onChange={(e) => setInvoiceVatNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded p-2 text-sm"
+                          placeholder="e.g. GB123456789"
+                        />
                       </div>
                     </div>
 
@@ -960,7 +933,7 @@ export default function FinanceManageTab() {
                     <Button
                       variant="primary"
                       onClick={handleGeneratePaidInvoice}
-                      disabled={!invoiceOrganization.trim() || generatingInvoice || loadingMemberDetails || invoiceLineItems.every(item => !item.description.trim())}
+                      disabled={!invoiceOrganization.trim() || generatingInvoice || invoiceLineItems.every(item => !item.description.trim())}
                       className="w-full"
                     >
                       {generatingInvoice ? 'Generating...' : 'Generate & Download PAID Invoice'}

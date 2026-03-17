@@ -277,20 +277,6 @@ export type FinanceDateRange = 'all' | '30' | '90' | '180' | '365';
 export type FinanceSortField = 'date' | 'amount';
 export type FinanceModalTab = 'details' | 'invoice' | 'timeline' | 'notes';
 
-// ============== MEMBER SEARCH TYPES ==============
-
-/** Member search result for linking payments */
-export interface MemberSearchResult {
-  id: string;
-  organizationName: string;
-  organizationType: string;
-  status: string;
-  primaryContact?: {
-    name?: string;
-    email?: string;
-  };
-}
-
 // ============== TASK TYPES ==============
 
 /** Task priority levels */

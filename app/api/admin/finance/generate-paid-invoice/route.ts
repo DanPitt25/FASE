@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       accountId,
       contactName,
       address,
+      vatNumber,
     } = body;
 
     if (!transactionId || !source || !organizationName || !lineItems || lineItems.length === 0) {
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
         organizationName,
         contactName: contactName || '',
         address: address || undefined,
+        vatNumber: vatNumber || undefined,
         lineItems: processedLineItems,
         currency,
         paidAt: paidAt || new Date().toISOString(),

@@ -20,6 +20,7 @@ export interface PaidInvoiceData {
     postcode?: string;
     country?: string;
   };
+  vatNumber?: string;
   lineItems: PaidInvoiceLineItem[];
   currency: string;
   paidAt: string;
@@ -125,7 +126,7 @@ export async function generatePaidInvoicePDF(data: PaidInvoiceData): Promise<Pai
       color: faseNavy,
     });
 
-    firstPage.drawText('VAT Number Pending', {
+    firstPage.drawText(data.vatNumber ? `VAT: ${data.vatNumber}` : 'VAT Number Pending', {
       x: invoiceDetailsX,
       y: currentY - 48,
       size: 10,
