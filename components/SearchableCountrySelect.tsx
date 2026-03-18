@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import countries from 'i18n-iso-countries';
@@ -53,17 +53,17 @@ export default function SearchableCountrySelect({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get country list based on filter
-  const getCountryList = () => {
+  // Get country list based on filter - memoized to prevent infinite loops
+  const countryList = useMemo(() => {
     const allCountries = countries.getNames(locale);
-    
+
     // Filter countries based on filter type
-    const filteredCountries = europeanOnly 
+    const filteredCountries = europeanOnly
       ? Object.fromEntries(
           Object.entries(allCountries).filter(([code]) => europeanCountryCodes.includes(code))
         )
       : allCountries;
-    
+
     // All countries sorted alphabetically by name
     return Object.entries(filteredCountries)
       .map(([code, name]) => ({
@@ -71,9 +71,7 @@ export default function SearchableCountrySelect({
         label: name
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  };
-
-  const countryList = getCountryList();
+  }, [locale, europeanOnly]);
   const [selectedCountry, setSelectedCountry] = useState(
     countryList.find(c => c.value === value) || null
   );

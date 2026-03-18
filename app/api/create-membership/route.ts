@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       portfolio,
       hasOtherAssociations,
       otherAssociations,
+      isInsurtechUKMember,
       logoUrl
     } = membershipData;
 
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       registeredAddress,
       hasOtherAssociations: hasOtherAssociations ?? false,
       otherAssociations: hasOtherAssociations ? otherAssociations : [],
+      isInsurtechUKMember: isInsurtechUKMember ?? false,
       logoUrl: logoUrl || null,
       updatedAt: FieldValue.serverTimestamp()
     };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateMembershipFee } from '../../register/registration-utils';
+import { getDiscountedFee } from '../../register/registration-utils';
 
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic';
@@ -41,21 +41,23 @@ async function getPayPalAccessToken() {
 
 // Pricing calculation using the same logic as the registration form
 const getMembershipPrice = (
-  organizationType: string, 
+  organizationType: string,
   grossWrittenPremiums: string | undefined,
-  hasOtherAssociations: boolean = false
+  hasOtherAssociations: boolean = false,
+  isInsurtechUKMember: boolean = false
 ): number => {
   // Admin test mode
   if (grossWrittenPremiums && grossWrittenPremiums.includes('test')) {
     return 0.50; // 50 cents for admin testing
   }
 
-  // Use the same calculation logic as the registration form
-  return calculateMembershipFee(
-    organizationType as 'MGA' | 'carrier' | 'provider', 
+  // Use the same calculation logic as the registration form (includes discounts)
+  return getDiscountedFee(
+    organizationType as 'MGA' | 'carrier' | 'provider',
     grossWrittenPremiums || '',
     'EUR', // Default currency for PayPal
-    hasOtherAssociations
+    hasOtherAssociations,
+    isInsurtechUKMember
   );
 };
 
@@ -63,23 +65,24 @@ export async function POST(request: NextRequest) {
   try {
     const requestData = await request.json();
     
-    const { 
-      organizationName, 
-      organizationType, 
-      grossWrittenPremiums, 
+    const {
+      organizationName,
+      organizationType,
+      grossWrittenPremiums,
       userEmail,
       userId,
       hasOtherAssociations = false,
+      isInsurtechUKMember = false,
       testPayment = false
     } = requestData;
 
     // Get access token
     const accessToken = await getPayPalAccessToken();
-    
+
     // Calculate price (including any applicable discounts)
-    const finalPrice = testPayment 
-      ? 0.50 
-      : getMembershipPrice(organizationType, grossWrittenPremiums, hasOtherAssociations);
+    const finalPrice = testPayment
+      ? 0.50
+      : getMembershipPrice(organizationType, grossWrittenPremiums, hasOtherAssociations, isInsurtechUKMember);
 
     // Get environment
     const environment = process.env.PAYPAL_ENVIRONMENT || 'sandbox';

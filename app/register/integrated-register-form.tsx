@@ -15,9 +15,9 @@ import { TeamMembersSection } from './member-management';
 import { AddressSection } from './address-components';
 import { MGAPortfolioSection } from './mga-components';
 import { CarrierInformationSection, ServiceProviderSection } from './carrier-provider-components';
-import { EuropeanAssociationsSection } from './associations-components';
+import { EuropeanAssociationsSection, InsurtechUKSection } from './associations-components';
 import { checkDomainExists, createAccountAndMembership } from './registration-handlers';
-import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, calculateTotalGWP } from './registration-utils';
+import { calculateMembershipFee, getDiscountedFee, convertToEUR, getGWPBand, calculateTotalGWP, getTotalDiscountPercentage } from './registration-utils';
 
 
 
@@ -135,6 +135,7 @@ export default function IntegratedRegisterForm() {
   // Other fields
   const [hasOtherAssociations, setHasOtherAssociations] = useState<boolean | null>(null);
   const [otherAssociations, setOtherAssociations] = useState<string[]>([]);
+  const [isInsurtechUKMember, setIsInsurtechUKMember] = useState(false);
   
   const [error, setError] = useState("");
   
@@ -474,7 +475,7 @@ export default function IntegratedRegisterForm() {
 
   const getCurrentDiscountedFee = () => {
     const actualTotal = getActualGWPTotal();
-    return getDiscountedFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false);
+    return getDiscountedFee(organizationType as 'MGA' | 'carrier' | 'provider', actualTotal.toString(), gwpCurrency, hasOtherAssociations || false, isInsurtechUKMember);
   };
 
   // Check if user is an ASASE member (complimentary Rendezvous tickets)
@@ -818,6 +819,12 @@ export default function IntegratedRegisterForm() {
               setOtherAssociations={setOtherAssociations}
             />
           )}
+
+          {/* Insurtech UK Partnership - separate from MGA associations */}
+          <InsurtechUKSection
+            isInsurtechUKMember={isInsurtechUKMember}
+            setIsInsurtechUKMember={setIsInsurtechUKMember}
+          />
       </div>
       )}
 
@@ -1107,9 +1114,11 @@ export default function IntegratedRegisterForm() {
                 <span className="text-fase-navy font-semibold">€{getCurrentMembershipFee().toLocaleString()}</span>
               </div>
 
-              {hasOtherAssociations && (
+              {(hasOtherAssociations || isInsurtechUKMember) && (
                 <div className="flex justify-between items-center py-2 border-b border-fase-light-gold">
-                  <span className="text-green-600 font-medium">{t('pricing.discount')}</span>
+                  <span className="text-green-600 font-medium">
+                    {t('pricing.discount').replace('20%', `${getTotalDiscountPercentage(hasOtherAssociations || false, isInsurtechUKMember)}%`)}
+                  </span>
                   <span className="text-green-600 font-semibold">-€{(getCurrentMembershipFee() - getCurrentDiscountedFee()).toLocaleString()}</span>
                 </div>
               )}
@@ -1144,8 +1153,11 @@ export default function IntegratedRegisterForm() {
                 <span className="text-fase-navy text-xl font-bold">€{(getCurrentDiscountedFee() + getRendezvousPassTotal()).toLocaleString()}</span>
               </div>
 
-              {hasOtherAssociations && (
-                <p className="text-sm text-green-600 italic">{t('pricing.discount_note')}</p>
+              {(hasOtherAssociations || isInsurtechUKMember) && (
+                <div className="text-sm text-green-600 italic space-y-1">
+                  {hasOtherAssociations && <p>{t('pricing.discount_note')}</p>}
+                  {isInsurtechUKMember && <p>{t('insurtech_uk.discount_note')}</p>}
+                </div>
               )}
             </div>
           </div>
@@ -1190,6 +1202,7 @@ export default function IntegratedRegisterForm() {
                     selectedMarkets,
                     hasOtherAssociations,
                     otherAssociations,
+                    isInsurtechUKMember,
                     servicesProvided,
                     carrierOrganizationType,
                     isDelegatingInEurope,
@@ -1230,6 +1243,7 @@ export default function IntegratedRegisterForm() {
                       organizationName,
                         organizationType,
                       hasOtherAssociations,
+                      isInsurtechUKMember,
                       addressLine1,
                       addressLine2,
                       city,

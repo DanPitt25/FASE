@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     const invoiceNumber = requestData.invoiceNumber || `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
 
     const hasOtherAssociations = requestData.hasOtherAssociations || false;
+    const isInsurtechUKMember = requestData.isInsurtechUKMember || false;
     const rendezvousPassData = requestData.rendezvousPassReservation;
 
     // ==========================================================================
@@ -69,8 +70,11 @@ export async function POST(request: NextRequest) {
       calculatedMembershipFee = calculateMembershipFee(membershipOrgType, gwpBand, false);
     }
 
-    // Apply multi-association discount if applicable
-    const discountAmount = hasOtherAssociations ? Math.round(calculatedMembershipFee * 0.2) : 0;
+    // Apply discounts additively (multi-association 20% + Insurtech UK 10%)
+    let totalDiscountPercent = 0;
+    if (hasOtherAssociations) totalDiscountPercent += 0.20;
+    if (isInsurtechUKMember) totalDiscountPercent += 0.10;
+    const discountAmount = totalDiscountPercent > 0 ? Math.round(calculatedMembershipFee * totalDiscountPercent) : 0;
     const discountedMembershipFee = calculatedMembershipFee - discountAmount;
 
     // Calculate rendezvous pass cost from first principles (NO VAT - invoiced separately)
@@ -113,6 +117,8 @@ export async function POST(request: NextRequest) {
       gwpBand,
       baseMembershipFee: calculatedMembershipFee,
       hasOtherAssociations,
+      isInsurtechUKMember,
+      totalDiscountPercent,
       discountAmount,
       discountedMembershipFee,
       rendezvousPassCost,
@@ -136,7 +142,12 @@ export async function POST(request: NextRequest) {
       },
       originalAmount: calculatedMembershipFee,
       discountAmount: discountAmount,
-      discountReason: hasOtherAssociations ? "Multi-Association Member Discount (20%)" : "",
+      discountReason: (() => {
+        const reasons = [];
+        if (hasOtherAssociations) reasons.push("Multi-Association Member (20%)");
+        if (isInsurtechUKMember) reasons.push("Insurtech UK Member (10%)");
+        return reasons.length > 0 ? `Discount: ${reasons.join(' + ')}` : "";
+      })(),
       customLineItem: customLineItem
     };
 
@@ -230,6 +241,7 @@ export async function POST(request: NextRequest) {
           discountAmount: invoiceData.discountAmount,
           discountReason: invoiceData.discountReason,
           hasOtherAssociations,
+          isInsurtechUKMember,
 
           forceCurrency: requestData.forceCurrency,
           userLocale: locale,

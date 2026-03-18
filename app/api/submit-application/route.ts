@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       organizationName,
       organizationType,
       hasOtherAssociations,
+      isInsurtechUKMember,
       addressLine1,
       addressLine2,
       city,
@@ -95,7 +96,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (hasOtherAssociations !== undefined) {
-      applicationDetails += `<p><strong>Member of other European associations:</strong> ${hasOtherAssociations ? 'Yes' : 'No'}</p>`;
+      applicationDetails += `<p><strong>Member of other European MGA associations:</strong> ${hasOtherAssociations ? 'Yes' : 'No'}</p>`;
+    }
+
+    if (isInsurtechUKMember) {
+      applicationDetails += `<p><strong>Insurtech UK Member:</strong> Yes</p>`;
     }
 
     // MGA Rendezvous pass reservation
@@ -181,7 +186,10 @@ export async function POST(request: NextRequest) {
     <div class="application-info">
         <h3>Membership Fee Information</h3>
         <p><strong>Calculated Membership Fee:</strong> €${membershipFee.toLocaleString()}</p>
-        ${hasOtherAssociations ? '<p><strong>Discount Applied:</strong> 20% discount for membership in other European MGA associations</p>' : ''}
+        ${hasOtherAssociations || isInsurtechUKMember ? `<p><strong>Discount Applied:</strong> ${[
+          hasOtherAssociations ? '20% for membership in other European MGA associations' : '',
+          isInsurtechUKMember ? '10% for Insurtech UK membership' : ''
+        ].filter(Boolean).join(' + ')}</p>` : ''}
     </div>
 
     <div class="footer">

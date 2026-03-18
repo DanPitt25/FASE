@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
         }),
         hasOtherAssociations: formData.hasOtherAssociations ?? false,
         otherAssociations: formData.hasOtherAssociations ? formData.otherAssociations : [],
+        isInsurtechUKMember: formData.isInsurtechUKMember ?? false,
         // Carrier-specific fields
         ...(formData.organizationType === 'carrier' && {
           carrierInfo: {

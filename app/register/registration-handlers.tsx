@@ -73,6 +73,7 @@ export const createAccountAndMembership = async (
     selectedMarkets: string[];
     hasOtherAssociations: boolean | null;
     otherAssociations: string[];
+    isInsurtechUKMember?: boolean;
     servicesProvided: string[];
     // Carrier-specific fields (optional)
     carrierOrganizationType?: string;

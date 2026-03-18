@@ -15,7 +15,7 @@ export const EuropeanAssociationsSection = ({
   setOtherAssociations: (associations: string[]) => void;
 }) => {
   const t = useTranslations('register_form.associations');
-  
+
   return (
     <div>
       <label className="block text-sm font-medium text-fase-navy mb-3">
@@ -84,6 +84,34 @@ export const EuropeanAssociationsSection = ({
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// Insurtech UK Partnership Component (separate from MGA associations)
+export const InsurtechUKSection = ({
+  isInsurtechUKMember,
+  setIsInsurtechUKMember
+}: {
+  isInsurtechUKMember: boolean;
+  setIsInsurtechUKMember: (value: boolean) => void;
+}) => {
+  const t = useTranslations('register_form.insurtech_uk');
+
+  return (
+    <div className="mt-6 pt-6 border-t border-gray-200">
+      <label className="flex items-start cursor-pointer">
+        <input
+          type="checkbox"
+          checked={isInsurtechUKMember}
+          onChange={(e) => setIsInsurtechUKMember(e.target.checked)}
+          className="mt-1 mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+        />
+        <div>
+          <span className="text-sm font-medium text-fase-navy">{t('question')}</span>
+          <p className="text-xs text-gray-500 mt-1">{t('discount_note')}</p>
+        </div>
+      </label>
     </div>
   );
 };

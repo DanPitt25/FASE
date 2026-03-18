@@ -37,7 +37,11 @@ export const getGWPBand = (eurValue: number): '<10m' | '10-20m' | '20-50m' | '50
   return '500m+';
 };
 
-// Calculate membership fee
+// Discount constants (must match lib/pricing.ts)
+const MULTI_ASSOCIATION_DISCOUNT = 0.20; // 20% off
+const INSURTECH_UK_DISCOUNT = 0.10; // 10% off
+
+// Calculate membership fee (base fee without discounts)
 export const calculateMembershipFee = (
   organizationType: 'MGA' | 'carrier' | 'provider',
   grossWrittenPremiums: string,
@@ -45,15 +49,15 @@ export const calculateMembershipFee = (
   hasOtherAssociations?: boolean
 ) => {
   // All memberships are corporate
-  
+
   if (organizationType === 'MGA') {
     const gwpValue = parseFloat(grossWrittenPremiums) || 0;
     if (gwpValue === 0) return 900; // Default if no GWP input
-    
+
     // Convert to EUR for band calculation
     const eurValue = convertToEUR(gwpValue, gwpCurrency);
     const band = getGWPBand(eurValue);
-    
+
     switch (band) {
       case '<10m': return 900;
       case '10-20m': return 1500;
@@ -72,19 +76,43 @@ export const calculateMembershipFee = (
   }
 };
 
-// Get discounted fee
+// Get discounted fee with additive discounts
+// - Multi-association discount: 20% off
+// - Insurtech UK discount: 10% off
+// If both apply, total discount is 30% (additive, not multiplicative)
 export const getDiscountedFee = (
   organizationType: 'MGA' | 'carrier' | 'provider',
   grossWrittenPremiums: string,
   gwpCurrency: string,
-  hasOtherAssociations?: boolean
+  hasOtherAssociations?: boolean,
+  isInsurtechUKMember?: boolean
 ) => {
   const baseFee = calculateMembershipFee(organizationType, grossWrittenPremiums, gwpCurrency, hasOtherAssociations);
-  // Apply discount to corporate memberships (all memberships are corporate)
+
+  // Calculate total discount (additive)
+  let totalDiscount = 0;
   if (hasOtherAssociations) {
-    return Math.round(baseFee * 0.8); // 20% discount
+    totalDiscount += MULTI_ASSOCIATION_DISCOUNT; // 20%
+  }
+  if (isInsurtechUKMember) {
+    totalDiscount += INSURTECH_UK_DISCOUNT; // 10%
+  }
+
+  if (totalDiscount > 0) {
+    return Math.round(baseFee * (1 - totalDiscount));
   }
   return baseFee;
+};
+
+// Get the total discount percentage for display
+export const getTotalDiscountPercentage = (
+  hasOtherAssociations: boolean,
+  isInsurtechUKMember: boolean
+): number => {
+  let total = 0;
+  if (hasOtherAssociations) total += MULTI_ASSOCIATION_DISCOUNT * 100;
+  if (isInsurtechUKMember) total += INSURTECH_UK_DISCOUNT * 100;
+  return total;
 };
 
 

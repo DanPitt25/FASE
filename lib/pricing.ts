@@ -27,6 +27,9 @@ export const MEMBERSHIP_FLAT_RATES: Record<string, number> = {
 // Multi-association discount (20% off)
 export const MULTI_ASSOCIATION_DISCOUNT = 0.20;
 
+// Insurtech UK partnership discount (10% off - stacks additively with multi-association discount)
+export const INSURTECH_UK_DISCOUNT = 0.10;
+
 // =============================================================================
 // MGA RENDEZVOUS PRICING
 // =============================================================================
@@ -86,11 +89,16 @@ export function getGWPBand(eurValue: number): string {
 
 /**
  * Calculate membership fee for an organization
+ * Discounts are applied additively:
+ * - Multi-association discount: 20% off
+ * - Insurtech UK discount: 10% off
+ * If both apply, total discount is 30% (not 28% which would be multiplicative)
  */
 export function calculateMembershipFee(
   organizationType: string,
   gwpBand?: string,
-  hasOtherAssociations: boolean = false
+  hasOtherAssociations: boolean = false,
+  isInsurtechUKMember: boolean = false
 ): number {
   const orgType = normalizeOrgType(organizationType);
 
@@ -102,9 +110,18 @@ export function calculateMembershipFee(
     baseFee = MEMBERSHIP_FLAT_RATES[orgType] || 900;
   }
 
-  // Apply multi-association discount
+  // Calculate total discount (additive, not multiplicative)
+  let totalDiscount = 0;
   if (hasOtherAssociations) {
-    baseFee = Math.round(baseFee * (1 - MULTI_ASSOCIATION_DISCOUNT));
+    totalDiscount += MULTI_ASSOCIATION_DISCOUNT; // 20%
+  }
+  if (isInsurtechUKMember) {
+    totalDiscount += INSURTECH_UK_DISCOUNT; // 10%
+  }
+
+  // Apply combined discount
+  if (totalDiscount > 0) {
+    baseFee = Math.round(baseFee * (1 - totalDiscount));
   }
 
   return baseFee;

@@ -33,6 +33,7 @@ export default function NewsPage() {
     async function loadArticles() {
       try {
         const baseArticleSlugs = [
+          'insurtech-uk-partnership',
           'loro-partnership',
           'accredited-partnership',
           'accelerant-partnership',
