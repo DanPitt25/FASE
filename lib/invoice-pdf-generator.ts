@@ -45,6 +45,7 @@ export interface InvoiceGenerationData {
   discountAmount?: number;
   discountReason?: string;
   hasOtherAssociations?: boolean;
+  isInsurtechUKMember?: boolean;
   
   // Membership details
   organizationType?: 'MGA' | 'carrier' | 'provider';
