@@ -100,6 +100,15 @@ Other key terms:
 - **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, hero sections, or any UI components. This includes any secondary text under titles/headings that describes or elaborates on the title. Just use the title alone.
 - **ALWAYS USE NEXT.JS LINK COMPONENT** - Never use `<a>` tags for internal navigation. Always use `<Link>` from `next/link` for internal routes. Only use `<a>` tags for external URLs.
 
+## TypeScript Discipline - CRITICAL
+**When adding a new field that will be read from Firestore documents, ALWAYS update the corresponding TypeScript interface FIRST.**
+
+Common interfaces that need updating when adding account/member fields:
+- `lib/unified-member.ts` - UnifiedMember and OrganizationAccount interfaces
+- `lib/invoice-pdf-generator.ts` - InvoiceGenerationData interface
+
+Before using `memberData.newField` or `accountData.newField`, grep for the interface definition and add the field there.
+
 ## Code Reuse - CRITICAL
 **ALWAYS SEARCH FOR EXISTING IMPLEMENTATIONS BEFORE WRITING NEW CODE.**
 
