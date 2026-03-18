@@ -96,6 +96,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     organizationName: '',
     organizationType: 'MGA',
     hasOtherAssociations: false,
+    isInsurtechUKMember: false,
     userLocale: 'en',
     forceCurrency: '',
     address: {
@@ -140,6 +141,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         organizationName: memberData.organizationName || '',
         organizationType: memberData.organizationType || 'MGA',
         hasOtherAssociations: memberData.hasOtherAssociations || false,
+        isInsurtechUKMember: memberData.isInsurtechUKMember || false,
         address: {
           line1: memberData.invoicingAddress?.line1 || memberData.businessAddress?.line1 || memberData.registeredAddress?.line1 || '',
           line2: memberData.invoicingAddress?.line2 || memberData.businessAddress?.line2 || memberData.registeredAddress?.line2 || '',
@@ -300,7 +302,9 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   };
 
   const originalAmount = calculateOriginalAmount();
-  const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
+  // Calculate total discount (additive: 20% for associations + 10% for Insurtech UK)
+  const totalDiscountPercent = (formData.hasOtherAssociations ? 0.20 : 0) + (formData.isInsurtechUKMember ? 0.10 : 0);
+  const baseAmount = totalDiscountPercent > 0 ? Math.round(originalAmount * (1 - totalDiscountPercent)) : originalAmount;
 
   // Calculate rendezvous total - check both account field and fetched registration
   const getRendezvousTotal = () => {
@@ -413,11 +417,24 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         : 'FASE Annual Membership';
       lineItems.push({ description: membershipDescription, amount: originalAmount });
 
-      if (formData.hasOtherAssociations) {
+      // Add discount line items (additive discounts)
+      if (formData.hasOtherAssociations || formData.isInsurtechUKMember) {
+        const discountReasons = [];
+        let totalDiscountAmount = 0;
+
+        if (formData.hasOtherAssociations) {
+          discountReasons.push(formData.userLocale === 'nl' ? 'Meerdere Verenigingen (20%)' : 'Multi-Association Member (20%)');
+          totalDiscountAmount += originalAmount * 0.20;
+        }
+        if (formData.isInsurtechUKMember) {
+          discountReasons.push('Insurtech UK Member (10%)');
+          totalDiscountAmount += originalAmount * 0.10;
+        }
+
         const discountDescription = formData.userLocale === 'nl'
-          ? 'Lidmaatschapskorting voor Meerdere Verenigingen (20%)'
-          : 'Multi-Association Member Discount (20%)';
-        lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
+          ? `Korting: ${discountReasons.join(' + ')}`
+          : `Discount: ${discountReasons.join(' + ')}`;
+        lineItems.push({ description: discountDescription, amount: -totalDiscountAmount, isDiscount: true });
       }
 
       // Check if rendezvous override is enabled
@@ -464,8 +481,14 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       payload.totalAmount = finalAmount;
       payload.exactTotalAmount = finalAmount;
       payload.originalAmount = originalAmount.toString();
-      payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-      payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
+      payload.discountAmount = (formData.hasOtherAssociations || formData.isInsurtechUKMember) ? (originalAmount - baseAmount) : 0;
+      payload.discountReason = (() => {
+        const reasons = [];
+        if (formData.hasOtherAssociations) reasons.push('Multi-Association Member (20%)');
+        if (formData.isInsurtechUKMember) reasons.push('Insurtech UK Member (10%)');
+        return reasons.length > 0 ? `Discount: ${reasons.join(' + ')}` : '';
+      })();
+      payload.isInsurtechUKMember = formData.isInsurtechUKMember;
       payload.grossWrittenPremiums = memberData?.portfolio?.grossWrittenPremiums || '<10m';
       payload.forceCurrency = formData.forceCurrency;
       payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
@@ -899,6 +922,15 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             <label className="flex items-center">
               <input
                 type="checkbox"
+                checked={formData.isInsurtechUKMember}
+                onChange={(e) => setFormData(prev => ({ ...prev, isInsurtechUKMember: e.target.checked }))}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700">Insurtech UK member (10% discount)</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
                 checked={formData.testPayment}
                 onChange={(e) => setFormData(prev => ({ ...prev, testPayment: e.target.checked }))}
                 className="mr-2"
@@ -1046,8 +1078,13 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             <h4 className="text-sm font-medium text-gray-700 mb-2">Pricing Summary</h4>
             <div className="text-sm space-y-1">
               <div>Base Fee: EUR{originalAmount}</div>
-              {formData.hasOtherAssociations && (
-                <div>Multi-Association Discount (20%): -EUR{originalAmount - baseAmount}</div>
+              {(formData.hasOtherAssociations || formData.isInsurtechUKMember) && (
+                <div>
+                  Discount ({[
+                    formData.hasOtherAssociations && '20% associations',
+                    formData.isInsurtechUKMember && '10% Insurtech UK'
+                  ].filter(Boolean).join(' + ')}): -EUR{originalAmount - baseAmount}
+                </div>
               )}
               {rendezvousTotal > 0 && (
                 <div className="text-amber-700">MGA Rendezvous Passes: EUR{rendezvousTotal.toLocaleString()}</div>
