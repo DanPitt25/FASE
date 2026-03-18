@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Button from '../../../components/Button';
-import { createInvoiceRecord } from '../../../lib/firestore';
-import { calculateRendezvousTotal, getOrgTypeLabel } from '../../../lib/pricing';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import { UnifiedMember } from '@/lib/unified-member';
-
-// NOTE: useEmailActionState hook is available in @/lib/hooks/useEmailActionState
-// for future refactoring of this component's state management.
-// See ADMIN-PORTAL-AUDIT.md for migration plan.
+import MemberInvoicePanel from './MemberInvoicePanel';
+import { SUPPORTED_LANGUAGES, EMAIL_SENDERS } from '@/lib/email-constants';
 
 interface MemberEmailActionsProps {
   memberData: UnifiedMember;
@@ -26,50 +22,26 @@ interface SubcollectionMember {
   isAccountAdministrator?: boolean;
 }
 
-type EmailAction = 'invoice' | 'standalone_invoice' | 'welcome' | 'reminder' | 'rendezvous' | 'bulletin' | null;
+type EmailAction = 'invoice' | 'welcome' | 'rendezvous' | null;
 
 const actionConfig = {
   invoice: {
-    title: 'Invoice Email',
-    description: 'Stripe payment link + bank transfer option',
-    icon: '💳',
-    apiEndpoint: '/api/send-membership-invoice-stripe',
-    requiresPricing: true
-  },
-  standalone_invoice: {
-    title: 'PDF Invoice',
-    description: 'Standalone invoice with PDF attachment',
+    title: 'Send Invoice',
+    description: 'Generate and send membership invoice',
     icon: '📄',
-    apiEndpoint: '/api/send-invoice-only',
-    requiresPricing: true
+    apiEndpoint: '' // Handled by MemberInvoicePanel
   },
   welcome: {
     title: 'Welcome Email',
     description: 'Portal access for approved members',
     icon: '👋',
-    apiEndpoint: '/api/send-member-portal-welcome',
-    requiresPricing: false
-  },
-  reminder: {
-    title: 'Payment Reminder',
-    description: 'Overdue payment notice',
-    icon: '⏰',
-    apiEndpoint: '/api/send-payment-reminder',
-    requiresPricing: true
+    apiEndpoint: '/api/send-member-portal-welcome'
   },
   rendezvous: {
     title: 'Rendezvous Confirmation',
     description: 'MGA Rendezvous ticket confirmation',
     icon: '🎫',
-    apiEndpoint: '/api/send-rendezvous-confirmation',
-    requiresPricing: false
-  },
-  bulletin: {
-    title: 'Bulletin Email',
-    description: 'February 2026 Entrepreneurial Underwriter',
-    icon: '📰',
-    apiEndpoint: '/api/send-bulletin-email',
-    requiresPricing: false
+    apiEndpoint: '/api/send-rendezvous-confirmation'
   }
 };
 
@@ -79,14 +51,13 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   const [previewing, setPreviewing] = useState(false);
   const [preview, setPreview] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
-  const [rendezvousRegistration, setRendezvousRegistration] = useState<any>(null);
 
   // Recipient selection state
   const [subcollectionMembers, setSubcollectionMembers] = useState<SubcollectionMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set(['account_admin']));
 
-  // Form data - initialized from memberData
+  // Form data
   const [formData, setFormData] = useState({
     email: '',
     cc: '',
@@ -95,29 +66,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     gender: 'm',
     organizationName: '',
     organizationType: 'MGA',
-    hasOtherAssociations: false,
     userLocale: 'en',
-    forceCurrency: '',
-    address: {
-      line1: '',
-      line2: '',
-      city: '',
-      county: '',
-      postcode: '',
-      country: ''
-    },
-    reminderAttachment: null as File | null,
-    customLineItem: {
-      description: '',
-      amount: 0,
-      enabled: false
-    },
-    rendezvousOverride: {
-      enabled: false,
-      passCount: 0,
-      unitPrice: 0
-    },
-    testPayment: false,
     rendezvous: {
       registrationId: '',
       numberOfAttendees: 1,
@@ -138,40 +87,10 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         email: memberData.email || '',
         fullName: memberData?.primaryContact?.name || memberData.personalName || memberData?.fullName || '',
         organizationName: memberData.organizationName || '',
-        organizationType: memberData.organizationType || 'MGA',
-        hasOtherAssociations: memberData.hasOtherAssociations || false,
-        address: {
-          line1: memberData.invoicingAddress?.line1 || memberData.businessAddress?.line1 || memberData.registeredAddress?.line1 || '',
-          line2: memberData.invoicingAddress?.line2 || memberData.businessAddress?.line2 || memberData.registeredAddress?.line2 || '',
-          city: memberData.invoicingAddress?.city || memberData.businessAddress?.city || memberData.registeredAddress?.city || '',
-          county: memberData.invoicingAddress?.county || memberData.businessAddress?.county || memberData.registeredAddress?.county || '',
-          postcode: memberData.invoicingAddress?.postcode || memberData.businessAddress?.postcode || memberData.registeredAddress?.postcode || '',
-          country: memberData.invoicingAddress?.country || memberData.businessAddress?.country || memberData.registeredAddress?.country || ''
-        }
+        organizationType: memberData.organizationType || 'MGA'
       }));
     }
   }, [memberData]);
-
-  // Fetch rendezvous registration by matching email/company
-  useEffect(() => {
-    const fetchRendezvousRegistration = async () => {
-      if (!memberData?.email && !memberData?.organizationName) return;
-
-      try {
-        const response = await authFetch(`/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.registration) {
-            setRendezvousRegistration(data.registration);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch rendezvous registration:', error);
-      }
-    };
-
-    fetchRendezvousRegistration();
-  }, [memberData?.email, memberData?.organizationName]);
 
   // Fetch subcollection members for recipient selection
   useEffect(() => {
@@ -259,7 +178,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       .map(r => r.email);
   };
 
-  // Update form email field based on selection (for preview/display)
+  // Update form email field based on selection
   useEffect(() => {
     const selectedEmails = getSelectedEmails();
     if (selectedEmails.length === 1) {
@@ -278,106 +197,8 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     }
   }, [selectedRecipientIds, subcollectionMembers, memberData]);
 
-  // Calculate pricing
-  const calculateOriginalAmount = () => {
-    if (formData.organizationType === 'MGA') {
-      const gwp = memberData?.portfolio?.grossWrittenPremiums;
-      switch (gwp) {
-        case '<10m': return 900;
-        case '10-20m': return 1500;
-        case '20-50m': return 2200;
-        case '50-100m': return 2800;
-        case '100-500m': return 4200;
-        case '500m+': return 7000;
-        default: return 900;
-      }
-    } else if (formData.organizationType === 'carrier') {
-      return 4000;
-    } else if (formData.organizationType === 'provider') {
-      return 5000;
-    }
-    return 900;
-  };
-
-  const originalAmount = calculateOriginalAmount();
-  const baseAmount = formData.hasOtherAssociations ? Math.round(originalAmount * 0.8) : originalAmount;
-
-  // Calculate rendezvous total - check both account field and fetched registration
-  const getRendezvousTotal = () => {
-    // First check account-level reservation (legacy)
-    const passData = memberData?.rendezvousPassReservation;
-    if (passData?.reserved || passData?.passCount) {
-      const passOrgType = passData.organizationType || formData.organizationType;
-      const passCount = passData.passCount || 1;
-      const isFaseMember = passData.isFaseMember !== false;
-      const isAsaseMember = passData.isAsaseMember || false;
-      return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
-    }
-    // Then check fetched registration from rendezvous-registrations collection
-    if (rendezvousRegistration && rendezvousRegistration.status !== 'confirmed' && rendezvousRegistration.paymentStatus !== 'paid') {
-      const passOrgType = rendezvousRegistration.billingInfo?.organizationType || formData.organizationType;
-      const passCount = rendezvousRegistration.numberOfAttendees || 1;
-      const isFaseMember = rendezvousRegistration.companyIsFaseMember !== false;
-      const isAsaseMember = rendezvousRegistration.isAsaseMember || false;
-      return calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
-    }
-    return 0;
-  };
-
-  // Get pass data for invoice line items (from either source)
-  const getRendezvousPassData = () => {
-    const passData = memberData?.rendezvousPassReservation;
-    if (passData?.reserved || passData?.passCount) {
-      return {
-        reserved: true,
-        passCount: passData.passCount || 1,
-        organizationType: passData.organizationType || formData.organizationType,
-        isFaseMember: passData.isFaseMember !== false,
-        isAsaseMember: passData.isAsaseMember || false,
-        attendees: passData.attendees || []
-      };
-    }
-    if (rendezvousRegistration && rendezvousRegistration.status !== 'confirmed' && rendezvousRegistration.paymentStatus !== 'paid') {
-      return {
-        reserved: true,
-        passCount: rendezvousRegistration.numberOfAttendees || 1,
-        organizationType: rendezvousRegistration.billingInfo?.organizationType || formData.organizationType,
-        isFaseMember: rendezvousRegistration.companyIsFaseMember !== false,
-        isAsaseMember: rendezvousRegistration.isAsaseMember || false,
-        attendees: rendezvousRegistration.attendees || []
-      };
-    }
-    return null;
-  };
-  const autoRendezvousTotal = getRendezvousTotal();
-  // If override is enabled, use override calculation; otherwise use auto-detected total
-  const rendezvousTotal = formData.rendezvousOverride.enabled
-    ? (formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice)
-    : autoRendezvousTotal;
-  const customLineItemTotal = formData.customLineItem.enabled ? formData.customLineItem.amount : 0;
-  const finalAmount = baseAmount + rendezvousTotal + customLineItemTotal;
-
   const buildPayload = (isPreview: boolean) => {
     if (!selectedAction) return null;
-    const config = actionConfig[selectedAction];
-
-    const rendezvousPassData = getRendezvousPassData();
-    // Include rendezvous data if: auto-detected and not overridden, OR override is enabled with passes > 0
-    const shouldIncludeRendezvous = rendezvousPassData && !formData.rendezvousOverride.enabled;
-    const overrideHasPasses = formData.rendezvousOverride.enabled && formData.rendezvousOverride.passCount > 0;
-    const payload: any = {
-      preview: isPreview,
-      ...formData,
-      greeting: formData.greeting || formData.fullName,
-      ...(shouldIncludeRendezvous && { rendezvousPassReservation: rendezvousPassData }),
-      // When override is enabled with passes, still send pass data so email text mentions Rendezvous
-      ...(overrideHasPasses && { rendezvousPassReservation: {
-        reserved: true,
-        passCount: formData.rendezvousOverride.passCount,
-        organizationType: formData.organizationType,
-        isFaseMember: true
-      }})
-    };
 
     if (selectedAction === 'rendezvous') {
       return {
@@ -387,6 +208,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         companyName: formData.organizationName,
         organizationType: formData.organizationType,
         userLocale: formData.userLocale,
+        freeformSender: formData.freeformSender,
         registrationId: formData.rendezvous.registrationId,
         numberOfAttendees: formData.rendezvous.numberOfAttendees,
         totalAmount: formData.rendezvous.totalAmount,
@@ -397,109 +219,17 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
       };
     }
 
-    if (selectedAction === 'bulletin') {
-      return {
-        preview: isPreview,
-        email: formData.email,
-        cc: formData.cc,
-        userLocale: formData.userLocale
-      };
-    }
-
-    if (selectedAction === 'standalone_invoice') {
-      const lineItems: { description: string; amount: number; isDiscount?: boolean }[] = [];
-      const membershipDescription = formData.userLocale === 'nl'
-        ? 'FASE Jaarlijks Lidmaatschap'
-        : 'FASE Annual Membership';
-      lineItems.push({ description: membershipDescription, amount: originalAmount });
-
-      if (formData.hasOtherAssociations) {
-        const discountDescription = formData.userLocale === 'nl'
-          ? 'Lidmaatschapskorting voor Meerdere Verenigingen (20%)'
-          : 'Multi-Association Member Discount (20%)';
-        lineItems.push({ description: discountDescription, amount: -(originalAmount * 0.2), isDiscount: true });
-      }
-
-      // Check if rendezvous override is enabled
-      if (formData.rendezvousOverride.enabled) {
-        // Use override values if set (allows removal by setting passCount to 0)
-        if (formData.rendezvousOverride.passCount > 0 && formData.rendezvousOverride.unitPrice > 0) {
-          const overrideTotal = formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice;
-          lineItems.push({
-            description: `MGA Rendezvous 2026 Pass${formData.rendezvousOverride.passCount > 1 ? 'es' : ''} (${formData.rendezvousOverride.passCount}x)`,
-            amount: overrideTotal
-          });
-        }
-        // If override is enabled but passCount is 0, we don't add any rendezvous line item (removal)
-      } else if (rendezvousPassData) {
-        const passOrgType = rendezvousPassData.organizationType || formData.organizationType;
-        const passCount = rendezvousPassData.passCount || 1;
-        const isFaseMember = rendezvousPassData.isFaseMember !== false;
-        const isAsaseMember = rendezvousPassData.isAsaseMember || false;
-        const calculatedTotal = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
-        const passLabel = getOrgTypeLabel(passOrgType);
-
-        if (calculatedTotal > 0) {
-          lineItems.push({
-            description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
-            amount: calculatedTotal
-          });
-        }
-      }
-
-      if (formData.customLineItem.enabled && formData.customLineItem.amount > 0) {
-        lineItems.push({
-          description: formData.customLineItem.description || 'Additional Item',
-          amount: formData.customLineItem.amount
-        });
-      }
-
-      payload.invoiceNumber = `FASE-${Math.floor(10000 + Math.random() * 90000)}`;
-      payload.lineItems = lineItems;
-      payload.paymentCurrency = formData.forceCurrency || 'EUR';
-      payload.country = formData.address.country;
-      payload.address = formData.address;
-      payload.userLocale = formData.userLocale;
-    } else if (config.requiresPricing) {
-      payload.totalAmount = finalAmount;
-      payload.exactTotalAmount = finalAmount;
-      payload.originalAmount = originalAmount.toString();
-      payload.discountAmount = formData.hasOtherAssociations ? (originalAmount - baseAmount) : 0;
-      payload.discountReason = formData.hasOtherAssociations ? 'Multi-Association Member Discount (20%)' : '';
-      payload.grossWrittenPremiums = memberData?.portfolio?.grossWrittenPremiums || '<10m';
-      payload.forceCurrency = formData.forceCurrency;
-      payload.customLineItem = formData.customLineItem.enabled ? formData.customLineItem : null;
-    }
-
-    if (selectedAction === 'reminder') {
-      if (memberData?.createdAt) {
-        payload.applicationDate = memberData.createdAt;
-      }
-      payload.address = formData.address;
-      payload.country = formData.address.country;
-      payload.userLocale = formData.userLocale;
-    }
-
-    return payload;
-  };
-
-  const handleReminderAttachment = async (payload: any) => {
-    if (selectedAction !== 'reminder' || !formData.reminderAttachment) {
-      return payload;
-    }
-    const fileReader = new FileReader();
-    const pdfBase64 = await new Promise<string>((resolve, reject) => {
-      fileReader.onload = () => {
-        const result = fileReader.result as string;
-        resolve(result.split(',')[1]);
-      };
-      fileReader.onerror = reject;
-      fileReader.readAsDataURL(formData.reminderAttachment!);
-    });
+    // welcome email
     return {
-      ...payload,
-      pdfAttachment: pdfBase64,
-      pdfFilename: formData.reminderAttachment.name
+      preview: isPreview,
+      email: formData.email,
+      cc: formData.cc,
+      fullName: formData.fullName,
+      greeting: formData.greeting || formData.fullName,
+      gender: formData.gender,
+      organizationName: formData.organizationName,
+      userLocale: formData.userLocale,
+      freeformSender: formData.freeformSender
     };
   };
 
@@ -517,25 +247,16 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
     try {
       const config = actionConfig[selectedAction];
 
-      // For preview, just use the first selected recipient
       if (isPreview) {
-        let payload = buildPayload(true);
-
-        if (selectedAction === 'reminder' && formData.reminderAttachment) {
-          payload = await handleReminderAttachment(payload);
-        }
-
+        const payload = buildPayload(true);
         const response = await authPost(config.apiEndpoint, payload);
-
         const data = await response.json();
         setPreview(data);
       } else {
         // For sending, determine recipients
-        // Check if user manually edited the email field
         const selectedFromPills = getSelectedEmails();
         const formEmailList = formData.email.split(',').map(e => e.trim()).filter(Boolean);
 
-        // If formData.email differs from what would be auto-generated from pills, use form values
         const expectedFromPills = selectedFromPills.join(', ');
         const isManuallyEdited = formData.email !== expectedFromPills && formData.email.trim() !== '';
 
@@ -543,11 +264,9 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         let namesToSend: string[];
 
         if (isManuallyEdited) {
-          // User manually edited - use form values
           emailsToSend = formEmailList;
           namesToSend = formEmailList.map(() => formData.fullName);
         } else {
-          // Use selected pills
           emailsToSend = selectedFromPills;
           namesToSend = allRecipients
             .filter(r => selectedRecipientIds.has(r.id))
@@ -562,49 +281,24 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
           const email = emailsToSend[i];
           const name = namesToSend[i];
 
-          // Build payload for this specific recipient
-          let payload = buildPayload(false);
-          payload.email = email;
-          payload.fullName = name;
-
-          if (selectedAction === 'reminder' && formData.reminderAttachment) {
-            payload = await handleReminderAttachment(payload);
+          const payload = buildPayload(false);
+          if (payload) {
+            payload.email = email;
+            payload.fullName = name;
           }
 
           try {
             const response = await authPost(config.apiEndpoint, payload);
-
             const data = await response.json();
 
             if (data.success || response.ok) {
               successCount++;
-
-              // Track invoice in Firestore
-              if (selectedAction === 'standalone_invoice' || selectedAction === 'invoice' || selectedAction === 'reminder') {
-                try {
-                  await createInvoiceRecord({
-                    invoiceNumber: data.invoiceNumber || payload.invoiceNumber,
-                    recipientEmail: email,
-                    recipientName: name || 'Client',
-                    organizationName: formData.organizationName,
-                    amount: parseFloat(payload.totalAmount) || 0,
-                    currency: payload.forceCurrency || 'EUR',
-                    type: selectedAction === 'reminder' ? 'reminder' : (selectedAction === 'standalone_invoice' ? 'standalone' : 'regular'),
-                    status: 'sent',
-                    sentAt: new Date(),
-                    pdfUrl: data.pdfUrl,
-                    pdfGenerated: !!data.pdfUrl
-                  });
-                } catch (trackingError) {
-                  console.error('Failed to track invoice:', trackingError);
-                }
-              }
             } else {
               failCount++;
               errors.push(`${email}: ${data.error || 'Unknown error'}`);
             }
 
-            // Rate limiting - wait 500ms between sends
+            // Rate limiting
             if (i < emailsToSend.length - 1) {
               await new Promise(resolve => setTimeout(resolve, 500));
             }
@@ -675,8 +369,8 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   // Render action cards when no action selected
   if (!selectedAction) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(Object.entries(actionConfig) as [EmailAction, typeof actionConfig.invoice][]).map(([key, config]) => (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {(Object.entries(actionConfig) as [EmailAction, typeof actionConfig.welcome][]).map(([key, config]) => (
           <button
             key={key}
             onClick={() => setSelectedAction(key as EmailAction)}
@@ -687,6 +381,28 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             <p className="text-sm text-gray-500 mt-1">{config.description}</p>
           </button>
         ))}
+      </div>
+    );
+  }
+
+  // Invoice action renders MemberInvoicePanel
+  if (selectedAction === 'invoice') {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-fase-navy transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to actions
+        </button>
+        <MemberInvoicePanel
+          memberData={memberData}
+          companyId={companyId}
+          onInvoiceSent={onEmailSent}
+        />
       </div>
     );
   }
@@ -719,12 +435,9 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             onChange={(e) => setFormData(prev => ({ ...prev, userLocale: e.target.value }))}
             className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
-            <option value="en">English</option>
-            <option value="fr">Francais</option>
-            <option value="de">Deutsch</option>
-            <option value="es">Espanol</option>
-            <option value="it">Italiano</option>
-            <option value="nl">Nederlands</option>
+            {SUPPORTED_LANGUAGES.map(lang => (
+              <option key={lang.code} value={lang.code}>{lang.label}</option>
+            ))}
           </select>
         </div>
         <div>
@@ -734,10 +447,9 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
             onChange={(e) => setFormData(prev => ({ ...prev, freeformSender: e.target.value }))}
             className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
-            <option value="admin@fasemga.com">FASE Admin &lt;admin@fasemga.com&gt;</option>
-            <option value="william.pitt@fasemga.com">William Pitt &lt;william.pitt@fasemga.com&gt;</option>
-            <option value="info@fasemga.com">FASE Info &lt;info@fasemga.com&gt;</option>
-            <option value="media@fasemga.com">FASE Media &lt;media@fasemga.com&gt;</option>
+            {EMAIL_SENDERS.map(s => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -820,8 +532,8 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         </div>
       </div>
 
-      {/* Contact Details - not for rendezvous */}
-      {selectedAction !== 'rendezvous' && (
+      {/* Contact Details - for welcome email */}
+      {selectedAction === 'welcome' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
@@ -854,220 +566,6 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
               <option value="f">Female</option>
             </select>
           </div>
-        </div>
-      )}
-
-      {/* Organization Details - for invoice types */}
-      {(selectedAction === 'invoice' || selectedAction === 'standalone_invoice' || selectedAction === 'reminder') && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Organization Name *</label>
-              <input
-                type="text"
-                value={formData.organizationName}
-                onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type</label>
-              <select
-                value={formData.organizationType}
-                onChange={(e) => setFormData(prev => ({ ...prev, organizationType: e.target.value }))}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              >
-                <option value="MGA">MGA</option>
-                <option value="carrier">Carrier</option>
-                <option value="provider">Provider</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Pricing options */}
-          <div className="space-y-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.hasOtherAssociations}
-                onChange={(e) => setFormData(prev => ({ ...prev, hasOtherAssociations: e.target.checked }))}
-                className="mr-2"
-              />
-              <span className="text-sm text-gray-700">Has other association memberships (20% discount)</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.testPayment}
-                onChange={(e) => setFormData(prev => ({ ...prev, testPayment: e.target.checked }))}
-                className="mr-2"
-              />
-              <span className="text-sm text-gray-700">Test payment (50 cents)</span>
-            </label>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Currency Override</label>
-              <select
-                value={formData.forceCurrency}
-                onChange={(e) => setFormData(prev => ({ ...prev, forceCurrency: e.target.value }))}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              >
-                <option value="">Auto-detect from country</option>
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="GBP">GBP</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Address */}
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Address</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input
-                type="text"
-                value={formData.address.line1}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))}
-                placeholder="Address Line 1 *"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.address.line2}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))}
-                placeholder="Address Line 2"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.address.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))}
-                placeholder="City *"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.address.county}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, county: e.target.value } }))}
-                placeholder="County"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.address.postcode}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, postcode: e.target.value } }))}
-                placeholder="Postcode *"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.address.country}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, country: e.target.value } }))}
-                placeholder="Country *"
-                className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* MGA Rendezvous Override */}
-          {(autoRendezvousTotal > 0 || formData.rendezvousOverride.enabled) && (
-            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-amber-800">MGA Rendezvous Line Item</h4>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.rendezvousOverride.enabled}
-                    onChange={(e) => {
-                      const passData = getRendezvousPassData();
-                      setFormData(prev => ({
-                        ...prev,
-                        rendezvousOverride: {
-                          enabled: e.target.checked,
-                          passCount: e.target.checked ? (passData?.passCount || 1) : 0,
-                          unitPrice: e.target.checked ? (autoRendezvousTotal / (passData?.passCount || 1)) : 0
-                        }
-                      }));
-                    }}
-                    className="mr-2"
-                  />
-                  <span className="text-sm text-amber-800">Override</span>
-                </label>
-              </div>
-              {formData.rendezvousOverride.enabled ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-amber-700 mb-1">Number of Passes</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.rendezvousOverride.passCount}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          rendezvousOverride: { ...prev.rendezvousOverride, passCount: Math.max(0, parseInt(e.target.value) || 0) }
-                        }))}
-                        className="w-full border border-amber-300 rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-amber-700 mb-1">Unit Price (EUR)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={formData.rendezvousOverride.unitPrice}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          rendezvousOverride: { ...prev.rendezvousOverride, unitPrice: parseFloat(e.target.value) || 0 }
-                        }))}
-                        className="w-full border border-amber-300 rounded px-3 py-2 text-sm"
-                      />
-                      <p className="text-xs text-amber-600 mt-1">Use negative value for credit/refund</p>
-                    </div>
-                  </div>
-                  <div className="text-sm text-amber-700">
-                    {formData.rendezvousOverride.passCount === 0 ? (
-                      <span className="font-medium">Rendezvous line item will be removed from invoice</span>
-                    ) : (
-                      <span>Subtotal: EUR{(formData.rendezvousOverride.passCount * formData.rendezvousOverride.unitPrice).toLocaleString()}</span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-amber-700">
-                  Auto-detected: EUR{autoRendezvousTotal.toLocaleString()} (Enable override to edit or remove)
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Pricing Summary */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Pricing Summary</h4>
-            <div className="text-sm space-y-1">
-              <div>Base Fee: EUR{originalAmount}</div>
-              {formData.hasOtherAssociations && (
-                <div>Multi-Association Discount (20%): -EUR{originalAmount - baseAmount}</div>
-              )}
-              {rendezvousTotal > 0 && (
-                <div className="text-amber-700">MGA Rendezvous Passes: EUR{rendezvousTotal.toLocaleString()}</div>
-              )}
-              <div className="font-semibold pt-2 border-t border-gray-300">Total: EUR{finalAmount.toLocaleString()}</div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Reminder PDF Upload */}
-      {selectedAction === 'reminder' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">PDF Attachment (optional)</label>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={(e) => setFormData(prev => ({ ...prev, reminderAttachment: e.target.files?.[0] || null }))}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-          />
         </div>
       )}
 
@@ -1155,7 +653,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         </div>
       )}
 
-      {/* Preview Display - Shows after clicking Preview */}
+      {/* Preview Display */}
       {preview && !preview.error && (
         <div className="border-2 border-fase-navy rounded-lg overflow-hidden">
           <div className="bg-fase-navy px-4 py-3 flex items-center justify-between">
@@ -1182,7 +680,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
         </div>
       )}
 
-      {/* Primary Action Button - Preview (only shown when no preview yet) */}
+      {/* Primary Action Button - Preview */}
       {!preview && (
         <div className="pt-4 border-t border-gray-200">
           <Button

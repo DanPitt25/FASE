@@ -1,21 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { UseRegistrationForm } from './registration-hooks';
 
 // European MGA Associations Component
-export const EuropeanAssociationsSection = ({
-  hasOtherAssociations,
-  setHasOtherAssociations,
-  otherAssociations,
-  setOtherAssociations
-}: {
-  hasOtherAssociations: boolean | null;
-  setHasOtherAssociations: (value: boolean | null) => void;
-  otherAssociations: string[];
-  setOtherAssociations: (associations: string[]) => void;
-}) => {
+export const EuropeanAssociationsSection = ({ reg }: { reg: UseRegistrationForm }) => {
   const t = useTranslations('register_form.associations');
-  
+  const { form, setField } = reg;
+
+  const toggleAssociation = (association: string) => {
+    const current = form.otherAssociations;
+    if (current.includes(association)) {
+      setField('otherAssociations', current.filter(a => a !== association));
+    } else {
+      setField('otherAssociations', [...current, association]);
+    }
+  };
+
   return (
     <div>
       <label className="block text-sm font-medium text-fase-navy mb-3">
@@ -24,11 +25,9 @@ export const EuropeanAssociationsSection = ({
       <div className="flex space-x-4">
         <button
           type="button"
-          onClick={() => {
-            setHasOtherAssociations(true);
-          }}
+          onClick={() => setField('hasOtherAssociations', true)}
           className={`px-4 py-2 rounded-lg border transition-colors ${
-            hasOtherAssociations === true
+            form.hasOtherAssociations === true
               ? 'bg-fase-navy text-white border-fase-navy'
               : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
           }`}
@@ -38,11 +37,11 @@ export const EuropeanAssociationsSection = ({
         <button
           type="button"
           onClick={() => {
-            setHasOtherAssociations(false);
-            setOtherAssociations([]);
+            setField('hasOtherAssociations', false);
+            setField('otherAssociations', []);
           }}
           className={`px-4 py-2 rounded-lg border transition-colors ${
-            hasOtherAssociations === false
+            form.hasOtherAssociations === false
               ? 'bg-fase-navy text-white border-fase-navy'
               : 'bg-white text-fase-black border-fase-light-gold hover:border-fase-navy'
           }`}
@@ -51,7 +50,7 @@ export const EuropeanAssociationsSection = ({
         </button>
       </div>
 
-      {hasOtherAssociations && (
+      {form.hasOtherAssociations && (
         <div className="mt-4">
           <label className="block text-sm font-medium text-fase-navy mb-2">
             {t('select_associations')} *
@@ -68,14 +67,8 @@ export const EuropeanAssociationsSection = ({
                 <input
                   type="checkbox"
                   value={association.value}
-                  checked={otherAssociations.includes(association.value)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setOtherAssociations([...otherAssociations, association.value]);
-                    } else {
-                      setOtherAssociations(otherAssociations.filter(a => a !== association.value));
-                    }
-                  }}
+                  checked={form.otherAssociations.includes(association.value)}
+                  onChange={() => toggleAssociation(association.value)}
                   className="mr-2 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
                 />
                 <span className="text-sm text-fase-black">{association.label}</span>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
 
 interface ArticleMetadata {
   title: string;
@@ -29,10 +30,15 @@ export default function NewsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const bannerAnimation = useScrollAnimation();
+  const ribbonAnimation = useScrollAnimation();
+  const contentAnimation = useScrollAnimation();
+
   useEffect(() => {
     async function loadArticles() {
       try {
         const baseArticleSlugs = [
+          'insurtech-uk-partnership',
           'loro-partnership',
           'accredited-partnership',
           'accelerant-partnership',
@@ -96,73 +102,87 @@ export default function NewsPage() {
   }, [locale]);
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-white">
-        {/* Hero Section */}
-        <div className="relative h-80 overflow-hidden">
+    <div className="flex min-h-screen bg-white font-lato overflow-x-hidden">
+      <div className="flex-1 relative">
+        <Header currentPage="news" />
+
+        {/* Hero Banner - matching ContentPageLayout */}
+        <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
           <Image
             src="/conferenceWood.jpg"
             alt={t('page.banner_alt')}
             fill
             className="object-cover"
+            style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
             priority
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          <div className="absolute inset-0 flex items-center">
-            <div className="container mx-auto px-4">
-              <h1 className="text-4xl md:text-5xl font-noto-serif font-bold text-white max-w-4xl">
+          <div className="absolute inset-0 bg-fase-navy/40"></div>
+          <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+            <div className={`w-1/4 transition-all duration-700 ${
+              bannerAnimation.isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
+            }`}>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-noto-serif font-medium text-white leading-tight">
                 {t('page.title')}
               </h1>
             </div>
           </div>
+        </section>
+
+        {/* Blue ribbon separator */}
+        <div ref={ribbonAnimation.elementRef} className="relative h-12">
+          <div className={`absolute right-0 h-12 bg-fase-navy shadow-lg transition-all duration-700 ${
+            ribbonAnimation.isVisible ? 'scroll-visible-right' : 'scroll-hidden-right'
+          }`} style={{ width: '61.8%' }}></div>
         </div>
 
         {/* News Content */}
-        <div className="bg-gray-50 py-12">
-          <div className="container mx-auto px-4">
+        <section ref={contentAnimation.elementRef} className="bg-white py-24 lg:py-32 2xl:py-40">
+          <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             <div className="max-w-6xl mx-auto">
-              <p className="text-gray-600 mb-10 max-w-3xl">
-                {t('intro.content.paragraph1')}
-              </p>
-
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-fase-navy mx-auto"></div>
                   <p className="text-gray-500 mt-4">Loading articles...</p>
                 </div>
               ) : articles.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {articles.map((article) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {articles.map((article, index) => (
                     <Link
                       key={article.slug}
                       href={`/about/news/${article.slug}`}
-                      className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200"
+                      className={`group transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 block ${
+                        contentAnimation.isVisible ? 'scroll-visible' : 'scroll-hidden'
+                      }`}
+                      style={{
+                        transitionDelay: contentAnimation.isVisible ? `${index * 100}ms` : '0ms'
+                      }}
                     >
-                      {article.metadata.bannerImage && (
-                        <div className="aspect-video relative overflow-hidden">
-                          <Image
-                            src={article.metadata.bannerImage}
-                            alt={article.metadata.bannerImageAlt || article.metadata.title}
-                            fill
-                            className="object-cover"
-                          />
+                      <div className="bg-white border border-gray-200 shadow-lg overflow-hidden h-full transition-shadow duration-300 group-hover:shadow-2xl">
+                        {article.metadata.bannerImage && (
+                          <div className="relative h-48">
+                            <Image
+                              src={article.metadata.bannerImage}
+                              alt={article.metadata.bannerImageAlt || article.metadata.title}
+                              fill
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                        )}
+                        <div className="p-6">
+                          <time className="text-sm text-gray-500" dateTime={article.metadata.date}>
+                            {new Date(article.metadata.date).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </time>
+                          <h3 className="text-xl font-noto-serif font-medium text-fase-navy mt-3 mb-3 leading-snug line-clamp-2">
+                            {article.metadata.title}
+                          </h3>
+                          <p className="text-fase-black leading-relaxed text-sm line-clamp-3">
+                            {article.metadata.excerpt}
+                          </p>
                         </div>
-                      )}
-                      <div className="p-5">
-                        <time className="text-sm text-gray-500" dateTime={article.metadata.date}>
-                          {new Date(article.metadata.date).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </time>
-                        <h3 className="text-lg font-noto-serif font-semibold text-fase-navy mt-2 mb-2 leading-snug line-clamp-2">
-                          {article.metadata.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                          {article.metadata.excerpt}
-                        </p>
                       </div>
                     </Link>
                   ))}
@@ -174,9 +194,10 @@ export default function NewsPage() {
               )}
             </div>
           </div>
-        </div>
+        </section>
+
+        <Footer />
       </div>
-      <Footer />
-    </>
+    </div>
   );
 }

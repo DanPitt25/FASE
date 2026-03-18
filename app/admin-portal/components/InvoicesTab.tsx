@@ -659,7 +659,6 @@ export default function InvoicesTab() {
                   <option value="stripe">Stripe (Card)</option>
                   <option value="wise">Wise (Bank Transfer)</option>
                   <option value="bank_transfer">Other Bank Transfer</option>
-                  <option value="paypal">PayPal</option>
                 </select>
               </div>
               <div>

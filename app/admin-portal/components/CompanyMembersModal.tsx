@@ -10,7 +10,6 @@ import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import CompanyDetailsTab from './CompanyDetailsTab';
 import MemberEmailActions from './MemberEmailActions';
-import MemberInvoicePanel from './MemberInvoicePanel';
 import { type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
 
 interface CompanyMembersModalProps {
@@ -36,7 +35,7 @@ interface Invoice {
   paymentMethod?: string;
 }
 
-type ModalTab = 'invoice' | 'actions' | 'company' | 'timeline' | 'notes' | 'payments';
+type ModalTab = 'actions' | 'company' | 'timeline' | 'notes' | 'payments';
 
 export default function CompanyMembersModal({
   isOpen,
@@ -49,7 +48,7 @@ export default function CompanyMembersModal({
   isSuppressed,
   onToggleSuppressed
 }: CompanyMembersModalProps) {
-  const [activeTab, setActiveTab] = useState<ModalTab>('invoice');
+  const [activeTab, setActiveTab] = useState<ModalTab>('actions');
 
   // Delete state
   const [showDeleteSection, setShowDeleteSection] = useState(false);
@@ -147,7 +146,7 @@ export default function CompanyMembersModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setActiveTab('invoice');
+      setActiveTab('actions');
       setShowDeleteSection(false);
       setDeleteConfirmation('');
       setDeleteError(null);
@@ -301,7 +300,6 @@ export default function CompanyMembersModal({
   ];
 
   const tabs: { id: ModalTab; label: string; count?: number }[] = [
-    { id: 'invoice', label: 'Invoice' },
     { id: 'actions', label: 'Email' },
     { id: 'company', label: 'Company' },
     { id: 'timeline', label: 'Timeline', count: activities.length },
@@ -378,16 +376,7 @@ export default function CompanyMembersModal({
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto py-4">
-          {/* INVOICE TAB - New unified invoice generation */}
-          {activeTab === 'invoice' && memberData && (
-            <MemberInvoicePanel
-              memberData={memberData}
-              companyId={companyId}
-              onInvoiceSent={loadCrmData}
-            />
-          )}
-
-          {/* EMAIL TAB - Other email actions (Welcome, Reminder, etc.) */}
+          {/* EMAIL TAB - All email actions including Invoice */}
           {activeTab === 'actions' && memberData && (
             <MemberEmailActions
               memberData={memberData}

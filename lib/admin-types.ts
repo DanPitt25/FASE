@@ -394,8 +394,6 @@ export interface PendingReviewAccount {
 export type EmailAction =
   | 'welcome'
   | 'membership_invoice'
-  | 'membership_invoice_stripe'
-  | 'payment_reminder'
   | 'followup'
   | 'rendezvous_confirmation'
   | 'rendezvous_reminder'

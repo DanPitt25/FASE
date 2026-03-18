@@ -1,9 +1,8 @@
 'use client';
 
-import { sendVerificationCode, verifyCode, submitApplication } from "../../lib/auth";
+import { submitApplication } from "../../lib/auth";
 import { handleAuthError } from "../../lib/auth-errors";
 import { auth } from "../../lib/firebase";
-import { calculateMembershipFee, getDiscountedFee, calculateTotalGWP, convertToEUR, getGWPBand } from './registration-utils';
 import { Member } from './registration-hooks';
 
 // Domain existence check
@@ -149,46 +148,3 @@ export const createAccountAndMembership = async (
   }
 };
 
-// Continue with PayPal payment
-export const continueWithPayPalPayment = async (formData: any) => {
-  try {
-    const { auth } = await import('../../lib/firebase');
-    if (!auth.currentUser) {
-      throw new Error('No authenticated user');
-    }
-    
-    const fullName = `${formData.firstName} ${formData.surname}`.trim();
-    const orgName = formData.organizationName; // All memberships are corporate
-    
-    const response = await fetch('/api/create-paypal-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        organizationName: orgName,
-        organizationType: formData.organizationType, // All memberships are corporate
-        grossWrittenPremiums: formData.organizationType === 'MGA' ? getGWPBand(convertToEUR(parseFloat(formData.grossWrittenPremiums) || 0, formData.gwpCurrency)) : undefined, // All memberships are corporate
-        userEmail: formData.email,
-        userId: auth.currentUser.uid,
-        testPayment: false
-      }),
-    });
-
-    if (!response.ok) {
-      await response.text(); // Read response to clear buffer
-      throw new Error(`Payment processing failed (${response.status}). Please try again.`);
-    }
-
-    const data = await response.json();
-    
-    // Redirect to PayPal
-    if (data.approvalUrl) {
-      window.location.href = data.approvalUrl;
-    } else {
-      throw new Error('No approval URL received from PayPal');
-    }
-  } catch (error: any) {
-    throw new Error(error.message || 'Failed to start payment process');
-  }
-};

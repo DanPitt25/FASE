@@ -8,8 +8,30 @@ import type { UnifiedMember } from '../lib/unified-member';
 import { feature } from 'topojson-client';
 import countries from 'i18n-iso-countries';
 import { useUnifiedAuth } from '../contexts/UnifiedAuthContext';
-import { updateUserProfile, getUserProfile } from '../lib/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { getLineOfBusinessDisplay } from '../lib/lines-of-business';
+
+// User profile helpers (client-side Firestore for member portal market selection)
+interface UserProfileData {
+  markets?: string[];
+  marketLinesOfBusiness?: {[countryCode: string]: string[]};
+}
+
+async function getUserProfile(uid: string): Promise<UserProfileData | null> {
+  try {
+    const userRef = doc(db, 'accounts', uid);
+    const userSnap = await getDoc(userRef);
+    return userSnap.exists() ? userSnap.data() as UserProfileData : null;
+  } catch {
+    return null;
+  }
+}
+
+async function updateUserProfile(uid: string, updates: Partial<UserProfileData>): Promise<void> {
+  const userRef = doc(db, 'accounts', uid);
+  await updateDoc(userRef, { ...updates, updatedAt: serverTimestamp() });
+}
 
 // Register multiple locales for country names
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
