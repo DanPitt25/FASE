@@ -150,6 +150,7 @@ export interface OrganizationAccount {
   logoStatus?: LogoStatus; // Logo review workflow status
   hasOtherAssociations?: boolean;
   otherAssociations?: string[];
+  isInsurtechUKMember?: boolean;
   linesOfBusiness?: string[];
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
@@ -182,6 +183,7 @@ export interface UnifiedMember {
     portfolioMix: Record<string, number>;
   };
   hasOtherAssociations?: boolean;
+  isInsurtechUKMember?: boolean;
   primaryContact?: {
     name: string;
     email: string;
