@@ -107,6 +107,14 @@ export async function POST(request: NextRequest) {
         invoiceUrl: signedUrl,
         invoiceNumber: invoiceNumber,
         invoiceRegeneratedAt: FieldValue.serverTimestamp(),
+        // Also update pricing fields so they persist
+        totalPrice: data.totalPrice,
+        subtotal: data.subtotal,
+        numberOfAttendees: data.numberOfTickets,
+        discount: data.discount,
+        companyIsFaseMember: data.isFaseMember,
+        isAsaseMember: data.isAsaseMember,
+        ...(data.vatNumber && { 'billingInfo.vatNumber': data.vatNumber }),
       });
     }
 

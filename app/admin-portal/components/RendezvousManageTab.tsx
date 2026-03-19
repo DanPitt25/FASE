@@ -31,6 +31,7 @@ import {
   DeleteRegistrationModal,
   EditAttendeesModal,
   EditInvoiceModal,
+  EditPriceModal,
 } from './rendezvous/modals';
 import { useInvoice, InvoiceData, generateLineItemId } from '@/lib/contexts/InvoiceContext';
 
@@ -62,6 +63,7 @@ export default function RendezvousManageTab() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditAttendeesModal, setShowEditAttendeesModal] = useState(false);
   const [showEditInvoiceModal, setShowEditInvoiceModal] = useState(false);
+  const [showEditPriceModal, setShowEditPriceModal] = useState(false);
 
   // Loading/action states
   const [updating, setUpdating] = useState(false);
@@ -71,11 +73,13 @@ export default function RendezvousManageTab() {
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [adding, setAdding] = useState(false);
   const [savingAttendees, setSavingAttendees] = useState(false);
+  const [savingPrice, setSavingPrice] = useState(false);
 
   // Error states
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
   const [editAttendeesError, setEditAttendeesError] = useState<string | null>(null);
+  const [editPriceError, setEditPriceError] = useState<string | null>(null);
 
   // Email form state
   const [emailResult, setEmailResult] = useState<{ success?: boolean; error?: string } | null>(null);
@@ -101,6 +105,9 @@ export default function RendezvousManageTab() {
 
   // Edit invoice state
   const [invoiceEditRegistration, setInvoiceEditRegistration] = useState<RendezvousRegistration | null>(null);
+
+  // Edit price state
+  const [priceEditRegistration, setPriceEditRegistration] = useState<RendezvousRegistration | null>(null);
 
   // New registration form
   const [newRegistration, setNewRegistration] = useState({
@@ -687,6 +694,83 @@ export default function RendezvousManageTab() {
     }
   };
 
+  // Edit price
+  const openEditPriceModal = (registration: RendezvousRegistration) => {
+    setPriceEditRegistration(registration);
+    setEditPriceError(null);
+    setShowEditPriceModal(true);
+  };
+
+  const handleSavePrice = async (priceData: {
+    totalPrice: number;
+    subtotal: number;
+    discount: number;
+    companyIsFaseMember: boolean;
+    isAsaseMember: boolean;
+  }) => {
+    if (!priceEditRegistration) return;
+
+    try {
+      setSavingPrice(true);
+      setEditPriceError(null);
+
+      const response = await authFetch('/api/admin/rendezvous-registrations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationId: priceEditRegistration.registrationId,
+          priceData,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update price');
+      }
+
+      // Update local state
+      setRegistrations(prev =>
+        prev.map(reg =>
+          reg.registrationId === priceEditRegistration.registrationId
+            ? {
+                ...reg,
+                totalPrice: priceData.totalPrice,
+                subtotal: priceData.subtotal,
+                discount: priceData.discount,
+                companyIsFaseMember: priceData.companyIsFaseMember,
+                isAsaseMember: priceData.isAsaseMember,
+              }
+            : reg
+        )
+      );
+
+      // Also update selectedCompanyRegistrations if viewing
+      setSelectedCompanyRegistrations(prev =>
+        prev.map(reg =>
+          reg.registrationId === priceEditRegistration.registrationId
+            ? {
+                ...reg,
+                totalPrice: priceData.totalPrice,
+                subtotal: priceData.subtotal,
+                discount: priceData.discount,
+                companyIsFaseMember: priceData.companyIsFaseMember,
+                isAsaseMember: priceData.isAsaseMember,
+              }
+            : reg
+        )
+      );
+
+      setShowEditPriceModal(false);
+      setPriceEditRegistration(null);
+    } catch (error: any) {
+      console.error('Error saving price:', error);
+      setEditPriceError(error.message || 'Failed to save price');
+    } finally {
+      setSavingPrice(false);
+    }
+  };
+
   // Add registration
   const handleAddRegistration = async () => {
     // Validate required fields
@@ -1082,6 +1166,12 @@ export default function RendezvousManageTab() {
                         className="text-fase-navy hover:text-fase-orange text-xs underline"
                       >
                         Edit Attendees
+                      </button>
+                      <button
+                        onClick={() => openEditPriceModal(reg)}
+                        className="text-fase-navy hover:text-fase-orange text-xs underline"
+                      >
+                        Edit Price
                       </button>
                       {reg.invoiceUrl && (
                         <a
@@ -1739,6 +1829,20 @@ export default function RendezvousManageTab() {
         registration={invoiceEditRegistration}
         onGenerate={handleGenerateCustomInvoice}
         generating={generatingInvoice}
+      />
+
+      {/* Edit Price Modal */}
+      <EditPriceModal
+        isOpen={showEditPriceModal}
+        onClose={() => {
+          setShowEditPriceModal(false);
+          setPriceEditRegistration(null);
+          setEditPriceError(null);
+        }}
+        registration={priceEditRegistration}
+        onSave={handleSavePrice}
+        saving={savingPrice}
+        error={editPriceError}
       />
     </div>
   );

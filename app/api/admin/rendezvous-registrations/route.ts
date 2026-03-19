@@ -156,7 +156,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const data = await request.json();
-    const { registrationId, attendees, billingInfo } = data;
+    const { registrationId, attendees, billingInfo, priceData } = data;
 
     if (!registrationId) {
       return NextResponse.json(
@@ -165,33 +165,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (!attendees || !Array.isArray(attendees)) {
-      return NextResponse.json(
-        { error: 'Attendees array is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate attendee data
-    for (const attendee of attendees) {
-      if (!attendee.firstName || !attendee.lastName || !attendee.email) {
-        return NextResponse.json(
-          { error: 'Each attendee must have firstName, lastName, and email' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Format attendees with IDs
-    const formattedAttendees = attendees.map((a: any, index: number) => ({
-      id: a.id || `attendee_${index + 1}`,
-      firstName: a.firstName.trim(),
-      lastName: a.lastName.trim(),
-      email: a.email.trim(),
-      jobTitle: a.jobTitle?.trim() || '',
-    }));
-
-    // Update the registration
+    // Get the document
     const docRef = adminDb.collection('rendezvous-registrations').doc(registrationId);
     const doc = await docRef.get();
 
@@ -204,12 +178,35 @@ export async function PATCH(request: NextRequest) {
 
     // Build update object
     const updateData: Record<string, any> = {
-      attendees: formattedAttendees,
-      numberOfAttendees: formattedAttendees.length,
       updatedAt: FieldValue.serverTimestamp(),
     };
 
-    // If billingInfo is provided, merge it with existing billingInfo
+    // Handle attendees update
+    if (attendees && Array.isArray(attendees)) {
+      // Validate attendee data
+      for (const attendee of attendees) {
+        if (!attendee.firstName || !attendee.lastName || !attendee.email) {
+          return NextResponse.json(
+            { error: 'Each attendee must have firstName, lastName, and email' },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Format attendees with IDs
+      const formattedAttendees = attendees.map((a: any, index: number) => ({
+        id: a.id || `attendee_${index + 1}`,
+        firstName: a.firstName.trim(),
+        lastName: a.lastName.trim(),
+        email: a.email.trim(),
+        jobTitle: a.jobTitle?.trim() || '',
+      }));
+
+      updateData.attendees = formattedAttendees;
+      updateData.numberOfAttendees = formattedAttendees.length;
+    }
+
+    // Handle billingInfo update
     if (billingInfo) {
       const existingData = doc.data();
       const existingBillingInfo = existingData?.billingInfo || {};
@@ -219,15 +216,43 @@ export async function PATCH(request: NextRequest) {
       };
     }
 
+    // Handle price data update
+    if (priceData) {
+      if (typeof priceData.totalPrice === 'number') {
+        updateData.totalPrice = priceData.totalPrice;
+      }
+      if (typeof priceData.subtotal === 'number') {
+        updateData.subtotal = priceData.subtotal;
+      }
+      if (typeof priceData.discount === 'number') {
+        updateData.discount = priceData.discount;
+      }
+      if (typeof priceData.companyIsFaseMember === 'boolean') {
+        updateData.companyIsFaseMember = priceData.companyIsFaseMember;
+      }
+      if (typeof priceData.isAsaseMember === 'boolean') {
+        updateData.isAsaseMember = priceData.isAsaseMember;
+      }
+    }
+
     await docRef.update(updateData);
 
     console.log(`✅ Updated registration: ${registrationId}`);
 
+    // Return updated data
+    const updatedDoc = await docRef.get();
+    const updatedData = updatedDoc.data();
+
     return NextResponse.json({
       success: true,
       registrationId,
-      attendees: formattedAttendees,
-      billingInfo: updateData.billingInfo,
+      attendees: updatedData?.attendees,
+      billingInfo: updatedData?.billingInfo,
+      totalPrice: updatedData?.totalPrice,
+      subtotal: updatedData?.subtotal,
+      discount: updatedData?.discount,
+      companyIsFaseMember: updatedData?.companyIsFaseMember,
+      isAsaseMember: updatedData?.isAsaseMember,
     });
   } catch (error: any) {
     console.error('Error updating registration:', error);
