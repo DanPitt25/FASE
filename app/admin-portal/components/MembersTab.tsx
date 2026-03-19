@@ -1,27 +1,23 @@
 'use client';
 
 /**
- * MembersManageTab - MANAGE functions for member organizations
+ * MembersTab - Unified member management
  *
- * MANAGE functions:
- * - Member list with filter/sort
+ * Combines VIEW and MANAGE functionality with:
+ * - Member list with search/filter/sort
+ * - "Show suppressed" toggle
  * - Full CompanyMembersModal with all tabs and actions
- * - Status changes
- * - Email sending
- * - Notes management (add/pin/delete)
- * - Delete member functionality
+ * - Status changes, email sending, notes, delete
  * - Suppress/unsuppress members
- *
- * All VIEW functions are in MembersViewTab.tsx
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { UnifiedMember } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
 import CompanyMembersModal from './CompanyMembersModal';
-import { authPost } from '@/lib/auth-fetch';
+import { authPost } from '../../../lib/auth-fetch';
 
-interface MembersManageTabProps {
+interface MembersTabProps {
   memberApplications: UnifiedMember[];
   loading: boolean;
   onStatusUpdate: (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => void;
@@ -30,14 +26,15 @@ interface MembersManageTabProps {
   onSuppressedIdsChange: (ids: Set<string>) => void;
 }
 
-export default function MembersManageTab({
+export default function MembersTab({
   memberApplications,
   loading,
   onStatusUpdate,
   onMemberDeleted,
   suppressedIds,
   onSuppressedIdsChange
-}: MembersManageTabProps) {
+}: MembersTabProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
@@ -58,7 +55,6 @@ export default function MembersManageTab({
         throw new Error('Failed to update suppression');
       }
 
-      // Update parent state via callback
       const newSet = new Set(suppressedIds);
       if (isSuppressed) {
         newSet.delete(memberId);
@@ -72,17 +68,8 @@ export default function MembersManageTab({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-        <p className="text-fase-black">Loading members...</p>
-      </div>
-    );
-  }
-
-  // Filter and sort members
-  const filteredMembers = (() => {
+  // Filter, search, and sort
+  const filteredMembers = useMemo(() => {
     let filtered = memberApplications;
 
     // Filter by suppression status
@@ -92,9 +79,21 @@ export default function MembersManageTab({
 
     // Filter by status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(member => member.status === statusFilter);
+      filtered = filtered.filter(m => m.status === statusFilter);
     }
 
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(m =>
+        (m.organizationName || '').toLowerCase().includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.primaryContact?.name || m.personalName || '').toLowerCase().includes(q) ||
+        (m.businessAddress?.country || m.registeredAddress?.country || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
     return [...filtered].sort((a, b) => {
       let aVal: string = '';
       let bVal: string = '';
@@ -105,8 +104,8 @@ export default function MembersManageTab({
           bVal = (b.organizationName || '').toLowerCase();
           break;
         case 'country':
-          aVal = (a.registeredAddress?.country || '').toLowerCase();
-          bVal = (b.registeredAddress?.country || '').toLowerCase();
+          aVal = (a.businessAddress?.country || a.registeredAddress?.country || '').toLowerCase();
+          bVal = (b.businessAddress?.country || b.registeredAddress?.country || '').toLowerCase();
           break;
         case 'status':
           aVal = a.status;
@@ -125,7 +124,7 @@ export default function MembersManageTab({
       if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  })();
+  }, [memberApplications, suppressedIds, showSuppressed, statusFilter, searchQuery, sortColumn, sortDirection]);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -136,15 +135,10 @@ export default function MembersManageTab({
     }
   };
 
-  // Count visible (non-suppressed) members
+  // Counts
   const visibleMemberCount = memberApplications.filter(m => !suppressedIds.has(m.id)).length;
-  const filteredMemberCount = filteredMembers.length;
-
-  // Get unique statuses for filter dropdown
-  const statuses = Array.from(new Set(memberApplications.map(member => member.status)));
-
-  // Count suppressed members
   const suppressedCount = memberApplications.filter(m => suppressedIds.has(m.id)).length;
+  const statuses = Array.from(new Set(memberApplications.map(member => member.status)));
 
   const getStatusColor = (status: UnifiedMember['status']) => {
     switch (status) {
@@ -175,36 +169,50 @@ export default function MembersManageTab({
     setShowMembersModal(true);
   };
 
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
+        <p className="text-fase-black">Loading members...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Filter Controls */}
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            Manage Members ({filteredMemberCount})
-          </h3>
-          <div className="flex gap-2 items-center">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
-              className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-            >
-              <option value="all">All Statuses ({visibleMemberCount})</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>
-                  {formatStatus(status)} ({memberApplications.filter(m => m.status === status).length})
-                </option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={showSuppressed}
-                onChange={(e) => setShowSuppressed(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              Show suppressed {suppressedCount > 0 && `(${suppressedCount})`}
-            </label>
+        <div className="flex flex-wrap gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Search organization, contact, email, country..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-72 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="all">All Statuses ({visibleMemberCount})</option>
+            {statuses.map(status => (
+              <option key={status} value={status}>
+                {formatStatus(status)} ({memberApplications.filter(m => m.status === status && !suppressedIds.has(m.id)).length})
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={showSuppressed}
+              onChange={(e) => setShowSuppressed(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Show suppressed {suppressedCount > 0 && `(${suppressedCount})`}
+          </label>
+          <div className="text-sm text-gray-500 ml-auto">
+            {filteredMembers.length} members
           </div>
         </div>
       </div>
@@ -226,6 +234,12 @@ export default function MembersManageTab({
                 </th>
                 <th
                   className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('country')}
+                >
+                  Country {sortColumn === 'country' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
                   onClick={() => handleSort('status')}
                 >
                   Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -237,7 +251,6 @@ export default function MembersManageTab({
                   Applied {sortColumn === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -246,19 +259,18 @@ export default function MembersManageTab({
                 const isSuppressed = suppressedIds.has(member.id);
                 return (
                   <tr key={member.id} className={`hover:bg-gray-50 ${isSuppressed ? 'opacity-50 bg-gray-100' : ''}`}>
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        <div className="font-medium text-gray-900">{member.organizationName}</div>
-                        <div className="text-gray-500 text-xs">{member.organizationType}</div>
-                      </div>
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-gray-900">{member.organizationName}</div>
+                      <div className="text-xs text-gray-500">{member.organizationType}</div>
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="text-sm">
-                        <div className="text-gray-900">{member.primaryContact?.name || member.personalName || 'Unknown'}</div>
-                        <div className="text-gray-500 text-xs">{member.email || 'No email'}</div>
-                      </div>
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-gray-900">{member.primaryContact?.name || member.personalName || '-'}</div>
+                      <div className="text-xs text-gray-500">{member.email || '-'}</div>
                     </td>
-                    <td className="px-3 py-4">
+                    <td className="px-3 py-3 text-sm text-gray-600">
+                      {member.businessAddress?.country || member.registeredAddress?.country || '-'}
+                    </td>
+                    <td className="px-3 py-3">
                       <div className="flex items-center gap-1">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.status)}`}>
                           {formatStatus(member.status)}
@@ -270,10 +282,10 @@ export default function MembersManageTab({
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-4 text-xs text-gray-500">
-                      {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Unknown'}
+                    <td className="px-3 py-3 text-xs text-gray-500">
+                      {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}
                     </td>
-                    <td className="px-4 py-4 text-sm font-medium">
+                    <td className="px-4 py-3">
                       <Button
                         variant="primary"
                         size="small"
@@ -290,12 +302,12 @@ export default function MembersManageTab({
         </div>
         {filteredMembers.length === 0 && (
           <div className="p-8 text-center">
-            <p className="text-fase-black">No members found matching the current filter.</p>
+            <p className="text-gray-500">No members found.</p>
           </div>
         )}
       </div>
 
-      {/* Company Members Modal (full functionality) */}
+      {/* Company Members Modal */}
       <CompanyMembersModal
         isOpen={showMembersModal}
         onClose={() => {
