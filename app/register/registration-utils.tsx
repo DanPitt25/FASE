@@ -133,3 +133,23 @@ export const amBestRatings = [
   'D'
 ];
 
+// Rendezvous pass pricing by organization type
+export const getRendezvousPassPrice = (
+  organizationType: 'MGA' | 'carrier' | 'provider',
+  isAsaseMember: boolean
+): number => {
+  if (isAsaseMember) return 0;
+  const pricing = { MGA: 400, carrier: 550, provider: 700 };
+  return pricing[organizationType] || 400;
+};
+
+// Calculate rendezvous pass subtotal
+export const getRendezvousPassSubtotal = (
+  organizationType: 'MGA' | 'carrier' | 'provider',
+  passCount: number,
+  reservePasses: boolean,
+  isAsaseMember: boolean
+): number => {
+  if (!reservePasses) return 0;
+  return getRendezvousPassPrice(organizationType, isAsaseMember) * passCount;
+};

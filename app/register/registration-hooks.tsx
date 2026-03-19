@@ -125,6 +125,14 @@ type FormAction =
   | { type: 'SET_SUBMITTING'; value: boolean }
   | { type: 'RESET_FORM' };
 
+// Step definitions - now 0-4 instead of -1 to 5
+// Step 0: Organization type + data consent
+// Step 1: Account info (name, email, password)
+// Step 2: Organization details (name, team, address)
+// Step 3: Type-specific info + associations + rendezvous
+// Step 4: Review & submit
+export const TOTAL_STEPS = 5; // 0-4
+
 // Initial state
 const createInitialState = (typeFromUrl: string | null): RegistrationState => ({
   form: {
@@ -173,7 +181,7 @@ const createInitialState = (typeFromUrl: string | null): RegistrationState => ({
     codeOfConductConsent: false,
   },
   ui: {
-    step: typeFromUrl ? 0 : -1,
+    step: 0, // Always start at 0 now
     error: '',
     attemptedNext: false,
     touchedFields: {},
