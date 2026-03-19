@@ -307,7 +307,12 @@ export default function MembershipDirectory({ translations }: MembershipDirector
           // All memberships are corporate, check if there are subcollection members
           return membersByOrg.has(org.id) && membersByOrg.get(org.id)!.length > 0;
         });
-        
+
+        // Sort alphabetically by organization name
+        orgsWithMembers.sort((a, b) =>
+          (a.organizationName || '').localeCompare(b.organizationName || '', undefined, { sensitivity: 'base' })
+        );
+
         setDirectoryData({ organizations: orgsWithMembers, membersByOrg });
         setFilteredOrganizations(orgsWithMembers);
       } catch (error) {

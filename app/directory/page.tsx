@@ -83,6 +83,10 @@ export default function DirectoryPage() {
     const loadMembers = async () => {
       try {
         const approvedMembers = await getApprovedMembersForDirectory();
+        // Sort alphabetically by organization name
+        approvedMembers.sort((a, b) =>
+          (a.organizationName || '').localeCompare(b.organizationName || '', undefined, { sensitivity: 'base' })
+        );
         setMembers(approvedMembers);
       } catch (error) {
         console.error('Error loading members:', error);
