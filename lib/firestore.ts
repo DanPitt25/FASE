@@ -236,7 +236,7 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface Task {
   id: string;
-  accountId: string;
+  accountId?: string;
   accountName?: string;
   title: string;
   description?: string;
@@ -250,6 +250,12 @@ export interface Task {
   createdAt: any;
   updatedAt: any;
   completedAt?: any;
+  // Email source fields (for tasks created from Gmail integration)
+  source?: 'manual' | 'email';
+  sourceEmail?: string;
+  sourceSubject?: string;
+  sourceDate?: string;
+  emailId?: string;
 }
 
 // Payment Tracking
