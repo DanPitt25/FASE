@@ -405,6 +405,7 @@ export default function IntegratedRegisterForm() {
           organizationName: form.organizationName,
           organizationType: form.organizationType,
           hasOtherAssociations: form.hasOtherAssociations,
+          otherAssociations: form.otherAssociations,
           addressLine1: form.address.line1,
           addressLine2: form.address.line2,
           city: form.address.city,
