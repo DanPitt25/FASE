@@ -60,8 +60,8 @@ const validMGAPayload = () => ({
   otherLineOfBusiness3: '',
   selectedMarkets: ['DE', 'FR'],
   hasOtherAssociations: false,
-  otherAssociations: [],
-  servicesProvided: [],
+  otherAssociations: [] as string[],
+  servicesProvided: [] as string[],
   status: 'pending'
 });
 
@@ -91,14 +91,14 @@ const validCarrierPayload = () => ({
   country: 'United Kingdom',
   grossWrittenPremiums: '0',
   gwpCurrency: 'EUR',
-  selectedLinesOfBusiness: [],
+  selectedLinesOfBusiness: [] as string[],
   otherLineOfBusiness1: '',
   otherLineOfBusiness2: '',
   otherLineOfBusiness3: '',
-  selectedMarkets: [],
+  selectedMarkets: [] as string[],
   hasOtherAssociations: false,
-  otherAssociations: [],
-  servicesProvided: [],
+  otherAssociations: [] as string[],
+  servicesProvided: [] as string[],
   carrierOrganizationType: 'insurance_company',
   isDelegatingInEurope: 'Yes',
   numberOfMGAs: '6-10',
@@ -136,11 +136,11 @@ const validProviderPayload = () => ({
   country: 'France',
   grossWrittenPremiums: '0',
   gwpCurrency: 'EUR',
-  selectedLinesOfBusiness: [],
+  selectedLinesOfBusiness: [] as string[],
   otherLineOfBusiness1: '',
   otherLineOfBusiness2: '',
   otherLineOfBusiness3: '',
-  selectedMarkets: [],
+  selectedMarkets: [] as string[],
   hasOtherAssociations: true,
   otherAssociations: ['ASASE'],
   servicesProvided: ['actuarial', 'claims', 'consulting'],
@@ -264,39 +264,41 @@ async function testCarrierBrokerType() {
 }
 
 async function testMGAWithMultipleTeamMembers() {
-  const payload = validMGAPayload();
-  payload.members = [
-    {
-      id: 'registrant',
-      firstName: 'Primary',
-      lastName: 'Contact',
-      name: 'Primary Contact',
-      email: uniqueEmail('primary'),
-      phone: '+1111111111',
-      jobTitle: 'CEO',
-      isPrimaryContact: true
-    },
-    {
-      id: 'member2',
-      firstName: 'Second',
-      lastName: 'Member',
-      name: 'Second Member',
-      email: uniqueEmail('second'),
-      phone: '+2222222222',
-      jobTitle: 'CFO',
-      isPrimaryContact: false
-    },
-    {
-      id: 'member3',
-      firstName: 'Third',
-      lastName: 'Member',
-      name: 'Third Member',
-      email: uniqueEmail('third'),
-      phone: '+3333333333',
-      jobTitle: 'COO',
-      isPrimaryContact: false
-    }
-  ];
+  const payload = {
+    ...validMGAPayload(),
+    members: [
+      {
+        id: 'registrant',
+        firstName: 'Primary',
+        lastName: 'Contact',
+        name: 'Primary Contact',
+        email: uniqueEmail('primary'),
+        phone: '+1111111111',
+        jobTitle: 'CEO',
+        isPrimaryContact: true
+      },
+      {
+        id: 'member2',
+        firstName: 'Second',
+        lastName: 'Member',
+        name: 'Second Member',
+        email: uniqueEmail('second'),
+        phone: '+2222222222',
+        jobTitle: 'CFO',
+        isPrimaryContact: false
+      },
+      {
+        id: 'member3',
+        firstName: 'Third',
+        lastName: 'Member',
+        name: 'Third Member',
+        email: uniqueEmail('third'),
+        phone: '+3333333333',
+        jobTitle: 'COO',
+        isPrimaryContact: false
+      }
+    ]
+  };
 
   const result = await fullRegistration(payload, 'MGA Multiple Team - expect 3 members listed');
   if (!result.ok) throw new Error(result.error);
