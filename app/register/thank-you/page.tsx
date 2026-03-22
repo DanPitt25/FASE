@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LanguageToggle from '../../../components/LanguageToggle';
 
@@ -91,12 +92,12 @@ export default function ThankYouPage() {
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/"
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
             >
               {t('return_home')}
-            </a>
+            </Link>
           </div>
           </div>
         </div>

@@ -394,7 +394,7 @@ export default function CompanyContentTab({
         {hasPendingBio && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-xs text-yellow-800">
-              A new bio was submitted for review. Edit the text and translations below, then click "Approve & Save" to publish.
+              A new bio was submitted for review. Edit the text and translations below, then click &quot;Approve &amp; Save&quot; to publish.
             </p>
           </div>
         )}
