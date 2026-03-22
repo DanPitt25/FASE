@@ -18,7 +18,6 @@ export const OrganizationAndConsentStep = ({ reg }: { reg: UseRegistrationForm }
       <div>
         <div className="text-center mb-6">
           <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.organization_type.title')}</h3>
-          <p className="text-fase-black text-sm">{t('steps.organization_type.subtitle')}</p>
         </div>
 
         <label className="block text-sm font-medium text-fase-navy mb-4">
@@ -69,7 +68,6 @@ export const OrganizationAndConsentStep = ({ reg }: { reg: UseRegistrationForm }
         <div className="border-t border-fase-light-gold pt-8">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.data_notice.title')}</h3>
-            <p className="text-fase-black text-sm">{t('steps.data_notice.subtitle')}</p>
           </div>
           <div className="bg-white border border-fase-light-gold rounded-lg p-6 max-h-96 overflow-y-auto shadow-sm">
             <div className="space-y-4 text-base text-fase-black">
@@ -119,7 +117,6 @@ export const AccountInformationStep = ({ reg }: { reg: UseRegistrationForm }) =>
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('title')}</h3>
-        <p className="text-fase-black text-sm">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -293,7 +290,88 @@ export const RendezvousSection = ({ reg, totalGWP }: { reg: UseRegistrationForm;
   );
 };
 
-// Step 4: Review & Submit
+// Step 4: MGA Rendezvous (dedicated step)
+export const RendezvousStep = ({ reg, totalGWP }: { reg: UseRegistrationForm; totalGWP: number }) => {
+  const t = useTranslations('register_form');
+  const { form, setField, isAsaseMember } = reg;
+  const orgType = form.organizationType as 'MGA' | 'carrier' | 'provider';
+  const asase = isAsaseMember();
+  const passPrice = getRendezvousPassPrice(orgType, asase);
+  const passSubtotal = getRendezvousPassSubtotal(orgType, form.rendezvousPassCount, form.reserveRendezvousPasses, asase);
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.rendezvous.title')}</h3>
+      </div>
+
+      <div className="bg-white rounded-lg border border-fase-light-gold p-6">
+        <p className="text-fase-black mb-4">{asase ? t('rendezvous.description_asase') : t('rendezvous.description')}</p>
+        <p className="text-fase-black mb-6">
+          <a href="https://mgarendezvous.com" target="_blank" rel="noopener noreferrer" className="text-fase-navy hover:text-fase-gold underline transition-colors">{t('rendezvous.visit_website')}</a>
+        </p>
+        <div className="flex items-center space-x-3 mb-4">
+          <input type="checkbox" checked={form.reserveRendezvousPasses} onChange={(e) => setField('reserveRendezvousPasses', e.target.checked)} className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded" id="reserve-passes-step" />
+          <label htmlFor="reserve-passes-step" className="text-sm font-medium text-fase-black cursor-pointer">{asase ? t('rendezvous.checkbox_label_asase') : t('rendezvous.checkbox_label')}</label>
+        </div>
+        {form.reserveRendezvousPasses && (
+          <div className="mt-4 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-fase-navy mb-2">{t('rendezvous.number_of_passes')}</label>
+              <select value={form.rendezvousPassCount} onChange={(e) => setField('rendezvousPassCount', parseInt(e.target.value))} className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent bg-white">
+                {(asase ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((num) => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-4">
+              <h5 className="text-md font-medium text-fase-navy">{t('rendezvous.attendee_details')}</h5>
+              {form.rendezvousAttendees.map((attendee, index) => (
+                <div key={attendee.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <p className="text-sm font-medium text-fase-navy mb-3">{t('rendezvous.attendee_number', { number: index + 1 })}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">{t('rendezvous.first_name')} *</label>
+                      <input type="text" value={attendee.firstName} onChange={(e) => reg.updateRendezvousAttendee(attendee.id, 'firstName', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">{t('rendezvous.last_name')} *</label>
+                      <input type="text" value={attendee.lastName} onChange={(e) => reg.updateRendezvousAttendee(attendee.id, 'lastName', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">{t('rendezvous.email')} *</label>
+                      <input type="email" value={attendee.email} onChange={(e) => reg.updateRendezvousAttendee(attendee.id, 'email', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">{t('rendezvous.job_title')} *</label>
+                      <input type="text" value={attendee.jobTitle} onChange={(e) => reg.updateRendezvousAttendee(attendee.id, 'jobTitle', e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-fase-navy focus:border-transparent" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-fase-cream rounded p-3 border border-fase-light-gold">
+              {asase ? (
+                <>
+                  <p className="text-sm font-medium text-green-700 mb-1">{t('rendezvous.pass_total')}: {t('rendezvous.complimentary')}</p>
+                  <p className="text-xs text-green-600">{t('rendezvous.asase_benefit', { count: form.rendezvousPassCount })}</p>
+                </>
+              ) : (
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-600">{form.rendezvousPassCount} × €{passPrice.toLocaleString()} {t('rendezvous.member_rate')}</p>
+                  <p className="text-sm font-medium text-fase-navy pt-1 border-t border-fase-light-gold">{t('rendezvous.pass_total')}: €{passSubtotal.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 italic">VAT will be billed separately</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Step 5: Review & Submit
 interface ReviewStepProps {
   reg: UseRegistrationForm;
   totalGWP: number;
@@ -315,7 +393,6 @@ export const ReviewStep = ({ reg, totalGWP, onSubmit }: ReviewStepProps) => {
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.submit_application.title')}</h3>
-        <p className="text-fase-black text-sm">{t('steps.submit_application.subtitle')}</p>
       </div>
 
       {/* Code of Conduct */}

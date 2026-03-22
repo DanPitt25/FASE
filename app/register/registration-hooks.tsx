@@ -129,9 +129,10 @@ type FormAction =
 // Step 0: Organization type + data consent
 // Step 1: Account info (name, email, password)
 // Step 2: Organization details (name, team, address)
-// Step 3: Type-specific info + associations + rendezvous
-// Step 4: Review & submit
-export const TOTAL_STEPS = 5; // 0-4
+// Step 3: Type-specific info + associations
+// Step 4: MGA Rendezvous
+// Step 5: Review & submit
+export const TOTAL_STEPS = 6; // 0-5
 
 // Initial state
 const createInitialState = (typeFromUrl: string | null): RegistrationState => ({

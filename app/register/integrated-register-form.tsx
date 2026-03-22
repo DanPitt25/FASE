@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import Button from "../../components/Button";
 import { ValidatedInput, validatePassword, validateEmail } from './form-components';
 import { useRegistrationForm, TOTAL_STEPS } from './registration-hooks';
-import { OrganizationAndConsentStep, AccountInformationStep, RendezvousSection, ReviewStep } from './step-components';
+import { OrganizationAndConsentStep, AccountInformationStep, RendezvousStep, ReviewStep } from './step-components';
 import { TeamMembersSection } from './member-management';
 import { AddressSection } from './address-components';
 import { MGAPortfolioSection } from './mga-components';
@@ -86,6 +86,10 @@ const validateStep3 = (form: ReturnType<typeof useRegistrationForm>['form'], t: 
     return t('errors.associations_select_required');
   }
 
+  return null;
+};
+
+const validateStep4: StepValidator = (form, t) => {
   // Rendezvous validation (if reserving)
   if (form.reserveRendezvousPasses) {
     const incomplete = form.rendezvousAttendees.find(a => !a.firstName.trim() || !a.lastName.trim() || !a.email.trim() || !a.jobTitle.trim());
@@ -93,7 +97,6 @@ const validateStep3 = (form: ReturnType<typeof useRegistrationForm>['form'], t: 
     const invalidEmail = form.rendezvousAttendees.find(a => !validateEmail(a.email));
     if (invalidEmail) return t('errors.rendezvous_invalid_email');
   }
-
   return null;
 };
 
@@ -189,6 +192,9 @@ export default function IntegratedRegisterForm() {
         break;
       case 3:
         error = validateStep3(form, t, totalGWP);
+        break;
+      case 4:
+        error = validateStep4(form, t);
         break;
     }
 
@@ -443,15 +449,15 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Progress indicator - 5 steps (0-4) */}
+      {/* Progress indicator - 6 steps (0-5) */}
       <div className="flex items-center justify-center mb-8">
         <div className="flex items-center space-x-2">
-          {[0, 1, 2, 3, 4].map((n) => (
+          {[0, 1, 2, 3, 4, 5].map((n) => (
             <div key={n} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${ui.step >= n ? 'bg-fase-navy text-white' : 'bg-gray-200 text-gray-600'}`}>
                 {n + 1}
               </div>
-              {n < 4 && <div className={`w-6 h-1 ${ui.step > n ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>}
+              {n < 5 && <div className={`w-6 h-1 ${ui.step > n ? 'bg-fase-navy' : 'bg-gray-200'}`}></div>}
             </div>
           ))}
         </div>
@@ -468,7 +474,6 @@ export default function IntegratedRegisterForm() {
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.membership_info.title')}</h3>
-            <p className="text-fase-black text-sm">{t('steps.membership_info.subtitle')}</p>
           </div>
           <ValidatedInput label={t('fields.organization_name')} fieldKey="organizationName" value={form.organizationName} onChange={(v) => setField('organizationName', v)} placeholder={t('placeholders.organization_name')} required touchedFields={ui.touchedFields} attemptedNext={ui.attemptedNext} markFieldTouched={reg.touchField} />
           <TeamMembersSection reg={reg} />
@@ -476,23 +481,24 @@ export default function IntegratedRegisterForm() {
         </div>
       )}
 
-      {/* Step 3: Type-specific info + associations + rendezvous */}
+      {/* Step 3: Type-specific info + associations */}
       {ui.step === 3 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-noto-serif font-semibold text-fase-navy">{t('steps.additional_details.title')}</h3>
-            <p className="text-fase-black text-sm">{t('steps.additional_details.subtitle')}</p>
           </div>
           {form.organizationType === 'MGA' && <MGAPortfolioSection reg={reg} />}
           {form.organizationType === 'carrier' && <CarrierInformationSection reg={reg} />}
           {form.organizationType === 'provider' && <ServiceProviderSection reg={reg} />}
           <EuropeanAssociationsSection reg={reg} />
-          <RendezvousSection reg={reg} totalGWP={totalGWP} />
         </div>
       )}
 
-      {/* Step 4: Review & Submit */}
-      {ui.step === 4 && <ReviewStep reg={reg} totalGWP={totalGWP} onSubmit={handleSubmit} />}
+      {/* Step 4: MGA Rendezvous */}
+      {ui.step === 4 && <RendezvousStep reg={reg} totalGWP={totalGWP} />}
+
+      {/* Step 5: Review & Submit */}
+      {ui.step === 5 && <ReviewStep reg={reg} totalGWP={totalGWP} onSubmit={handleSubmit} />}
 
       {/* Error Display */}
       {ui.error && <div className="text-red-600 text-sm">{ui.error}</div>}
@@ -506,18 +512,18 @@ export default function IntegratedRegisterForm() {
       </div>
 
       {/* Navigation Buttons */}
-      {ui.step < 4 && (
+      {ui.step < 5 && (
         <div className="pt-6">
           <div className="flex justify-between">
             {ui.step > 0 ? <Button type="button" variant="secondary" onClick={handleBack}>{t('buttons.back')}</Button> : <div></div>}
             <Button type="button" variant="primary" onClick={handleNext}>
-              {ui.step === 3 ? t('buttons.review_submit') : t('buttons.next')}
+              {ui.step === 4 ? t('buttons.review_submit') : t('buttons.next')}
             </Button>
           </div>
         </div>
       )}
 
-      {ui.step === 4 && (
+      {ui.step === 5 && (
         <div className="pt-6">
           <div className="flex justify-between">
             <Button type="button" variant="secondary" onClick={handleBack}>{t('buttons.back')}</Button>
