@@ -1,32 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../../lib/firebase';
 import LanguageToggle from '../../../components/LanguageToggle';
 
 export default function ThankYouPage() {
-  const [applicationNumber, setApplicationNumber] = useState<string | null>(null);
-  const [applicantName, setApplicantName] = useState<string | null>(null);
   const t = useTranslations('thank_you');
-
-  useEffect(() => {
-    // Get application data from sessionStorage
-    const submissionData = sessionStorage.getItem('applicationSubmission');
-    if (submissionData) {
-      try {
-        const { applicationNumber: appNum, applicantName: name } = JSON.parse(submissionData);
-        setApplicationNumber(appNum);
-        setApplicantName(name);
-        // Clear the data after use
-        sessionStorage.removeItem('applicationSubmission');
-      } catch (error) {
-        console.error('Error parsing application submission data:', error);
-      }
-    }
-  }, []);
 
   return (
     <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
@@ -34,14 +13,13 @@ export default function ThankYouPage() {
       <div className="relative z-10 max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-xl border border-fase-light-gold overflow-hidden">
           <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-6 py-8 text-center relative">
-            {/* Language Toggle */}
             <div className="absolute top-4 right-4">
               <LanguageToggle />
             </div>
-            
-            <Image 
-              src="/fase-logo-rgb.png" 
-              alt="FASE Logo" 
+
+            <Image
+              src="/fase-logo-rgb.png"
+              alt="FASE Logo"
               width={120}
               height={48}
               className="h-12 w-auto object-contain"
@@ -50,17 +28,17 @@ export default function ThankYouPage() {
           <div className="bg-white px-6 py-8 text-center">
           {/* Success Icon */}
           <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-            <svg 
-              className="w-8 h-8 text-green-600" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M5 13l4 4L19 7" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
               />
             </svg>
           </div>
@@ -102,8 +80,8 @@ export default function ThankYouPage() {
             </p>
             <p className="text-fase-black">
               {t('contact.email_text')}{' '}
-              <a 
-                href="mailto:help@fasemga.com" 
+              <a
+                href="mailto:help@fasemga.com"
                 className="text-fase-navy hover:text-fase-gold font-medium transition-colors"
               >
                 help@fasemga.com
@@ -113,19 +91,12 @@ export default function ThankYouPage() {
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={async () => {
-                try {
-                  await signOut(auth);
-                } catch (error) {
-                  console.error('Error signing out:', error);
-                }
-                window.location.href = '/';
-              }}
+            <a
+              href="/"
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-fase-navy hover:bg-fase-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fase-navy transition-colors"
             >
               {t('return_home')}
-            </button>
+            </a>
           </div>
           </div>
         </div>

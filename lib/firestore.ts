@@ -230,34 +230,6 @@ export interface Note {
   isPinned?: boolean;
 }
 
-// CRM: Tasks
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type TaskPriority = 'low' | 'medium' | 'high';
-
-export interface Task {
-  id: string;
-  accountId?: string;
-  accountName?: string;
-  title: string;
-  description?: string;
-  status: TaskStatus;
-  priority?: TaskPriority;
-  dueDate?: any;
-  assignedTo?: string;
-  assignedToName?: string;
-  createdBy: string;
-  createdByName: string;
-  createdAt: any;
-  updatedAt: any;
-  completedAt?: any;
-  // Email source fields (for tasks created from Gmail integration)
-  source?: 'manual' | 'email';
-  sourceEmail?: string;
-  sourceSubject?: string;
-  sourceDate?: string;
-  emailId?: string;
-}
-
 // Payment Tracking
 export interface StripePayment {
   id: string;

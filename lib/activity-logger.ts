@@ -230,40 +230,6 @@ export async function logMemberRemoved(
 }
 
 /**
- * Log when a task is created
- */
-export async function logTaskCreated(
-  accountId: string,
-  taskTitle: string,
-  taskId: string,
-  performedBy: string,
-  performedByName: string
-): Promise<string> {
-  return logActivity(accountId, 'task_created', `Task created: ${taskTitle}`, {
-    metadata: { taskId, taskTitle },
-    performedBy,
-    performedByName,
-  });
-}
-
-/**
- * Log when a task is completed
- */
-export async function logTaskCompleted(
-  accountId: string,
-  taskTitle: string,
-  taskId: string,
-  performedBy: string,
-  performedByName: string
-): Promise<string> {
-  return logActivity(accountId, 'task_completed', `Task completed: ${taskTitle}`, {
-    metadata: { taskId, taskTitle },
-    performedBy,
-    performedByName,
-  });
-}
-
-/**
  * Log a Wise transfer
  */
 export async function logWiseTransfer(

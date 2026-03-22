@@ -12,7 +12,7 @@ import { MGAPortfolioSection } from './mga-components';
 import { CarrierInformationSection, ServiceProviderSection } from './carrier-provider-components';
 import { EuropeanAssociationsSection } from './associations-components';
 import { checkDomainExists, createAccountAndMembership } from './registration-handlers';
-import { getDiscountedFee, getRendezvousPassSubtotal, convertToEUR, getGWPBand } from './registration-utils';
+import { getRendezvousPassSubtotal } from './registration-utils';
 
 // Validation functions for each step
 type StepValidator = (form: ReturnType<typeof useRegistrationForm>['form'], t: ReturnType<typeof useTranslations>) => string | null;
@@ -386,64 +386,10 @@ export default function IntegratedRegisterForm() {
 
       await createAccountAndMembership('pending', apiData);
 
-      const applicationNumber = `FASE-APP-${Date.now()}-${Date.now().toString().slice(-6)}`;
-      const membershipFee = getDiscountedFee(orgType, totalGWP.toString(), form.portfolio.gwpCurrency, form.hasOtherAssociations || false);
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-
-      const response = await fetch('/api/submit-application', {
-        signal: controller.signal,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          applicationNumber,
-          membershipFee,
-          email: form.email,
-          firstName: form.firstName,
-          surname: form.surname,
-          organizationName: form.organizationName,
-          organizationType: form.organizationType,
-          hasOtherAssociations: form.hasOtherAssociations,
-          otherAssociations: form.otherAssociations,
-          addressLine1: form.address.line1,
-          addressLine2: form.address.line2,
-          city: form.address.city,
-          state: form.address.county,
-          postalCode: form.address.postcode,
-          country: form.address.country,
-          grossWrittenPremiums: totalGWP.toString(),
-          gwpCurrency: form.portfolio.gwpCurrency,
-          selectedLinesOfBusiness: form.portfolio.linesOfBusiness,
-          selectedMarkets: form.portfolio.markets,
-          members: form.members,
-          reserveRendezvousPasses: form.reserveRendezvousPasses,
-          rendezvousPassCount: form.rendezvousPassCount,
-          rendezvousPassSubtotal: passSubtotal,
-          rendezvousPassTotal: passSubtotal,
-          rendezvousAttendees: form.rendezvousAttendees
-        }),
-      });
-
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        throw new Error('Failed to submit application');
-      }
-
-      sessionStorage.setItem('applicationSubmission', JSON.stringify({
-        applicationNumber,
-        applicantName: form.organizationName,
-        paymentMethod: 'application'
-      }));
-
+      // Registration complete - redirect to thank you page
       window.location.href = '/register/thank-you';
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        setError(t('errors.submission_timeout'));
-      } else {
-        setError(error.message || t('errors.failed_to_submit'));
-      }
+      setError(error.message || t('errors.failed_to_submit'));
       setSubmitting(false);
     }
   };

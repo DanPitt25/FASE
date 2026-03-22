@@ -291,33 +291,6 @@ export interface MemberSearchResult {
   };
 }
 
-// ============== TASK TYPES ==============
-
-/** Task priority levels */
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-
-/** Task status */
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-
-/** Admin task */
-export interface AdminTask {
-  id: string;
-  accountId?: string;
-  accountName?: string;
-  title: string;
-  description?: string;
-  status: TaskStatus;
-  priority?: TaskPriority;
-  dueDate?: FirestoreTimestamp;
-  assignedTo?: string;
-  assignedToName?: string;
-  createdAt: FirestoreTimestamp;
-  createdBy: string;
-  createdByName?: string;
-  completedAt?: FirestoreTimestamp;
-  completedBy?: string;
-}
-
 // ============== SPONSOR TYPES ==============
 
 /** Sponsor tier levels */

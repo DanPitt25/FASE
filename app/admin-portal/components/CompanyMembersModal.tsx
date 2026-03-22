@@ -9,6 +9,7 @@ import { Activity, Note, NoteCategory } from '../../../lib/firestore';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import CompanyDetailsTab from './CompanyDetailsTab';
+import CompanyContentTab from './CompanyContentTab';
 import MemberEmailActions from './MemberEmailActions';
 import { type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
 
@@ -35,7 +36,7 @@ interface Invoice {
   paymentMethod?: string;
 }
 
-type ModalTab = 'actions' | 'company' | 'timeline' | 'notes' | 'payments';
+type ModalTab = 'actions' | 'company' | 'content' | 'timeline' | 'notes' | 'payments';
 
 export default function CompanyMembersModal({
   isOpen,
@@ -302,6 +303,7 @@ export default function CompanyMembersModal({
   const tabs: { id: ModalTab; label: string; count?: number }[] = [
     { id: 'actions', label: 'Email' },
     { id: 'company', label: 'Company' },
+    { id: 'content', label: 'Bio & Logo' },
     { id: 'timeline', label: 'Timeline', count: activities.length },
     { id: 'notes', label: 'Notes', count: notes.length },
     { id: 'payments', label: 'Payments', count: invoices.length },
@@ -488,6 +490,15 @@ export default function CompanyMembersModal({
                 </div>
               )}
             </div>
+          )}
+
+          {/* CONTENT TAB - Bio & Logo */}
+          {activeTab === 'content' && (
+            <CompanyContentTab
+              companyId={companyId}
+              memberData={memberData}
+              onDataChange={loadCrmData}
+            />
           )}
 
           {/* TIMELINE TAB */}

@@ -22,7 +22,6 @@ import type {
   FinanceDateRange,
   MemberSearchResult,
   Sponsor,
-  AdminTask,
   PendingReviewAccount,
 } from '@/lib/admin-types';
 
@@ -493,101 +492,6 @@ export function useMemberSearch(): UseMemberSearchResult {
   }, []);
 
   return { results, searching, search, clear };
-}
-
-// ============== TASKS HOOK ==============
-
-interface UseAdminTasksResult {
-  tasks: AdminTask[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  addTask: (task: Partial<AdminTask>) => Promise<boolean>;
-  updateTaskStatus: (taskId: string, status: AdminTask['status']) => Promise<boolean>;
-  deleteTask: (taskId: string) => Promise<boolean>;
-}
-
-/**
- * Hook for admin tasks
- */
-export function useAdminTasks(): UseAdminTasksResult {
-  const [tasks, setTasks] = useState<AdminTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadTasks = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await authFetch('/api/admin/tasks');
-      const data = await response.json();
-      if (data.success) {
-        setTasks(data.tasks || []);
-      }
-    } catch (err) {
-      console.error('Failed to load tasks:', err);
-      setError('Failed to load tasks');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
-
-  const addTask = useCallback(async (task: Partial<AdminTask>): Promise<boolean> => {
-    try {
-      const response = await authPost('/api/admin/tasks', task);
-      const data = await response.json();
-      if (data.success) {
-        await loadTasks();
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to add task:', err);
-      return false;
-    }
-  }, [loadTasks]);
-
-  const updateTaskStatus = useCallback(async (
-    taskId: string,
-    status: AdminTask['status']
-  ): Promise<boolean> => {
-    try {
-      const response = await authFetch('/api/admin/tasks', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId, status }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        await loadTasks();
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to update task:', err);
-      return false;
-    }
-  }, [loadTasks]);
-
-  const deleteTask = useCallback(async (taskId: string): Promise<boolean> => {
-    try {
-      const response = await authDelete(`/api/admin/tasks?taskId=${taskId}`);
-      const data = await response.json();
-      if (data.success) {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to delete task:', err);
-      return false;
-    }
-  }, []);
-
-  return { tasks, loading, error, refetch: loadTasks, addTask, updateTaskStatus, deleteTask };
 }
 
 // ============== SPONSORS HOOK ==============
