@@ -277,31 +277,18 @@ export type FinanceDateRange = 'all' | '30' | '90' | '180' | '365';
 export type FinanceSortField = 'date' | 'amount';
 export type FinanceModalTab = 'details' | 'invoice' | 'timeline' | 'notes';
 
-// ============== TASK TYPES ==============
+// ============== MEMBER SEARCH TYPES ==============
 
-/** Task priority levels */
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-
-/** Task status */
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-
-/** Admin task */
-export interface AdminTask {
+/** Member search result for linking payments */
+export interface MemberSearchResult {
   id: string;
-  accountId?: string;
-  accountName?: string;
-  title: string;
-  description?: string;
-  status: TaskStatus;
-  priority?: TaskPriority;
-  dueDate?: FirestoreTimestamp;
-  assignedTo?: string;
-  assignedToName?: string;
-  createdAt: FirestoreTimestamp;
-  createdBy: string;
-  createdByName?: string;
-  completedAt?: FirestoreTimestamp;
-  completedBy?: string;
+  organizationName: string;
+  organizationType: string;
+  status: string;
+  primaryContact?: {
+    name?: string;
+    email?: string;
+  };
 }
 
 // ============== SPONSOR TYPES ==============
@@ -380,8 +367,6 @@ export interface PendingReviewAccount {
 export type EmailAction =
   | 'welcome'
   | 'membership_invoice'
-  | 'membership_invoice_stripe'
-  | 'payment_reminder'
   | 'followup'
   | 'rendezvous_confirmation'
   | 'rendezvous_reminder'

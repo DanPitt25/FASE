@@ -9,8 +9,8 @@ import { Activity, Note, NoteCategory } from '../../../lib/firestore';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
 import CompanyDetailsTab from './CompanyDetailsTab';
+import CompanyContentTab from './CompanyContentTab';
 import MemberEmailActions from './MemberEmailActions';
-import MemberInvoicePanel from './MemberInvoicePanel';
 import { type FirestoreTimestamp, formatFirestoreDate } from '@/lib/admin-types';
 
 interface CompanyMembersModalProps {
@@ -36,7 +36,7 @@ interface Invoice {
   paymentMethod?: string;
 }
 
-type ModalTab = 'invoice' | 'actions' | 'company' | 'timeline' | 'notes' | 'payments';
+type ModalTab = 'actions' | 'company' | 'content' | 'timeline' | 'notes' | 'payments';
 
 export default function CompanyMembersModal({
   isOpen,
@@ -49,7 +49,7 @@ export default function CompanyMembersModal({
   isSuppressed,
   onToggleSuppressed
 }: CompanyMembersModalProps) {
-  const [activeTab, setActiveTab] = useState<ModalTab>('invoice');
+  const [activeTab, setActiveTab] = useState<ModalTab>('actions');
 
   // Delete state
   const [showDeleteSection, setShowDeleteSection] = useState(false);
@@ -147,7 +147,7 @@ export default function CompanyMembersModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setActiveTab('invoice');
+      setActiveTab('actions');
       setShowDeleteSection(false);
       setDeleteConfirmation('');
       setDeleteError(null);
@@ -301,9 +301,9 @@ export default function CompanyMembersModal({
   ];
 
   const tabs: { id: ModalTab; label: string; count?: number }[] = [
-    { id: 'invoice', label: 'Invoice' },
     { id: 'actions', label: 'Email' },
     { id: 'company', label: 'Company' },
+    { id: 'content', label: 'Bio & Logo' },
     { id: 'timeline', label: 'Timeline', count: activities.length },
     { id: 'notes', label: 'Notes', count: notes.length },
     { id: 'payments', label: 'Payments', count: invoices.length },
@@ -378,16 +378,7 @@ export default function CompanyMembersModal({
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto py-4">
-          {/* INVOICE TAB - New unified invoice generation */}
-          {activeTab === 'invoice' && memberData && (
-            <MemberInvoicePanel
-              memberData={memberData}
-              companyId={companyId}
-              onInvoiceSent={loadCrmData}
-            />
-          )}
-
-          {/* EMAIL TAB - Other email actions (Welcome, Reminder, etc.) */}
+          {/* EMAIL TAB - All email actions including Invoice */}
           {activeTab === 'actions' && memberData && (
             <MemberEmailActions
               memberData={memberData}
@@ -499,6 +490,15 @@ export default function CompanyMembersModal({
                 </div>
               )}
             </div>
+          )}
+
+          {/* CONTENT TAB - Bio & Logo */}
+          {activeTab === 'content' && (
+            <CompanyContentTab
+              companyId={companyId}
+              memberData={memberData}
+              onDataChange={loadCrmData}
+            />
           )}
 
           {/* TIMELINE TAB */}

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminStorage, FieldValue } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
-import { DatabaseMonitor } from '../../../lib/monitoring';
 
 // Force Node.js runtime to enable file system access
 export const runtime = 'nodejs';
@@ -134,13 +133,6 @@ export async function POST(request: NextRequest) {
       },
       severity: 'low',
       ...clientInfo
-    });
-
-    await DatabaseMonitor.logDatabaseOperation({
-      type: 'write',
-      collection: 'memberProfiles',
-      documentId: userUid,
-      userId: userUid
     });
 
     return NextResponse.json({

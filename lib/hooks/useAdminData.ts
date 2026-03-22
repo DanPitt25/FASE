@@ -20,8 +20,8 @@ import type {
   PaymentNote,
   FinanceFilterSource,
   FinanceDateRange,
+  MemberSearchResult,
   Sponsor,
-  AdminTask,
   PendingReviewAccount,
 } from '@/lib/admin-types';
 
@@ -450,99 +450,48 @@ export function usePaymentCrmData(): UsePaymentCrmDataResult {
   return { activities, notes, loading, load, addNote, deleteNote };
 }
 
-// ============== TASKS HOOK ==============
+// ============== MEMBER SEARCH HOOK ==============
 
-interface UseAdminTasksResult {
-  tasks: AdminTask[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  addTask: (task: Partial<AdminTask>) => Promise<boolean>;
-  updateTaskStatus: (taskId: string, status: AdminTask['status']) => Promise<boolean>;
-  deleteTask: (taskId: string) => Promise<boolean>;
+interface UseMemberSearchResult {
+  results: MemberSearchResult[];
+  searching: boolean;
+  search: (query: string) => Promise<void>;
+  clear: () => void;
 }
 
 /**
- * Hook for admin tasks
+ * Hook for searching members (used in finance tab for linking payments)
  */
-export function useAdminTasks(): UseAdminTasksResult {
-  const [tasks, setTasks] = useState<AdminTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useMemberSearch(): UseMemberSearchResult {
+  const [results, setResults] = useState<MemberSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
 
-  const loadTasks = useCallback(async () => {
-    setLoading(true);
+  const search = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setSearching(true);
     try {
-      const response = await authFetch('/api/admin/tasks');
+      const response = await authFetch(`/api/admin/search?q=${encodeURIComponent(query)}&limit=10`);
       const data = await response.json();
+
       if (data.success) {
-        setTasks(data.tasks || []);
+        setResults(data.accounts || []);
       }
     } catch (err) {
-      console.error('Failed to load tasks:', err);
-      setError('Failed to load tasks');
+      console.error('Member search failed:', err);
     } finally {
-      setLoading(false);
+      setSearching(false);
     }
   }, []);
 
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
-
-  const addTask = useCallback(async (task: Partial<AdminTask>): Promise<boolean> => {
-    try {
-      const response = await authPost('/api/admin/tasks', task);
-      const data = await response.json();
-      if (data.success) {
-        await loadTasks();
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to add task:', err);
-      return false;
-    }
-  }, [loadTasks]);
-
-  const updateTaskStatus = useCallback(async (
-    taskId: string,
-    status: AdminTask['status']
-  ): Promise<boolean> => {
-    try {
-      const response = await authFetch('/api/admin/tasks', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId, status }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        await loadTasks();
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to update task:', err);
-      return false;
-    }
-  }, [loadTasks]);
-
-  const deleteTask = useCallback(async (taskId: string): Promise<boolean> => {
-    try {
-      const response = await authDelete(`/api/admin/tasks?taskId=${taskId}`);
-      const data = await response.json();
-      if (data.success) {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Failed to delete task:', err);
-      return false;
-    }
+  const clear = useCallback(() => {
+    setResults([]);
   }, []);
 
-  return { tasks, loading, error, refetch: loadTasks, addTask, updateTaskStatus, deleteTask };
+  return { results, searching, search, clear };
 }
 
 // ============== SPONSORS HOOK ==============

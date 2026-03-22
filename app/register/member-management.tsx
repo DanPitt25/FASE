@@ -1,27 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Member } from './registration-hooks';
+import { Member, UseRegistrationForm } from './registration-hooks';
 import PhoneInput from '../../components/PhoneInput';
 
 // Team Members Management Component
-export const TeamMembersSection = ({
-  members,
-  setMembers,
-  firstName,
-  surname,
-  email
-}: {
-  members: Member[];
-  setMembers: (members: Member[]) => void;
-  firstName: string;
-  surname: string;
-  email: string;
-}) => {
+export const TeamMembersSection = ({ reg }: { reg: UseRegistrationForm }) => {
   const t = useTranslations('register_form.team_members');
-  
-  const addMember = () => {
-    const newMember: Member = {
+  const { form, addMember, updateMember, removeMember, setMembers } = reg;
+  const members = form.members;
+
+  const handleAddMember = () => {
+    addMember({
       id: Date.now().toString(),
       firstName: '',
       lastName: '',
@@ -30,42 +20,25 @@ export const TeamMembersSection = ({
       phone: '',
       jobTitle: '',
       isPrimaryContact: false
-    };
-    setMembers([...members, newMember]);
-  };
-
-  const updateMember = (id: string, updates: Partial<Member>) => {
-    const updatedMembers = members.map(member => {
-      if (member.id === id) {
-        const updatedMember = { ...member, ...updates };
-        // Update the name field when first/last name changes
-        if (updates.firstName !== undefined || updates.lastName !== undefined) {
-          updatedMember.name = `${updatedMember.firstName} ${updatedMember.lastName}`.trim();
-        }
-        return updatedMember;
-      }
-      return member;
     });
-    setMembers(updatedMembers);
   };
 
-  const removeMember = (id: string) => {
+  const handleRemoveMember = (id: string) => {
     const memberToRemove = members.find(m => m.id === id);
     const newMembers = members.filter(m => m.id !== id);
-    
+
     // If we removed the account administrator, make the first member administrator
     if (memberToRemove?.isPrimaryContact && newMembers.length > 0) {
-      newMembers[0].isPrimaryContact = true;
+      newMembers[0] = { ...newMembers[0], isPrimaryContact: true };
     }
     setMembers(newMembers);
   };
 
   const setPrimaryContact = (id: string) => {
-    const updatedMembers = members.map(member => ({
+    setMembers(members.map(member => ({
       ...member,
       isPrimaryContact: member.id === id
-    }));
-    setMembers(updatedMembers);
+    })));
   };
 
   return (
@@ -104,7 +77,7 @@ export const TeamMembersSection = ({
               {member.id !== 'registrant' && (
                 <button
                   type="button"
-                  onClick={() => removeMember(member.id)}
+                  onClick={() => handleRemoveMember(member.id)}
                   className="text-red-600 hover:text-red-800 text-sm"
                 >
                   {t('remove_button')}
@@ -174,14 +147,13 @@ export const TeamMembersSection = ({
                 className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
               />
             </div>
-
           </div>
         ))}
 
         {members.length < 3 && (
           <button
             type="button"
-            onClick={addMember}
+            onClick={handleAddMember}
             className="w-full p-3 border-2 border-dashed border-fase-light-gold rounded-lg text-fase-navy hover:border-fase-navy hover:bg-fase-light-blue transition-colors"
           >
             {t('add_member_button')}

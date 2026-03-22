@@ -19,8 +19,11 @@ interface AdminConsoleDashboardProps {
   title: string;
   bannerImage?: string;
   bannerImageAlt?: string;
-  viewTiles: ConsoleTileData[];
-  manageTiles: ConsoleTileData[];
+  // New unified tiles prop (optional - use this for single list without VIEW/MANAGE toggle)
+  tiles?: ConsoleTileData[];
+  // Legacy props for VIEW/MANAGE separation
+  viewTiles?: ConsoleTileData[];
+  manageTiles?: ConsoleTileData[];
   currentPage: string;
   defaultSection?: AdminSection;
   defaultActiveTile?: string;
@@ -31,17 +34,23 @@ export default function AdminConsoleDashboard({
   title,
   bannerImage,
   bannerImageAlt,
-  viewTiles,
-  manageTiles,
+  tiles,
+  viewTiles = [],
+  manageTiles = [],
   currentPage,
   defaultSection = 'view',
   defaultActiveTile,
   onNavigationReady,
 }: AdminConsoleDashboardProps) {
+  // Unified mode: use tiles prop directly, no VIEW/MANAGE toggle
+  const isUnifiedMode = !!tiles && tiles.length > 0;
+
   const [activeSection, setActiveSection] = useState<AdminSection>(defaultSection);
-  const [activeTileId, setActiveTileId] = useState<string>(
-    defaultActiveTile || (defaultSection === 'view' ? viewTiles[0]?.id : manageTiles[0]?.id)
-  );
+  const [activeTileId, setActiveTileId] = useState<string>(() => {
+    if (defaultActiveTile) return defaultActiveTile;
+    if (isUnifiedMode) return tiles?.[0]?.id || '';
+    return defaultSection === 'view' ? viewTiles[0]?.id || '' : manageTiles[0]?.id || '';
+  });
 
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -76,16 +85,18 @@ export default function AdminConsoleDashboard({
     return () => observer.disconnect();
   }, []);
 
-  const currentTiles = activeSection === 'view' ? viewTiles : manageTiles;
+  // In unified mode, always use tiles; otherwise use section-based selection
+  const currentTiles = isUnifiedMode ? tiles! : (activeSection === 'view' ? viewTiles : manageTiles);
   const activeContent = currentTiles.find(tile => tile.id === activeTileId);
 
   // When switching sections, select first tile if current tile doesn't exist in new section
   const handleSectionChange = (section: AdminSection) => {
+    if (isUnifiedMode) return; // No section switching in unified mode
     setActiveSection(section);
-    const tiles = section === 'view' ? viewTiles : manageTiles;
-    const currentTileExists = tiles.some(t => t.id === activeTileId);
-    if (!currentTileExists && tiles.length > 0) {
-      setActiveTileId(tiles[0].id);
+    const sectionTiles = section === 'view' ? viewTiles : manageTiles;
+    const currentTileExists = sectionTiles.some(t => t.id === activeTileId);
+    if (!currentTileExists && sectionTiles.length > 0) {
+      setActiveTileId(sectionTiles[0].id);
     }
   };
 
@@ -136,37 +147,39 @@ export default function AdminConsoleDashboard({
             {/* Left Sidebar */}
             <div className="lg:w-64 xl:w-72 bg-white border-r border-gray-200 p-4 lg:self-stretch">
               <div className="lg:sticky lg:top-4">
-                {/* Section Toggle */}
-                <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
-                  <button
-                    type="button"
-                    onClick={() => handleSectionChange('view')}
-                    className={`
-                      flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
-                      focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-1
-                      ${activeSection === 'view'
-                        ? 'bg-fase-navy text-white shadow-sm'
-                        : 'text-gray-600 hover:text-fase-navy hover:bg-gray-200'
-                      }
-                    `}
-                  >
-                    View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSectionChange('manage')}
-                    className={`
-                      flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
-                      focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-1
-                      ${activeSection === 'manage'
-                        ? 'bg-fase-navy text-white shadow-sm'
-                        : 'text-gray-600 hover:text-fase-navy hover:bg-gray-200'
-                      }
-                    `}
-                  >
-                    Manage
-                  </button>
-                </div>
+                {/* Section Toggle - only show in legacy mode */}
+                {!isUnifiedMode && (
+                  <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSectionChange('view')}
+                      className={`
+                        flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+                        focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-1
+                        ${activeSection === 'view'
+                          ? 'bg-fase-navy text-white shadow-sm'
+                          : 'text-gray-600 hover:text-fase-navy hover:bg-gray-200'
+                        }
+                      `}
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSectionChange('manage')}
+                      className={`
+                        flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200
+                        focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-1
+                        ${activeSection === 'manage'
+                          ? 'bg-fase-navy text-white shadow-sm'
+                          : 'text-gray-600 hover:text-fase-navy hover:bg-gray-200'
+                        }
+                      `}
+                    >
+                      Manage
+                    </button>
+                  </div>
+                )}
 
                 {/* Tiles Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">

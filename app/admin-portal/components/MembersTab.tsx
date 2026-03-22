@@ -1,53 +1,99 @@
 'use client';
 
-import { useState } from 'react';
+/**
+ * MembersTab - Unified member management
+ *
+ * Combines VIEW and MANAGE functionality with:
+ * - Member list with search/filter/sort
+ * - "Show suppressed" toggle
+ * - Full CompanyMembersModal with all tabs and actions
+ * - Status changes, email sending, notes, delete
+ * - Suppress/unsuppress members
+ */
+
+import { useState, useMemo } from 'react';
 import { UnifiedMember } from '../../../lib/unified-member';
 import Button from '../../../components/Button';
-import Modal from '../../../components/Modal';
 import CompanyMembersModal from './CompanyMembersModal';
-import { authPost } from '@/lib/auth-fetch';
+import { authPost } from '../../../lib/auth-fetch';
 
 interface MembersTabProps {
   memberApplications: UnifiedMember[];
   loading: boolean;
   onStatusUpdate: (memberId: string, newStatus: UnifiedMember['status'], adminNotes?: string) => void;
   onMemberDeleted?: (memberId: string) => void;
+  suppressedIds: Set<string>;
+  onSuppressedIdsChange: (ids: Set<string>) => void;
 }
 
 export default function MembersTab({
   memberApplications,
   loading,
   onStatusUpdate,
-  onMemberDeleted
+  onMemberDeleted,
+  suppressedIds,
+  onSuppressedIdsChange
 }: MembersTabProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
   const [sortColumn, setSortColumn] = useState<string>('organizationName');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showSuppressed, setShowSuppressed] = useState(false);
 
-  // Delete confirmation state
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState<UnifiedMember | null>(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  // Handle suppress/unsuppress
+  const handleToggleSuppressed = async (memberId: string) => {
+    const isSuppressed = suppressedIds.has(memberId);
+    try {
+      const response = await authPost('/api/admin/members/suppress', {
+        memberId,
+        suppressed: !isSuppressed,
+      });
 
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
-        <p className="text-fase-black">Loading members...</p>
-      </div>
-    );
-  }
+      if (!response.ok) {
+        throw new Error('Failed to update suppression');
+      }
 
-  // Filter and sort members
-  const filteredMembers = (() => {
-    let filtered = statusFilter === 'all'
-      ? memberApplications
-      : memberApplications.filter(member => member.status === statusFilter);
+      const newSet = new Set(suppressedIds);
+      if (isSuppressed) {
+        newSet.delete(memberId);
+      } else {
+        newSet.add(memberId);
+      }
+      onSuppressedIdsChange(newSet);
+    } catch (err: any) {
+      console.error('Failed to toggle suppressed:', err);
+      alert(`Error: ${err.message}`);
+    }
+  };
 
+  // Filter, search, and sort
+  const filteredMembers = useMemo(() => {
+    let filtered = memberApplications;
+
+    // Filter by suppression status
+    if (!showSuppressed) {
+      filtered = filtered.filter(member => !suppressedIds.has(member.id));
+    }
+
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(m => m.status === statusFilter);
+    }
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(m =>
+        (m.organizationName || '').toLowerCase().includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.primaryContact?.name || m.personalName || '').toLowerCase().includes(q) ||
+        (m.businessAddress?.country || m.registeredAddress?.country || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
     return [...filtered].sort((a, b) => {
       let aVal: string = '';
       let bVal: string = '';
@@ -58,8 +104,8 @@ export default function MembersTab({
           bVal = (b.organizationName || '').toLowerCase();
           break;
         case 'country':
-          aVal = (a.registeredAddress?.country || '').toLowerCase();
-          bVal = (b.registeredAddress?.country || '').toLowerCase();
+          aVal = (a.businessAddress?.country || a.registeredAddress?.country || '').toLowerCase();
+          bVal = (b.businessAddress?.country || b.registeredAddress?.country || '').toLowerCase();
           break;
         case 'status':
           aVal = a.status;
@@ -78,7 +124,7 @@ export default function MembersTab({
       if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  })();
+  }, [memberApplications, suppressedIds, showSuppressed, statusFilter, searchQuery, sortColumn, sortDirection]);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -89,13 +135,9 @@ export default function MembersTab({
     }
   };
 
-  // Count for header only includes approved and invoice_sent (actual members)
-  const memberApplicationCount = memberApplications.filter(m => m.status === 'approved' || m.status === 'invoice_sent').length;
-  const filteredMemberCount = statusFilter === 'all'
-    ? memberApplicationCount
-    : filteredMembers.length;
-
-  // Get unique statuses for filter dropdown
+  // Counts
+  const visibleMemberCount = memberApplications.filter(m => !suppressedIds.has(m.id)).length;
+  const suppressedCount = memberApplications.filter(m => suppressedIds.has(m.id)).length;
   const statuses = Array.from(new Set(memberApplications.map(member => member.status)));
 
   const getStatusColor = (status: UnifiedMember['status']) => {
@@ -114,10 +156,11 @@ export default function MembersTab({
   };
 
   const formatStatus = (status: UnifiedMember['status']) => {
+    if (status === 'invoice_sent') return 'Invoiced';
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const handleViewMembers = (member: UnifiedMember) => {
+  const handleManageMembers = (member: UnifiedMember) => {
     setSelectedCompany({
       id: member.id,
       name: member.organizationName || 'Unknown Organization',
@@ -126,73 +169,50 @@ export default function MembersTab({
     setShowMembersModal(true);
   };
 
-  const handleDeleteClick = (member: UnifiedMember) => {
-    setMemberToDelete(member);
-    setDeleteConfirmation('');
-    setDeleteError(null);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!memberToDelete || deleteConfirmation !== 'DELETE') {
-      setDeleteError('Please type DELETE to confirm');
-      return;
-    }
-
-    setDeleting(true);
-    setDeleteError(null);
-
-    try {
-      const response = await authPost('/api/admin/delete-member', {
-        accountId: memberToDelete.id,
-        confirmationPhrase: deleteConfirmation
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete member');
-      }
-
-      // Close modal and notify parent
-      setShowDeleteModal(false);
-      setMemberToDelete(null);
-      setDeleteConfirmation('');
-
-      if (onMemberDeleted) {
-        onMemberDeleted(memberToDelete.id);
-      }
-
-      alert(`Successfully deleted ${result.details?.organizationName || 'member'}. ${result.details?.membersDeleted || 0} member documents and ${result.details?.authUsersDeleted || 0} auth accounts removed.`);
-
-    } catch (err: any) {
-      setDeleteError(err.message || 'Failed to delete member');
-    } finally {
-      setDeleting(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fase-navy mx-auto mb-4"></div>
+        <p className="text-fase-black">Loading members...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Filter Controls */}
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow-lg border border-fase-light-gold p-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <h3 className="text-lg font-noto-serif font-semibold text-fase-navy">
-            Member Applications ({filteredMemberCount})
-          </h3>
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
-              className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-            >
-              <option value="all">All Statuses ({memberApplicationCount})</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>
-                  {formatStatus(status)} ({memberApplications.filter(m => m.status === status).length})
-                </option>
-              ))}
-            </select>
+        <div className="flex flex-wrap gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Search organization, contact, email, country..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-72 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as UnifiedMember['status'] | 'all')}
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="all">All Statuses ({visibleMemberCount})</option>
+            {statuses.map(status => (
+              <option key={status} value={status}>
+                {formatStatus(status)} ({memberApplications.filter(m => m.status === status && !suppressedIds.has(m.id)).length})
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={showSuppressed}
+              onChange={(e) => setShowSuppressed(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Show suppressed {suppressedCount > 0 && `(${suppressedCount})`}
+          </label>
+          <div className="text-sm text-gray-500 ml-auto">
+            {filteredMembers.length} members
           </div>
         </div>
       </div>
@@ -214,6 +234,12 @@ export default function MembersTab({
                 </th>
                 <th
                   className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
+                  onClick={() => handleSort('country')}
+                >
+                  Country {sortColumn === 'country' && (sortDirection === 'asc' ? '↑' : '↓')}
+                </th>
+                <th
+                  className="px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer hover:bg-fase-navy/80"
                   onClick={() => handleSort('status')}
                 >
                   Status {sortColumn === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -225,50 +251,58 @@ export default function MembersTab({
                   Applied {sortColumn === 'createdAt' && (sortDirection === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-900">{member.organizationName}</div>
-                      <div className="text-gray-500 text-xs">{member.organizationType}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="text-sm">
-                      <div className="text-gray-900">{member.primaryContact?.name || member.personalName || 'Unknown'}</div>
-                      <div className="text-gray-500 text-xs">{member.email || 'No email'}</div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.status)}`}>
-                      {formatStatus(member.status)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-4 text-xs text-gray-500">
-                    {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'Unknown'}
-                  </td>
-                  <td className="px-4 py-4 text-sm font-medium">
-                    <Button
-                      variant="primary"
-                      size="small"
-                      onClick={() => handleViewMembers(member)}
-                    >
-                      View
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {filteredMembers.map((member) => {
+                const isSuppressed = suppressedIds.has(member.id);
+                return (
+                  <tr key={member.id} className={`hover:bg-gray-50 ${isSuppressed ? 'opacity-50 bg-gray-100' : ''}`}>
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-gray-900">{member.organizationName}</div>
+                      <div className="text-xs text-gray-500">{member.organizationType}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-gray-900">{member.primaryContact?.name || member.personalName || '-'}</div>
+                      <div className="text-xs text-gray-500">{member.email || '-'}</div>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-600">
+                      {member.businessAddress?.country || member.registeredAddress?.country || '-'}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.status)}`}>
+                          {formatStatus(member.status)}
+                        </span>
+                        {isSuppressed && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-gray-500">
+                      {member.createdAt ? (member.createdAt.toDate?.() || new Date(member.createdAt)).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button
+                        variant="primary"
+                        size="small"
+                        onClick={() => handleManageMembers(member)}
+                      >
+                        Manage
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         {filteredMembers.length === 0 && (
           <div className="p-8 text-center">
-            <p className="text-fase-black">No members found matching the current filter.</p>
+            <p className="text-gray-500">No members found.</p>
           </div>
         )}
       </div>
@@ -284,89 +318,10 @@ export default function MembersTab({
         companyName={selectedCompany?.name || ''}
         memberData={selectedCompany?.memberData}
         onStatusUpdate={onStatusUpdate}
+        onDelete={onMemberDeleted}
+        isSuppressed={selectedCompany ? suppressedIds.has(selectedCompany.id) : false}
+        onToggleSuppressed={handleToggleSuppressed}
       />
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setMemberToDelete(null);
-          setDeleteConfirmation('');
-          setDeleteError(null);
-        }}
-        title="Delete Member Account"
-        maxWidth="md"
-      >
-        {memberToDelete && (
-          <div className="space-y-6">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <svg className="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                <div>
-                  <h4 className="text-red-800 font-semibold">Warning: This action cannot be undone</h4>
-                  <p className="text-red-700 text-sm mt-1">
-                    This will permanently delete the account, all team members, and their Firebase Auth credentials.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 mb-1">Account to delete:</div>
-              <div className="font-semibold text-gray-900">{memberToDelete.organizationName}</div>
-              <div className="text-sm text-gray-600">{memberToDelete.email}</div>
-              <div className="text-xs text-gray-500 mt-1">ID: {memberToDelete.id}</div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type <span className="font-mono bg-gray-100 px-1">DELETE</span> to confirm:
-              </label>
-              <input
-                type="text"
-                value={deleteConfirmation}
-                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Type DELETE here"
-                disabled={deleting}
-              />
-            </div>
-
-            {deleteError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm">{deleteError}</p>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setMemberToDelete(null);
-                  setDeleteConfirmation('');
-                  setDeleteError(null);
-                }}
-                disabled={deleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDeleteConfirm}
-                disabled={deleting || deleteConfirmation !== 'DELETE'}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleting ? 'Deleting...' : 'Delete Account'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
     </div>
   );
 }

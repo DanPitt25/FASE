@@ -15,8 +15,31 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'pending';
+    const companyId = searchParams.get('companyId');
 
     const db = adminDb;
+
+    // Single company content lookup
+    if (type === 'single' && companyId) {
+      const accountDoc = await db.collection('accounts').doc(companyId).get();
+      if (!accountDoc.exists) {
+        return NextResponse.json({ success: false, error: 'Account not found' }, { status: 404 });
+      }
+      const data = accountDoc.data()!;
+      const hasPendingBio = data.companySummary?.status === 'pending_review';
+      const hasPendingLogo = data.logoStatus?.status === 'pending_review';
+
+      return NextResponse.json({
+        success: true,
+        content: {
+          hasPendingBio,
+          hasPendingLogo,
+          pendingBioText: hasPendingBio ? data.companySummary?.text : null,
+          pendingLogoURL: hasPendingLogo ? data.logoStatus?.pendingURL : null,
+        }
+      });
+    }
+
     const accountsSnapshot = await db.collection('accounts').get();
 
     if (type === 'all') {

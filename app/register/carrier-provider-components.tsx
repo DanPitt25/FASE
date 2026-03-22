@@ -3,59 +3,34 @@
 import { useTranslations } from 'next-intl';
 import { amBestRatings } from './registration-utils';
 import CountryMultiSelector from '../../components/CountryMultiSelector';
+import { UseRegistrationForm } from './registration-hooks';
 
 // Carrier Information Component
-export const CarrierInformationSection = ({
-  carrierOrganizationType,
-  setCarrierOrganizationType,
-  isDelegatingInEurope,
-  setIsDelegatingInEurope,
-  numberOfMGAs,
-  setNumberOfMGAs,
-  delegatingCountries,
-  setDelegatingCountries,
-  frontingOptions: selectedFrontingOptions,
-  setFrontingOptions,
-  considerStartupMGAs,
-  setConsiderStartupMGAs,
-  amBestRating,
-  setAmBestRating,
-  otherRating,
-  setOtherRating
-}: {
-  carrierOrganizationType: string;
-  setCarrierOrganizationType: (value: string) => void;
-  isDelegatingInEurope: string;
-  setIsDelegatingInEurope: (value: string) => void;
-  numberOfMGAs: string;
-  setNumberOfMGAs: (value: string) => void;
-  delegatingCountries: string[];
-  setDelegatingCountries: (countries: string[]) => void;
-  frontingOptions: string;
-  setFrontingOptions: (value: string) => void;
-  considerStartupMGAs: string;
-  setConsiderStartupMGAs: (value: string) => void;
-  amBestRating: string;
-  setAmBestRating: (value: string) => void;
-  otherRating: string;
-  setOtherRating: (value: string) => void;
-}) => {
+export const CarrierInformationSection = ({ reg }: { reg: UseRegistrationForm }) => {
   const t = useTranslations('register_form.carrier');
   const tCommon = useTranslations('common');
   const tAddress = useTranslations('register_form.address');
-  
+
+  const { form, setField } = reg;
+  const carrierInfo = form.carrierInfo;
+
+  const showDelegationQuestions =
+    carrierInfo.organizationType === 'insurance_company' ||
+    carrierInfo.organizationType === 'reinsurance_company' ||
+    carrierInfo.organizationType === 'lloyds_managing_agency';
+
   return (
     <div className="space-y-6">
       <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
-      
+
       {/* Organization Type */}
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
           {t('organization_type_question')} *
         </label>
         <select
-          value={carrierOrganizationType}
-          onChange={(e) => setCarrierOrganizationType(e.target.value)}
+          value={carrierInfo.organizationType}
+          onChange={(e) => setField('carrierInfo.organizationType', e.target.value)}
           className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
         >
           <option value="">{tCommon('select')}</option>
@@ -66,11 +41,9 @@ export const CarrierInformationSection = ({
           <option value="reinsurance_broker">{t('organization_types.reinsurance_broker')}</option>
         </select>
       </div>
-      
+
       {/* Show delegating, fronting, and startup questions only for specific organization types */}
-      {(carrierOrganizationType === 'insurance_company' || 
-        carrierOrganizationType === 'reinsurance_company' || 
-        carrierOrganizationType === 'lloyds_managing_agency') && (
+      {showDelegationQuestions && (
         <>
           {/* Delegating Authority */}
           <div>
@@ -87,8 +60,8 @@ export const CarrierInformationSection = ({
                     type="radio"
                     name="isDelegatingInEurope"
                     value={option}
-                    checked={isDelegatingInEurope === option}
-                    onChange={(e) => setIsDelegatingInEurope(e.target.value)}
+                    checked={carrierInfo.isDelegatingInEurope === option}
+                    onChange={(e) => setField('carrierInfo.isDelegatingInEurope', e.target.value)}
                     className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
                   />
                   <span className="text-sm text-fase-black">{option}</span>
@@ -96,7 +69,7 @@ export const CarrierInformationSection = ({
               ))}
             </div>
 
-            {isDelegatingInEurope === tCommon('yes') && (
+            {carrierInfo.isDelegatingInEurope === tCommon('yes') && (
               <div className="mt-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-fase-navy mb-3">
@@ -107,10 +80,10 @@ export const CarrierInformationSection = ({
                       <button
                         key={option}
                         type="button"
-                        onClick={() => setNumberOfMGAs(option)}
+                        onClick={() => setField('carrierInfo.numberOfMGAs', option)}
                         className={`p-3 border-2 rounded-lg transition-colors text-center ${
-                          numberOfMGAs === option 
-                            ? 'border-fase-navy bg-fase-cream' 
+                          carrierInfo.numberOfMGAs === option
+                            ? 'border-fase-navy bg-fase-cream'
                             : 'border-fase-light-gold hover:border-fase-navy hover:bg-fase-cream'
                         }`}
                       >
@@ -122,8 +95,8 @@ export const CarrierInformationSection = ({
 
                 <CountryMultiSelector
                   label={t('countries_question')}
-                  value={delegatingCountries}
-                  onChange={setDelegatingCountries}
+                  value={carrierInfo.delegatingCountries}
+                  onChange={(countries) => setField('carrierInfo.delegatingCountries', countries)}
                   required={true}
                   countriesFilter="european"
                   placeholder={tAddress('search_countries_placeholder')}
@@ -144,8 +117,8 @@ export const CarrierInformationSection = ({
                     type="radio"
                     name="frontingOptions"
                     value={key}
-                    checked={selectedFrontingOptions === key}
-                    onChange={(e) => setFrontingOptions(e.target.value)}
+                    checked={carrierInfo.frontingOptions === key}
+                    onChange={(e) => setField('carrierInfo.frontingOptions', e.target.value)}
                     className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
                   />
                   <span className="text-sm text-fase-black">{label}</span>
@@ -166,8 +139,8 @@ export const CarrierInformationSection = ({
                     type="radio"
                     name="considerStartupMGAs"
                     value={option}
-                    checked={considerStartupMGAs === option}
-                    onChange={(e) => setConsiderStartupMGAs(e.target.value)}
+                    checked={carrierInfo.considerStartupMGAs === option}
+                    onChange={(e) => setField('carrierInfo.considerStartupMGAs', e.target.value)}
                     className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300"
                   />
                   <span className="text-sm text-fase-black">{option}</span>
@@ -185,8 +158,8 @@ export const CarrierInformationSection = ({
             {t('am_best_rating')}
           </label>
           <select
-            value={amBestRating}
-            onChange={(e) => setAmBestRating(e.target.value)}
+            value={carrierInfo.amBestRating}
+            onChange={(e) => setField('carrierInfo.amBestRating', e.target.value)}
             className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           >
             <option value="">{t('select_rating')}</option>
@@ -201,8 +174,8 @@ export const CarrierInformationSection = ({
           </label>
           <input
             type="text"
-            value={otherRating}
-            onChange={(e) => setOtherRating(e.target.value)}
+            value={carrierInfo.otherRating}
+            onChange={(e) => setField('carrierInfo.otherRating', e.target.value)}
             placeholder={t('other_rating_placeholder')}
             className="w-full px-3 py-2 border border-fase-light-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-fase-navy focus:border-transparent"
           />
@@ -213,19 +186,23 @@ export const CarrierInformationSection = ({
 };
 
 // Service Provider Information Component
-export const ServiceProviderSection = ({
-  servicesProvided,
-  setServicesProvided
-}: {
-  servicesProvided: string[];
-  setServicesProvided: (services: string[]) => void;
-}) => {
+export const ServiceProviderSection = ({ reg }: { reg: UseRegistrationForm }) => {
   const t = useTranslations('register_form.service_provider');
-  
+  const { form, setField } = reg;
+
+  const toggleService = (service: string) => {
+    const current = form.servicesProvided;
+    if (current.includes(service)) {
+      setField('servicesProvided', current.filter(s => s !== service));
+    } else {
+      setField('servicesProvided', [...current, service]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h4 className="text-lg font-noto-serif font-semibold text-fase-navy">{t('title')}</h4>
-      
+
       <div>
         <label className="block text-sm font-medium text-fase-navy mb-3">
           {t('services_question')} *
@@ -235,14 +212,8 @@ export const ServiceProviderSection = ({
             <label key={key} className="flex items-center">
               <input
                 type="checkbox"
-                checked={servicesProvided.includes(key)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setServicesProvided([...servicesProvided, key]);
-                  } else {
-                    setServicesProvided(servicesProvided.filter(s => s !== key));
-                  }
-                }}
+                checked={form.servicesProvided.includes(key)}
+                onChange={() => toggleService(key)}
                 className="mr-3 h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
               />
               <span className="text-sm text-fase-black">{label}</span>

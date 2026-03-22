@@ -19,6 +19,7 @@ import Button from '../../../components/Button';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import { UnifiedMember } from '@/lib/unified-member';
 import { calculateMembershipFee, calculateRendezvousTotal, getOrgTypeLabel } from '@/lib/pricing';
+import { SUPPORTED_LANGUAGES, EMAIL_SENDERS } from '@/lib/email-constants';
 
 interface MemberInvoicePanelProps {
   memberData: UnifiedMember;
@@ -66,21 +67,6 @@ interface RendezvousRegistration {
   attendees?: { firstName: string; lastName: string; email: string; jobTitle?: string }[];
 }
 
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'es', label: 'Español' },
-  { code: 'it', label: 'Italiano' },
-  { code: 'nl', label: 'Nederlands' },
-];
-
-const SENDERS = [
-  { id: 'admin@fasemga.com', label: 'FASE Admin <admin@fasemga.com>' },
-  { id: 'william.pitt@fasemga.com', label: 'William Pitt <william.pitt@fasemga.com>' },
-  { id: 'info@fasemga.com', label: 'FASE Info <info@fasemga.com>' },
-  { id: 'media@fasemga.com', label: 'FASE Media <media@fasemga.com>' },
-];
 
 
 export default function MemberInvoicePanel({
@@ -849,7 +835,7 @@ export default function MemberInvoicePanel({
             onChange={(e) => setSender(e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2"
           >
-            {SENDERS.map(s => (
+            {EMAIL_SENDERS.map(s => (
               <option key={s.id} value={s.id}>{s.label}</option>
             ))}
           </select>
