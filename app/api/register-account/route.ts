@@ -273,7 +273,10 @@ async function sendApplicationNotificationEmail(formData: any) {
     reserveRendezvousPasses,
     rendezvousPassCount,
     rendezvousPassTotal,
-    rendezvousAttendees
+    rendezvousAttendees,
+    _testMode,
+    _testName,
+    _testEmailOverride
   } = formData;
 
   const gwpValue = parseFloat(grossWrittenPremiums) || 0;
@@ -321,6 +324,14 @@ async function sendApplicationNotificationEmail(formData: any) {
     ? otherAssociations.join(', ')
     : 'None';
 
+  // Test mode banner
+  const testBanner = _testMode ? `
+    <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 12px; margin-bottom: 16px; border-radius: 6px;">
+      <strong style="color: #92400e;">TEST MODE</strong><br>
+      <span style="font-size: 13px; color: #78350f;">Test: ${_testName || 'Unknown test'}</span>
+    </div>
+  ` : '';
+
   const emailContent = `
 <!DOCTYPE html>
 <html>
@@ -339,6 +350,7 @@ async function sendApplicationNotificationEmail(formData: any) {
 </head>
 <body>
   <div class="container">
+    ${testBanner}
     <h1>New Application: ${organizationName}</h1>
 
     <table class="section">
@@ -394,6 +406,9 @@ async function sendApplicationNotificationEmail(formData: any) {
 </body>
 </html>`;
 
+  const emailTo = _testEmailOverride || 'applications@fasemga.com';
+  const subjectPrefix = _testMode ? '[TEST] ' : '';
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -402,8 +417,8 @@ async function sendApplicationNotificationEmail(formData: any) {
     },
     body: JSON.stringify({
       from: 'FASE <applications@fasemga.com>',
-      to: 'applications@fasemga.com',
-      subject: `New Application: ${organizationName} (${orgTypeLabel})`,
+      to: emailTo,
+      subject: `${subjectPrefix}New Application: ${organizationName} (${orgTypeLabel})`,
       html: emailContent,
     }),
   });

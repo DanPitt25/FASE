@@ -7,12 +7,14 @@
  * Options:
  *   --single      Run only one test (for quick verification)
  *
- * IMPORTANT: This creates REAL accounts in Firebase and sends notification emails.
- * Use test email addresses and clean up after testing.
+ * IMPORTANT: This creates REAL accounts in Firebase.
+ * Test emails go to daniel.pitt@fasemga.com with [TEST] prefix.
+ * Clean up test accounts in Firebase after testing.
  */
 
 const BASE_URL = process.env.TEST_URL || 'http://localhost:3000';
 const SINGLE_TEST = process.argv.includes('--single');
+const TEST_EMAIL_RECIPIENT = 'daniel.pitt@fasemga.com';
 
 interface TestResult {
   name: string;
@@ -161,8 +163,14 @@ async function callRegisterAPI(payload: any): Promise<{ ok: boolean; status: num
 }
 
 // Full registration (single API - creates account and sends notification email)
-async function fullRegistration(payload: any): Promise<{ ok: boolean; error?: string }> {
-  const result = await callRegisterAPI(payload);
+async function fullRegistration(payload: any, testName: string): Promise<{ ok: boolean; error?: string }> {
+  const testPayload = {
+    ...payload,
+    _testMode: true,
+    _testName: testName,
+    _testEmailOverride: TEST_EMAIL_RECIPIENT
+  };
+  const result = await callRegisterAPI(testPayload);
   if (!result.ok) {
     return { ok: false, error: result.data.error };
   }
@@ -185,19 +193,19 @@ async function runTest(name: string, testFn: () => Promise<void>) {
 
 async function testMGABasicRegistration() {
   const payload = validMGAPayload();
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA Basic Registration - expect fee €1500');
   if (!result.ok) throw new Error(result.error);
 }
 
 async function testCarrierBasicRegistration() {
   const payload = validCarrierPayload();
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'Carrier Basic Registration - expect fee €4000');
   if (!result.ok) throw new Error(result.error);
 }
 
 async function testProviderBasicRegistration() {
   const payload = validProviderPayload();
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'Provider Basic Registration - expect fee €5000');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -215,7 +223,7 @@ async function testMGAWithRendezvousPasses() {
     ]
   };
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA with Rendezvous - expect 2 passes @ €400 = €800');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -236,7 +244,7 @@ async function testProviderASASEMemberWithFreePasses() {
     ]
   };
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'Provider ASASE - expect fee €4000 (20% off), 3 FREE passes');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -251,7 +259,7 @@ async function testCarrierBrokerType() {
     considerStartupMGAs: ''
   };
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'Carrier Broker Type - expect fee €4000, no delegation fields');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -290,7 +298,7 @@ async function testMGAWithMultipleTeamMembers() {
     }
   ];
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA Multiple Team - expect 3 members listed');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -298,7 +306,7 @@ async function testMGASmallGWP() {
   const payload = validMGAPayload();
   payload.grossWrittenPremiums = '5000000'; // €5m = <10m band = €900
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA Small GWP €5m - expect fee €900');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -306,7 +314,7 @@ async function testMGALargeGWP() {
   const payload = validMGAPayload();
   payload.grossWrittenPremiums = '750000000'; // €750m = 500m+ band = €7000
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA Large GWP €750m - expect fee €7000');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -315,7 +323,7 @@ async function testMGAWithGBPCurrency() {
   payload.grossWrittenPremiums = '10000000'; // £10m
   payload.gwpCurrency = 'GBP';
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA GBP £10m - expect ~€11.4m band = fee €1500');
   if (!result.ok) throw new Error(result.error);
 }
 
@@ -324,7 +332,7 @@ async function testMGAWithDiscount() {
   payload.hasOtherAssociations = true;
   payload.otherAssociations = ['MGAA', 'BAUA'];
 
-  const result = await fullRegistration(payload);
+  const result = await fullRegistration(payload, 'MGA with MGAA+BAUA - expect fee €1200 (20% off €1500)');
   if (!result.ok) throw new Error(result.error);
 }
 
