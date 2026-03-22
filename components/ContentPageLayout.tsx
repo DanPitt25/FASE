@@ -782,16 +782,16 @@ export default function ContentPageLayout({
         <Header currentPage={currentPage} />
 
         {/* Hero Banner */}
-        <section ref={bannerAnimation.elementRef} className="relative h-[33vh] flex items-center overflow-hidden">
+        <section ref={bannerAnimation.elementRef} className="relative h-[33vh] min-h-[200px] flex items-center overflow-hidden">
           <Image
             src={bannerImage}
             alt={bannerImageAlt}
             fill
-            className="object-cover"
+            className="object-cover z-0"
             style={{ filter: 'brightness(0.7) contrast(1.1) saturate(1.1)' }}
             priority
           />
-          <div className="absolute inset-0 bg-fase-navy/40"></div>
+          <div className="absolute inset-0 bg-fase-navy/40 z-[1]"></div>
           <div className="relative z-10 w-full h-full flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             <div className={`w-1/4 transition-all duration-700 ${
               bannerAnimation.isVisible ? 'scroll-visible-left' : 'scroll-hidden-left'
