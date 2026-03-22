@@ -255,7 +255,7 @@ function AdminPortalContent() {
       icon: FinanceIcon,
       content: (
         <AdminErrorBoundary tabName="Finance">
-          <FinanceManageTab />
+          <FinanceManageTab memberApplications={memberApplications} />
         </AdminErrorBoundary>
       ),
     },

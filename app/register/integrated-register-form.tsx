@@ -12,7 +12,7 @@ import { MGAPortfolioSection } from './mga-components';
 import { CarrierInformationSection, ServiceProviderSection } from './carrier-provider-components';
 import { EuropeanAssociationsSection } from './associations-components';
 import { checkDomainExists, createAccountAndMembership } from './registration-handlers';
-import { getRendezvousPassSubtotal } from './registration-utils';
+import { getRendezvousPassSubtotal, convertToEUR, getGWPBand, getDiscountedFee } from './registration-utils';
 
 // Validation functions for each step
 type StepValidator = (form: ReturnType<typeof useRegistrationForm>['form'], t: ReturnType<typeof useTranslations>) => string | null;
