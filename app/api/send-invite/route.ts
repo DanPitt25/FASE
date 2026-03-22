@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     const invitationText = (emailTexts.invitation_text || '{{inviterName}} has invited you to join <strong>{{companyName}}</strong> on the FASE platform.')
       .replace('{{inviterName}}', inviterName)
       .replace('{{companyName}}', companyName);
-    
+    const subject = (emailTexts.subject || 'You\'re invited to join {{companyName}} on FASE').replace('{{companyName}}', companyName);
+
     // Create invitation email HTML
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -60,59 +61,43 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    // Send invitation via dedicated Firebase Function
-    try {
-      console.log('Sending invitation email via Firebase Function...');
-      
-      const response = await fetch(`https://us-central1-fase-site.cloudfunctions.net/sendInviteEmail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          data: {
-            email: email,
-            name: name,
-            companyName: companyName,
-            inviteUrl: inviteUrl,
-            inviterName: inviterName
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Firebase Function error response:', errorText);
-        throw new Error(`Firebase Function error: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('Invitation email sent successfully:', result);
-
-
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Invitation email sent successfully' 
-      });
-    } catch (emailError) {
-      console.error('Firebase Function email error:', emailError);
-      
-      // Fallback: Log to console for development/testing
-      console.log('===========================================');
-      console.log('INVITATION EMAIL (DEVELOPMENT MODE)');
-      console.log('===========================================');
-      console.log(`To: ${email}`);
-      const subject = (emailTexts.subject || 'You\'re invited to join {{companyName}} on FASE').replace('{{companyName}}', companyName);
-      console.log(`Subject: ${subject}`);
-      console.log(`Inviter: ${inviterName}`);
-      console.log(`Invite URL: ${inviteUrl}`);
-      console.log('===========================================');
-
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Invitation logged (email delivery failed - check Firebase Function configuration)' 
-      });
+    // Send via Resend
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.warn('RESEND_API_KEY not configured');
+      return NextResponse.json(
+        { error: 'Email service not configured' },
+        { status: 500 }
+      );
     }
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'FASE <admin@fasemga.com>',
+        to: email,
+        subject: subject,
+        html: emailHtml,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Resend API error:', errorText);
+      return NextResponse.json(
+        { error: 'Failed to send invitation email' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Invitation email sent successfully'
+    });
 
   } catch (error) {
     console.error('Error sending invitation email:', error);
