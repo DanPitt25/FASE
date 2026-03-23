@@ -541,15 +541,31 @@ export const getAccountsByStatus = async (status: UnifiedMember['status']): Prom
   }
 };
 
-// Get all approved members for directory (including invoice_sent status)
+// Get suppressed member IDs from the suppressed-members collection
+export const getSuppressedMemberIds = async (): Promise<Set<string>> => {
+  try {
+    const suppressedRef = collection(db, 'suppressed-members');
+    const snapshot = await getDocs(suppressedRef);
+    return new Set(snapshot.docs.map(doc => doc.id));
+  } catch (error) {
+    console.error('Error fetching suppressed member IDs:', error);
+    return new Set();
+  }
+};
+
+// Get all approved members for directory (including invoice_sent status, excluding suppressed)
 export const getApprovedMembersForDirectory = async (): Promise<UnifiedMember[]> => {
   try {
-    const [approvedMembers, invoiceSentMembers] = await Promise.all([
+    const [approvedMembers, invoiceSentMembers, suppressedIds] = await Promise.all([
       getAccountsByStatus('approved'),
-      getAccountsByStatus('invoice_sent')
+      getAccountsByStatus('invoice_sent'),
+      getSuppressedMemberIds()
     ]);
-    
-    return [...approvedMembers, ...invoiceSentMembers];
+
+    const allMembers = [...approvedMembers, ...invoiceSentMembers];
+
+    // Filter out suppressed members
+    return allMembers.filter(member => !suppressedIds.has(member.id));
   } catch (error) {
     console.error('Error getting approved members for directory:', error);
     return [];
@@ -563,15 +579,17 @@ export const getApprovedMembersWithSubcollections = async (): Promise<{
 }> => {
   try {
     console.time('getApprovedMembersWithSubcollections');
-    
-    // Get approved and invoice_sent organizations in parallel
-    const [approvedOrgs, invoiceSentOrgs] = await Promise.all([
+
+    // Get approved and invoice_sent organizations in parallel, plus suppressed IDs
+    const [approvedOrgs, invoiceSentOrgs, suppressedIds] = await Promise.all([
       getAccountsByStatus('approved'),
-      getAccountsByStatus('invoice_sent')
+      getAccountsByStatus('invoice_sent'),
+      getSuppressedMemberIds()
     ]);
-    
-    const allOrgs = [...approvedOrgs, ...invoiceSentOrgs];
-    console.log(`📊 Found ${allOrgs.length} approved organizations`);
+
+    // Filter out suppressed organizations
+    const allOrgs = [...approvedOrgs, ...invoiceSentOrgs].filter(org => !suppressedIds.has(org.id));
+    console.log(`📊 Found ${allOrgs.length} approved organizations (after suppression filter)`);
     
     // All organizations are corporate - fetch subcollection members in parallel
     const memberPromises = allOrgs.map(async (org) => {

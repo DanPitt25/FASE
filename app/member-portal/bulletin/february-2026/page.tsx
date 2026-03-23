@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../lib/firebase';
+import { getSuppressedMemberIds } from '../../../../lib/unified-member';
 import { getLineOfBusinessDisplay } from '../../../../lib/lines-of-business';
 import countries from 'i18n-iso-countries';
 
@@ -153,8 +154,11 @@ export default function February2026Edition() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const accountsRef = collection(db, 'accounts');
-        const snapshot = await getDocs(accountsRef);
+        // Fetch accounts and suppressed IDs in parallel
+        const [snapshot, suppressedIds] = await Promise.all([
+          getDocs(collection(db, 'accounts')),
+          getSuppressedMemberIds()
+        ]);
 
         const byCountry: Record<string, number> = {};
         const byLinesOfBusiness: Record<string, number> = {};
@@ -163,8 +167,10 @@ export default function February2026Edition() {
 
         snapshot.docs.forEach((doc) => {
           const data = doc.data();
-          // Only count active members (exclude flagged, rejected, and admin accounts)
-          if (data.status !== 'flagged' && data.status !== 'rejected' && data.status !== 'admin') {
+          // Only count active members (exclude flagged, rejected, admin, internal, and suppressed accounts)
+          const isActive = data.status === 'approved' || data.status === 'invoice_sent';
+          const isSuppressed = suppressedIds.has(doc.id);
+          if (isActive && !isSuppressed) {
             memberCount++;
 
             // Get country (only for MGAs for the country chart)
