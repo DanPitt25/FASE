@@ -15,6 +15,7 @@ import type {
   SortDirection,
 } from '@/lib/admin-types';
 import type { UnifiedMember } from '@/lib/unified-member';
+import { matchPayment, formatMatchSummary, type PaymentMatch } from '@/lib/payment-matching';
 
 type FilterSource = FinanceFilterSource;
 type DateRange = FinanceDateRange;
@@ -423,6 +424,19 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
 
   const suppressedCount = transactions.filter(t => t.suppressed).length;
 
+  // Cache payment matches for transactions
+  const getPaymentMatch = useCallback((tx: Transaction): PaymentMatch => {
+    return matchPayment(tx.amountEur);
+  }, []);
+
+  const getMatchBadgeColor = (confidence: PaymentMatch['confidence']) => {
+    switch (confidence) {
+      case 'exact': return 'bg-green-100 text-green-800';
+      case 'likely': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-500';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Info Banner */}
@@ -497,13 +511,14 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Suggested</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                     No transactions found
                   </td>
                 </tr>
@@ -535,6 +550,19 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={tx.reference}>
                       {tx.reference || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {(() => {
+                        const match = getPaymentMatch(tx);
+                        return (
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getMatchBadgeColor(match.confidence)}`}
+                            title={match.suggestions.length > 0 ? match.suggestions.map(s => s.description).join(', ') : 'No match found'}
+                          >
+                            {formatMatchSummary(match)}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -691,6 +719,56 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
               {/* INVOICE TAB */}
               {modalTab === 'invoice' && (
                 <div className="space-y-4">
+                  {/* Payment Suggestions */}
+                  {(() => {
+                    const match = getPaymentMatch(selectedTransaction);
+                    if (match.confidence === 'unknown') return null;
+
+                    return (
+                      <div className={`border rounded-lg p-4 ${
+                        match.confidence === 'exact' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'
+                      }`}>
+                        <div className={`text-sm font-medium mb-2 ${
+                          match.confidence === 'exact' ? 'text-green-800' : 'text-yellow-800'
+                        }`}>
+                          {match.confidence === 'exact' ? 'Suggested Match' : 'Possible Match'}
+                        </div>
+                        <div className="space-y-2">
+                          {match.suggestions.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                if (suggestion.lineItems) {
+                                  setInvoiceLineItems(suggestion.lineItems);
+                                }
+                              }}
+                              className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                                match.confidence === 'exact'
+                                  ? 'border-green-300 hover:bg-green-100 bg-white'
+                                  : 'border-yellow-300 hover:bg-yellow-100 bg-white'
+                              }`}
+                            >
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div className="font-medium text-gray-900">{suggestion.description}</div>
+                                  {suggestion.details && (
+                                    <div className="text-xs text-gray-500 mt-0.5">{suggestion.details}</div>
+                                  )}
+                                </div>
+                                <div className="text-sm font-medium text-gray-700">
+                                  €{suggestion.amount.toLocaleString()}
+                                </div>
+                              </div>
+                              {suggestion.lineItems && (
+                                <div className="text-xs text-fase-navy mt-1">Click to fill line items →</div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="text-sm font-medium text-blue-800 mb-2">Generate PAID Invoice</div>
                     <p className="text-sm text-blue-700">
