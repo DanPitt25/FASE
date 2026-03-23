@@ -391,6 +391,19 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     }
   };
 
+  // Payment matching helpers (must be before early returns)
+  const getPaymentMatch = useCallback((tx: Transaction): PaymentMatch => {
+    return matchPayment(tx.amountEur);
+  }, []);
+
+  const getMatchBadgeColor = (confidence: PaymentMatch['confidence']) => {
+    switch (confidence) {
+      case 'exact': return 'bg-green-100 text-green-800';
+      case 'likely': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-500';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -423,19 +436,6 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   ];
 
   const suppressedCount = transactions.filter(t => t.suppressed).length;
-
-  // Cache payment matches for transactions
-  const getPaymentMatch = useCallback((tx: Transaction): PaymentMatch => {
-    return matchPayment(tx.amountEur);
-  }, []);
-
-  const getMatchBadgeColor = (confidence: PaymentMatch['confidence']) => {
-    switch (confidence) {
-      case 'exact': return 'bg-green-100 text-green-800';
-      case 'likely': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-500';
-    }
-  };
 
   return (
     <div className="space-y-6">
