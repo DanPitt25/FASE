@@ -372,12 +372,12 @@ export async function POST(request: NextRequest) {
 
     const senderMap: Record<string, string> = {
       'admin@fasemga.com': 'FASE Admin <admin@fasemga.com>',
-      'william.pitt@fasemga.com': 'William Pitt <william.pitt@fasemga.com>',
+      'daniel.pitt@fasemga.com': 'Daniel Pitt <daniel.pitt@fasemga.com>',
       'info@fasemga.com': 'FASE Info <info@fasemga.com>',
     };
 
     const emailPayload: any = {
-      from: senderMap[sender] || senderMap['william.pitt@fasemga.com'],
+      from: senderMap[sender] || senderMap['daniel.pitt@fasemga.com'],
       to: recipientEmail,
       subject,
       html: fullEmailHtml,
