@@ -239,7 +239,7 @@ export default function PaymentReminderPanel({
       applicationDate: applicationDate?.toISOString() || null,
       currency,
       locale,
-      sender: 'william.pitt@fasemga.com',
+      sender: 'daniel.pitt@fasemga.com',
       address,
       preview: isPreview,
       gender,
