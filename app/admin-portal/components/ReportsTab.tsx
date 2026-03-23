@@ -1447,9 +1447,19 @@ export default function ReportsTab() {
                           </button>
                         </div>
                         <div className="p-2">
-                          {Object.entries(countryNames)
-                            .sort((a, b) => a[1].localeCompare(b[1]))
-                            .map(([code, name]) => (
+                          {/* Derive available countries from actual member data */}
+                          {(() => {
+                            // Get unique country codes from accounts
+                            const countriesWithMembers = new Set<string>();
+                            allAccounts.forEach(account => {
+                              const country = account.businessAddress?.country || account.registeredAddress?.country;
+                              if (country) countriesWithMembers.add(country);
+                            });
+                            // Convert to array with names and sort
+                            return Array.from(countriesWithMembers)
+                              .map(code => ({ code, name: countryNames[code] || code }))
+                              .sort((a, b) => a.name.localeCompare(b.name));
+                          })().map(({ code, name }) => (
                               <label
                                 key={code}
                                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 rounded cursor-pointer"
