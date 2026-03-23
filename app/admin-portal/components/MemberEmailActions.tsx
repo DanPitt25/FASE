@@ -5,6 +5,7 @@ import Button from '../../../components/Button';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import { UnifiedMember } from '@/lib/unified-member';
 import MemberInvoicePanel from './MemberInvoicePanel';
+import PaymentReminderPanel from './PaymentReminderPanel';
 import { SUPPORTED_LANGUAGES, EMAIL_SENDERS } from '@/lib/email-constants';
 
 interface MemberEmailActionsProps {
@@ -22,7 +23,7 @@ interface SubcollectionMember {
   isAccountAdministrator?: boolean;
 }
 
-type EmailAction = 'invoice' | 'welcome' | 'rendezvous' | null;
+type EmailAction = 'invoice' | 'payment_reminder' | 'welcome' | 'rendezvous' | null;
 
 const actionConfig = {
   invoice: {
@@ -30,6 +31,12 @@ const actionConfig = {
     description: 'Generate and send membership invoice',
     icon: '📄',
     apiEndpoint: '' // Handled by MemberInvoicePanel
+  },
+  payment_reminder: {
+    title: 'Payment Reminder',
+    description: 'Chase unpaid invoices with updated bank details',
+    icon: '🔔',
+    apiEndpoint: '' // Handled by PaymentReminderPanel
   },
   welcome: {
     title: 'Welcome Email',
@@ -369,7 +376,7 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
   // Render action cards when no action selected
   if (!selectedAction) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {(Object.entries(actionConfig) as [EmailAction, typeof actionConfig.welcome][]).map(([key, config]) => (
           <button
             key={key}
@@ -402,6 +409,28 @@ export default function MemberEmailActions({ memberData, companyId, onEmailSent 
           memberData={memberData}
           companyId={companyId}
           onInvoiceSent={onEmailSent}
+        />
+      </div>
+    );
+  }
+
+  // Payment Reminder renders PaymentReminderPanel
+  if (selectedAction === 'payment_reminder') {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-fase-navy transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to actions
+        </button>
+        <PaymentReminderPanel
+          memberData={memberData}
+          companyId={companyId}
+          onEmailSent={onEmailSent}
         />
       </div>
     );
