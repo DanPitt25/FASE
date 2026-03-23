@@ -36,6 +36,7 @@ export default function MembersTab({
 }: MembersTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<UnifiedMember['status'] | 'all'>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | 'less_than_1_month' | 'more_than_1_month'>('all');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; memberData: UnifiedMember } | null>(null);
   const [sortColumn, setSortColumn] = useState<string>('organizationName');
@@ -82,6 +83,22 @@ export default function MembersTab({
       filtered = filtered.filter(m => m.status === statusFilter);
     }
 
+    // Filter by application date
+    if (dateFilter !== 'all') {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      filtered = filtered.filter(m => {
+        if (!m.createdAt) return false;
+        const createdDate = m.createdAt.toDate?.() || new Date(m.createdAt);
+        if (dateFilter === 'less_than_1_month') {
+          return createdDate >= oneMonthAgo;
+        } else {
+          return createdDate < oneMonthAgo;
+        }
+      });
+    }
+
     // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -124,7 +141,7 @@ export default function MembersTab({
       if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [memberApplications, suppressedIds, showSuppressed, statusFilter, searchQuery, sortColumn, sortDirection]);
+  }, [memberApplications, suppressedIds, showSuppressed, statusFilter, dateFilter, searchQuery, sortColumn, sortDirection]);
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -201,6 +218,15 @@ export default function MembersTab({
                 {formatStatus(status)} ({memberApplications.filter(m => m.status === status && !suppressedIds.has(m.id)).length})
               </option>
             ))}
+          </select>
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as 'all' | 'less_than_1_month' | 'more_than_1_month')}
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+          >
+            <option value="all">All Dates</option>
+            <option value="less_than_1_month">&lt; 1 month ago</option>
+            <option value="more_than_1_month">&gt; 1 month ago</option>
           </select>
           <label className="flex items-center gap-2 text-sm">
             <input
