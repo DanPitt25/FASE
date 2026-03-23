@@ -207,7 +207,7 @@ export function matchPayment(amountEur: number): PaymentMatch {
   const likelySuggestions: PaymentSuggestion[] = [];
   const tolerance = 0.05; // 5%
 
-  for (const [knownAmount, matches] of MEMBERSHIP_AMOUNT_MAP.entries()) {
+  for (const [knownAmount, matches] of Array.from(MEMBERSHIP_AMOUNT_MAP.entries())) {
     const diff = Math.abs(amount - knownAmount) / knownAmount;
     if (diff <= tolerance && diff > 0) {
       const match = matches[0]; // Just use first match for likely
