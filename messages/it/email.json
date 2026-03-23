@@ -148,21 +148,18 @@
     "access_portal": "Accedi al Portale Membri"
   },
   "payment_reminder": {
-    "subject": "Fattura di adesione FASE",
-    "subject_m": "Fattura di adesione FASE",
-    "subject_f": "Fattura di adesione FASE",
-    "greeting": "Fattura di adesione",
-    "greeting_m": "Fattura di adesione",
-    "greeting_f": "Fattura di adesione",
+    "subject": "Fattura di adesione FASE -- {organizationName}",
+    "subject_m": "Fattura di adesione FASE -- {organizationName}",
+    "subject_f": "Fattura di adesione FASE -- {organizationName}",
     "dear": "Gentile",
-    "dear_m": "Egregio Sig.",
-    "dear_f": "Egregia Sig.ra",
-    "reminder_text": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso.",
-    "reminder_text_m": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso.",
-    "reminder_text_f": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso.",
-    "bank_details_note": "In allegato trova una fattura aggiornata per riferimento. La preghiamo di notare che le nostre coordinate bancarie sono recentemente cambiate.",
-    "access_text": "Al ricevimento del pagamento, Le forniremo l'accesso al portale membri FASE e le istruzioni per l'inserimento della Sua azienda nella nostra directory.",
-    "contact_text": "Non vediamo l'ora di darLe il benvenuto in FASE. Per qualsiasi domanda, non esiti a contattarci."
+    "dear_m": "Egregio",
+    "dear_f": "Egregia",
+    "reminder_text": "La ringraziamo per la Sua richiesta di adesione del {applicationDate}. Desideriamo fare il punto sulla Sua fattura di adesione in sospeso di €{totalAmount}, che abbiamo riemesso e allegato per Suo riferimento.",
+    "reminder_text_m": "La ringraziamo per la Sua richiesta di adesione del {applicationDate}. Desideriamo fare il punto sulla Sua fattura di adesione in sospeso di €{totalAmount}, che abbiamo riemesso e allegato per Suo riferimento.",
+    "reminder_text_f": "La ringraziamo per la Sua richiesta di adesione del {applicationDate}. Desideriamo fare il punto sulla Sua fattura di adesione in sospeso di €{totalAmount}, che abbiamo riemesso e allegato per Suo riferimento.",
+    "access_text": "Una volta confermato il pagamento, attiveremo il Suo accesso al portale membri FASE e Le invieremo le istruzioni per aggiungere il profilo della Sua azienda alla nostra directory.",
+    "contact_text": "Non vediamo l'ora di darLe il benvenuto in FASE. Per qualsiasi domanda, non esiti a contattarci.",
+    "rendezvous_benefit": "Le ricordiamo che i membri FASE ricevono uno sconto del 50% sui pass per l'MGA Rendezvous, la nostra conferenza annuale che si terrà l'11-12 maggio 2026 a Barcellona. Le iscrizioni sono ora aperte su mgarendezvous.com."
   },
   "pdf_reminder": {
     "payment_reminder": "PROMEMORIA PAGAMENTO",

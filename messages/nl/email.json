@@ -142,21 +142,18 @@
     "access_portal": "Toegang tot Ledenportaal"
   },
   "payment_reminder": {
-    "subject": "FASE Lidmaatschapsfactuur",
-    "subject_m": "FASE Lidmaatschapsfactuur",
-    "subject_f": "FASE Lidmaatschapsfactuur",
-    "greeting": "Lidmaatschapsfactuur",
-    "greeting_m": "Lidmaatschapsfactuur",
-    "greeting_f": "Lidmaatschapsfactuur",
-    "dear": "Geachte",
-    "dear_m": "Geachte heer",
-    "dear_f": "Geachte mevrouw",
-    "reminder_text": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open.",
-    "reminder_text_m": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open.",
-    "reminder_text_f": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open.",
-    "bank_details_note": "Bijgevoegd vindt u een bijgewerkte factuur ter referentie. Onze bankgegevens zijn onlangs gewijzigd.",
-    "access_text": "Na ontvangst van uw betaling verlenen wij u toegang tot het FASE-ledenportaal en instructies voor het toevoegen van uw bedrijf aan ons ledenregister.",
-    "contact_text": "Wij kijken ernaar uit u te verwelkomen bij FASE. Mocht u vragen hebben, neem dan gerust contact met ons op."
+    "subject": "FASE Lidmaatschapsfactuur -- {organizationName}",
+    "subject_m": "FASE Lidmaatschapsfactuur -- {organizationName}",
+    "subject_f": "FASE Lidmaatschapsfactuur -- {organizationName}",
+    "dear": "Beste",
+    "dear_m": "Beste heer",
+    "dear_f": "Beste mevrouw",
+    "reminder_text": "Hartelijk dank voor uw lidmaatschapsaanvraag van {applicationDate}. Wij willen graag contact met u opnemen over uw openstaande lidmaatschapsfactuur van €{totalAmount}, die wij opnieuw hebben uitgegeven en ter referentie hebben bijgevoegd.",
+    "reminder_text_m": "Hartelijk dank voor uw lidmaatschapsaanvraag van {applicationDate}. Wij willen graag contact met u opnemen over uw openstaande lidmaatschapsfactuur van €{totalAmount}, die wij opnieuw hebben uitgegeven en ter referentie hebben bijgevoegd.",
+    "reminder_text_f": "Hartelijk dank voor uw lidmaatschapsaanvraag van {applicationDate}. Wij willen graag contact met u opnemen over uw openstaande lidmaatschapsfactuur van €{totalAmount}, die wij opnieuw hebben uitgegeven en ter referentie hebben bijgevoegd.",
+    "access_text": "Na bevestiging van de betaling activeren wij uw toegang tot het FASE-ledenportaal en sturen wij u instructies voor het toevoegen van uw bedrijfsprofiel aan onze ledenlijst.",
+    "contact_text": "Wij kijken ernaar uit u te verwelkomen bij FASE. Mocht u vragen hebben, neem dan gerust contact met ons op.",
+    "rendezvous_benefit": "Ter herinnering: FASE-leden ontvangen 50% korting op passen voor het MGA Rendezvous, onze jaarlijkse conferentie op 11-12 mei 2026 in Barcelona. Registratie is nu open op mgarendezvous.com."
   },
   "pdf_reminder": {
     "payment_reminder": "BETALINGSHERINNERING",

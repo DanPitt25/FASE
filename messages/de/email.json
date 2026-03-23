@@ -148,21 +148,18 @@
     "access_portal": "Mitgliederportal Zugreifen"
   },
   "payment_reminder": {
-    "subject": "FASE Mitgliedsrechnung",
-    "subject_m": "FASE Mitgliedsrechnung",
-    "subject_f": "FASE Mitgliedsrechnung",
-    "greeting": "Mitgliedsrechnung",
-    "greeting_m": "Mitgliedsrechnung",
-    "greeting_f": "Mitgliedsrechnung",
-    "dear": "Sehr geehrte Damen und Herren",
+    "subject": "FASE Mitgliedsrechnung -- {organizationName}",
+    "subject_m": "FASE Mitgliedsrechnung -- {organizationName}",
+    "subject_f": "FASE Mitgliedsrechnung -- {organizationName}",
+    "dear": "Sehr geehrte/r",
     "dear_m": "Sehr geehrter Herr",
     "dear_f": "Sehr geehrte Frau",
-    "reminder_text": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus.",
-    "reminder_text_m": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus.",
-    "reminder_text_f": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus.",
-    "bank_details_note": "Eine aktualisierte Rechnung liegt bei. Bitte beachten Sie, dass sich unsere Bankverbindung kürzlich geändert hat.",
-    "access_text": "Nach Zahlungseingang erhalten Sie Zugang zum FASE-Mitgliederportal sowie Anweisungen zur Aufnahme Ihres Unternehmens in unser Mitgliederverzeichnis.",
-    "contact_text": "Wir freuen uns darauf, Sie bei FASE willkommen zu heißen. Sollten Sie Fragen haben, zögern Sie bitte nicht, uns zu kontaktieren."
+    "reminder_text": "Vielen Dank für Ihren Mitgliedschaftsantrag vom {applicationDate}. Wir möchten Sie auf Ihre offene Mitgliedsrechnung über €{totalAmount} hinweisen, die wir neu ausgestellt und als Referenz beigefügt haben.",
+    "reminder_text_m": "Vielen Dank für Ihren Mitgliedschaftsantrag vom {applicationDate}. Wir möchten Sie auf Ihre offene Mitgliedsrechnung über €{totalAmount} hinweisen, die wir neu ausgestellt und als Referenz beigefügt haben.",
+    "reminder_text_f": "Vielen Dank für Ihren Mitgliedschaftsantrag vom {applicationDate}. Wir möchten Sie auf Ihre offene Mitgliedsrechnung über €{totalAmount} hinweisen, die wir neu ausgestellt und als Referenz beigefügt haben.",
+    "access_text": "Nach Bestätigung der Zahlung aktivieren wir Ihren Zugang zum FASE-Mitgliederportal und senden Ihnen Anweisungen zur Aufnahme Ihres Unternehmensprofils in unser Mitgliederverzeichnis.",
+    "contact_text": "Wir freuen uns darauf, Sie bei FASE willkommen zu heißen. Bei Fragen stehen wir Ihnen gerne zur Verfügung.",
+    "rendezvous_benefit": "Zur Erinnerung: FASE-Mitglieder erhalten 50% Rabatt auf Pässe für das MGA Rendezvous, unsere jährliche Konferenz am 11.-12. Mai 2026 in Barcelona. Die Anmeldung ist jetzt auf mgarendezvous.com möglich."
   },
   "pdf_reminder": {
     "payment_reminder": "ZAHLUNGSERINNERUNG",

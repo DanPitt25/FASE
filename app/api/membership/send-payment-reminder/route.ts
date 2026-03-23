@@ -294,17 +294,13 @@ export async function POST(request: NextRequest) {
       .replace('{applicationDate}', formattedAppDate)
       .replace('{totalAmount}', total.toLocaleString());
 
-    const bankDetailsNote = reminderEmail.bank_details_note || 'Please note that our bank account details have recently changed, so please refer to the attached invoice for the correct details.';
-
     const emailBodyHtml = `
-      <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${reminderEmail[`greeting${genderSuffix}`] || reminderEmail.greeting || 'Membership Invoice'}</h2>
-
       <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
         ${dear} ${greeting || recipientName || ''},
       </p>
 
       <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-        ${reminderText} ${bankDetailsNote}
+        ${reminderText}
       </p>
 
       ${stripePaymentLinkUrl ? `
@@ -337,14 +333,16 @@ export async function POST(request: NextRequest) {
           </div>
           ${emailBodyHtml}
           <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
-            Best regards,<br><br>
-            <strong>The FASE Team</strong>
+            Kind regards,<br><br>
+            <strong>William Pitt</strong><br>
+            FASE
           </p>
         </div>
       </div>
     `;
 
-    const subject = reminderEmail[`subject${genderSuffix}`] || reminderEmail.subject || 'FASE Membership Invoice';
+    const subjectTemplate = reminderEmail[`subject${genderSuffix}`] || reminderEmail.subject || 'FASE Membership Invoice -- {organizationName}';
+    const subject = subjectTemplate.replace('{organizationName}', organizationName);
 
     // Preview mode
     if (preview) {

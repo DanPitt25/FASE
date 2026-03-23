@@ -148,21 +148,18 @@
     "access_portal": "Acceder al Portal de Miembros"
   },
   "payment_reminder": {
-    "subject": "Factura de membresía FASE",
-    "subject_m": "Factura de membresía FASE",
-    "subject_f": "Factura de membresía FASE",
-    "greeting": "Factura de membresía",
-    "greeting_m": "Factura de membresía",
-    "greeting_f": "Factura de membresía",
+    "subject": "Factura de membresía FASE -- {organizationName}",
+    "subject_m": "Factura de membresía FASE -- {organizationName}",
+    "subject_f": "Factura de membresía FASE -- {organizationName}",
     "dear": "Estimado/a",
-    "dear_m": "Estimado Sr.",
-    "dear_f": "Estimada Sra.",
-    "reminder_text": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente.",
-    "reminder_text_m": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente.",
-    "reminder_text_f": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente.",
-    "bank_details_note": "Adjuntamos una factura actualizada para su referencia. Tenga en cuenta que nuestros datos bancarios han cambiado recientemente.",
-    "access_text": "Una vez recibido su pago, le proporcionaremos acceso al portal de miembros de FASE e instrucciones para añadir su empresa a nuestro directorio.",
-    "contact_text": "Esperamos darle la bienvenida a FASE. Si tiene alguna pregunta, no dude en contactarnos."
+    "dear_m": "Estimado",
+    "dear_f": "Estimada",
+    "reminder_text": "Gracias por su solicitud de membresía del {applicationDate}. Queremos hacer seguimiento de su factura de membresía pendiente por €{totalAmount}, que hemos reemitido y adjuntado para su referencia.",
+    "reminder_text_m": "Gracias por su solicitud de membresía del {applicationDate}. Queremos hacer seguimiento de su factura de membresía pendiente por €{totalAmount}, que hemos reemitido y adjuntado para su referencia.",
+    "reminder_text_f": "Gracias por su solicitud de membresía del {applicationDate}. Queremos hacer seguimiento de su factura de membresía pendiente por €{totalAmount}, que hemos reemitido y adjuntado para su referencia.",
+    "access_text": "Una vez confirmado el pago, activaremos su acceso al portal de miembros de FASE y le enviaremos instrucciones para añadir el perfil de su empresa a nuestro directorio.",
+    "contact_text": "Esperamos darle la bienvenida a FASE. Si tiene alguna pregunta, no dude en contactarnos.",
+    "rendezvous_benefit": "Le recordamos que los miembros de FASE reciben un 50% de descuento en los pases para el MGA Rendezvous, nuestra conferencia anual que tendrá lugar el 11-12 de mayo de 2026 en Barcelona. Las inscripciones ya están abiertas en mgarendezvous.com."
   },
   "pdf_reminder": {
     "payment_reminder": "RECORDATORIO DE PAGO",

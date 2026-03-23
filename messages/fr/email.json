@@ -142,21 +142,18 @@
     "access_portal": "Accéder au Portail Membre"
   },
   "payment_reminder": {
-    "subject": "Facture d'adhésion FASE",
-    "subject_m": "Facture d'adhésion FASE",
-    "subject_f": "Facture d'adhésion FASE",
-    "greeting": "Facture d'adhésion",
-    "greeting_m": "Facture d'adhésion",
-    "greeting_f": "Facture d'adhésion",
-    "dear": "Monsieur/Madame",
-    "dear_m": "Monsieur",
-    "dear_f": "Madame",
-    "reminder_text": "Nous vous remercions pour votre demande d'adhésion pour {organizationName} du {applicationDate}. Selon nos dossiers, le paiement de €{totalAmount} reste en attente.",
-    "reminder_text_m": "Nous vous remercions pour votre demande d'adhésion pour {organizationName} du {applicationDate}. Selon nos dossiers, le paiement de €{totalAmount} reste en attente.",
-    "reminder_text_f": "Nous vous remercions pour votre demande d'adhésion pour {organizationName} du {applicationDate}. Selon nos dossiers, le paiement de €{totalAmount} reste en attente.",
-    "bank_details_note": "Une facture actualisée est jointe pour référence. Veuillez noter que nos coordonnées bancaires ont récemment changé.",
-    "access_text": "Dès réception de votre paiement, nous vous donnerons accès au portail des membres FASE ainsi que les instructions pour ajouter votre entreprise à notre annuaire.",
-    "contact_text": "Nous avons hâte de vous accueillir au sein de FASE. Pour toute question, n'hésitez pas à nous contacter."
+    "subject": "Facture d'adhésion FASE -- {organizationName}",
+    "subject_m": "Facture d'adhésion FASE -- {organizationName}",
+    "subject_f": "Facture d'adhésion FASE -- {organizationName}",
+    "dear": "Cher/Chère",
+    "dear_m": "Cher",
+    "dear_f": "Chère",
+    "reminder_text": "Merci pour votre demande d'adhésion du {applicationDate}. Nous souhaitons faire le point concernant votre facture d'adhésion de €{totalAmount}, que nous avons réémise et jointe pour référence.",
+    "reminder_text_m": "Merci pour votre demande d'adhésion du {applicationDate}. Nous souhaitons faire le point concernant votre facture d'adhésion de €{totalAmount}, que nous avons réémise et jointe pour référence.",
+    "reminder_text_f": "Merci pour votre demande d'adhésion du {applicationDate}. Nous souhaitons faire le point concernant votre facture d'adhésion de €{totalAmount}, que nous avons réémise et jointe pour référence.",
+    "access_text": "Dès confirmation du paiement, nous activerons votre accès au portail des membres FASE et vous enverrons les instructions pour ajouter le profil de votre entreprise à notre annuaire.",
+    "contact_text": "Nous avons hâte de vous accueillir au sein de FASE. Si vous avez des questions, n'hésitez pas à nous contacter.",
+    "rendezvous_benefit": "Pour rappel, les membres FASE bénéficient d'une réduction de 50% sur les passes pour le MGA Rendezvous, notre conférence annuelle qui se tiendra les 11-12 mai 2026 à Barcelone. Les inscriptions sont désormais ouvertes sur mgarendezvous.com."
   },
   "pdf_reminder": {
     "payment_reminder": "RAPPEL DE PAIEMENT",
