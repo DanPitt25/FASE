@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import Button from '../../../components/Button';
@@ -148,6 +148,7 @@ type ReportType = 'membership' | 'rendezvous';
 
 type StatusFilter = 'all' | 'approved' | 'pending' | 'invoice_sent' | 'pending_invoice' | 'paid' | 'flagged' | 'rejected';
 type TypeFilter = 'all' | 'MGA' | 'carrier' | 'provider';
+type CountryFilter = string[]; // Empty array means all countries
 
 // Donut/Pie Chart Component
 function DonutChart({ data, total, size = 180 }: { data: Record<string, number>; total: number; size?: number }) {
@@ -397,6 +398,9 @@ export default function ReportsTab() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>([]);
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [allAccounts, setAllAccounts] = useState<AccountData[]>([]);
   const [suppressedMemberIds, setSuppressedMemberIds] = useState<Set<string>>(new Set());
 
@@ -428,10 +432,23 @@ export default function ReportsTab() {
 
   useEffect(() => {
     if (allAccounts.length > 0) {
-      const filtered = calculateReportData(allAccounts, statusFilter, typeFilter, suppressedMemberIds);
+      const filtered = calculateReportData(allAccounts, statusFilter, typeFilter, countryFilter, suppressedMemberIds);
       setReportData(filtered);
     }
-  }, [allAccounts, statusFilter, typeFilter, suppressedMemberIds]);
+  }, [allAccounts, statusFilter, typeFilter, countryFilter, suppressedMemberIds]);
+
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false);
+      }
+    };
+    if (showCountryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCountryDropdown]);
 
   const loadSuppressedIds = async () => {
     try {
@@ -655,6 +672,7 @@ export default function ReportsTab() {
     accounts: AccountData[],
     status: StatusFilter,
     type: TypeFilter,
+    countries: CountryFilter,
     suppressedIds: Set<string>
   ): ReportData => {
     let filtered = accounts;
@@ -671,6 +689,14 @@ export default function ReportsTab() {
 
     if (type !== 'all') {
       filtered = filtered.filter((a) => a.organizationType === type);
+    }
+
+    // Filter by country if any countries are selected
+    if (countries.length > 0) {
+      filtered = filtered.filter((a) => {
+        const country = a.businessAddress?.country || a.registeredAddress?.country;
+        return country && countries.includes(country);
+      });
     }
 
     const mgas: AccountData[] = [];
@@ -1302,7 +1328,10 @@ export default function ReportsTab() {
       typeFilter === 'MGA' ? 'MGAs' :
       typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
     const statusLabel = statusFilter === 'all' ? '' : ` (${statusFilter.replace('_', ' ')})`;
-    return `${typeLabel}${statusLabel}`;
+    const countryLabel = countryFilter.length === 0 ? '' :
+      countryFilter.length === 1 ? ` in ${countryNames[countryFilter[0]] || countryFilter[0]}` :
+      ` in ${countryFilter.length} countries`;
+    return `${typeLabel}${statusLabel}${countryLabel}`;
   };
 
   const showMGA = reportData && (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
@@ -1391,6 +1420,59 @@ export default function ReportsTab() {
                     <option value="pending_invoice">Pending Invoice</option>
                     <option value="rejected">Rejected</option>
                   </select>
+                  {/* Country Multi-Select Filter */}
+                  <div className="relative" ref={countryDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent bg-white min-w-[140px] text-left flex items-center justify-between gap-2"
+                    >
+                      <span className="truncate">
+                        {countryFilter.length === 0 ? 'All Countries' :
+                         countryFilter.length === 1 ? countryNames[countryFilter[0]] || countryFilter[0] :
+                         `${countryFilter.length} countries`}
+                      </span>
+                      <svg className={`w-4 h-4 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {showCountryDropdown && (
+                      <div className="absolute right-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                        <div className="p-2 border-b border-gray-100">
+                          <button
+                            onClick={() => setCountryFilter([])}
+                            className="w-full text-left px-3 py-1.5 text-sm text-fase-navy hover:bg-gray-50 rounded"
+                          >
+                            Clear selection (All Countries)
+                          </button>
+                        </div>
+                        <div className="p-2">
+                          {Object.entries(countryNames)
+                            .sort((a, b) => a[1].localeCompare(b[1]))
+                            .map(([code, name]) => (
+                              <label
+                                key={code}
+                                className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={countryFilter.includes(code)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setCountryFilter([...countryFilter, code]);
+                                    } else {
+                                      setCountryFilter(countryFilter.filter(c => c !== code));
+                                    }
+                                  }}
+                                  className="h-4 w-4 text-fase-navy focus:ring-fase-navy border-gray-300 rounded"
+                                />
+                                <span className="text-sm text-gray-700">{name}</span>
+                              </label>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <Button onClick={() => setShowPDFModal(true)} disabled={generating} variant="primary">
                     {generating ? 'Generating...' : 'Export PDF'}
                   </Button>
