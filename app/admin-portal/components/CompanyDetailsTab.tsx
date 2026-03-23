@@ -408,6 +408,16 @@ export default function CompanyDetailsTab({ companyId, memberData, onDataChange 
               {memberData?.registeredAddress?.country || memberData?.businessAddress?.country || '-'}
             </span>
           </div>
+          <div>
+            <span className="text-gray-500">Registered:</span>
+            <span className="ml-2 font-medium text-gray-900">
+              {memberData?.createdAt
+                ? new Date(
+                    memberData.createdAt.toDate?.() || memberData.createdAt.seconds * 1000 || memberData.createdAt
+                  ).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                : '-'}
+            </span>
+          </div>
         </div>
       </div>
 
