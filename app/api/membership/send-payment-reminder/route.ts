@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       applicationDate, // Original application date (ISO string or timestamp)
       currency = 'EUR',
       locale = 'en',
-      sender = 'william.pitt@fasemga.com',
+      sender = 'admin@fasemga.com',
       address,
       preview = false,
       gender = 'm',
@@ -346,8 +346,7 @@ export async function POST(request: NextRequest) {
           ${emailBodyHtml}
           <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
             Best regards,<br><br>
-            <strong>William Pitt</strong><br>
-            <span style="color: #666;">Executive Director, FASE</span>
+            <strong>The FASE Team</strong>
           </p>
         </div>
       </div>
