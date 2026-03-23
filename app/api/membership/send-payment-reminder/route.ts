@@ -334,7 +334,7 @@ export async function POST(request: NextRequest) {
           ${emailBodyHtml}
           <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
             Kind regards,<br><br>
-            <strong>William Pitt</strong><br>
+            <strong>Daniel Pitt</strong><br>
             FASE
           </p>
         </div>
