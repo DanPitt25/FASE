@@ -157,10 +157,9 @@
     "dear": "Sehr geehrte Damen und Herren",
     "dear_m": "Sehr geehrter Herr",
     "dear_f": "Sehr geehrte Frau",
-    "reminder_text": "Im Anschluss an Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate} finden Sie anbei Ihre aktualisierte Rechnung.",
-    "reminder_text_m": "Im Anschluss an Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate} finden Sie anbei Ihre aktualisierte Rechnung.",
-    "reminder_text_f": "Im Anschluss an Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate} finden Sie anbei Ihre aktualisierte Rechnung.",
-    "payment_text": "Der Mitgliedsbeitrag von €{totalAmount} ist per Banküberweisung oder online zahlbar.",
+    "reminder_text": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus. Anbei finden Sie eine aktualisierte Rechnung.",
+    "reminder_text_m": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus. Anbei finden Sie eine aktualisierte Rechnung.",
+    "reminder_text_f": "Vielen Dank für Ihren Mitgliedschaftsantrag für {organizationName} vom {applicationDate}. Laut unseren Unterlagen steht die Zahlung von €{totalAmount} noch aus. Anbei finden Sie eine aktualisierte Rechnung.",
     "bank_details_note": "Bitte beachten Sie, dass sich unsere Bankverbindung kürzlich geändert hat. Die aktuellen Daten finden Sie in der beigefügten Rechnung.",
     "access_text": "Nach Zahlungseingang erhalten Sie Zugang zum FASE-Mitgliederportal sowie Anweisungen zur Aufnahme Ihres Unternehmens in unser Mitgliederverzeichnis.",
     "contact_text": "Wir freuen uns darauf, Sie bei FASE willkommen zu heißen. Sollten Sie Fragen haben, zögern Sie bitte nicht, uns zu kontaktieren."

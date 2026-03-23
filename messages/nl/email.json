@@ -151,10 +151,9 @@
     "dear": "Geachte",
     "dear_m": "Geachte heer",
     "dear_f": "Geachte mevrouw",
-    "reminder_text": "Naar aanleiding van uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate} vindt u bijgevoegd uw bijgewerkte factuur.",
-    "reminder_text_m": "Naar aanleiding van uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate} vindt u bijgevoegd uw bijgewerkte factuur.",
-    "reminder_text_f": "Naar aanleiding van uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate} vindt u bijgevoegd uw bijgewerkte factuur.",
-    "payment_text": "De lidmaatschapscontributie van €{totalAmount} is betaalbaar per bankoverschrijving of online.",
+    "reminder_text": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open. Bijgevoegd vindt u een bijgewerkte factuur ter referentie.",
+    "reminder_text_m": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open. Bijgevoegd vindt u een bijgewerkte factuur ter referentie.",
+    "reminder_text_f": "Hartelijk dank voor uw lidmaatschapsaanvraag voor {organizationName} van {applicationDate}. Volgens onze administratie staat de betaling van €{totalAmount} nog open. Bijgevoegd vindt u een bijgewerkte factuur ter referentie.",
     "bank_details_note": "Onze bankgegevens zijn onlangs gewijzigd. De actuele gegevens vindt u in de bijgevoegde factuur.",
     "access_text": "Na ontvangst van uw betaling verlenen wij u toegang tot het FASE-ledenportaal en instructies voor het toevoegen van uw bedrijf aan ons ledenregister.",
     "contact_text": "Wij kijken ernaar uit u te verwelkomen bij FASE. Mocht u vragen hebben, neem dan gerust contact met ons op."

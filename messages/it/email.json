@@ -157,10 +157,9 @@
     "dear": "Gentile",
     "dear_m": "Egregio Sig.",
     "dear_f": "Egregia Sig.ra",
-    "reminder_text": "A seguito della Sua richiesta di adesione per {organizationName} del {applicationDate}, in allegato trova la fattura aggiornata.",
-    "reminder_text_m": "A seguito della Sua richiesta di adesione per {organizationName} del {applicationDate}, in allegato trova la fattura aggiornata.",
-    "reminder_text_f": "A seguito della Sua richiesta di adesione per {organizationName} del {applicationDate}, in allegato trova la fattura aggiornata.",
-    "payment_text": "La quota associativa di €{totalAmount} è pagabile tramite bonifico bancario o online.",
+    "reminder_text": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso. In allegato trova una fattura aggiornata.",
+    "reminder_text_m": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso. In allegato trova una fattura aggiornata.",
+    "reminder_text_f": "La ringraziamo per la Sua richiesta di adesione per {organizationName} del {applicationDate}. Secondo i nostri registri, il pagamento di €{totalAmount} risulta ancora in sospeso. In allegato trova una fattura aggiornata.",
     "bank_details_note": "La preghiamo di notare che le nostre coordinate bancarie sono recentemente cambiate. I dettagli aggiornati sono riportati nella fattura allegata.",
     "access_text": "Al ricevimento del pagamento, Le forniremo l'accesso al portale membri FASE e le istruzioni per l'inserimento della Sua azienda nella nostra directory.",
     "contact_text": "Non vediamo l'ora di darLe il benvenuto in FASE. Per qualsiasi domanda, non esiti a contattarci."

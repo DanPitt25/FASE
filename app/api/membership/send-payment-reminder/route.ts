@@ -291,10 +291,10 @@ export async function POST(request: NextRequest) {
     // Build email body - payment reminder specific
     const reminderText = (reminderEmail[`reminder_text${genderSuffix}`] || reminderEmail.reminder_text || '')
       .replace('{organizationName}', `<strong>${organizationName}</strong>`)
-      .replace('{applicationDate}', formattedAppDate);
-
-    const paymentText = (reminderEmail.payment_text || '')
+      .replace('{applicationDate}', formattedAppDate)
       .replace('{totalAmount}', total.toLocaleString());
+
+    const bankDetailsNote = reminderEmail.bank_details_note || 'Please note that our bank account details have recently changed, so please refer to the attached invoice for the correct details.';
 
     const emailBodyHtml = `
       <h2 style="color: #2D5574; margin: 0 0 20px 0; font-size: 20px;">${reminderEmail[`greeting${genderSuffix}`] || reminderEmail.greeting || 'Membership Invoice'}</h2>
@@ -304,15 +304,7 @@ export async function POST(request: NextRequest) {
       </p>
 
       <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-        ${reminderText}
-      </p>
-
-      <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-        ${paymentText}
-      </p>
-
-      <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0; background-color: #FFF3CD; padding: 12px; border-radius: 4px; border-left: 4px solid #F0AD4E;">
-        <strong>${reminderEmail.bank_details_note || 'Please note, our bank account details have recently changed. The current details are set out in the attached invoice.'}</strong>
+        ${reminderText} ${bankDetailsNote}
       </p>
 
       ${stripePaymentLinkUrl ? `

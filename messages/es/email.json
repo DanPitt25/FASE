@@ -157,10 +157,9 @@
     "dear": "Estimado/a",
     "dear_m": "Estimado Sr.",
     "dear_f": "Estimada Sra.",
-    "reminder_text": "En relación con su solicitud de membresía para {organizationName} del {applicationDate}, adjuntamos su factura actualizada.",
-    "reminder_text_m": "En relación con su solicitud de membresía para {organizationName} del {applicationDate}, adjuntamos su factura actualizada.",
-    "reminder_text_f": "En relación con su solicitud de membresía para {organizationName} del {applicationDate}, adjuntamos su factura actualizada.",
-    "payment_text": "La cuota de membresía de €{totalAmount} es pagadera mediante transferencia bancaria o en línea.",
+    "reminder_text": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente. Adjuntamos una factura actualizada para su referencia.",
+    "reminder_text_m": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente. Adjuntamos una factura actualizada para su referencia.",
+    "reminder_text_f": "Le agradecemos su solicitud de membresía para {organizationName} del {applicationDate}. Según nuestros registros, el pago de €{totalAmount} sigue pendiente. Adjuntamos una factura actualizada para su referencia.",
     "bank_details_note": "Tenga en cuenta que nuestros datos bancarios han cambiado recientemente. Los detalles actuales se encuentran en la factura adjunta.",
     "access_text": "Una vez recibido su pago, le proporcionaremos acceso al portal de miembros de FASE e instrucciones para añadir su empresa a nuestro directorio.",
     "contact_text": "Esperamos darle la bienvenida a FASE. Si tiene alguna pregunta, no dude en contactarnos."
