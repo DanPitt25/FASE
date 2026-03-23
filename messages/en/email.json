@@ -138,7 +138,10 @@
     "reminder_text_f": "Thank you for your membership application of {applicationDate}. We wanted to follow up on your outstanding membership invoice for €{totalAmount}, which we have reissued and attached for your reference.",
     "access_text": "Once payment is confirmed, we will activate your access to the FASE member portal and send instructions for adding your company profile to our member directory.",
     "contact_text": "We look forward to welcoming you to FASE. If you have any questions, please don't hesitate to get in touch.",
-    "rendezvous_benefit": "As a reminder, FASE members receive a 50% discount on passes to the MGA Rendezvous, our annual conference taking place 11-12 May 2026 in Barcelona. Registration is now open at mgarendezvous.com."
+    "rendezvous_benefit": "As a reminder, FASE members receive a 50% discount on passes to the MGA Rendezvous, our annual conference taking place 11-12 May 2026 in Barcelona. Registration is now open at mgarendezvous.com.",
+    "regards": "Kind regards,",
+    "signature_name": "Daniel Pitt",
+    "signature_title": "Member Services Manager, FASE"
   },
   "pdf_invoice": {
     "invoice": "INVOICE",

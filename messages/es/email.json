@@ -159,7 +159,10 @@
     "reminder_text_f": "Gracias por su solicitud de membresía del {applicationDate}. Queremos hacer seguimiento de su factura de membresía pendiente por €{totalAmount}, que hemos reemitido y adjuntado para su referencia.",
     "access_text": "Una vez confirmado el pago, activaremos su acceso al portal de miembros de FASE y le enviaremos instrucciones para añadir el perfil de su empresa a nuestro directorio.",
     "contact_text": "Esperamos darle la bienvenida a FASE. Si tiene alguna pregunta, no dude en contactarnos.",
-    "rendezvous_benefit": "Le recordamos que los miembros de FASE reciben un 50% de descuento en los pases para el MGA Rendezvous, nuestra conferencia anual que tendrá lugar el 11-12 de mayo de 2026 en Barcelona. Las inscripciones ya están abiertas en mgarendezvous.com."
+    "rendezvous_benefit": "Le recordamos que los miembros de FASE reciben un 50% de descuento en los pases para el MGA Rendezvous, nuestra conferencia anual que tendrá lugar el 11-12 de mayo de 2026 en Barcelona. Las inscripciones ya están abiertas en mgarendezvous.com.",
+    "regards": "Un cordial saludo,",
+    "signature_name": "Daniel Pitt",
+    "signature_title": "Responsable de Servicios a Miembros, FASE"
   },
   "pdf_reminder": {
     "payment_reminder": "RECORDATORIO DE PAGO",

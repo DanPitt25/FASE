@@ -333,9 +333,9 @@ export async function POST(request: NextRequest) {
           </div>
           ${emailBodyHtml}
           <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 15px 0 0 0;">
-            Kind regards,<br><br>
-            <strong>Daniel Pitt</strong><br>
-            Member Services Manager, FASE
+            ${reminderEmail.regards || 'Kind regards,'}<br><br>
+            <strong>${reminderEmail.signature_name || 'Daniel Pitt'}</strong><br>
+            ${reminderEmail.signature_title || 'Member Services Manager, FASE'}
           </p>
         </div>
       </div>
