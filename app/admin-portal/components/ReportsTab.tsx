@@ -1034,6 +1034,11 @@ export default function ReportsTab() {
         typeFilter === 'MGA' ? 'MGAs' :
         typeFilter === 'carrier' ? 'Carriers' : 'Service Providers';
 
+      // Build country filter label for PDF
+      const countryLabel = countryFilter.length === 0 ? '' :
+        countryFilter.length === 1 ? `Filtered: ${countryNames[countryFilter[0]] || countryFilter[0]}` :
+        `Filtered: ${countryFilter.map(c => countryNames[c] || c).join(', ')}`;
+
       // MGA Lines of Business Report
       const showMGA = (typeFilter === 'all' || typeFilter === 'MGA') && reportData.mgas.length > 0;
       if (showMGA && pdfSections.mgaLinesOfBusiness && Object.keys(reportData.mgaByLinesOfBusiness).length > 0) {
@@ -1052,11 +1057,16 @@ export default function ReportsTab() {
         doc.setTextColor(45, 85, 116);
         doc.text('FASE Lines of Business Report', margin, 25);
 
-        // Date
+        // Date and filter info
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(120, 120, 120);
-        doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`, margin, 33);
+        let headerY = 33;
+        doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`, margin, headerY);
+        if (countryLabel) {
+          headerY += 7;
+          doc.text(countryLabel, margin, headerY);
+        }
 
         // Summary cards (bordered, not filled)
         const cardY = 42;
@@ -1135,10 +1145,15 @@ export default function ReportsTab() {
         doc.setTextColor(120, 120, 120);
         const statusLabel = statusFilter === 'all' ? '' : ` - ${statusFilter.replace('_', ' ')}`;
         doc.text(`${typeLabel}${statusLabel}`, margin, 33);
-        doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, margin, 40);
+        let summaryHeaderY = 40;
+        doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, margin, summaryHeaderY);
+        if (countryLabel) {
+          summaryHeaderY += 7;
+          doc.text(countryLabel, margin, summaryHeaderY);
+        }
 
         // Summary cards
-        const cardY = 50;
+        const cardY = summaryHeaderY + 10;
         const cardHeight = 28;
         const cardWidth = (pageWidth - margin * 2 - 15) / 4;
 
