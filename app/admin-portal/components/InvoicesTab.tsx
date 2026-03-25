@@ -12,8 +12,8 @@
  * Can be pre-populated via InvoiceContext when linked from other tabs.
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { authPost } from '@/lib/auth-fetch';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { authPost, authGet } from '@/lib/auth-fetch';
 import Button from '@/components/Button';
 import {
   useInvoice,
@@ -22,6 +22,19 @@ import {
   InvoiceType,
   generateLineItemId,
 } from '@/lib/contexts/InvoiceContext';
+
+// ============================================================================
+// Types for Invoice Browser
+// ============================================================================
+
+interface StoredInvoice {
+  name: string;
+  path: string;
+  company: string;
+  invoiceNumber: string;
+  size: number;
+  updated: string;
+}
 
 // ============================================================================
 // Constants
@@ -112,6 +125,16 @@ export default function InvoicesTab() {
     filename?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Invoice Browser State
+  const [browserExpanded, setBrowserExpanded] = useState(false);
+  const [storedInvoices, setStoredInvoices] = useState<StoredInvoice[]>([]);
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<string>('');
+  const [searchPrefix, setSearchPrefix] = useState('');
+  const [browserLoading, setBrowserLoading] = useState(false);
+  const [browserError, setBrowserError] = useState<string | null>(null);
+  const [downloadingPath, setDownloadingPath] = useState<string | null>(null);
 
   // ============================================================================
   // Handle pending invoice from context
@@ -234,6 +257,84 @@ export default function InvoicesTab() {
     setPaymentReference('');
     setGeneratedResult(null);
     setError(null);
+  };
+
+  // ============================================================================
+  // Invoice Browser functions
+  // ============================================================================
+
+  const fetchStoredInvoices = useCallback(async () => {
+    setBrowserLoading(true);
+    setBrowserError(null);
+
+    try {
+      const params = new URLSearchParams();
+      if (selectedCompany) params.set('company', selectedCompany);
+      if (searchPrefix) params.set('prefix', searchPrefix);
+
+      const response = await authGet(`/api/admin/storage-invoices?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch invoices');
+      }
+
+      setStoredInvoices(data.invoices);
+      // Only update companies list if no company filter (to get full list)
+      if (!selectedCompany && data.companies) {
+        setCompanies(data.companies);
+      }
+    } catch (err: any) {
+      console.error('Error fetching stored invoices:', err);
+      setBrowserError(err.message || 'Failed to load invoices');
+    } finally {
+      setBrowserLoading(false);
+    }
+  }, [selectedCompany, searchPrefix]);
+
+  // Fetch invoices when browser is expanded
+  useEffect(() => {
+    if (browserExpanded) {
+      fetchStoredInvoices();
+    }
+  }, [browserExpanded, fetchStoredInvoices]);
+
+  const handleDownloadInvoice = async (invoice: StoredInvoice) => {
+    setDownloadingPath(invoice.path);
+
+    try {
+      const response = await authGet(`/api/admin/storage-invoices/download?path=${encodeURIComponent(invoice.path)}`);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to get download URL');
+      }
+
+      // Open the signed URL in a new tab
+      window.open(data.url, '_blank');
+    } catch (err: any) {
+      console.error('Error downloading invoice:', err);
+      showToast('error', err.message || 'Failed to download invoice');
+    } finally {
+      setDownloadingPath(null);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   // ============================================================================
@@ -389,7 +490,160 @@ export default function InvoicesTab() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-fase-navy">Invoice Generator</h2>
+        <h2 className="text-xl font-semibold text-fase-navy">Invoices</h2>
+      </div>
+
+      {/* Invoice Browser */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setBrowserExpanded(!browserExpanded)}
+          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <svg
+              className="w-5 h-5 text-fase-navy"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span className="font-medium text-fase-navy">Stored Invoices</span>
+            {storedInvoices.length > 0 && (
+              <span className="text-sm text-gray-500">
+                ({storedInvoices.length} found)
+              </span>
+            )}
+          </div>
+          <svg
+            className={`w-5 h-5 text-gray-400 transition-transform ${browserExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {browserExpanded && (
+          <div className="border-t border-gray-200 p-6 space-y-4">
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs text-gray-500 mb-1">Company</label>
+                <select
+                  value={selectedCompany}
+                  onChange={(e) => setSelectedCompany(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                >
+                  <option value="">All Companies</option>
+                  {companies.map((company) => (
+                    <option key={company} value={company}>
+                      {company.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs text-gray-500 mb-1">Search Invoice</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchPrefix}
+                    onChange={(e) => setSearchPrefix(e.target.value)}
+                    placeholder="FASE-12345 or RDV-2026..."
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                    onKeyDown={(e) => e.key === 'Enter' && fetchStoredInvoices()}
+                  />
+                  <button
+                    type="button"
+                    onClick={fetchStoredInvoices}
+                    disabled={browserLoading}
+                    className="px-3 py-2 bg-fase-navy text-white rounded text-sm hover:bg-opacity-90 disabled:opacity-50"
+                  >
+                    {browserLoading ? '...' : 'Search'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Error */}
+            {browserError && (
+              <div className="bg-red-50 text-red-800 p-3 rounded text-sm">
+                {browserError}
+              </div>
+            )}
+
+            {/* Loading */}
+            {browserLoading && (
+              <div className="text-center py-8 text-gray-500">
+                Loading invoices...
+              </div>
+            )}
+
+            {/* Results */}
+            {!browserLoading && storedInvoices.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No invoices found
+              </div>
+            )}
+
+            {!browserLoading && storedInvoices.length > 0 && (
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700">Invoice #</th>
+                      <th className="px-4 py-2 text-left font-medium text-gray-700">Company</th>
+                      <th className="px-4 py-2 text-right font-medium text-gray-700">Size</th>
+                      <th className="px-4 py-2 text-right font-medium text-gray-700">Last Updated</th>
+                      <th className="px-4 py-2 w-24"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {storedInvoices.map((invoice) => (
+                      <tr key={invoice.path} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-mono text-fase-navy">
+                          {invoice.invoiceNumber}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {invoice.company.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-500">
+                          {formatFileSize(invoice.size)}
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-500">
+                          {formatDate(invoice.updated)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadInvoice(invoice)}
+                            disabled={downloadingPath === invoice.path}
+                            className="text-fase-navy hover:text-blue-700 font-medium disabled:opacity-50"
+                          >
+                            {downloadingPath === invoice.path ? 'Opening...' : 'View'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Invoice Generator Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium text-fase-navy">Generate New Invoice</h3>
         <Button variant="secondary" size="small" onClick={resetForm}>
           Reset Form
         </Button>

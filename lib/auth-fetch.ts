@@ -69,3 +69,16 @@ export async function authDelete(
     method: 'DELETE',
   });
 }
+
+/**
+ * Convenience wrapper for GET requests with auth.
+ */
+export async function authGet(
+  url: string,
+  options?: Omit<RequestInit, 'method'>
+): Promise<Response> {
+  return authFetch(url, {
+    ...options,
+    method: 'GET',
+  });
+}
