@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     invoices.sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
 
     // Get unique companies for filtering
-    const companies = [...new Set(invoices.map(inv => inv.company))].sort();
+    const companies = Array.from(new Set(invoices.map(inv => inv.company))).sort();
 
     return NextResponse.json({
       success: true,
