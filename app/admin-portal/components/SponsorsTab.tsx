@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useUnifiedAuth } from '../../../contexts/UnifiedAuthContext';
 import Image from 'next/image';
 import Button from '../../../components/Button';
@@ -8,16 +8,19 @@ import Modal from '../../../components/Modal';
 import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
 import type { Sponsor, SponsorBio, SponsorTier } from '@/lib/admin-types';
 
+type SponsorContext = 'fase' | 'mga-rendezvous';
+
 export default function SponsorsTab() {
   const { user } = useUnifiedAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
+  const [activeContext, setActiveContext] = useState<SponsorContext>('fase');
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [uploading, setUploading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     tier: 'silver' as 'silver' | 'gold' | 'platinum',
@@ -34,8 +37,15 @@ export default function SponsorsTab() {
     order: 1,
     isActive: true
   });
-  
+
   const [currentLanguage, setCurrentLanguage] = useState<'en' | 'fr' | 'de' | 'es' | 'it' | 'nl'>('en');
+
+  // Get API endpoint based on context
+  const getApiEndpoint = () => {
+    return activeContext === 'mga-rendezvous'
+      ? '/api/admin/mga-rendezvous-sponsors'
+      : '/api/admin/sponsors';
+  };
 
   // Load sponsors from API
   const loadSponsors = async () => {
@@ -43,7 +53,7 @@ export default function SponsorsTab() {
 
     setLoading(true);
     try {
-      const response = await authFetch('/api/admin/sponsors');
+      const response = await authFetch(getApiEndpoint());
 
       const data = await response.json();
       if (data.success) {
@@ -104,7 +114,7 @@ export default function SponsorsTab() {
 
       if (editingSponsor) {
         // Update existing sponsor
-        const response = await authFetch('/api/admin/sponsors', {
+        const response = await authFetch(getApiEndpoint(), {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sponsorId: editingSponsor.id, ...sponsorData })
@@ -120,7 +130,7 @@ export default function SponsorsTab() {
         ));
       } else {
         // Create new sponsor
-        const response = await authPost('/api/admin/sponsors', sponsorData);
+        const response = await authPost(getApiEndpoint(), sponsorData);
 
         const data = await response.json();
         if (!data.success) {
@@ -159,7 +169,7 @@ export default function SponsorsTab() {
     if (!confirm(`Are you sure you want to delete ${sponsor.name}?`)) return;
 
     try {
-      const response = await authDelete(`/api/admin/sponsors?sponsorId=${encodeURIComponent(sponsor.id)}`);
+      const response = await authDelete(`${getApiEndpoint()}?sponsorId=${encodeURIComponent(sponsor.id)}`);
 
       const data = await response.json();
       if (!data.success) {
@@ -188,16 +198,16 @@ export default function SponsorsTab() {
     setShowCreateModal(true);
   };
 
-  // Load sponsors on component mount
-  React.useEffect(() => {
+  // Load sponsors on component mount and context change
+  useEffect(() => {
     loadSponsors();
-  }, [user?.uid]);
+  }, [user?.uid, activeContext]);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Sponsors Management</h2>
-        <Button 
+        <Button
           onClick={() => {
             setEditingSponsor(null);
             setFormData({
@@ -216,6 +226,32 @@ export default function SponsorsTab() {
         >
           Add New Sponsor
         </Button>
+      </div>
+
+      {/* Context Sub-tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Sponsor context tabs">
+          <button
+            onClick={() => setActiveContext('fase')}
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${
+              activeContext === 'fase'
+                ? 'border-fase-navy text-fase-navy'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            FASE Sponsors
+          </button>
+          <button
+            onClick={() => setActiveContext('mga-rendezvous')}
+            className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${
+              activeContext === 'mga-rendezvous'
+                ? 'border-fase-navy text-fase-navy'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            MGA Rendezvous Sponsors
+          </button>
+        </nav>
       </div>
 
       {loading ? (
