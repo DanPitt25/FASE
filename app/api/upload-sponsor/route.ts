@@ -49,25 +49,40 @@ export async function POST(request: NextRequest) {
     let outputType = file.type;
 
     if (file.type === 'image/svg+xml') {
-      // SVGs can't be trimmed with Sharp, use as-is
+      // SVGs can't be processed with Sharp, use as-is
       processedBuffer = originalBuffer;
     } else {
       try {
-        // Use Sharp to trim transparent/white borders from the image
-        // The trim() function removes pixels that match the edges
-        processedBuffer = await sharp(originalBuffer)
-          .trim({
-            // Trim pixels that are close to transparent or white
-            // threshold: 10 allows for slight variations in "white"
-            threshold: 10,
-          })
-          .png() // Convert to PNG to preserve transparency
-          .toBuffer();
+        // Step 1: Trim whitespace/transparent borders
+        let sharpInstance = sharp(originalBuffer).trim({
+          threshold: 10,
+        });
+
+        // Step 2: Get dimensions after trim
+        const trimmedBuffer = await sharpInstance.toBuffer();
+        const metadata = await sharp(trimmedBuffer).metadata();
+        const currentHeight = metadata.height || 0;
+
+        // Step 3: Scale up if too small (minimum 180px height for good quality at 90px display)
+        const minHeight = 180;
+        if (currentHeight > 0 && currentHeight < minHeight) {
+          const scale = minHeight / currentHeight;
+          processedBuffer = await sharp(trimmedBuffer)
+            .resize({
+              height: minHeight,
+              width: Math.round((metadata.width || 100) * scale),
+              fit: 'fill',
+            })
+            .png()
+            .toBuffer();
+        } else {
+          processedBuffer = await sharp(trimmedBuffer).png().toBuffer();
+        }
 
         outputType = 'image/png';
       } catch (trimError) {
-        // If trim fails (e.g., image is all one color), use original
-        console.warn('Image trim failed, using original:', trimError);
+        // If processing fails, use original
+        console.warn('Image processing failed, using original:', trimError);
         processedBuffer = originalBuffer;
       }
     }
