@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminStorage } from '../../../lib/firebase-admin';
 import { verifyAuthToken, logSecurityEvent, getClientInfo, AuthError } from '../../../lib/auth-security';
+import sharp from 'sharp';
 
 export const runtime = 'nodejs';
 
@@ -40,12 +41,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create file path - use graphics/logos for consistency with existing sponsors
-    const fileName = `${Date.now()}_${file.name}`;
-    const filePath = `graphics/logos/${fileName}`;
-
     // Convert File to Buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const originalBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Process image to trim whitespace (skip SVG as Sharp doesn't support it well)
+    let processedBuffer: Buffer;
+    let outputType = file.type;
+
+    if (file.type === 'image/svg+xml') {
+      // SVGs can't be trimmed with Sharp, use as-is
+      processedBuffer = originalBuffer;
+    } else {
+      try {
+        // Use Sharp to trim transparent/white borders from the image
+        // The trim() function removes pixels that match the edges
+        processedBuffer = await sharp(originalBuffer)
+          .trim({
+            // Trim pixels that are close to transparent or white
+            // threshold: 10 allows for slight variations in "white"
+            threshold: 10,
+          })
+          .png() // Convert to PNG to preserve transparency
+          .toBuffer();
+
+        outputType = 'image/png';
+      } catch (trimError) {
+        // If trim fails (e.g., image is all one color), use original
+        console.warn('Image trim failed, using original:', trimError);
+        processedBuffer = originalBuffer;
+      }
+    }
+
+    // Create file path - use graphics/logos for consistency with existing sponsors
+    const extension = outputType === 'image/svg+xml' ? 'svg' : 'png';
+    const baseName = file.name.replace(/\.[^/.]+$/, ''); // Remove original extension
+    const fileName = `${Date.now()}_${baseName}.${extension}`;
+    const filePath = `graphics/logos/${fileName}`;
 
     // Upload to Firebase Storage - explicitly specify bucket name
     const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
@@ -53,9 +84,9 @@ export async function POST(request: NextRequest) {
     const bucket = adminStorage.bucket(bucketName);
     const fileRef = bucket.file(filePath);
 
-    await fileRef.save(buffer, {
+    await fileRef.save(processedBuffer, {
       metadata: {
-        contentType: file.type,
+        contentType: outputType,
         metadata: {
           firebaseStorageDownloadTokens: crypto.randomUUID(),
         },
