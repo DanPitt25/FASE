@@ -36,6 +36,21 @@ interface Invoice {
   paymentMethod?: string;
 }
 
+interface LinkedPayment {
+  id: string;
+  transactionId: string;
+  source: string;
+  accountId: string;
+  accountName: string;
+  paymentType: 'membership' | 'rendezvous';
+  amount: number;
+  currency: string;
+  linkedAt: string | null;
+  linkedBy: string;
+  linkedByName: string;
+  notes?: string;
+}
+
 type ModalTab = 'actions' | 'company' | 'content' | 'timeline' | 'notes' | 'payments';
 
 export default function CompanyMembersModal({
@@ -95,6 +110,7 @@ export default function CompanyMembersModal({
   const [activities, setActivities] = useState<Activity[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [linkedPayments, setLinkedPayments] = useState<LinkedPayment[]>([]);
   const [crmLoading, setCrmLoading] = useState(false);
 
   // New note form
@@ -131,6 +147,17 @@ export default function CompanyMembersModal({
         }
       } catch {
         // Invoice endpoint may not exist yet
+      }
+
+      // Fetch linked payments
+      try {
+        const linkedRes = await authFetch(`/api/admin/finance/link?accountId=${companyId}`);
+        const linkedData = await linkedRes.json();
+        if (linkedData.success) {
+          setLinkedPayments(linkedData.linkedPayments);
+        }
+      } catch {
+        // Linked payments endpoint may not exist yet
       }
     } catch (err) {
       console.error('Failed to load CRM data:', err);
@@ -306,7 +333,7 @@ export default function CompanyMembersModal({
     { id: 'content', label: 'Bio & Logo' },
     { id: 'timeline', label: 'Timeline', count: activities.length },
     { id: 'notes', label: 'Notes', count: notes.length },
-    { id: 'payments', label: 'Payments', count: invoices.length },
+    { id: 'payments', label: 'Payments', count: invoices.length + linkedPayments.length },
   ];
 
   return (
@@ -635,74 +662,144 @@ export default function CompanyMembersModal({
 
           {/* PAYMENTS TAB */}
           {activeTab === 'payments' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {crmLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-fase-navy mx-auto"></div>
                 </div>
-              ) : invoices.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No invoices found for this account</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sent</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paid</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {invoices.map((invoice) => (
-                        <tr key={invoice.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {invoice.invoiceNumber}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {invoice.currency} {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                invoice.status === 'paid'
-                                  ? 'bg-green-100 text-green-800'
-                                  : invoice.status === 'overdue'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}
-                            >
-                              {invoice.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">{formatDate(invoice.sentAt)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
-                            {invoice.paidAt ? formatDate(invoice.paidAt) : '-'}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
-                            {invoice.paymentMethod ? (
-                              <span
-                                className={`px-2 py-1 text-xs rounded ${
-                                  invoice.paymentMethod === 'stripe'
-                                    ? 'bg-purple-100 text-purple-700'
-                                    : invoice.paymentMethod === 'wise'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-700'
-                                }`}
-                              >
-                                {invoice.paymentMethod}
-                              </span>
-                            ) : (
-                              '-'
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <>
+                  {/* Linked Payments Section */}
+                  {linkedPayments.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Linked Payments</h4>
+                      <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Linked</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {linkedPayments.map((payment) => (
+                              <tr key={payment.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                      payment.paymentType === 'membership'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : 'bg-purple-100 text-purple-800'
+                                    }`}
+                                  >
+                                    {payment.paymentType === 'membership' ? 'Membership' : 'Rendezvous'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                  {payment.currency} {payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`px-2 py-1 text-xs rounded ${
+                                      payment.source === 'stripe'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-green-100 text-green-700'
+                                    }`}
+                                  >
+                                    {payment.source}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-500">
+                                  {payment.linkedAt ? formatDateTime(payment.linkedAt) : '-'}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-500 font-mono text-xs">
+                                  {payment.transactionId.slice(0, 20)}...
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Invoices Section */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Invoices</h4>
+                    {invoices.length === 0 ? (
+                      <p className="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">No invoices found</p>
+                    ) : (
+                      <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sent</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paid</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {invoices.map((invoice) => (
+                              <tr key={invoice.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                  {invoice.invoiceNumber}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900">
+                                  {invoice.currency} {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                      invoice.status === 'paid'
+                                        ? 'bg-green-100 text-green-800'
+                                        : invoice.status === 'overdue'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                    }`}
+                                  >
+                                    {invoice.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-500">{formatDate(invoice.sentAt)}</td>
+                                <td className="px-4 py-3 text-sm text-gray-500">
+                                  {invoice.paidAt ? formatDate(invoice.paidAt) : '-'}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-500">
+                                  {invoice.paymentMethod ? (
+                                    <span
+                                      className={`px-2 py-1 text-xs rounded ${
+                                        invoice.paymentMethod === 'stripe'
+                                          ? 'bg-purple-100 text-purple-700'
+                                          : invoice.paymentMethod === 'wise'
+                                          ? 'bg-green-100 text-green-700'
+                                          : 'bg-gray-100 text-gray-700'
+                                      }`}
+                                    >
+                                      {invoice.paymentMethod}
+                                    </span>
+                                  ) : (
+                                    '-'
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Empty state when both are empty */}
+                  {invoices.length === 0 && linkedPayments.length === 0 && (
+                    <p className="text-center text-gray-500 py-8">No payment records found for this account</p>
+                  )}
+                </>
               )}
             </div>
           )}

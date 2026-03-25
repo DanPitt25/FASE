@@ -20,6 +20,21 @@ const initializeStripe = () => {
   return stripe;
 };
 
+interface LinkedPaymentInfo {
+  id: string;
+  transactionId: string;
+  source: string;
+  accountId: string;
+  accountName: string;
+  paymentType: 'membership' | 'rendezvous';
+  amount: number;
+  currency: string;
+  linkedAt: string | null;
+  linkedBy: string;
+  linkedByName: string;
+  notes?: string;
+}
+
 interface Transaction {
   id: string;
   source: 'stripe' | 'wise';
@@ -34,6 +49,7 @@ interface Transaction {
   customerId?: string; // Stripe customer ID or Wise sender account
   description?: string;
   suppressed?: boolean; // Hidden from reports
+  linkedPayment?: LinkedPaymentInfo; // Linked member info
 }
 
 // Approximate exchange rates - updated periodically
@@ -81,6 +97,16 @@ export async function GET(request: NextRequest) {
     // Get suppressed transaction IDs from Firestore
     const suppressedSnapshot = await adminDb.collection('suppressed-transactions').get();
     const suppressedIds = new Set(suppressedSnapshot.docs.map(doc => doc.id));
+
+    // Get linked payments from Firestore
+    const linkedSnapshot = await adminDb.collection('linked-payments').get();
+    const linkedPayments = new Map(
+      linkedSnapshot.docs.map(doc => [doc.id, {
+        id: doc.id,
+        ...doc.data(),
+        linkedAt: doc.data().linkedAt?.toDate?.()?.toISOString() || null,
+      }])
+    );
 
     // Get exchange rates for EUR conversion
     const exchangeRates = await getExchangeRates();
@@ -146,6 +172,7 @@ export async function GET(request: NextRequest) {
                 customerId,
                 description: pi.description || '',
                 suppressed: suppressedIds.has(txId),
+                linkedPayment: linkedPayments.get(txId) as LinkedPaymentInfo | undefined,
               });
             }
 
@@ -192,6 +219,7 @@ export async function GET(request: NextRequest) {
             senderName: wiseTx.details.senderName || '',
             description: wiseTx.details.description || '',
             suppressed: suppressedIds.has(txId),
+            linkedPayment: linkedPayments.get(txId) as LinkedPaymentInfo | undefined,
           });
         }
       } catch (wiseError: any) {

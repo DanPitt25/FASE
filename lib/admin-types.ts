@@ -227,6 +227,25 @@ export interface FlattenedAttendee {
 /** Payment source */
 export type PaymentSource = 'stripe' | 'wise';
 
+/** Payment type when linked to a member */
+export type LinkedPaymentType = 'membership' | 'rendezvous';
+
+/** Linked payment record stored in Firestore */
+export interface LinkedPayment {
+  id: string;  // paymentKey: source_transactionId
+  transactionId: string;
+  source: PaymentSource;
+  accountId: string;
+  accountName: string;
+  paymentType: LinkedPaymentType;
+  amount: number;
+  currency: string;
+  linkedAt: string;  // ISO date
+  linkedBy: string;  // Admin user ID
+  linkedByName: string;
+  notes?: string;
+}
+
 /** Transaction from payment provider */
 export interface Transaction {
   id: string;
@@ -241,6 +260,8 @@ export interface Transaction {
   customerId?: string;
   description?: string;
   suppressed?: boolean;
+  // Linked payment info (populated when fetched)
+  linkedPayment?: LinkedPayment;
 }
 
 /** Payment activity log entry */

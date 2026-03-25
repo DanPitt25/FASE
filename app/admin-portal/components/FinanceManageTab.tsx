@@ -13,6 +13,8 @@ import type {
   FinanceSortField,
   FinanceModalTab,
   SortDirection,
+  LinkedPayment,
+  LinkedPaymentType,
 } from '@/lib/admin-types';
 import type { UnifiedMember } from '@/lib/unified-member';
 import { matchPayment, formatMatchSummary, type PaymentMatch } from '@/lib/payment-matching';
@@ -21,6 +23,7 @@ type FilterSource = FinanceFilterSource;
 type DateRange = FinanceDateRange;
 type SortField = FinanceSortField;
 type ModalTab = FinanceModalTab;
+type LinkFilter = 'all' | 'linked' | 'unlinked';
 
 interface FinanceManageTabProps {
   memberApplications: UnifiedMember[];
@@ -35,6 +38,7 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showSuppressed, setShowSuppressed] = useState(false);
+  const [linkFilter, setLinkFilter] = useState<LinkFilter>('all');
 
   // Modal state
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -68,6 +72,10 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   const [newNote, setNewNote] = useState('');
   const [noteCategory, setNoteCategory] = useState('general');
   const [savingNote, setSavingNote] = useState(false);
+
+  // Payment linking state
+  const [linkPaymentType, setLinkPaymentType] = useState<LinkedPaymentType>('membership');
+  const [linkingPayment, setLinkingPayment] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -332,6 +340,117 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     }
   };
 
+  // Link payment to selected member
+  const handleLinkPayment = async () => {
+    if (!selectedTransaction || !selectedMember) return;
+
+    setLinkingPayment(true);
+    try {
+      const response = await authPost('/api/admin/finance/link', {
+        transactionId: selectedTransaction.id,
+        source: selectedTransaction.source,
+        accountId: selectedMember.id,
+        accountName: selectedMember.organizationName,
+        paymentType: linkPaymentType,
+        amount: selectedTransaction.amount,
+        currency: selectedTransaction.currency,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to link payment');
+      }
+
+      // Update local state
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === selectedTransaction.id && t.source === selectedTransaction.source
+            ? {
+                ...t,
+                linkedPayment: {
+                  id: `${selectedTransaction.source}_${selectedTransaction.id}`,
+                  transactionId: selectedTransaction.id,
+                  source: selectedTransaction.source,
+                  accountId: selectedMember.id,
+                  accountName: selectedMember.organizationName || '',
+                  paymentType: linkPaymentType,
+                  amount: selectedTransaction.amount,
+                  currency: selectedTransaction.currency,
+                  linkedAt: new Date().toISOString(),
+                  linkedBy: 'admin',
+                  linkedByName: 'Admin',
+                },
+              }
+            : t
+        )
+      );
+
+      // Update selected transaction
+      setSelectedTransaction({
+        ...selectedTransaction,
+        linkedPayment: {
+          id: `${selectedTransaction.source}_${selectedTransaction.id}`,
+          transactionId: selectedTransaction.id,
+          source: selectedTransaction.source,
+          accountId: selectedMember.id,
+          accountName: selectedMember.organizationName || '',
+          paymentType: linkPaymentType,
+          amount: selectedTransaction.amount,
+          currency: selectedTransaction.currency,
+          linkedAt: new Date().toISOString(),
+          linkedBy: 'admin',
+          linkedByName: 'Admin',
+        },
+      });
+
+      loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+    } catch (err: any) {
+      console.error('Failed to link payment:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLinkingPayment(false);
+    }
+  };
+
+  // Unlink payment from member
+  const handleUnlinkPayment = async () => {
+    if (!selectedTransaction || !confirm('Unlink this payment from the member?')) return;
+
+    setLinkingPayment(true);
+    try {
+      const response = await authDelete(
+        `/api/admin/finance/link?transactionId=${selectedTransaction.id}&source=${selectedTransaction.source}`
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to unlink payment');
+      }
+
+      // Update local state
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === selectedTransaction.id && t.source === selectedTransaction.source
+            ? { ...t, linkedPayment: undefined }
+            : t
+        )
+      );
+
+      // Update selected transaction
+      setSelectedTransaction({
+        ...selectedTransaction,
+        linkedPayment: undefined,
+      });
+
+      loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+    } catch (err: any) {
+      console.error('Failed to unlink payment:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLinkingPayment(false);
+    }
+  };
+
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('en-EU', {
       style: 'currency',
@@ -371,8 +490,14 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     return icons[type] || '•';
   };
 
-  // Sort transactions
-  const sortedTransactions = [...transactions].sort((a, b) => {
+  // Filter and sort transactions
+  const filteredByLink = linkFilter === 'all'
+    ? transactions
+    : linkFilter === 'linked'
+    ? transactions.filter(t => t.linkedPayment)
+    : transactions.filter(t => !t.linkedPayment);
+
+  const sortedTransactions = [...filteredByLink].sort((a, b) => {
     if (sortField === 'date') {
       const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
       return sortDirection === 'asc' ? diff : -diff;
@@ -473,6 +598,15 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                 <option value="stripe">Stripe Only</option>
                 <option value="wise">Wise Only</option>
               </select>
+              <select
+                value={linkFilter}
+                onChange={(e) => setLinkFilter(e.target.value as LinkFilter)}
+                className="px-2 py-1 border border-gray-300 rounded text-sm"
+              >
+                <option value="all">All Status</option>
+                <option value="linked">Linked</option>
+                <option value="unlinked">Unlinked</option>
+              </select>
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -512,13 +646,14 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Suggested</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Linked</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                     No transactions found
                   </td>
                 </tr>
@@ -563,6 +698,20 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                           </span>
                         );
                       })()}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {tx.linkedPayment ? (
+                        <span
+                          className="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800"
+                          title={`${tx.linkedPayment.paymentType} - ${tx.linkedPayment.accountName}`}
+                        >
+                          {tx.linkedPayment.paymentType === 'membership' ? '🔗 Membership' : '🔗 Rendezvous'}
+                        </span>
+                      ) : (
+                        <span className="inline-flex px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-500">
+                          Unlinked
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -690,6 +839,138 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                       <div className="text-sm text-gray-500">Source</div>
                       <div className="capitalize">{selectedTransaction.source}</div>
                     </div>
+                  </div>
+
+                  {/* Link to Member Section */}
+                  <div className="border-t pt-4">
+                    <div className="text-sm font-medium text-gray-700 mb-3">Link to Member</div>
+
+                    {selectedTransaction.linkedPayment ? (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-blue-900">
+                              {selectedTransaction.linkedPayment.accountName}
+                            </div>
+                            <div className="text-sm text-blue-700">
+                              {selectedTransaction.linkedPayment.paymentType === 'membership' ? 'FASE Membership' : 'MGA Rendezvous'}
+                              {selectedTransaction.linkedPayment.linkedAt && (
+                                <span className="text-blue-500 ml-2">
+                                  • Linked {formatDateTime(selectedTransaction.linkedPayment.linkedAt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleUnlinkPayment}
+                            disabled={linkingPayment}
+                            className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                          >
+                            {linkingPayment ? 'Unlinking...' : 'Unlink'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Member Search */}
+                        <div className="relative">
+                          {selectedMember ? (
+                            <div className="flex items-center justify-between border border-green-300 bg-green-50 rounded-lg p-3">
+                              <div>
+                                <div className="font-medium text-gray-900">{selectedMember.organizationName}</div>
+                                <div className="text-sm text-gray-500">
+                                  {selectedMember.organizationType} • {selectedMember.primaryContact?.email || 'No email'}
+                                </div>
+                              </div>
+                              <button
+                                onClick={clearSelectedMember}
+                                className="text-gray-400 hover:text-red-500 p-1"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <input
+                                type="text"
+                                value={memberSearchQuery}
+                                onChange={(e) => setMemberSearchQuery(e.target.value)}
+                                onFocus={() => memberSearchResults.length > 0 && setShowMemberDropdown(true)}
+                                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                                placeholder="Search by organization name, email, or contact..."
+                              />
+                              {showMemberDropdown && memberSearchResults.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                  {memberSearchResults.map((member) => (
+                                    <button
+                                      key={member.id}
+                                      onClick={() => selectMember(member)}
+                                      className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                                    >
+                                      <div className="font-medium text-gray-900">{member.organizationName}</div>
+                                      <div className="text-sm text-gray-500">
+                                        <span className={`inline-flex px-1.5 py-0.5 text-xs rounded mr-2 ${
+                                          member.organizationType === 'MGA' ? 'bg-blue-100 text-blue-700' :
+                                          member.organizationType === 'carrier' ? 'bg-purple-100 text-purple-700' :
+                                          'bg-gray-100 text-gray-700'
+                                        }`}>
+                                          {member.organizationType}
+                                        </span>
+                                        {member.primaryContact?.email || member.primaryContact?.name || 'No contact'}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Payment Type Selection */}
+                        {selectedMember && (
+                          <div className="flex items-center gap-4">
+                            <label className="text-sm text-gray-600">Payment for:</label>
+                            <div className="flex gap-3">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="paymentType"
+                                  value="membership"
+                                  checked={linkPaymentType === 'membership'}
+                                  onChange={() => setLinkPaymentType('membership')}
+                                  className="text-fase-navy focus:ring-fase-navy"
+                                />
+                                <span className="text-sm">Membership</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="paymentType"
+                                  value="rendezvous"
+                                  checked={linkPaymentType === 'rendezvous'}
+                                  onChange={() => setLinkPaymentType('rendezvous')}
+                                  className="text-fase-navy focus:ring-fase-navy"
+                                />
+                                <span className="text-sm">Rendezvous</span>
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Link Button */}
+                        {selectedMember && (
+                          <Button
+                            variant="primary"
+                            size="small"
+                            onClick={handleLinkPayment}
+                            disabled={linkingPayment}
+                            className="w-full"
+                          >
+                            {linkingPayment ? 'Linking...' : `Link Payment to ${selectedMember.organizationName}`}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Suppress/Unsuppress button */}
