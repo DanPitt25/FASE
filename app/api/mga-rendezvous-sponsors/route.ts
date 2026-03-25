@@ -5,20 +5,35 @@ export const dynamic = 'force-dynamic';
 
 const COLLECTION_NAME = 'mga-rendezvous-sponsors';
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://mgarendezvous.com',
+  'https://www.mgarendezvous.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
 // CORS headers for cross-origin requests from MGA Rendezvous site
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+const getCorsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 };
 
 // Handle CORS preflight
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+export async function OPTIONS(request: Request) {
+  const origin = request.headers.get('origin');
+  return NextResponse.json({}, { headers: getCorsHeaders(origin) });
 }
 
 // GET - List active MGA Rendezvous sponsors (public, no auth required)
-export async function GET() {
+export async function GET(request: Request) {
+  const origin = request.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   try {
     const db = adminDb;
     const sponsorsSnapshot = await db.collection(COLLECTION_NAME)
