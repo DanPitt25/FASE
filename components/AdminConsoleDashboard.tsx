@@ -224,7 +224,7 @@ export default function AdminConsoleDashboard({
             </div>
 
             {/* Right Content Area */}
-            <div className="flex-1 p-4 lg:p-6 xl:p-8 bg-gray-50">
+            <div className="flex-1 min-w-0 p-4 lg:p-6 xl:p-8 bg-gray-50">
               <div key={activeTileId} className="bg-white rounded-lg border border-gray-200 p-4 lg:p-6 min-h-[500px]">
                 {activeContent?.content && (
                   typeof activeContent.content === 'function'

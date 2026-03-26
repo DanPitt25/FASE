@@ -519,7 +519,7 @@ export default function PaymentReminderPanel({
       </div>
 
       {/* Options */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
           <select
@@ -543,6 +543,17 @@ export default function PaymentReminderPanel({
             {SUPPORTED_LANGUAGES.map(lang => (
               <option key={lang.code} value={lang.code}>{lang.label}</option>
             ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Salutation</label>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value as 'm' | 'f')}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+          >
+            <option value="m">Dear (M)</option>
+            <option value="f">Dear (F)</option>
           </select>
         </div>
       </div>
