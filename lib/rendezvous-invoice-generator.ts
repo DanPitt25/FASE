@@ -194,11 +194,16 @@ export async function generateRendezvousInvoicePDF(data: RendezvousInvoiceData):
     // Company name (bold)
     billToLines.push({ text: data.companyName, bold: true });
 
-    // Address - wrap if needed
+    // Address - split by comma for better formatting, then wrap if needed
     if (data.address && data.address.trim() !== '') {
-      const addressLines = wrapText(data.address, billToMaxWidth, bodyFont, 10);
-      addressLines.forEach(line => {
-        billToLines.push({ text: line, bold: false });
+      // Split by comma to create logical address lines
+      const addressParts = data.address.split(',').map(part => part.trim()).filter(Boolean);
+      addressParts.forEach(part => {
+        // Wrap each part if it's still too long
+        const wrappedLines = wrapText(part, billToMaxWidth, bodyFont, 10);
+        wrappedLines.forEach(line => {
+          billToLines.push({ text: line, bold: false });
+        });
       });
     }
 
@@ -739,10 +744,16 @@ export async function generateRendezvousPaidInvoicePDF(data: RendezvousInvoiceDa
 
     billToLines.push({ text: data.companyName, bold: true });
 
+    // Address - split by comma for better formatting, then wrap if needed
     if (data.address && data.address.trim() !== '') {
-      const addressLines = wrapText(data.address, billToMaxWidth, bodyFont, 10);
-      addressLines.forEach(line => {
-        billToLines.push({ text: line, bold: false });
+      // Split by comma to create logical address lines
+      const addressParts = data.address.split(',').map(part => part.trim()).filter(Boolean);
+      addressParts.forEach(part => {
+        // Wrap each part if it's still too long
+        const wrappedLines = wrapText(part, billToMaxWidth, bodyFont, 10);
+        wrappedLines.forEach(line => {
+          billToLines.push({ text: line, bold: false });
+        });
       });
     }
 

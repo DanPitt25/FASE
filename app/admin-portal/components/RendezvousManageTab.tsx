@@ -437,8 +437,14 @@ export default function RendezvousManageTab() {
   const handleGeneratePaidInvoice = (registration: RendezvousRegistration) => {
     const pricePerTicket = registration.subtotal / (registration.numberOfAttendees || 1);
 
-    // Parse address if it's a single string
+    // Parse address - split by comma into separate lines
     const addressString = registration.billingInfo?.address || '';
+    const addressParts = addressString.split(',').map(part => part.trim()).filter(Boolean);
+
+    // Distribute across line1, line2, and city (postcode often embedded in last part)
+    const line1 = addressParts[0] || '';
+    const line2 = addressParts.slice(1, -1).join(', ') || '';
+    const cityPostcode = addressParts[addressParts.length - 1] || '';
 
     const invoiceData: InvoiceData = {
       type: 'rendezvous_paid',
@@ -450,9 +456,9 @@ export default function RendezvousManageTab() {
       organizationName: registration.billingInfo?.company || '',
       email: registration.billingInfo?.billingEmail || '',
       address: {
-        line1: addressString,
-        line2: '',
-        city: '',
+        line1: line1,
+        line2: line2,
+        city: addressParts.length > 1 ? cityPostcode : '',
         postcode: '',
         country: registration.billingInfo?.country || '',
       },
@@ -492,8 +498,14 @@ export default function RendezvousManageTab() {
   const handleRegenerateUnpaidInvoice = (registration: RendezvousRegistration) => {
     const pricePerTicket = registration.subtotal / (registration.numberOfAttendees || 1);
 
-    // Parse address if it's a single string
+    // Parse address - split by comma into separate lines
     const addressString = registration.billingInfo?.address || '';
+    const addressParts = addressString.split(',').map(part => part.trim()).filter(Boolean);
+
+    // Distribute across line1, line2, and city (postcode often embedded in last part)
+    const line1 = addressParts[0] || '';
+    const line2 = addressParts.slice(1, -1).join(', ') || '';
+    const cityPostcode = addressParts[addressParts.length - 1] || '';
 
     const invoiceData: InvoiceData = {
       type: 'rendezvous',
@@ -505,9 +517,9 @@ export default function RendezvousManageTab() {
       organizationName: registration.billingInfo?.company || '',
       email: registration.billingInfo?.billingEmail || '',
       address: {
-        line1: addressString,
-        line2: '',
-        city: '',
+        line1: line1,
+        line2: line2,
+        city: addressParts.length > 1 ? cityPostcode : '',
         postcode: '',
         country: registration.billingInfo?.country || '',
       },
