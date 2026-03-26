@@ -68,6 +68,23 @@ export async function POST(request: NextRequest) {
       performedByName: 'Admin',
     });
 
+    // Create a finance-match record for tracking/review
+    await adminDb.collection('finance-matches').doc(docId).set({
+      transactionId,
+      source,
+      amount: amount || 0,
+      currency: currency || 'EUR',
+      transactionDate: new Date().toISOString(),
+      accountId,
+      accountName,
+      paymentType,
+      status: 'pending',
+      createdAt: FieldValue.serverTimestamp(),
+      createdBy: authResult.userId || 'admin',
+      createdByName: 'Admin',
+      notes: notes || '',
+    });
+
     return NextResponse.json({
       success: true,
       linkedPayment: {
@@ -117,6 +134,9 @@ export async function DELETE(request: NextRequest) {
     const existingData = existingDoc.data();
 
     await docRef.delete();
+
+    // Also delete the finance-match record
+    await adminDb.collection('finance-matches').doc(docId).delete();
 
     // Log activity for the payment
     const paymentKey = `${source}_${transactionId}`;

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Modal from '../../../components/Modal';
 import Button from '../../../components/Button';
-import { authFetch, authPost, authDelete } from '@/lib/auth-fetch';
+import { authFetch, authPost, authPatch, authDelete } from '@/lib/auth-fetch';
 import type {
   Transaction,
   PaymentActivity,
@@ -77,9 +77,33 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   const [linkPaymentType, setLinkPaymentType] = useState<LinkedPaymentType>('membership');
   const [linkingPayment, setLinkingPayment] = useState(false);
 
+  // Finance matches state
+  interface FinanceMatch {
+    id: string;
+    transactionId: string;
+    source: 'stripe' | 'wise';
+    amount: number;
+    currency: string;
+    transactionDate?: string;
+    senderName?: string;
+    reference?: string;
+    accountId: string;
+    accountName: string;
+    paymentType: 'membership' | 'rendezvous';
+    status: 'pending' | 'resolved';
+    resolution?: string;
+    resolvedAt?: string;
+    createdAt: string;
+    notes?: string;
+  }
+  const [financeMatches, setFinanceMatches] = useState<FinanceMatch[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [matchFilter, setMatchFilter] = useState<'pending' | 'resolved' | 'all'>('pending');
+  const [resolvingMatch, setResolvingMatch] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
+    loadFinanceMatches();
   }, [sourceFilter, dateRange, showSuppressed]);
 
   const loadData = async () => {
@@ -110,6 +134,51 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
       setError(err.message || 'Failed to load data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFinanceMatches = async () => {
+    setLoadingMatches(true);
+    try {
+      const response = await authFetch('/api/admin/finance/matches');
+      const data = await response.json();
+      if (response.ok) {
+        setFinanceMatches(data.matches || []);
+      }
+    } catch (err) {
+      console.error('Failed to load finance matches:', err);
+    } finally {
+      setLoadingMatches(false);
+    }
+  };
+
+  const handleResolveMatch = async (matchId: string, resolution: string) => {
+    setResolvingMatch(matchId);
+    try {
+      const response = await authPatch('/api/admin/finance/matches', {
+        matchId,
+        status: 'resolved',
+        resolution,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to resolve match');
+      }
+
+      // Update local state
+      setFinanceMatches(prev =>
+        prev.map(m =>
+          m.id === matchId
+            ? { ...m, status: 'resolved' as const, resolution, resolvedAt: new Date().toISOString() }
+            : m
+        )
+      );
+    } catch (err: any) {
+      console.error('Failed to resolve match:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setResolvingMatch(null);
     }
   };
 
@@ -558,6 +627,21 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
 
   const suppressedCount = transactions.filter(t => t.suppressed).length;
 
+  // Filter finance matches
+  const filteredMatches = matchFilter === 'all'
+    ? financeMatches
+    : financeMatches.filter(m => m.status === matchFilter);
+
+  const pendingMatchCount = financeMatches.filter(m => m.status === 'pending').length;
+
+  const formatMatchDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Info Banner */}
@@ -566,6 +650,122 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
         <p className="text-sm text-blue-700 mt-1">
           Generate invoices for payments, add notes, and suppress irrelevant transactions (test payments, duplicates, etc.).
         </p>
+      </div>
+
+      {/* Finance Matches Section */}
+      <div className="bg-white border border-gray-200 rounded-lg">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold">Finance Matches</h3>
+              {pendingMatchCount > 0 && (
+                <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                  {pendingMatchCount} pending
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={matchFilter}
+                onChange={(e) => setMatchFilter(e.target.value as 'pending' | 'resolved' | 'all')}
+                className="px-2 py-1 border border-gray-300 rounded text-sm"
+              >
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+                <option value="all">All</option>
+              </select>
+              <button
+                onClick={loadFinanceMatches}
+                className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4">
+          {loadingMatches ? (
+            <div className="text-center py-4 text-gray-500">Loading matches...</div>
+          ) : filteredMatches.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              {matchFilter === 'pending' ? 'No pending matches' : 'No matches found'}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredMatches.map((match) => (
+                <div
+                  key={match.id}
+                  className={`border rounded-lg p-4 ${
+                    match.status === 'pending' ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                          match.source === 'stripe' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {match.source}
+                        </span>
+                        <span className="font-medium text-gray-900">
+                          {match.currency} {match.amount.toLocaleString()}
+                        </span>
+                        <span className="text-gray-400">→</span>
+                        <span className="font-medium text-fase-navy">{match.accountName}</span>
+                        <span className={`px-2 py-0.5 text-xs rounded ${
+                          match.paymentType === 'membership' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {match.paymentType}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Linked {match.createdAt ? formatMatchDate(match.createdAt) : 'recently'}
+                        {match.senderName && ` • From: ${match.senderName}`}
+                        {match.reference && ` • Ref: ${match.reference}`}
+                      </div>
+                      {match.status === 'resolved' && match.resolution && (
+                        <div className="text-sm text-green-700">
+                          ✓ {match.resolution}
+                          {match.resolvedAt && ` (${formatMatchDate(match.resolvedAt)})`}
+                        </div>
+                      )}
+                    </div>
+
+                    {match.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleResolveMatch(match.id, 'Invoice sent')}
+                          disabled={resolvingMatch === match.id}
+                          className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                        >
+                          Invoice Sent
+                        </button>
+                        <button
+                          onClick={() => handleResolveMatch(match.id, 'Already paid')}
+                          disabled={resolvingMatch === match.id}
+                          className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          Already Paid
+                        </button>
+                        <button
+                          onClick={() => {
+                            const note = prompt('Enter resolution note:');
+                            if (note) handleResolveMatch(match.id, note);
+                          }}
+                          disabled={resolvingMatch === match.id}
+                          className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                        >
+                          Other...
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Payments Table */}

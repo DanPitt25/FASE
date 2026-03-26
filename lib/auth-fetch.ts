@@ -58,6 +58,25 @@ export async function authPut(
 }
 
 /**
+ * Convenience wrapper for JSON PATCH requests with auth.
+ */
+export async function authPatch(
+  url: string,
+  body: unknown,
+  options?: Omit<RequestInit, 'method' | 'body'>
+): Promise<Response> {
+  return authFetch(url, {
+    ...options,
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+/**
  * Convenience wrapper for DELETE requests with auth.
  */
 export async function authDelete(
