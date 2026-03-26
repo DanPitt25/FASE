@@ -166,6 +166,14 @@ export default function CompanyMembersModal({
     }
   }, [companyId]);
 
+  // Reset state when companyId changes to prevent showing stale data
+  useEffect(() => {
+    setActivities([]);
+    setNotes([]);
+    setInvoices([]);
+    setLinkedPayments([]);
+  }, [companyId]);
+
   useEffect(() => {
     if (isOpen && companyId) {
       loadCrmData();
