@@ -86,6 +86,9 @@ export default function PaymentReminderPanel({
   const [rendezvousRegistration, setRendezvousRegistration] = useState<RendezvousRegistration | null>(null);
   const [rendezvousIncluded, setRendezvousIncluded] = useState(false);
 
+  // Multi-association discount toggle
+  const [discountIncluded, setDiscountIncluded] = useState(false);
+
   // UI state
   const [sending, setSending] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -136,18 +139,36 @@ export default function PaymentReminderPanel({
         },
       ];
 
+      // Set discount toggle based on memberData, but don't auto-add - let the toggle effect handle it
       if (memberData.hasOtherAssociations) {
-        defaultItems.push({
-          id: generateId(),
-          description: 'Multi-Association Member Discount (20%)',
-          quantity: 1,
-          unitPrice: -Math.round(baseFee * 0.2),
-        });
+        setDiscountIncluded(true);
       }
 
       setLineItems(defaultItems);
     }
   }, [memberData]);
+
+  // Add/remove discount when toggle changes
+  useEffect(() => {
+    const hasDiscountItem = lineItems.some(item => item.description.includes('Multi-Association'));
+
+    if (discountIncluded && !hasDiscountItem && lineItems.length > 0) {
+      // Add discount
+      const membershipItem = lineItems.find(item => item.description === 'FASE Annual Membership');
+      const baseFee = membershipItem?.unitPrice || 0;
+      if (baseFee > 0) {
+        setLineItems(prev => [...prev, {
+          id: generateId(),
+          description: 'Multi-Association Member Discount (20%)',
+          quantity: 1,
+          unitPrice: -Math.round(baseFee * 0.2),
+        }]);
+      }
+    } else if (!discountIncluded && hasDiscountItem) {
+      // Remove discount
+      setLineItems(prev => prev.filter(item => !item.description.includes('Multi-Association')));
+    }
+  }, [discountIncluded]);
 
   // Add Rendezvous line item when registration is found and included
   useEffect(() => {
@@ -483,6 +504,27 @@ export default function PaymentReminderPanel({
           </div>
         </div>
       )}
+
+      {/* Multi-Association Discount Toggle */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-green-800">Multi-Association Member Discount</p>
+            <p className="text-xs text-green-700 mt-1">
+              20% discount for members of other associations
+            </p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={discountIncluded}
+              onChange={(e) => setDiscountIncluded(e.target.checked)}
+              className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
+            />
+            <span className="text-sm text-green-800">Apply discount</span>
+          </label>
+        </div>
+      </div>
 
       {/* Recipient Selection */}
       <div className="bg-gray-50 p-4 rounded-lg">
