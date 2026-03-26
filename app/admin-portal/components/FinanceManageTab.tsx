@@ -101,6 +101,10 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   const [matchFilter, setMatchFilter] = useState<'pending' | 'resolved' | 'all'>('pending');
   const [resolvingMatch, setResolvingMatch] = useState<string | null>(null);
 
+  // Sub-tab state for switching between Transactions and Matches views
+  type FinanceView = 'transactions' | 'matches';
+  const [financeView, setFinanceView] = useState<FinanceView>('transactions');
+
   useEffect(() => {
     loadData();
     loadFinanceMatches();
@@ -644,130 +648,152 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
 
   return (
     <div className="space-y-6">
-      {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="text-sm font-medium text-blue-800">Finance Management</div>
-        <p className="text-sm text-blue-700 mt-1">
-          Generate invoices for payments, add notes, and suppress irrelevant transactions (test payments, duplicates, etc.).
-        </p>
+      {/* Sub-tabs for Transactions vs Matches */}
+      <div className="flex gap-4 border-b border-gray-200">
+        <button
+          onClick={() => setFinanceView('transactions')}
+          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+            financeView === 'transactions'
+              ? 'border-fase-navy text-fase-navy'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Transactions
+        </button>
+        <button
+          onClick={() => setFinanceView('matches')}
+          className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
+            financeView === 'matches'
+              ? 'border-fase-navy text-fase-navy'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Linked Payments
+          {pendingMatchCount > 0 && (
+            <span className="px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+              {pendingMatchCount}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Finance Matches Section */}
-      <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold">Finance Matches</h3>
-              {pendingMatchCount > 0 && (
-                <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                  {pendingMatchCount} pending
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={matchFilter}
-                onChange={(e) => setMatchFilter(e.target.value as 'pending' | 'resolved' | 'all')}
-                className="px-2 py-1 border border-gray-300 rounded text-sm"
-              >
-                <option value="pending">Pending</option>
-                <option value="resolved">Resolved</option>
-                <option value="all">All</option>
-              </select>
-              <button
-                onClick={loadFinanceMatches}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-              >
-                Refresh
-              </button>
+      {/* Matches View */}
+      {financeView === 'matches' && (
+        <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-semibold">Linked Payments</h3>
+                <p className="text-sm text-gray-500">Review and confirm linked payment actions</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={matchFilter}
+                  onChange={(e) => setMatchFilter(e.target.value as 'pending' | 'resolved' | 'all')}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  <option value="pending">Pending ({pendingMatchCount})</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="all">All</option>
+                </select>
+                <button
+                  onClick={loadFinanceMatches}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                >
+                  Refresh
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-4">
-          {loadingMatches ? (
-            <div className="text-center py-4 text-gray-500">Loading matches...</div>
-          ) : filteredMatches.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
-              {matchFilter === 'pending' ? 'No pending matches' : 'No matches found'}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredMatches.map((match) => (
-                <div
-                  key={match.id}
-                  className={`border rounded-lg p-4 ${
-                    match.status === 'pending' ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded ${
-                          match.source === 'stripe' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {match.source}
-                        </span>
-                        <span className="font-medium text-gray-900">
-                          {match.currency} {match.amount.toLocaleString()}
-                        </span>
-                        <span className="text-gray-400">→</span>
-                        <span className="font-medium text-fase-navy">{match.accountName}</span>
-                        <span className={`px-2 py-0.5 text-xs rounded ${
-                          match.paymentType === 'membership' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {match.paymentType}
-                        </span>
+          <div className="p-4">
+            {loadingMatches ? (
+              <div className="text-center py-8 text-gray-500">Loading matches...</div>
+            ) : filteredMatches.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {matchFilter === 'pending' ? 'No pending matches - all caught up!' : 'No matches found'}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredMatches.map((match) => (
+                  <div
+                    key={match.id}
+                    className={`border rounded-lg p-4 ${
+                      match.status === 'pending' ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                            match.source === 'stripe' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {match.source}
+                          </span>
+                          <span className="font-medium text-gray-900">
+                            {match.currency} {match.amount.toLocaleString()}
+                          </span>
+                          <span className="text-gray-400">→</span>
+                          <span className="font-medium text-fase-navy">{match.accountName}</span>
+                          <span className={`px-2 py-0.5 text-xs rounded ${
+                            match.paymentType === 'membership' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {match.paymentType}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Linked {match.createdAt ? formatMatchDate(match.createdAt) : 'recently'}
+                          {match.senderName && ` • From: ${match.senderName}`}
+                          {match.reference && ` • Ref: ${match.reference}`}
+                        </div>
+                        {match.status === 'resolved' && match.resolution && (
+                          <div className="text-sm text-green-700">
+                            ✓ {match.resolution}
+                            {match.resolvedAt && ` (${formatMatchDate(match.resolvedAt)})`}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Linked {match.createdAt ? formatMatchDate(match.createdAt) : 'recently'}
-                        {match.senderName && ` • From: ${match.senderName}`}
-                        {match.reference && ` • Ref: ${match.reference}`}
-                      </div>
-                      {match.status === 'resolved' && match.resolution && (
-                        <div className="text-sm text-green-700">
-                          ✓ {match.resolution}
-                          {match.resolvedAt && ` (${formatMatchDate(match.resolvedAt)})`}
+
+                      {match.status === 'pending' && (
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleResolveMatch(match.id, 'Invoice sent')}
+                            disabled={resolvingMatch === match.id}
+                            className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Invoice Sent
+                          </button>
+                          <button
+                            onClick={() => handleResolveMatch(match.id, 'Already paid')}
+                            disabled={resolvingMatch === match.id}
+                            className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            Already Paid
+                          </button>
+                          <button
+                            onClick={() => {
+                              const note = prompt('Enter resolution note:');
+                              if (note) handleResolveMatch(match.id, note);
+                            }}
+                            disabled={resolvingMatch === match.id}
+                            className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                          >
+                            Other...
+                          </button>
                         </div>
                       )}
                     </div>
-
-                    {match.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleResolveMatch(match.id, 'Invoice sent')}
-                          disabled={resolvingMatch === match.id}
-                          className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                        >
-                          Invoice Sent
-                        </button>
-                        <button
-                          onClick={() => handleResolveMatch(match.id, 'Already paid')}
-                          disabled={resolvingMatch === match.id}
-                          className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          Already Paid
-                        </button>
-                        <button
-                          onClick={() => {
-                            const note = prompt('Enter resolution note:');
-                            if (note) handleResolveMatch(match.id, note);
-                          }}
-                          disabled={resolvingMatch === match.id}
-                          className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
-                        >
-                          Other...
-                        </button>
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
+      {/* Transactions View */}
+      {financeView === 'transactions' && (
+        <>
       {/* Payments Table */}
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="p-4 border-b border-gray-200">
@@ -919,6 +945,8 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
           </table>
         </div>
       </div>
+        </>
+      )}
 
       {/* Transaction Management Modal */}
       {selectedTransaction && (
