@@ -15,6 +15,7 @@ import type {
   SortDirection,
   LinkedPayment,
   LinkedPaymentType,
+  MatchCandidate,
 } from '@/lib/admin-types';
 import type { UnifiedMember } from '@/lib/unified-member';
 import { matchPayment, formatMatchSummary, type PaymentMatch } from '@/lib/payment-matching';
@@ -76,6 +77,10 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
   // Payment linking state
   const [linkPaymentType, setLinkPaymentType] = useState<LinkedPaymentType>('membership');
   const [linkingPayment, setLinkingPayment] = useState(false);
+
+  // Auto-link state
+  const [autoLinking, setAutoLinking] = useState(false);
+  const [autoLinkResults, setAutoLinkResults] = useState<{ linked: number; skipped: number } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -451,6 +456,111 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     }
   };
 
+  // Quick link a transaction to a suggested match
+  const handleQuickLink = async (tx: Transaction, candidate: MatchCandidate) => {
+    try {
+      // Determine payment type from payment match
+      let paymentType: LinkedPaymentType = 'membership';
+      if (tx.paymentMatch?.suggestions?.[0]?.type === 'rendezvous') {
+        paymentType = 'rendezvous';
+      }
+
+      const response = await authPost('/api/admin/finance/link', {
+        transactionId: tx.id,
+        source: tx.source,
+        accountId: candidate.accountId,
+        accountName: candidate.accountName,
+        paymentType,
+        amount: tx.amount,
+        currency: tx.currency,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to link payment');
+      }
+
+      // Update local state
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === tx.id && t.source === tx.source
+            ? {
+                ...t,
+                linkedPayment: {
+                  id: `${tx.source}_${tx.id}`,
+                  transactionId: tx.id,
+                  source: tx.source,
+                  accountId: candidate.accountId,
+                  accountName: candidate.accountName,
+                  paymentType,
+                  amount: tx.amount,
+                  currency: tx.currency,
+                  linkedAt: new Date().toISOString(),
+                  linkedBy: 'admin',
+                  linkedByName: 'Admin',
+                },
+                matchCandidates: undefined,
+                autoLinkCandidate: undefined,
+              }
+            : t
+        )
+      );
+    } catch (err: any) {
+      console.error('Failed to quick link:', err);
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  // Auto-link all high-confidence unlinked transactions
+  const handleAutoLinkAll = async () => {
+    const eligibleTransactions = transactions.filter(
+      tx => !tx.linkedPayment && !tx.suppressed && tx.autoLinkCandidate
+    );
+
+    if (eligibleTransactions.length === 0) {
+      alert('No transactions eligible for auto-linking');
+      return;
+    }
+
+    if (!confirm(`Auto-link ${eligibleTransactions.length} transactions to their suggested matches?`)) {
+      return;
+    }
+
+    setAutoLinking(true);
+    setAutoLinkResults(null);
+
+    try {
+      const response = await authPost('/api/admin/finance/auto-link', {
+        transactions: eligibleTransactions.map(tx => ({
+          id: tx.id,
+          source: tx.source,
+          amount: tx.amount,
+          amountEur: tx.amountEur,
+          currency: tx.currency,
+          senderName: tx.senderName,
+          email: tx.email,
+          reference: tx.reference,
+          description: tx.description,
+        })),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Auto-link failed');
+      }
+
+      setAutoLinkResults({ linked: data.linkedCount, skipped: data.skippedCount });
+
+      // Reload transactions to get updated state
+      loadData();
+    } catch (err: any) {
+      console.error('Auto-link failed:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setAutoLinking(false);
+    }
+  };
+
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     return new Intl.NumberFormat('en-EU', {
       style: 'currency',
@@ -483,6 +593,9 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
       invoice_generated: '📄',
       note_added: '📝',
       matched_to_member: '🔗',
+      linked_to_member: '🔗',
+      auto_linked_to_member: '⚡',
+      unlinked_from_member: '🔓',
       manual_entry: '✏️',
       suppressed: '🚫',
       unsuppressed: '✅',
@@ -572,6 +685,24 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
         </p>
       </div>
 
+      {/* Auto-link Results Banner */}
+      {autoLinkResults && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium text-green-800">Auto-Link Complete</div>
+            <p className="text-sm text-green-700">
+              {autoLinkResults.linked} payments linked, {autoLinkResults.skipped} skipped
+            </p>
+          </div>
+          <button
+            onClick={() => setAutoLinkResults(null)}
+            className="text-green-600 hover:text-green-800"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Payments Table */}
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="p-4 border-b border-gray-200">
@@ -622,6 +753,15 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
               >
                 Refresh
               </button>
+              {transactions.filter(tx => !tx.linkedPayment && !tx.suppressed && tx.autoLinkCandidate).length > 0 && (
+                <button
+                  onClick={handleAutoLinkAll}
+                  disabled={autoLinking}
+                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                >
+                  {autoLinking ? 'Linking...' : `Auto-Link (${transactions.filter(tx => !tx.linkedPayment && !tx.suppressed && tx.autoLinkCandidate).length})`}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -686,18 +826,38 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={tx.reference}>
                       {tx.reference || '-'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {(() => {
-                        const match = getPaymentMatch(tx);
-                        return (
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getMatchBadgeColor(match.confidence)}`}
-                            title={match.suggestions.length > 0 ? match.suggestions.map(s => s.description).join(', ') : 'No match found'}
+                    <td className="px-4 py-3">
+                      {tx.linkedPayment ? (
+                        <span className="text-xs text-gray-400">—</span>
+                      ) : tx.autoLinkCandidate ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleQuickLink(tx, tx.autoLinkCandidate!)}
+                            className="group flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+                            title={`Auto-link to ${tx.autoLinkCandidate.accountName} (${tx.autoLinkCandidate.score} points)`}
                           >
-                            {formatMatchSummary(match)}
+                            <span className="truncate max-w-[120px]">{tx.autoLinkCandidate.accountName}</span>
+                            <span className="text-green-600 group-hover:text-green-700">→</span>
+                          </button>
+                        </div>
+                      ) : tx.matchCandidates && tx.matchCandidates.length > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <span
+                            className="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800"
+                            title={tx.matchCandidates.map(c => `${c.accountName} (${c.score})`).join(', ')}
+                          >
+                            {tx.matchCandidates[0].accountName.slice(0, 15)}...
                           </span>
-                        );
-                      })()}
+                          <span className="text-xs text-yellow-600">({tx.matchCandidates[0].score})</span>
+                        </div>
+                      ) : (
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getMatchBadgeColor(getPaymentMatch(tx).confidence)}`}
+                          title={getPaymentMatch(tx).suggestions.length > 0 ? getPaymentMatch(tx).suggestions.map(s => s.description).join(', ') : 'No match found'}
+                        >
+                          {formatMatchSummary(getPaymentMatch(tx))}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {tx.linkedPayment ? (

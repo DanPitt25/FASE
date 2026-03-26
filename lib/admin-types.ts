@@ -246,6 +246,35 @@ export interface LinkedPayment {
   notes?: string;
 }
 
+/** Match candidate for payment-to-account linking */
+export interface MatchCandidate {
+  accountId: string;
+  accountName: string;
+  score: number;
+  confidence: 'high' | 'medium' | 'low';
+  signals: Array<{
+    type: 'email' | 'name' | 'amount' | 'reference';
+    description: string;
+    points: number;
+  }>;
+}
+
+/** Payment match result from pricing analysis */
+export interface PaymentMatchResult {
+  confidence: 'exact' | 'likely' | 'unknown';
+  suggestions: Array<{
+    type: 'membership' | 'rendezvous';
+    description: string;
+    amount: number;
+    details?: string;
+    lineItems?: Array<{
+      description: string;
+      quantity: number;
+      unitPrice: number;
+    }>;
+  }>;
+}
+
 /** Transaction from payment provider */
 export interface Transaction {
   id: string;
@@ -262,6 +291,10 @@ export interface Transaction {
   suppressed?: boolean;
   // Linked payment info (populated when fetched)
   linkedPayment?: LinkedPayment;
+  // Match suggestions from finance-matching
+  matchCandidates?: MatchCandidate[];
+  autoLinkCandidate?: MatchCandidate | null;
+  paymentMatch?: PaymentMatchResult;
 }
 
 /** Payment activity log entry */

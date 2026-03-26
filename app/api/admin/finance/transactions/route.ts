@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { verifyAdminAccess, isAuthError } from '@/lib/admin-auth';
 import { adminDb } from '@/lib/firebase-admin';
+import {
+  findMatchingAccounts,
+  TransactionData,
+  AccountData,
+  MatchCandidate,
+} from '@/lib/finance-matching';
+import { PaymentMatch } from '@/lib/payment-matching';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +57,10 @@ interface Transaction {
   description?: string;
   suppressed?: boolean; // Hidden from reports
   linkedPayment?: LinkedPaymentInfo; // Linked member info
+  // Match suggestions
+  matchCandidates?: MatchCandidate[];
+  autoLinkCandidate?: MatchCandidate | null;
+  paymentMatch?: PaymentMatch;
 }
 
 // Approximate exchange rates - updated periodically
@@ -86,6 +97,7 @@ export async function GET(request: NextRequest) {
     const fromDate = searchParams.get('from');
     const toDate = searchParams.get('to');
     const hideSuppressed = searchParams.get('hideSuppressed') === 'true';
+    const includeMatching = searchParams.get('includeMatching') !== 'false'; // Default true
 
     const now = new Date();
     const from = fromDate ? new Date(fromDate) : null;
@@ -107,6 +119,22 @@ export async function GET(request: NextRequest) {
         linkedAt: doc.data().linkedAt?.toDate?.()?.toISOString() || null,
       }])
     );
+
+    // Get all accounts for matching (only if matching is enabled)
+    let accounts: AccountData[] = [];
+    if (includeMatching) {
+      const accountsSnapshot = await adminDb.collection('accounts').get();
+      accounts = accountsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          organizationName: data.organizationName || '',
+          email: data.email || data.primaryContact?.email,
+          primaryContact: data.primaryContact,
+          organizationType: data.organizationType,
+        };
+      }).filter(acc => acc.organizationName); // Only accounts with org names
+    }
 
     // Get exchange rates for EUR conversion
     const exchangeRates = await getExchangeRates();
@@ -233,6 +261,31 @@ export async function GET(request: NextRequest) {
     // Optionally hide suppressed transactions (for View mode)
     if (hideSuppressed) {
       filteredTransactions = filteredTransactions.filter((t) => !t.suppressed);
+    }
+
+    // Add match candidates for unlinked transactions
+    if (includeMatching && accounts.length > 0) {
+      for (const tx of filteredTransactions) {
+        // Skip if already linked
+        if (tx.linkedPayment) continue;
+
+        const txData: TransactionData = {
+          id: tx.id,
+          source: tx.source,
+          amount: tx.amount,
+          amountEur: tx.amountEur,
+          currency: tx.currency,
+          senderName: tx.senderName,
+          email: tx.email,
+          reference: tx.reference,
+          description: tx.description,
+        };
+
+        const matchResult = findMatchingAccounts(txData, accounts);
+        tx.matchCandidates = matchResult.candidates;
+        tx.autoLinkCandidate = matchResult.autoLinkCandidate;
+        tx.paymentMatch = matchResult.paymentMatch;
+      }
     }
 
     // Sort by date descending
