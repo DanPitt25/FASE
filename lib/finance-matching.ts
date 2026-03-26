@@ -160,7 +160,21 @@ function containsSignificantPortion(haystack: string, needle: string): boolean {
   if (!normalizedHaystack || !normalizedNeedle) return false;
   if (normalizedNeedle.length < 3) return false; // Too short to be meaningful
 
-  return normalizedHaystack.includes(normalizedNeedle);
+  // Check full name containment
+  if (normalizedHaystack.includes(normalizedNeedle)) return true;
+
+  // Check if significant words from needle appear in haystack
+  // (e.g., "Wholesale Insurance" should match "wholesale" in reference)
+  const needleWords = normalizedNeedle.split(' ').filter(w => w.length >= 4);
+  const haystackWords = normalizedHaystack.split(' ');
+
+  for (const needleWord of needleWords) {
+    if (haystackWords.some(hw => hw === needleWord || hw.includes(needleWord) || needleWord.includes(hw))) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // =============================================================================
@@ -177,7 +191,7 @@ export function calculateMatchScore(
   const signals: MatchSignal[] = [];
   let totalScore = 0;
 
-  // Signal 1: Email Match (50 points for exact match)
+  // Signal 1: Email Match (50 points for exact match, 30 for domain match)
   if (transaction.email) {
     const txEmail = transaction.email.toLowerCase().trim();
     const accountEmail = account.email?.toLowerCase().trim();
@@ -190,12 +204,33 @@ export function calculateMatchScore(
         points: 50
       });
       totalScore += 50;
+    } else {
+      // Check domain match (e.g., someone@loro.io matches peter@loro.io)
+      const txDomain = txEmail.split('@')[1];
+      const accountDomain = accountEmail?.split('@')[1];
+      const contactDomain = contactEmail?.split('@')[1];
+
+      // Only match non-generic domains (exclude gmail, hotmail, etc.)
+      const genericDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'aol.com', 'live.com', 'msn.com', 'me.com', 'protonmail.com'];
+
+      if (txDomain && !genericDomains.includes(txDomain)) {
+        if (txDomain === accountDomain || txDomain === contactDomain) {
+          signals.push({
+            type: 'email',
+            description: `Email domain match: @${txDomain}`,
+            points: 30
+          });
+          totalScore += 30;
+        }
+      }
     }
   }
 
-  // Signal 2: Organization Name Match (40 exact, 25 fuzzy)
+  // Signal 2: Organization Name Match (40 exact, 25 fuzzy, 20 containment)
   if (transaction.senderName && account.organizationName) {
     const similarity = stringSimilarity(transaction.senderName, account.organizationName);
+    const normalizedTxName = normalizeString(transaction.senderName);
+    const normalizedAccName = normalizeString(account.organizationName);
 
     if (similarity === 1) {
       signals.push({
@@ -220,6 +255,16 @@ export function calculateMatchScore(
         points
       });
       totalScore += points;
+    } else if (normalizedTxName.length >= 3 && normalizedAccName.length >= 3) {
+      // Check for containment - one name contains the other
+      if (normalizedTxName.includes(normalizedAccName) || normalizedAccName.includes(normalizedTxName)) {
+        signals.push({
+          type: 'name',
+          description: `Name contained: "${transaction.senderName}" ↔ "${account.organizationName}"`,
+          points: 20
+        });
+        totalScore += 20;
+      }
     }
   }
 
@@ -241,7 +286,7 @@ export function calculateMatchScore(
     totalScore += 8;
   }
 
-  // Signal 4: Reference Contains Keywords (10 points)
+  // Signal 4: Reference Contains Keywords (15 points for org name, 5 for FASE invoice)
   if (transaction.reference || transaction.description) {
     const refText = `${transaction.reference || ''} ${transaction.description || ''}`.toLowerCase();
 
@@ -250,9 +295,9 @@ export function calculateMatchScore(
       signals.push({
         type: 'reference',
         description: `Reference mentions organization name`,
-        points: 10
+        points: 15
       });
-      totalScore += 10;
+      totalScore += 15;
     }
 
     // Check for FASE invoice number pattern
@@ -263,6 +308,23 @@ export function calculateMatchScore(
         points: 5
       });
       totalScore += 5;
+    }
+  }
+
+  // Signal 5: If transaction has no senderName, try to match reference/description against org name
+  // This helps with Wise payments that don't have clear sender names
+  if (!transaction.senderName && (transaction.reference || transaction.description)) {
+    const combinedText = `${transaction.reference || ''} ${transaction.description || ''}`;
+    const similarity = stringSimilarity(combinedText, account.organizationName);
+
+    if (similarity >= 0.6) {
+      const points = Math.round(20 * similarity);
+      signals.push({
+        type: 'name',
+        description: `Reference matches org name (${Math.round(similarity * 100)}%): ${combinedText.slice(0, 50)}`,
+        points
+      });
+      totalScore += points;
     }
   }
 
@@ -299,7 +361,8 @@ export function findMatchingAccounts(
     .sort((a, b) => b.score - a.score);
 
   // Take top candidates (those scoring above threshold)
-  const topCandidates = candidates.filter(c => c.score >= 30).slice(0, 5);
+  // Lower threshold to 15 to show matches with even a single signal (e.g. just amount)
+  const topCandidates = candidates.filter(c => c.score >= 15).slice(0, 5);
 
   // Determine if we should auto-link
   let autoLinkCandidate: MatchCandidate | null = null;

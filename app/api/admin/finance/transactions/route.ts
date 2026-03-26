@@ -126,11 +126,13 @@ export async function GET(request: NextRequest) {
       const accountsSnapshot = await adminDb.collection('accounts').get();
       accounts = accountsSnapshot.docs.map(doc => {
         const data = doc.data();
+        // Try multiple email sources: account email, admin email, or primary contact email
+        const accountEmail = data.email || data.accountAdministrator?.email || data.primaryContact?.email;
         return {
           id: doc.id,
           organizationName: data.organizationName || '',
-          email: data.email || data.primaryContact?.email,
-          primaryContact: data.primaryContact,
+          email: accountEmail,
+          primaryContact: data.accountAdministrator || data.primaryContact,
           organizationType: data.organizationType,
         };
       }).filter(acc => acc.organizationName); // Only accounts with org names
