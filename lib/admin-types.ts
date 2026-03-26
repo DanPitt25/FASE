@@ -228,7 +228,7 @@ export interface FlattenedAttendee {
 export type PaymentSource = 'stripe' | 'wise';
 
 /** Payment type when linked to a member */
-export type LinkedPaymentType = 'membership' | 'rendezvous';
+export type LinkedPaymentType = 'membership' | 'rendezvous' | 'not_a_member';
 
 /** Linked payment record stored in Firestore */
 export interface LinkedPayment {

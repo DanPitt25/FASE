@@ -89,7 +89,7 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     reference?: string;
     accountId: string;
     accountName: string;
-    paymentType: 'membership' | 'rendezvous';
+    paymentType: 'membership' | 'rendezvous' | 'not_a_member';
     status: 'pending' | 'resolved';
     resolution?: string;
     resolvedAt?: string;
@@ -486,6 +486,78 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
     }
   };
 
+  // Link payment as "Not a Member"
+  const handleLinkPaymentNotAMember = async () => {
+    if (!selectedTransaction) return;
+
+    setLinkingPayment(true);
+    try {
+      const response = await authPost('/api/admin/finance/link', {
+        transactionId: selectedTransaction.id,
+        source: selectedTransaction.source,
+        accountId: 'NOT_A_MEMBER',
+        accountName: 'Not a Member',
+        paymentType: 'not_a_member',
+        amount: selectedTransaction.amount,
+        currency: selectedTransaction.currency,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to link payment');
+      }
+
+      // Update local state
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === selectedTransaction.id && t.source === selectedTransaction.source
+            ? {
+                ...t,
+                linkedPayment: {
+                  id: `${selectedTransaction.source}_${selectedTransaction.id}`,
+                  transactionId: selectedTransaction.id,
+                  source: selectedTransaction.source,
+                  accountId: 'NOT_A_MEMBER',
+                  accountName: 'Not a Member',
+                  paymentType: 'not_a_member',
+                  amount: selectedTransaction.amount,
+                  currency: selectedTransaction.currency,
+                  linkedAt: new Date().toISOString(),
+                  linkedBy: 'admin',
+                  linkedByName: 'Admin',
+                },
+              }
+            : t
+        )
+      );
+
+      // Update selected transaction
+      setSelectedTransaction({
+        ...selectedTransaction,
+        linkedPayment: {
+          id: `${selectedTransaction.source}_${selectedTransaction.id}`,
+          transactionId: selectedTransaction.id,
+          source: selectedTransaction.source,
+          accountId: 'NOT_A_MEMBER',
+          accountName: 'Not a Member',
+          paymentType: 'not_a_member',
+          amount: selectedTransaction.amount,
+          currency: selectedTransaction.currency,
+          linkedAt: new Date().toISOString(),
+          linkedBy: 'admin',
+          linkedByName: 'Admin',
+        },
+      });
+
+      loadPaymentCrmData(selectedTransaction.id, selectedTransaction.source);
+    } catch (err: any) {
+      console.error('Failed to link payment:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLinkingPayment(false);
+    }
+  };
+
   // Unlink payment from member
   const handleUnlinkPayment = async () => {
     if (!selectedTransaction || !confirm('Unlink this payment from the member?')) return;
@@ -736,9 +808,11 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                           <span className="text-gray-400">→</span>
                           <span className="font-medium text-fase-navy">{match.accountName}</span>
                           <span className={`px-2 py-0.5 text-xs rounded ${
-                            match.paymentType === 'membership' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                            match.paymentType === 'membership' ? 'bg-green-100 text-green-800' :
+                            match.paymentType === 'rendezvous' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-600'
                           }`}>
-                            {match.paymentType}
+                            {match.paymentType === 'not_a_member' ? 'not a member' : match.paymentType}
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">
@@ -910,10 +984,17 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                     <td className="px-4 py-3 whitespace-nowrap">
                       {tx.linkedPayment ? (
                         <span
-                          className="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800"
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                            tx.linkedPayment.paymentType === 'not_a_member'
+                              ? 'bg-gray-100 text-gray-600'
+                              : 'bg-green-100 text-green-800'
+                          }`}
                           title={`${tx.linkedPayment.paymentType} - ${tx.linkedPayment.accountName}`}
                         >
-                          {tx.linkedPayment.paymentType === 'membership' ? '✓ Membership' : '✓ Rendezvous'}: {tx.linkedPayment.accountName}
+                          {tx.linkedPayment.paymentType === 'membership' ? '✓ Membership' :
+                           tx.linkedPayment.paymentType === 'rendezvous' ? '✓ Rendezvous' :
+                           '✗ Not a Member'}
+                          {tx.linkedPayment.paymentType !== 'not_a_member' && `: ${tx.linkedPayment.accountName}`}
                         </span>
                       ) : (
                         <span className="inline-flex px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-500">
@@ -1056,16 +1137,34 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                     <div className="text-sm font-medium text-gray-700 mb-3">Link to Member</div>
 
                     {selectedTransaction.linkedPayment ? (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className={`border rounded-lg p-4 ${
+                        selectedTransaction.linkedPayment.paymentType === 'not_a_member'
+                          ? 'bg-gray-50 border-gray-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium text-blue-900">
+                            <div className={`font-medium ${
+                              selectedTransaction.linkedPayment.paymentType === 'not_a_member'
+                                ? 'text-gray-700'
+                                : 'text-blue-900'
+                            }`}>
                               {selectedTransaction.linkedPayment.accountName}
                             </div>
-                            <div className="text-sm text-blue-700">
-                              {selectedTransaction.linkedPayment.paymentType === 'membership' ? 'FASE Membership' : 'MGA Rendezvous'}
+                            <div className={`text-sm ${
+                              selectedTransaction.linkedPayment.paymentType === 'not_a_member'
+                                ? 'text-gray-600'
+                                : 'text-blue-700'
+                            }`}>
+                              {selectedTransaction.linkedPayment.paymentType === 'membership' ? 'FASE Membership' :
+                               selectedTransaction.linkedPayment.paymentType === 'rendezvous' ? 'MGA Rendezvous' :
+                               'Marked as not a member payment'}
                               {selectedTransaction.linkedPayment.linkedAt && (
-                                <span className="text-blue-500 ml-2">
+                                <span className={`ml-2 ${
+                                  selectedTransaction.linkedPayment.paymentType === 'not_a_member'
+                                    ? 'text-gray-500'
+                                    : 'text-blue-500'
+                                }`}>
                                   • Linked {formatDateTime(selectedTransaction.linkedPayment.linkedAt)}
                                 </span>
                               )}
@@ -1165,6 +1264,20 @@ export default function FinanceManageTab({ memberApplications }: FinanceManageTa
                               </label>
                             </div>
                           </div>
+                        )}
+
+                        {/* Not a Member Option */}
+                        {!selectedMember && (
+                          <button
+                            onClick={() => {
+                              setLinkPaymentType('not_a_member');
+                              handleLinkPaymentNotAMember();
+                            }}
+                            disabled={linkingPayment}
+                            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {linkingPayment ? 'Linking...' : 'Mark as Not a Member'}
+                          </button>
                         )}
 
                         {/* Link Button */}

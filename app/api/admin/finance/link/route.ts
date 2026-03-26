@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['membership', 'rendezvous'].includes(paymentType)) {
+    if (!['membership', 'rendezvous', 'not_a_member'].includes(paymentType)) {
       return NextResponse.json(
-        { error: 'Invalid paymentType. Must be "membership" or "rendezvous"' },
+        { error: 'Invalid paymentType. Must be "membership", "rendezvous", or "not_a_member"' },
         { status: 400 }
       );
     }

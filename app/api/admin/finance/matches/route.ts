@@ -17,7 +17,7 @@ export interface FinanceMatch {
   // Link info
   accountId: string;
   accountName: string;
-  paymentType: 'membership' | 'rendezvous';
+  paymentType: 'membership' | 'rendezvous' | 'not_a_member';
   // Status
   status: 'pending' | 'resolved';
   resolvedAt?: string;
