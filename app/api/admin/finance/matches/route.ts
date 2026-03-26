@@ -60,12 +60,15 @@ export async function GET(request: NextRequest) {
 
     const snapshot = await query.get();
 
-    const matches = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
-      resolvedAt: doc.data().resolvedAt?.toDate?.()?.toISOString() || null,
-    }));
+    const matches = snapshot.docs.map(doc => {
+      const data = doc.data() as Omit<FinanceMatch, 'id'>;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: (doc.data().createdAt as any)?.toDate?.()?.toISOString() || null,
+        resolvedAt: (doc.data().resolvedAt as any)?.toDate?.()?.toISOString() || null,
+      };
+    });
 
     // Count by status
     const pendingCount = matches.filter(m => m.status === 'pending').length;
