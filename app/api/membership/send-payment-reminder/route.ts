@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
       </p>
 
       <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">
-        As a reminder, <strong>FASE members receive a 50% discount on passes to the MGA Rendezvous</strong>, our annual conference taking place 11-12 May 2026 in Barcelona. Early registrations are available now at <a href="https://mgarendezvous.com" style="color: #2D5574;">mgarendezvous.com</a>.
+        ${reminderEmail.rendezvous_benefit || 'As a reminder, <strong>FASE members receive a 50% discount on passes to the MGA Rendezvous</strong>, our annual conference taking place 11-12 May 2026 in Barcelona. Early registrations are available now at <a href="https://mgarendezvous.com" style="color: #2D5574;">mgarendezvous.com</a>.'}
       </p>
 
       <p style="font-size: 16px; line-height: 1.5; color: #333; margin: 0 0 15px 0;">

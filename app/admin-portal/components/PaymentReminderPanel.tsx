@@ -14,7 +14,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import { authFetch, authPost } from '@/lib/auth-fetch';
 import { UnifiedMember } from '@/lib/unified-member';
-import { calculateMembershipFee } from '@/lib/pricing';
+import { calculateMembershipFee, calculateRendezvousTotal, getOrgTypeLabel } from '@/lib/pricing';
 import { SUPPORTED_LANGUAGES } from '@/lib/email-constants';
 
 interface PaymentReminderPanelProps {
@@ -36,6 +36,21 @@ interface CompanyMember {
   personalName: string;
   jobTitle?: string;
   isAccountAdministrator?: boolean;
+}
+
+interface RendezvousRegistration {
+  registrationId: string;
+  accountId: string;
+  numberOfAttendees: number;
+  billingInfo?: {
+    organizationType?: string;
+  };
+  companyIsFaseMember?: boolean;
+  isAsaseMember?: boolean;
+  status: string;
+  paymentStatus: string;
+  totalPrice: number;
+  attendees?: { firstName: string; lastName: string; email: string; jobTitle?: string }[];
 }
 
 export default function PaymentReminderPanel({
@@ -66,6 +81,10 @@ export default function PaymentReminderPanel({
   // Company members for recipient selection
   const [companyMembers, setCompanyMembers] = useState<CompanyMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+
+  // Rendezvous registration (pending payment)
+  const [rendezvousRegistration, setRendezvousRegistration] = useState<RendezvousRegistration | null>(null);
+  const [rendezvousIncluded, setRendezvousIncluded] = useState(false);
 
   // UI state
   const [sending, setSending] = useState(false);
@@ -129,6 +148,81 @@ export default function PaymentReminderPanel({
       setLineItems(defaultItems);
     }
   }, [memberData]);
+
+  // Add Rendezvous line item when registration is found and included
+  useEffect(() => {
+    if (rendezvousRegistration && rendezvousIncluded) {
+      // Check if we already have a rendezvous line item
+      const hasRendezvousItem = lineItems.some(item => item.description.includes('MGA Rendezvous'));
+      if (hasRendezvousItem) return;
+
+      const passOrgType = rendezvousRegistration.billingInfo?.organizationType || memberData?.organizationType || 'MGA';
+      const passCount = rendezvousRegistration.numberOfAttendees || 1;
+      const isFaseMember = rendezvousRegistration.companyIsFaseMember !== false;
+      const isAsaseMember = rendezvousRegistration.isAsaseMember || false;
+      const rendezvousTotal = calculateRendezvousTotal(passOrgType, passCount, isFaseMember, isAsaseMember).subtotal;
+      const passLabel = getOrgTypeLabel(passOrgType);
+
+      if (rendezvousTotal > 0) {
+        setLineItems(prev => [...prev, {
+          id: generateId(),
+          description: `MGA Rendezvous 2026 Pass${passCount > 1 ? 'es' : ''} (${passLabel} - ${passCount}x)`,
+          quantity: 1,
+          unitPrice: rendezvousTotal,
+        }]);
+      }
+    }
+  }, [rendezvousRegistration, rendezvousIncluded, memberData?.organizationType]);
+
+  // Check for Rendezvous - both legacy account field and fetched registration
+  useEffect(() => {
+    // First check legacy account-level field (rendezvousPassReservation)
+    const passData = memberData?.rendezvousPassReservation;
+    if (passData?.reserved || passData?.passCount) {
+      // Convert legacy format to RendezvousRegistration format
+      setRendezvousRegistration({
+        registrationId: 'legacy',
+        accountId: companyId,
+        numberOfAttendees: passData.passCount || 1,
+        billingInfo: {
+          organizationType: passData.organizationType || memberData?.organizationType || 'MGA',
+        },
+        companyIsFaseMember: passData.isFaseMember !== false,
+        isAsaseMember: passData.isAsaseMember || false,
+        status: 'pending',
+        paymentStatus: 'pending',
+        totalPrice: calculateRendezvousTotal(
+          passData.organizationType || memberData?.organizationType || 'MGA',
+          passData.passCount || 1,
+          passData.isFaseMember !== false,
+          passData.isAsaseMember || false
+        ).subtotal,
+        attendees: passData.attendees || [],
+      });
+      return; // Don't fetch if legacy data exists
+    }
+
+    // Then fetch from rendezvous-registrations collection
+    const fetchRendezvousRegistration = async () => {
+      if (!memberData?.email && !memberData?.organizationName) return;
+
+      try {
+        const response = await authFetch(
+          `/api/admin/rendezvous-lookup?email=${encodeURIComponent(memberData.email || '')}&company=${encodeURIComponent(memberData.organizationName || '')}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data.registration && data.registration.status !== 'confirmed' && data.registration.paymentStatus !== 'paid') {
+            setRendezvousRegistration(data.registration);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch rendezvous registration:', error);
+      }
+    };
+
+    fetchRendezvousRegistration();
+  }, [memberData?.email, memberData?.organizationName, memberData?.rendezvousPassReservation, companyId]);
 
   // Fetch company members
   useEffect(() => {
@@ -356,6 +450,37 @@ export default function PaymentReminderPanel({
           <p className="text-xs text-amber-700 mt-1">
             This date will be referenced in the payment reminder email.
           </p>
+        </div>
+      )}
+
+      {/* Rendezvous Registration Notice */}
+      {rendezvousRegistration && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-amber-800">MGA Rendezvous Registration Found</p>
+              <p className="text-xs text-amber-700 mt-1">
+                {rendezvousRegistration.numberOfAttendees} pass{rendezvousRegistration.numberOfAttendees !== 1 ? 'es' : ''} reserved (
+                {rendezvousRegistration.isAsaseMember ? 'ASASE member - complimentary' : `€${rendezvousRegistration.totalPrice?.toLocaleString() || '0'}`}
+                )
+              </p>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rendezvousIncluded}
+                onChange={(e) => {
+                  setRendezvousIncluded(e.target.checked);
+                  if (!e.target.checked) {
+                    // Remove rendezvous line item if unchecked
+                    setLineItems(prev => prev.filter(item => !item.description.includes('MGA Rendezvous')));
+                  }
+                }}
+                className="w-4 h-4 text-fase-navy border-gray-300 rounded focus:ring-fase-navy"
+              />
+              <span className="text-sm text-amber-800">Include in reminder</span>
+            </label>
+          </div>
         </div>
       )}
 
