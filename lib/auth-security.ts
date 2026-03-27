@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb, FieldValue } from './firebase-admin';
 import * as admin from 'firebase-admin';
+import { reportServerError } from './error-reporter';
 
 // Use the shared Firebase Admin instances
 const getAdminServices = () => {
@@ -141,10 +142,17 @@ export async function logSecurityEvent(event: {
       details: event.details
     });
     
-    // For critical events, you could trigger immediate alerts here
+    // For critical events, send email alert
     if (event.severity === 'critical') {
       console.error(`[CRITICAL SECURITY EVENT] ${event.type}:`, event);
-      // TODO: Integrate with alerting system (email, Slack, etc.)
+      reportServerError(
+        new Error(`Critical security event: ${event.type}`),
+        {
+          securityEvent: true,
+          ...event
+        },
+        'critical'
+      ).catch(() => {});
     }
   } catch (error) {
     console.error('Failed to log security event:', error);
