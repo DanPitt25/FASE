@@ -2,18 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { searchPages } from '../../lib/search';
-
-interface SearchResult {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  category: string;
-}
+import { useLocale } from 'next-intl';
+import Link from 'next/link';
+import { searchPages, SearchResult } from '../../lib/search';
 
 export default function SearchContent() {
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const [query, setQuery] = useState<string>('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -26,7 +21,7 @@ export default function SearchContent() {
       setQuery(q);
       performSearch(q);
     }
-  }, [searchParams]);
+  }, [searchParams, locale]);
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -37,7 +32,7 @@ export default function SearchContent() {
 
     setLoading(true);
     try {
-      const searchResults = await searchPages(searchQuery);
+      const searchResults = await searchPages(searchQuery, locale);
       setResults(searchResults);
       setTotalResults(searchResults.length);
     } catch (error) {
@@ -56,7 +51,9 @@ export default function SearchContent() {
 
   const highlightText = (text: string, searchTerm: string): string => {
     if (!searchTerm) return text;
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    // Escape special regex characters in search term
+    const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
     return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
   };
 
@@ -96,55 +93,55 @@ export default function SearchContent() {
           </div>
         )}
 
-          {/* Results List */}
-          {!loading && results.length > 0 && (
-            <div className="space-y-4">
-              {results.map((result) => (
-                <div key={result.id} className="border-b border-gray-200 pb-4 last:border-0">
-                  <h3 className="text-lg font-medium text-fase-navy mb-1">
-                    <a 
-                      href={result.url}
-                      className="hover:underline"
-                      dangerouslySetInnerHTML={{ 
-                        __html: highlightText(result.title, query) 
-                      }}
-                    />
-                  </h3>
-                  <p 
-                    className="text-gray-600 text-sm mb-1"
-                    dangerouslySetInnerHTML={{ 
-                      __html: highlightText(result.description, query) 
+        {/* Results List */}
+        {!loading && results.length > 0 && (
+          <div className="space-y-4">
+            {results.map((result) => (
+              <div key={result.id} className="border-b border-gray-200 pb-4 last:border-0">
+                <h3 className="text-lg font-medium text-fase-navy mb-1">
+                  <Link
+                    href={result.url}
+                    className="hover:underline"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightText(result.title, query)
                     }}
                   />
-                  <span className="text-xs text-gray-500">{result.category}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* No Results */}
-          {!loading && query && results.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mb-4">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                </h3>
+                <p
+                  className="text-gray-600 text-sm mb-1"
+                  dangerouslySetInnerHTML={{
+                    __html: highlightText(result.description, query)
+                  }}
+                />
+                <span className="text-xs text-gray-500">{result.category}</span>
               </div>
-              <p className="text-gray-600">No results found. Try different keywords.</p>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* Default State */}
-          {!query && !loading && (
-            <div className="text-center py-12">
-              <div className="mb-4">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <p className="text-gray-600">Enter a search term above.</p>
+        {/* No Results */}
+        {!loading && query && results.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mb-4">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-          )}
+            <p className="text-gray-600">No results found. Try different keywords.</p>
+          </div>
+        )}
+
+        {/* Default State */}
+        {!query && !loading && (
+          <div className="text-center py-12">
+            <div className="mb-4">
+              <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <p className="text-gray-600">Enter a search term above.</p>
+          </div>
+        )}
       </div>
     </div>
   );

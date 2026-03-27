@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next dev --turbo",
     "dev:stable": "next dev",
-    "build": "next build",
+    "build": "npm run build:search && next build",
+    "build:search": "npx tsx scripts/build-search-index.ts",
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next",
