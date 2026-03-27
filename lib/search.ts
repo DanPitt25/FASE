@@ -1,4 +1,4 @@
-import Fuse from 'fuse.js';
+import Fuse, { IFuseOptions } from 'fuse.js';
 
 export interface SearchDocument {
   id: string;
@@ -19,7 +19,7 @@ const searchIndices: Map<string, SearchDocument[]> = new Map();
 const fuseInstances: Map<string, Fuse<SearchDocument>> = new Map();
 
 // Fuse.js configuration - balanced for good results
-const fuseOptions: Fuse.IFuseOptions<SearchDocument> = {
+const fuseOptions: IFuseOptions<SearchDocument> = {
   keys: [
     { name: 'title', weight: 0.4 },
     { name: 'description', weight: 0.3 },
