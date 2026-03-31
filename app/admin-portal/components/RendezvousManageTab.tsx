@@ -828,9 +828,10 @@ export default function RendezvousManageTab() {
       setAdding(true);
       setAddError(null);
 
+      const firstAttendee = newRegistration.attendees[0];
       const response = await authPost('/api/admin/rendezvous-registrations', {
         billingInfo: {
-          company: isPersonalRegistration ? 'Personal Registration' : newRegistration.company,
+          company: isPersonalRegistration ? `${firstAttendee.firstName} ${firstAttendee.lastName}`.trim() : newRegistration.company,
           billingEmail: newRegistration.billingEmail,
           country: newRegistration.country || 'N/A',
           address: newRegistration.address,
