@@ -24,6 +24,7 @@ import type {
   RendezvousRegistration,
   RendezvousAttendee,
   RendezvousPaymentStatus,
+  RendezvousAttendeeType,
 } from '@/lib/admin-types';
 import { toDate } from '@/lib/admin-types';
 import {
@@ -110,7 +111,17 @@ export default function RendezvousManageTab() {
   const [priceEditRegistration, setPriceEditRegistration] = useState<RendezvousRegistration | null>(null);
 
   // New registration form
-  const [newRegistration, setNewRegistration] = useState({
+  const [newRegistration, setNewRegistration] = useState<{
+    company: string;
+    billingEmail: string;
+    country: string;
+    address: string;
+    organizationType: string;
+    companyIsFaseMember: boolean;
+    isAsaseMember: boolean;
+    totalPrice: number;
+    attendees: { firstName: string; lastName: string; email: string; jobTitle: string; attendeeType: RendezvousAttendeeType }[];
+  }>({
     company: '',
     billingEmail: '',
     country: '',
@@ -119,7 +130,7 @@ export default function RendezvousManageTab() {
     companyIsFaseMember: false,
     isAsaseMember: false,
     totalPrice: 0,
-    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
+    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' }],
   });
 
   const loadRegistrations = async () => {
@@ -1705,7 +1716,7 @@ export default function RendezvousManageTab() {
                 size="small"
                 onClick={() => setNewRegistration({
                   ...newRegistration,
-                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }]
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as RendezvousAttendeeType }]
                 })}
                 disabled={adding}
               >
