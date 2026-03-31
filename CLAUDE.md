@@ -98,6 +98,7 @@ Other key terms:
 
 ## UI/UX Guidelines
 - **NEVER ADD SUBTITLES** - User fucking hates subtitles and finds them useless. Stop adding subtitle fields or subtitle text to sections, cards, pages, hero sections, or any UI components. This includes any secondary text under titles/headings that describes or elaborates on the title. Just use the title alone.
+- **NEVER ADD EXPLANATORY HELPER TEXT IN THE UI** - Do not add colored boxes, info banners, or inline explanations that describe what a feature does. Admin users know what they're doing. Examples of what NOT to add: "Personal registrations are for individuals not representing a company", "This will send an email to the user", etc. The UI should be clean and functional, not tutorial-like.
 - **ALWAYS USE NEXT.JS LINK COMPONENT** - Never use `<a>` tags for internal navigation. Always use `<Link>` from `next/link` for internal routes. Only use `<a>` tags for external URLs.
 
 ## TypeScript Discipline - CRITICAL

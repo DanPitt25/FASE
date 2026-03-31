@@ -1665,12 +1665,6 @@ export default function RendezvousManageTab() {
             </button>
           </div>
 
-          {newRegistration.registrationType === 'personal' && (
-            <div className="bg-purple-50 border border-purple-200 text-purple-800 px-4 py-3 rounded-lg text-sm">
-              Personal registrations are for individuals not representing a company (e.g., people between jobs).
-            </div>
-          )}
-
           {/* Company/Billing Information */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-semibold text-fase-navy mb-3">
