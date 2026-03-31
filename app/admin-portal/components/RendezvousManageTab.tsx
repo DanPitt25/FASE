@@ -860,6 +860,7 @@ export default function RendezvousManageTab() {
       // Reset form and close modal
       setShowAddModal(false);
       setNewRegistration({
+        registrationType: 'corporate',
         company: '',
         billingEmail: '',
         country: '',
@@ -868,7 +869,7 @@ export default function RendezvousManageTab() {
         companyIsFaseMember: false,
         isAsaseMember: false,
         totalPrice: 0,
-        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
+        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' }],
       });
     } catch (error: any) {
       console.error('Error creating registration:', error);
@@ -1885,6 +1886,7 @@ export default function RendezvousManageTab() {
                 setShowAddModal(false);
                 setAddError(null);
                 setNewRegistration({
+                  registrationType: 'corporate',
                   company: '',
                   billingEmail: '',
                   country: '',
@@ -1893,7 +1895,7 @@ export default function RendezvousManageTab() {
                   companyIsFaseMember: false,
                   isAsaseMember: false,
                   totalPrice: 0,
-                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
+                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' }],
                 });
               }}
               disabled={adding}
