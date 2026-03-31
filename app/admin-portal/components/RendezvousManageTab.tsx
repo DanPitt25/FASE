@@ -112,6 +112,7 @@ export default function RendezvousManageTab() {
 
   // New registration form
   const [newRegistration, setNewRegistration] = useState<{
+    registrationType: 'corporate' | 'personal';
     company: string;
     billingEmail: string;
     country: string;
@@ -122,6 +123,7 @@ export default function RendezvousManageTab() {
     totalPrice: number;
     attendees: { firstName: string; lastName: string; email: string; jobTitle: string; attendeeType: RendezvousAttendeeType }[];
   }>({
+    registrationType: 'corporate',
     company: '',
     billingEmail: '',
     country: '',
@@ -796,10 +798,20 @@ export default function RendezvousManageTab() {
 
   // Add registration
   const handleAddRegistration = async () => {
-    // Validate required fields
-    if (!newRegistration.company || !newRegistration.billingEmail || !newRegistration.country) {
-      setAddError('Please fill in all required company fields');
-      return;
+    const isPersonalRegistration = newRegistration.registrationType === 'personal';
+
+    // Validate required fields - company fields only required for corporate registrations
+    if (!isPersonalRegistration) {
+      if (!newRegistration.company || !newRegistration.billingEmail || !newRegistration.country) {
+        setAddError('Please fill in all required company fields');
+        return;
+      }
+    } else {
+      // Personal registration needs at least an email for billing
+      if (!newRegistration.billingEmail) {
+        setAddError('Please provide a billing email');
+        return;
+      }
     }
 
     // Validate attendees
@@ -818,19 +830,19 @@ export default function RendezvousManageTab() {
 
       const response = await authPost('/api/admin/rendezvous-registrations', {
         billingInfo: {
-          company: newRegistration.company,
+          company: isPersonalRegistration ? 'Personal Registration' : newRegistration.company,
           billingEmail: newRegistration.billingEmail,
-          country: newRegistration.country,
+          country: newRegistration.country || 'N/A',
           address: newRegistration.address,
-          organizationType: newRegistration.organizationType,
+          organizationType: isPersonalRegistration ? 'personal' : newRegistration.organizationType,
         },
         attendees: newRegistration.attendees,
         totalPrice: newRegistration.totalPrice,
         subtotal: newRegistration.totalPrice,
         numberOfAttendees: newRegistration.attendees.length,
-        companyIsFaseMember: newRegistration.companyIsFaseMember,
-        isAsaseMember: newRegistration.isAsaseMember,
-        membershipType: newRegistration.isAsaseMember ? 'asase' : (newRegistration.companyIsFaseMember ? 'fase' : 'none'),
+        companyIsFaseMember: isPersonalRegistration ? false : newRegistration.companyIsFaseMember,
+        isAsaseMember: isPersonalRegistration ? false : newRegistration.isAsaseMember,
+        membershipType: isPersonalRegistration ? 'none' : (newRegistration.isAsaseMember ? 'asase' : (newRegistration.companyIsFaseMember ? 'fase' : 'none')),
         discount: 0,
         paymentMethod: 'admin_manual',
         paymentStatus: 'confirmed',
@@ -1600,6 +1612,7 @@ export default function RendezvousManageTab() {
           setShowAddModal(false);
           setAddError(null);
           setNewRegistration({
+            registrationType: 'corporate',
             company: '',
             billingEmail: '',
             country: '',
@@ -1608,28 +1621,74 @@ export default function RendezvousManageTab() {
             companyIsFaseMember: false,
             isAsaseMember: false,
             totalPrice: 0,
-            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
+            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' }],
           });
         }}
         title="Add Registration"
         maxWidth="2xl"
       >
         <div className="space-y-6 max-h-[70vh] overflow-y-auto">
-          {/* Company Information */}
+          {/* Registration Type Toggle */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setNewRegistration({
+                ...newRegistration,
+                registrationType: 'corporate',
+                attendees: newRegistration.attendees.map(a => ({ ...a, attendeeType: 'corporate' as RendezvousAttendeeType }))
+              })}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                newRegistration.registrationType === 'corporate'
+                  ? 'bg-fase-navy text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              disabled={adding}
+            >
+              Corporate Registration
+            </button>
+            <button
+              type="button"
+              onClick={() => setNewRegistration({
+                ...newRegistration,
+                registrationType: 'personal',
+                attendees: newRegistration.attendees.map(a => ({ ...a, attendeeType: 'personal' as RendezvousAttendeeType }))
+              })}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                newRegistration.registrationType === 'personal'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              disabled={adding}
+            >
+              Personal Registration
+            </button>
+          </div>
+
+          {newRegistration.registrationType === 'personal' && (
+            <div className="bg-purple-50 border border-purple-200 text-purple-800 px-4 py-3 rounded-lg text-sm">
+              Personal registrations are for individuals not representing a company (e.g., people between jobs).
+            </div>
+          )}
+
+          {/* Company/Billing Information */}
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-fase-navy mb-3">Company Information</h4>
+            <h4 className="font-semibold text-fase-navy mb-3">
+              {newRegistration.registrationType === 'personal' ? 'Billing Information' : 'Company Information'}
+            </h4>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-                <input
-                  type="text"
-                  value={newRegistration.company}
-                  onChange={(e) => setNewRegistration({ ...newRegistration, company: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={adding}
-                />
-              </div>
-              <div>
+              {newRegistration.registrationType === 'corporate' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+                  <input
+                    type="text"
+                    value={newRegistration.company}
+                    onChange={(e) => setNewRegistration({ ...newRegistration, company: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    disabled={adding}
+                  />
+                </div>
+              )}
+              <div className={newRegistration.registrationType === 'personal' ? 'col-span-2' : ''}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Billing Email *</label>
                 <input
                   type="email"
@@ -1639,59 +1698,63 @@ export default function RendezvousManageTab() {
                   disabled={adding}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                <AdminCountrySelect
-                  value={newRegistration.country}
-                  onChange={(value) => setNewRegistration({ ...newRegistration, country: value })}
-                  disabled={adding}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Organization Type</label>
-                <select
-                  value={newRegistration.organizationType}
-                  onChange={(e) => setNewRegistration({ ...newRegistration, organizationType: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={adding}
-                >
-                  <option value="mga">MGA</option>
-                  <option value="carrier_broker">Carrier/Broker</option>
-                  <option value="service_provider">Service Provider</option>
-                </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input
-                  type="text"
-                  value={newRegistration.address}
-                  onChange={(e) => setNewRegistration({ ...newRegistration, address: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={adding}
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newRegistration.companyIsFaseMember}
-                    onChange={(e) => setNewRegistration({ ...newRegistration, companyIsFaseMember: e.target.checked })}
-                    className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
-                    disabled={adding}
-                  />
-                  <span className="text-sm text-gray-700">FASE Member</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newRegistration.isAsaseMember}
-                    onChange={(e) => setNewRegistration({ ...newRegistration, isAsaseMember: e.target.checked })}
-                    className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
-                    disabled={adding}
-                  />
-                  <span className="text-sm text-gray-700">ASASE Member</span>
-                </label>
-              </div>
+              {newRegistration.registrationType === 'corporate' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
+                    <AdminCountrySelect
+                      value={newRegistration.country}
+                      onChange={(value) => setNewRegistration({ ...newRegistration, country: value })}
+                      disabled={adding}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Organization Type</label>
+                    <select
+                      value={newRegistration.organizationType}
+                      onChange={(e) => setNewRegistration({ ...newRegistration, organizationType: e.target.value })}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    >
+                      <option value="mga">MGA</option>
+                      <option value="carrier_broker">Carrier/Broker</option>
+                      <option value="service_provider">Service Provider</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <input
+                      type="text"
+                      value={newRegistration.address}
+                      onChange={(e) => setNewRegistration({ ...newRegistration, address: e.target.value })}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newRegistration.companyIsFaseMember}
+                        onChange={(e) => setNewRegistration({ ...newRegistration, companyIsFaseMember: e.target.checked })}
+                        className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                        disabled={adding}
+                      />
+                      <span className="text-sm text-gray-700">FASE Member</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newRegistration.isAsaseMember}
+                        onChange={(e) => setNewRegistration({ ...newRegistration, isAsaseMember: e.target.checked })}
+                        className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                        disabled={adding}
+                      />
+                      <span className="text-sm text-gray-700">ASASE Member</span>
+                    </label>
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Price (€)</label>
                 <input
@@ -1716,7 +1779,7 @@ export default function RendezvousManageTab() {
                 size="small"
                 onClick={() => setNewRegistration({
                   ...newRegistration,
-                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as RendezvousAttendeeType }]
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: newRegistration.registrationType as RendezvousAttendeeType }]
                 })}
                 disabled={adding}
               >
