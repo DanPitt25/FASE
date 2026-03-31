@@ -104,7 +104,8 @@ export async function POST(request: NextRequest) {
         firstName: a.firstName,
         lastName: a.lastName,
         email: a.email,
-        jobTitle: a.jobTitle,
+        jobTitle: a.jobTitle || '',
+        attendeeType: a.attendeeType || 'corporate',
       })),
       additionalInfo: {
         specialRequests: additionalInfo?.specialRequests || '',
@@ -200,6 +201,7 @@ export async function PATCH(request: NextRequest) {
         lastName: a.lastName.trim(),
         email: a.email.trim(),
         jobTitle: a.jobTitle?.trim() || '',
+        attendeeType: a.attendeeType || 'corporate',
       }));
 
       updateData.attendees = formattedAttendees;

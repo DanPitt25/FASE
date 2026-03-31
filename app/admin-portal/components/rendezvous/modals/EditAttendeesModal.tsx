@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import Button from '@/components/Button';
-import type { RendezvousRegistration, RendezvousAttendee, RendezvousBillingInfo } from '@/lib/admin-types';
+import type { RendezvousRegistration, RendezvousAttendee, RendezvousBillingInfo, RendezvousAttendeeType } from '@/lib/admin-types';
 
 interface EditAttendeesModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export default function EditAttendeesModal({
   const handleAddAttendee = () => {
     setEditedAttendees([
       ...editedAttendees,
-      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '' }
+      { id: `new_${Date.now()}`, firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' }
     ]);
   };
 
@@ -147,12 +147,26 @@ export default function EditAttendeesModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Job Title</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Attendee Type</label>
+                  <select
+                    value={attendee.attendeeType || 'corporate'}
+                    onChange={(e) => handleUpdateAttendee(index, 'attendeeType', e.target.value as RendezvousAttendeeType)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="corporate">Corporate</option>
+                    <option value="personal">Personal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Job Title {attendee.attendeeType !== 'personal' && '*'}
+                  </label>
                   <input
                     type="text"
                     value={attendee.jobTitle}
                     onChange={(e) => handleUpdateAttendee(index, 'jobTitle', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder={attendee.attendeeType === 'personal' ? '(Optional for personal attendees)' : ''}
                   />
                 </div>
               </div>

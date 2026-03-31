@@ -119,7 +119,7 @@ export default function RendezvousManageTab() {
     companyIsFaseMember: false,
     isAsaseMember: false,
     totalPrice: 0,
-    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+    attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
   });
 
   const loadRegistrations = async () => {
@@ -793,7 +793,9 @@ export default function RendezvousManageTab() {
 
     // Validate attendees
     for (const attendee of newRegistration.attendees) {
-      if (!attendee.firstName || !attendee.lastName || !attendee.email || !attendee.jobTitle) {
+      // Personal attendees don't require job title
+      const requiresJobTitle = attendee.attendeeType !== 'personal';
+      if (!attendee.firstName || !attendee.lastName || !attendee.email || (requiresJobTitle && !attendee.jobTitle)) {
         setAddError('Please fill in all required fields for each attendee');
         return;
       }
@@ -843,7 +845,7 @@ export default function RendezvousManageTab() {
         companyIsFaseMember: false,
         isAsaseMember: false,
         totalPrice: 0,
-        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+        attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
       });
     } catch (error: any) {
       console.error('Error creating registration:', error);
@@ -1130,7 +1132,12 @@ export default function RendezvousManageTab() {
                         <div className="text-gray-500 text-xs">{attendee.email}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="text-gray-500 text-xs">{attendee.jobTitle}</div>
+                        {attendee.attendeeType === 'personal' && (
+                          <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                            Personal
+                          </span>
+                        )}
+                        <div className="text-gray-500 text-xs">{attendee.jobTitle || (attendee.attendeeType === 'personal' ? '—' : '')}</div>
                         <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(reg.paymentStatus)}`}>
                           {formatStatus(reg.paymentStatus)}
                         </span>
@@ -1590,7 +1597,7 @@ export default function RendezvousManageTab() {
             companyIsFaseMember: false,
             isAsaseMember: false,
             totalPrice: 0,
-            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+            attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
           });
         }}
         title="Add Registration"
@@ -1698,7 +1705,7 @@ export default function RendezvousManageTab() {
                 size="small"
                 onClick={() => setNewRegistration({
                   ...newRegistration,
-                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '' }]
+                  attendees: [...newRegistration.attendees, { firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }]
                 })}
                 disabled={adding}
               >
@@ -1760,9 +1767,22 @@ export default function RendezvousManageTab() {
                       className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
                       disabled={adding}
                     />
+                    <select
+                      value={attendee.attendeeType || 'corporate'}
+                      onChange={(e) => {
+                        const updated = [...newRegistration.attendees];
+                        updated[index].attendeeType = e.target.value as 'corporate' | 'personal';
+                        setNewRegistration({ ...newRegistration, attendees: updated });
+                      }}
+                      className="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={adding}
+                    >
+                      <option value="corporate">Corporate</option>
+                      <option value="personal">Personal</option>
+                    </select>
                     <input
                       type="text"
-                      placeholder="Job Title *"
+                      placeholder={attendee.attendeeType === 'personal' ? 'Job Title (optional)' : 'Job Title *'}
                       value={attendee.jobTitle}
                       onChange={(e) => {
                         const updated = [...newRegistration.attendees];
@@ -1799,7 +1819,7 @@ export default function RendezvousManageTab() {
                   companyIsFaseMember: false,
                   isAsaseMember: false,
                   totalPrice: 0,
-                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '' }],
+                  attendees: [{ firstName: '', lastName: '', email: '', jobTitle: '', attendeeType: 'corporate' as const }],
                 });
               }}
               disabled={adding}

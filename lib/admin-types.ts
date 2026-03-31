@@ -134,6 +134,9 @@ export type RendezvousPaymentMethod = 'card' | 'bank_transfer' | 'admin_manual';
 /** View mode for Rendezvous tab */
 export type RendezvousViewMode = 'attendees' | 'companies' | 'issues';
 
+/** Attendee type - personal attendees have no company/title */
+export type RendezvousAttendeeType = 'corporate' | 'personal';
+
 /** Individual attendee in a registration */
 export interface RendezvousAttendee {
   id: string;
@@ -141,6 +144,7 @@ export interface RendezvousAttendee {
   lastName: string;
   email: string;
   jobTitle: string;
+  attendeeType?: RendezvousAttendeeType; // Optional for backwards compatibility, defaults to 'corporate'
 }
 
 /** Billing information for a registration */
@@ -213,6 +217,7 @@ export interface FlattenedAttendee {
   company: string;
   country: string;
   organizationType: string;
+  attendeeType?: RendezvousAttendeeType;
   paymentStatus: RendezvousPaymentStatus;
   invoiceNumber: string;
   registrationId: string;
