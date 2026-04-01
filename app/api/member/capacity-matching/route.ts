@@ -111,12 +111,12 @@ async function verifyMemberAccess(request: NextRequest) {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    // Get the user's account data
+    // First check if user has their own account document
     const accountDoc = await adminDb.collection('accounts').doc(userId).get();
 
     if (accountDoc.exists) {
       const accountData = accountDoc.data();
-      // Check if approved member
+      // Check if approved member or admin
       if (accountData?.status !== 'approved' && accountData?.status !== 'admin') {
         return { error: 'Member access required', status: 403 };
       }
@@ -129,30 +129,35 @@ async function verifyMemberAccess(request: NextRequest) {
       };
     }
 
-    // Check if user is in a members subcollection
-    const accountsSnapshot = await adminDb.collection('accounts').get();
-    for (const doc of accountsSnapshot.docs) {
-      const memberDoc = await adminDb
-        .collection('accounts')
-        .doc(doc.id)
-        .collection('members')
-        .doc(userId)
-        .get();
+    // Use collectionGroup query to find user in any members subcollection
+    const memberQuery = await adminDb
+      .collectionGroup('members')
+      .where('email', '==', decodedToken.email)
+      .limit(1)
+      .get();
 
-      if (memberDoc.exists) {
-        const parentAccountData = doc.data();
-        const memberData = memberDoc.data();
-        if (parentAccountData?.status !== 'approved' && parentAccountData?.status !== 'admin') {
-          return { error: 'Member access required', status: 403 };
-        }
-        return {
-          userId,
-          email: decodedToken.email || '',
-          organizationId: doc.id,
-          organizationName: parentAccountData?.organizationName || parentAccountData?.companyName || '',
-          personalName: memberData?.personalName || '',
-        };
+    if (!memberQuery.empty) {
+      const memberDoc = memberQuery.docs[0];
+      const memberData = memberDoc.data();
+      // Get parent account ID from the path: accounts/{accountId}/members/{memberId}
+      const pathParts = memberDoc.ref.path.split('/');
+      const parentAccountId = pathParts[1];
+
+      // Get parent account data
+      const parentAccountDoc = await adminDb.collection('accounts').doc(parentAccountId).get();
+      const parentAccountData = parentAccountDoc.data();
+
+      if (parentAccountData?.status !== 'approved' && parentAccountData?.status !== 'admin') {
+        return { error: 'Member access required', status: 403 };
       }
+
+      return {
+        userId,
+        email: decodedToken.email || '',
+        organizationId: parentAccountId,
+        organizationName: parentAccountData?.organizationName || parentAccountData?.companyName || '',
+        personalName: memberData?.personalName || '',
+      };
     }
 
     return { error: 'Member not found', status: 403 };

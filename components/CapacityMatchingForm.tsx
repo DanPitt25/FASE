@@ -311,11 +311,13 @@ export default function CapacityMatchingForm({ translations = {} }: CapacityMatc
                       disabled={submitting}
                     >
                       <option value="">{t('select', 'Select...')}</option>
-                      {LINES_OF_BUSINESS.map((lob) => (
-                        <option key={lob} value={lob}>
-                          {tLob(lob)}
-                        </option>
-                      ))}
+                      {[...LINES_OF_BUSINESS]
+                        .sort((a, b) => tLob(a).localeCompare(tLob(b)))
+                        .map((lob) => (
+                          <option key={lob} value={lob}>
+                            {tLob(lob)}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
