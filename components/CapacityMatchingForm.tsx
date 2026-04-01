@@ -52,9 +52,26 @@ interface CapacityMatchingTranslations {
 
 interface CapacityMatchingFormProps {
   translations?: CapacityMatchingTranslations;
+  // Magic link mode props
+  magicLinkMode?: boolean;
+  lockedCompanyName?: string;
+  initialContactEmail?: string;
+  magicLinkToken?: string;
+  onSubmit?: (data: {
+    contactName: string;
+    contactEmail: string;
+    entries: Omit<FormEntry, 'id'>[];
+  }) => Promise<void>;
 }
 
-export default function CapacityMatchingForm({ translations = {} }: CapacityMatchingFormProps) {
+export default function CapacityMatchingForm({
+  translations = {},
+  magicLinkMode = false,
+  lockedCompanyName,
+  initialContactEmail = '',
+  magicLinkToken,
+  onSubmit,
+}: CapacityMatchingFormProps) {
   // Helper for translations with fallbacks
   const t = (key: keyof CapacityMatchingTranslations, fallback: string): string => {
     return (translations[key] as string) || fallback;
@@ -68,12 +85,14 @@ export default function CapacityMatchingForm({ translations = {} }: CapacityMatc
   };
   const { member } = useUnifiedAuth();
 
-  // Company name is fixed from member account (not editable)
-  const companyName = member?.organizationName || '';
+  // Company name: use locked name for magic link mode, otherwise from member account
+  const companyName = magicLinkMode ? (lockedCompanyName || '') : (member?.organizationName || '');
 
   // Contact info (pre-populated but editable)
   const [contactName, setContactName] = useState(member?.personalName || '');
-  const [contactEmail, setContactEmail] = useState(member?.email || '');
+  const [contactEmail, setContactEmail] = useState(
+    magicLinkMode ? initialContactEmail : (member?.email || '')
+  );
 
   // Entries
   const [entries, setEntries] = useState<FormEntry[]>([
@@ -152,17 +171,29 @@ export default function CapacityMatchingForm({ translations = {} }: CapacityMatc
     try {
       setSubmitting(true);
 
-      const response = await authPost('/api/member/capacity-matching', {
-        companyName,
-        contactName,
-        contactEmail,
-        entries: entries.map(({ id, ...rest }) => rest),
-      });
+      const entriesData = entries.map(({ id, ...rest }) => rest);
 
-      const result = await response.json();
+      if (magicLinkMode && onSubmit) {
+        // Use custom submit handler for magic link mode
+        await onSubmit({
+          contactName,
+          contactEmail,
+          entries: entriesData,
+        });
+      } else {
+        // Use authenticated API for member submissions
+        const response = await authPost('/api/member/capacity-matching', {
+          companyName,
+          contactName,
+          contactEmail,
+          entries: entriesData,
+        });
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit');
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to submit');
+        }
       }
 
       setSuccess(true);

@@ -27,6 +27,15 @@ export default function CapacityMatchingTab() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Magic link generation
+  const [showGenerateLinkModal, setShowGenerateLinkModal] = useState(false);
+  const [linkCompanyName, setLinkCompanyName] = useState('');
+  const [linkEmail, setLinkEmail] = useState('');
+  const [sendEmailWithLink, setSendEmailWithLink] = useState(true);
+  const [generatingLink, setGeneratingLink] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
   const loadSubmissions = async () => {
     try {
       setLoading(true);
@@ -133,6 +142,56 @@ export default function CapacityMatchingTab() {
     XLSX.writeFile(workbook, `Capacity-Matching-All-${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
+  // Handle generate magic link
+  const handleGenerateLink = async () => {
+    if (!linkCompanyName.trim() || !linkEmail.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      setGeneratingLink(true);
+      const response = await authFetch('/api/admin/capacity-matching/generate-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: linkCompanyName.trim(),
+          contactEmail: linkEmail.trim(),
+          sendEmail: sendEmailWithLink,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate link');
+      }
+
+      setGeneratedLink(data.url);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const copyLinkToClipboard = async () => {
+    if (generatedLink) {
+      await navigator.clipboard.writeText(generatedLink);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
+  };
+
+  const resetLinkModal = () => {
+    setShowGenerateLinkModal(false);
+    setLinkCompanyName('');
+    setLinkEmail('');
+    setSendEmailWithLink(true);
+    setGeneratedLink(null);
+    setLinkCopied(false);
+  };
+
   // Handle delete
   const handleDelete = async () => {
     if (!deleteSubmission) return;
@@ -191,13 +250,21 @@ export default function CapacityMatchingTab() {
             {filteredSubmissions.length} submission{filteredSubmissions.length !== 1 ? 's' : ''}
           </span>
         </div>
-        <Button
-          onClick={exportAllToExcel}
-          variant="secondary"
-          disabled={submissions.length === 0}
-        >
-          Export All to Excel
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowGenerateLinkModal(true)}
+            variant="secondary"
+          >
+            Generate Magic Link
+          </Button>
+          <Button
+            onClick={exportAllToExcel}
+            variant="secondary"
+            disabled={submissions.length === 0}
+          >
+            Export All to Excel
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
@@ -388,6 +455,138 @@ export default function CapacityMatchingTab() {
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Generate Magic Link Modal */}
+      <Modal
+        isOpen={showGenerateLinkModal}
+        onClose={resetLinkModal}
+        title="Generate Magic Link"
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          {!generatedLink ? (
+            <>
+              <p className="text-gray-600 text-sm">
+                Generate a single-use link for a company to complete the Capacity Matching questionnaire without a FASE account.
+              </p>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  value={linkCompanyName}
+                  onChange={(e) => setLinkCompanyName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={generatingLink}
+                  placeholder="Company name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Email *
+                </label>
+                <input
+                  type="email"
+                  value={linkEmail}
+                  onChange={(e) => setLinkEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={generatingLink}
+                  placeholder="contact@company.com"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="sendEmail"
+                  checked={sendEmailWithLink}
+                  onChange={(e) => setSendEmailWithLink(e.target.checked)}
+                  className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                  disabled={generatingLink}
+                />
+                <label htmlFor="sendEmail" className="text-sm text-gray-700">
+                  Send email with link to recipient
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={resetLinkModal}
+                  disabled={generatingLink}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGenerateLink}
+                  disabled={generatingLink || !linkCompanyName.trim() || !linkEmail.trim()}
+                >
+                  {generatingLink ? 'Generating...' : 'Generate Link'}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="font-medium text-green-800">Link Generated!</span>
+                </div>
+                {sendEmailWithLink && (
+                  <p className="text-sm text-green-700">
+                    An email has been sent to {linkEmail}.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Magic Link
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={generatedLink}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                  />
+                  <Button
+                    onClick={copyLinkToClipboard}
+                    variant="secondary"
+                    size="small"
+                  >
+                    {linkCopied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  This link is valid for 48 hours and can only be used once.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setGeneratedLink(null);
+                    setLinkCompanyName('');
+                    setLinkEmail('');
+                  }}
+                >
+                  Generate Another
+                </Button>
+                <Button onClick={resetLinkModal}>
+                  Done
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>
