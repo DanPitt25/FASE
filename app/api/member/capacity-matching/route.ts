@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
 
     const docRef = await adminDb.collection('capacity-matching').add(submission);
 
-    // Send notification email (don't await - fire and forget)
-    sendNotificationEmail({
+    // Send notification email (await to ensure it completes before function terminates)
+    await sendNotificationEmail({
       organizationName: submission.organizationName,
       contactName: submission.contactName,
       contactEmail: submission.contactEmail,

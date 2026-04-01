@@ -154,8 +154,8 @@ export async function POST(request: NextRequest) {
     // Mark token as used
     await markTokenUsed(token, docRef.id);
 
-    // Send notification email (fire and forget)
-    sendNotificationEmail({
+    // Send notification email (await to ensure it completes before function terminates)
+    await sendNotificationEmail({
       organizationName: submission.organizationName,
       contactName: submission.contactName,
       contactEmail: submission.contactEmail,
