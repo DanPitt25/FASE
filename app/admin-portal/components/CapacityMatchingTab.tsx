@@ -1,11 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
 import { authFetch, authDelete } from '../../../lib/auth-fetch';
 import * as XLSX from 'xlsx';
 import type { CapacityMatchingSubmission, CapacityMatchingEntry } from '../../../lib/capacity-matching-constants';
+import {
+  SupportedLanguage,
+  LANGUAGE_LABELS,
+  generateMagicLinkEmailHtml,
+  magicLinkEmailTranslations,
+} from '../../../lib/capacity-matching-email-translations';
 
 interface Submission extends Omit<CapacityMatchingSubmission, 'createdAt' | 'updatedAt'> {
   createdAt: string | null;
@@ -31,10 +37,12 @@ export default function CapacityMatchingTab() {
   const [showGenerateLinkModal, setShowGenerateLinkModal] = useState(false);
   const [linkCompanyName, setLinkCompanyName] = useState('');
   const [linkEmail, setLinkEmail] = useState('');
+  const [linkLanguage, setLinkLanguage] = useState<SupportedLanguage>('en');
   const [sendEmailWithLink, setSendEmailWithLink] = useState(true);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
 
   const loadSubmissions = async () => {
     try {
@@ -69,6 +77,17 @@ export default function CapacityMatchingTab() {
       s.contactEmail?.toLowerCase().includes(query)
     );
   });
+
+  // Generate email preview HTML
+  const emailPreviewHtml = useMemo(() => {
+    const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    return generateMagicLinkEmailHtml(
+      linkCompanyName || 'Company Name',
+      'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
+      previewExpiry,
+      linkLanguage
+    );
+  }, [linkCompanyName, linkLanguage]);
 
   // Export single submission to Excel
   const exportSubmissionToExcel = (submission: Submission) => {
@@ -158,6 +177,7 @@ export default function CapacityMatchingTab() {
           companyName: linkCompanyName.trim(),
           contactEmail: linkEmail.trim(),
           sendEmail: sendEmailWithLink,
+          language: linkLanguage,
         }),
       });
 
@@ -187,9 +207,11 @@ export default function CapacityMatchingTab() {
     setShowGenerateLinkModal(false);
     setLinkCompanyName('');
     setLinkEmail('');
+    setLinkLanguage('en');
     setSendEmailWithLink(true);
     setGeneratedLink(null);
     setLinkCopied(false);
+    setShowEmailPreview(false);
   };
 
   // Handle delete
@@ -463,73 +485,115 @@ export default function CapacityMatchingTab() {
         isOpen={showGenerateLinkModal}
         onClose={resetLinkModal}
         title="Generate Magic Link"
-        maxWidth="md"
+        maxWidth={showEmailPreview ? '4xl' : 'md'}
       >
         <div className="space-y-4">
           {!generatedLink ? (
-            <>
-              <p className="text-gray-600 text-sm">
-                Generate a single-use link for a company to complete the Capacity Matching questionnaire without a FASE account.
-              </p>
+            <div className={showEmailPreview ? 'grid grid-cols-2 gap-6' : ''}>
+              {/* Form Section */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={linkCompanyName}
+                    onChange={(e) => setLinkCompanyName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    disabled={generatingLink}
+                    placeholder="Company name"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name *
-                </label>
-                <input
-                  type="text"
-                  value={linkCompanyName}
-                  onChange={(e) => setLinkCompanyName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={generatingLink}
-                  placeholder="Company name"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={linkEmail}
+                    onChange={(e) => setLinkEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    disabled={generatingLink}
+                    placeholder="contact@company.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Language
+                  </label>
+                  <select
+                    value={linkLanguage}
+                    onChange={(e) => setLinkLanguage(e.target.value as SupportedLanguage)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    disabled={generatingLink}
+                  >
+                    {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
+                      <option key={lang} value={lang}>
+                        {LANGUAGE_LABELS[lang]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="sendEmail"
+                      checked={sendEmailWithLink}
+                      onChange={(e) => setSendEmailWithLink(e.target.checked)}
+                      className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                      disabled={generatingLink}
+                    />
+                    <label htmlFor="sendEmail" className="text-sm text-gray-700">
+                      Send email with link
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailPreview(!showEmailPreview)}
+                    className="text-sm text-fase-navy hover:text-fase-orange"
+                  >
+                    {showEmailPreview ? 'Hide Preview' : 'Preview Email'}
+                  </button>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    variant="secondary"
+                    onClick={resetLinkModal}
+                    disabled={generatingLink}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleGenerateLink}
+                    disabled={generatingLink || !linkCompanyName.trim() || !linkEmail.trim()}
+                  >
+                    {generatingLink ? 'Generating...' : 'Generate Link'}
+                  </Button>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Email *
-                </label>
-                <input
-                  type="email"
-                  value={linkEmail}
-                  onChange={(e) => setLinkEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={generatingLink}
-                  placeholder="contact@company.com"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="sendEmail"
-                  checked={sendEmailWithLink}
-                  onChange={(e) => setSendEmailWithLink(e.target.checked)}
-                  className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
-                  disabled={generatingLink}
-                />
-                <label htmlFor="sendEmail" className="text-sm text-gray-700">
-                  Send email with link to recipient
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="secondary"
-                  onClick={resetLinkModal}
-                  disabled={generatingLink}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleGenerateLink}
-                  disabled={generatingLink || !linkCompanyName.trim() || !linkEmail.trim()}
-                >
-                  {generatingLink ? 'Generating...' : 'Generate Link'}
-                </Button>
-              </div>
-            </>
+              {/* Email Preview Section */}
+              {showEmailPreview && (
+                <div className="border-l pl-6">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Email Preview</span>
+                    <span className="text-xs text-gray-500">
+                      Subject: {magicLinkEmailTranslations[linkLanguage].subject} - {linkCompanyName || 'Company Name'}
+                    </span>
+                  </div>
+                  <div
+                    className="border rounded-lg bg-white overflow-auto max-h-[400px]"
+                    dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -541,7 +605,7 @@ export default function CapacityMatchingTab() {
                 </div>
                 {sendEmailWithLink && (
                   <p className="text-sm text-green-700">
-                    An email has been sent to {linkEmail}.
+                    An email has been sent to {linkEmail} in {LANGUAGE_LABELS[linkLanguage]}.
                   </p>
                 )}
               </div>
@@ -577,6 +641,7 @@ export default function CapacityMatchingTab() {
                     setGeneratedLink(null);
                     setLinkCompanyName('');
                     setLinkEmail('');
+                    setShowEmailPreview(false);
                   }}
                 >
                   Generate Another
