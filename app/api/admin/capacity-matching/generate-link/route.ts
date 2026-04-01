@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       companyName.trim(),
       contactEmail.trim(),
       'admin',
-      authResult.uid
+      authResult.userId
     );
 
     // Optionally send email
