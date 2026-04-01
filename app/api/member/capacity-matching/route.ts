@@ -98,8 +98,8 @@ async function sendNotificationEmail(submission: {
   }
 }
 
-// Helper to verify member authentication
-async function verifyMemberAccess(request: NextRequest) {
+// Helper to verify authentication (just checks valid Firebase token)
+async function verifyAuth(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return { error: 'Unauthorized', status: 401 };
@@ -109,78 +109,30 @@ async function verifyMemberAccess(request: NextRequest) {
 
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
-    const userId = decodedToken.uid;
-
-    // First check if user has their own account document
-    const accountDoc = await adminDb.collection('accounts').doc(userId).get();
-
-    if (accountDoc.exists) {
-      const accountData = accountDoc.data();
-      // Check if approved member or admin
-      if (accountData?.status !== 'approved' && accountData?.status !== 'admin') {
-        return { error: 'Member access required', status: 403 };
-      }
-      return {
-        userId,
-        email: decodedToken.email || '',
-        organizationId: userId,
-        organizationName: accountData?.organizationName || accountData?.companyName || '',
-        personalName: accountData?.personalName || '',
-      };
-    }
-
-    // Use collectionGroup query to find user in any members subcollection
-    const memberQuery = await adminDb
-      .collectionGroup('members')
-      .where('email', '==', decodedToken.email)
-      .limit(1)
-      .get();
-
-    if (!memberQuery.empty) {
-      const memberDoc = memberQuery.docs[0];
-      const memberData = memberDoc.data();
-      // Get parent account ID from the path: accounts/{accountId}/members/{memberId}
-      const pathParts = memberDoc.ref.path.split('/');
-      const parentAccountId = pathParts[1];
-
-      // Get parent account data
-      const parentAccountDoc = await adminDb.collection('accounts').doc(parentAccountId).get();
-      const parentAccountData = parentAccountDoc.data();
-
-      if (parentAccountData?.status !== 'approved' && parentAccountData?.status !== 'admin') {
-        return { error: 'Member access required', status: 403 };
-      }
-
-      return {
-        userId,
-        email: decodedToken.email || '',
-        organizationId: parentAccountId,
-        organizationName: parentAccountData?.organizationName || parentAccountData?.companyName || '',
-        personalName: memberData?.personalName || '',
-      };
-    }
-
-    return { error: 'Member not found', status: 403 };
+    return {
+      userId: decodedToken.uid,
+      email: decodedToken.email || '',
+    };
   } catch (error) {
     console.error('Auth verification error:', error);
     return { error: 'Invalid token', status: 401 };
   }
 }
 
-// GET - Get member's own submissions
+// GET - Get user's own submissions
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await verifyMemberAccess(request);
+    const authResult = await verifyAuth(request);
     if ('error' in authResult) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const { organizationId } = authResult;
+    const { userId } = authResult;
 
-    // Get submissions for this organization
+    // Get submissions for this user
     const submissionsSnapshot = await adminDb
       .collection('capacity-matching')
-      .where('organizationId', '==', organizationId)
+      .where('memberId', '==', userId)
       .orderBy('createdAt', 'desc')
       .get();
 
@@ -201,12 +153,12 @@ export async function GET(request: NextRequest) {
 // POST - Submit new capacity matching questionnaire
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await verifyMemberAccess(request);
+    const authResult = await verifyAuth(request);
     if ('error' in authResult) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    const { userId, email, organizationId, organizationName, personalName } = authResult;
+    const { userId, email } = authResult;
     const body = await request.json();
     const { entries, contactName, contactEmail, companyName } = body;
 
@@ -225,9 +177,8 @@ export async function POST(request: NextRequest) {
     const submission = {
       memberId: userId,
       memberEmail: email,
-      organizationId,
-      organizationName: companyName || organizationName,
-      contactName: contactName || personalName,
+      organizationName: companyName || '',
+      contactName: contactName || '',
       contactEmail: contactEmail || email,
       entries: entries.map((entry: any) => ({
         lineOfBusiness: entry.lineOfBusiness,
