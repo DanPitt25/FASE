@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CapacityMatchingForm from '../../components/CapacityMatchingForm';
-import Button from '../../components/Button';
 
 interface TokenValidation {
   valid: boolean;
@@ -14,7 +13,19 @@ interface TokenValidation {
   error?: string;
 }
 
-export default function CapacityMatchingMagicLinkPage() {
+function LoadingState() {
+  return (
+    <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="relative z-10 w-full max-w-md bg-white rounded-lg shadow-xl border-4 border-fase-gold overflow-hidden flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy"></div>
+        <p className="mt-4 text-fase-navy">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+function CapacityMatchingContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const email = searchParams.get('email');
@@ -150,5 +161,13 @@ export default function CapacityMatchingMagicLinkPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CapacityMatchingMagicLinkPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CapacityMatchingContent />
+    </Suspense>
   );
 }
