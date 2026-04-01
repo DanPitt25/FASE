@@ -20,7 +20,6 @@ import FreeformEmailTab from './components/FreeformEmailTab';
 import InvoicesTab from './components/InvoicesTab';
 import SponsorsTab from './components/SponsorsTab';
 import BioReviewTab from './components/BioReviewTab';
-import CapacityMatchingTab from './components/CapacityMatchingTab';
 
 // Error boundary and context providers
 import { AdminErrorBoundary } from './components/AdminErrorBoundary';
@@ -73,12 +72,6 @@ const SponsorsIcon = (
 const BiosIcon = (
   <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const CapacityMatchingIcon = (
-  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
   </svg>
 );
 
@@ -320,16 +313,6 @@ function AdminPortalContent() {
       content: (
         <AdminErrorBoundary tabName="Sponsors">
           <SponsorsTab />
-        </AdminErrorBoundary>
-      ),
-    },
-    {
-      id: 'capacity-matching',
-      title: 'Capacity Matching',
-      icon: CapacityMatchingIcon,
-      content: (
-        <AdminErrorBoundary tabName="Capacity Matching">
-          <CapacityMatchingTab />
         </AdminErrorBoundary>
       ),
     },
