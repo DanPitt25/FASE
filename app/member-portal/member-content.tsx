@@ -12,6 +12,7 @@ import MemberMap from "../../components/MemberMap";
 import MembershipDirectory from "../../components/MembershipDirectory";
 import LinesOfBusinessDirectory from "../../components/LinesOfBusinessDirectory";
 import ContactButton from "../../components/ContactButton";
+import CapacityMatchingForm from "../../components/CapacityMatchingForm";
 import { getUserAlerts, markAlertAsRead, dismissAlert, Alert, UserAlert } from "../../lib/unified-messaging";
 import { usePortalTranslations } from "./hooks/usePortalTranslations";
 import Image from "next/image";
@@ -483,6 +484,18 @@ export default function MemberContent() {
       ),
       content: (
         <LinesOfBusinessDirectory translations={{...(translations?.lines_of_business || {}), locale}} />
+      )
+    },
+    {
+      id: 'capacity-matching',
+      title: 'Capacity Matching',
+      icon: (
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      content: (
+        <CapacityMatchingForm />
       )
     },
     {
