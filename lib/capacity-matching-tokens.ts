@@ -1,4 +1,4 @@
-import { adminDb, FieldValue } from './firebase-admin';
+import { adminDb, FieldValue, Timestamp } from './firebase-admin';
 import crypto from 'crypto';
 
 const COLLECTION = 'capacity-matching-tokens';
@@ -43,7 +43,7 @@ export async function createMagicLink(
     companyName,
     contactEmail: contactEmail.toLowerCase().trim(),
     createdAt: FieldValue.serverTimestamp() as any,
-    expiresAt: adminDb.Timestamp ? adminDb.Timestamp.fromDate(expiresAt) : expiresAt as any,
+    expiresAt: Timestamp.fromDate(expiresAt) as any,
     used: false,
     createdBy,
     ...(adminUserId && { adminUserId }),
