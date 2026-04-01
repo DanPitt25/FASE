@@ -2,15 +2,17 @@
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import PageLayout from './PageLayout';
 
 export interface ConsoleTileData {
   id: string;
   title: string;
   icon: ReactNode;
-  content: ReactNode | (() => ReactNode);
+  content?: ReactNode | (() => ReactNode);
   badge?: number | string;
   statusText?: string;
+  href?: string; // If set, clicking the tile navigates to this URL instead of showing content
 }
 
 interface ConsoleDashboardProps {
@@ -116,22 +118,18 @@ export default function ConsoleDashboard({
             {/* Left Sidebar - Menu Grid */}
             <div className="lg:w-64 xl:w-72 bg-white border-r border-gray-200 p-4 lg:self-stretch">
               <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:sticky lg:top-4">
-                {tiles.map((tile, index) => (
-                  <button
-                    key={tile.id}
-                    type="button"
-                    onClick={() => handleTileChange(tile.id)}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    className={`
-                      relative p-3 rounded-lg border text-left transition-all duration-200
-                      opacity-0 animate-tile-entrance
-                      focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-2
-                      ${activeTile === tile.id
-                        ? 'border-fase-navy bg-fase-navy text-white'
-                        : 'border-gray-200 bg-white text-fase-navy hover:border-fase-navy/30 hover:bg-gray-50'
-                      }
-                    `}
-                  >
+                {tiles.map((tile, index) => {
+                  const tileClassName = `
+                    relative p-3 rounded-lg border text-left transition-all duration-200
+                    opacity-0 animate-tile-entrance
+                    focus:outline-none focus:ring-2 focus:ring-fase-navy focus:ring-offset-2
+                    ${activeTile === tile.id
+                      ? 'border-fase-navy bg-fase-navy text-white'
+                      : 'border-gray-200 bg-white text-fase-navy hover:border-fase-navy/30 hover:bg-gray-50'
+                    }
+                  `;
+
+                  const tileContent = (
                     <div className="flex items-center gap-3">
                       {/* Icon */}
                       <div className={`w-5 h-5 flex-shrink-0 ${activeTile === tile.id ? 'text-fase-gold' : 'text-fase-navy'}`}>
@@ -149,9 +147,42 @@ export default function ConsoleDashboard({
                           {tile.badge}
                         </span>
                       )}
+
+                      {/* External link indicator for href tiles */}
+                      {tile.href && (
+                        <svg className="w-4 h-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      )}
                     </div>
-                  </button>
-                ))}
+                  );
+
+                  // If tile has href, render as Link; otherwise render as button
+                  if (tile.href) {
+                    return (
+                      <Link
+                        key={tile.id}
+                        href={tile.href}
+                        style={{ animationDelay: `${index * 50}ms` }}
+                        className={tileClassName}
+                      >
+                        {tileContent}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={tile.id}
+                      type="button"
+                      onClick={() => handleTileChange(tile.id)}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                      className={tileClassName}
+                    >
+                      {tileContent}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
