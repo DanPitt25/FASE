@@ -48,7 +48,6 @@ export default function CapacityMatchingTab() {
 
   // Magic link generation - bulk CSV
   const [showBulkModal, setShowBulkModal] = useState(false);
-  const [bulkLanguage, setBulkLanguage] = useState<SupportedLanguage>('en');
   const [csvRecipients, setCsvRecipients] = useState<Array<{
     companyName: string;
     firstName: string;
@@ -57,13 +56,19 @@ export default function CapacityMatchingTab() {
   }>>([]);
   const [csvFileName, setCsvFileName] = useState('');
   const [csvError, setCsvError] = useState('');
-  const [bulkGenerating, setBulkGenerating] = useState(false);
+
+  // Bulk step-through mode
+  const [bulkStepMode, setBulkStepMode] = useState(false);
+  const [currentBulkIndex, setCurrentBulkIndex] = useState(0);
+  const [currentBulkLanguage, setCurrentBulkLanguage] = useState<SupportedLanguage>('en');
+  const [sendingCurrentBulk, setSendingCurrentBulk] = useState(false);
   const [bulkResults, setBulkResults] = useState<Array<{
     email: string;
+    companyName: string;
     success: boolean;
     error?: string;
+    language: SupportedLanguage;
   }>>([]);
-  const [currentBulkIndex, setCurrentBulkIndex] = useState(0);
 
   const loadSubmissions = async () => {
     try {
@@ -336,59 +341,111 @@ export default function CapacityMatchingTab() {
     setCsvRecipients([]);
     setCsvFileName('');
     setCsvError('');
-    setBulkResults([]);
-    setCurrentBulkIndex(0);
   };
 
   const resetBulkModal = () => {
     setShowBulkModal(false);
     clearCsv();
-    setBulkLanguage('en');
-  };
-
-  // Handle bulk generation - one at a time
-  const handleBulkGenerate = async () => {
-    if (csvRecipients.length === 0) return;
-
-    setBulkGenerating(true);
-    setBulkResults([]);
+    setBulkStepMode(false);
     setCurrentBulkIndex(0);
-
-    for (let i = 0; i < csvRecipients.length; i++) {
-      setCurrentBulkIndex(i);
-      const recipient = csvRecipients[i];
-
-      try {
-        const response = await authFetch('/api/admin/capacity-matching/generate-link', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName: recipient.companyName,
-            firstName: recipient.firstName,
-            fullName: recipient.fullName,
-            contactEmail: recipient.email,
-            sendEmail: true,
-            language: bulkLanguage,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setBulkResults(prev => [...prev, { email: recipient.email, success: false, error: data.error || 'Failed' }]);
-        } else {
-          setBulkResults(prev => [...prev, { email: recipient.email, success: true }]);
-        }
-      } catch (err: any) {
-        setBulkResults(prev => [...prev, { email: recipient.email, success: false, error: err.message }]);
-      }
-
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    setBulkGenerating(false);
+    setCurrentBulkLanguage('en');
+    setBulkResults([]);
   };
+
+  // Start step-through mode
+  const startBulkStepMode = () => {
+    setBulkStepMode(true);
+    setCurrentBulkIndex(0);
+    setBulkResults([]);
+    setCurrentBulkLanguage('en');
+  };
+
+  // Send current recipient in step-through mode
+  const handleSendCurrentBulk = async () => {
+    const recipient = csvRecipients[currentBulkIndex];
+    if (!recipient) return;
+
+    setSendingCurrentBulk(true);
+
+    try {
+      const response = await authFetch('/api/admin/capacity-matching/generate-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: recipient.companyName,
+          firstName: recipient.firstName,
+          fullName: recipient.fullName,
+          contactEmail: recipient.email,
+          sendEmail: true,
+          language: currentBulkLanguage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setBulkResults(prev => [...prev, {
+          email: recipient.email,
+          companyName: recipient.companyName,
+          success: false,
+          error: data.error || 'Failed',
+          language: currentBulkLanguage,
+        }]);
+      } else {
+        setBulkResults(prev => [...prev, {
+          email: recipient.email,
+          companyName: recipient.companyName,
+          success: true,
+          language: currentBulkLanguage,
+        }]);
+        // Auto-advance to next
+        if (currentBulkIndex < csvRecipients.length - 1) {
+          setCurrentBulkIndex(prev => prev + 1);
+        }
+      }
+    } catch (err: any) {
+      setBulkResults(prev => [...prev, {
+        email: recipient.email,
+        companyName: recipient.companyName,
+        success: false,
+        error: err.message,
+        language: currentBulkLanguage,
+      }]);
+    } finally {
+      setSendingCurrentBulk(false);
+    }
+  };
+
+  // Skip current recipient
+  const handleSkipCurrentBulk = () => {
+    const recipient = csvRecipients[currentBulkIndex];
+    if (recipient) {
+      setBulkResults(prev => [...prev, {
+        email: recipient.email,
+        companyName: recipient.companyName,
+        success: false,
+        error: 'Skipped',
+        language: currentBulkLanguage,
+      }]);
+    }
+    if (currentBulkIndex < csvRecipients.length - 1) {
+      setCurrentBulkIndex(prev => prev + 1);
+    }
+  };
+
+  // Generate preview HTML for current bulk recipient
+  const currentBulkPreviewHtml = useMemo(() => {
+    const recipient = csvRecipients[currentBulkIndex];
+    if (!recipient) return '';
+    const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    return generateMagicLinkEmailHtml(
+      recipient.companyName,
+      recipient.firstName,
+      'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
+      previewExpiry,
+      currentBulkLanguage
+    );
+  }, [csvRecipients, currentBulkIndex, currentBulkLanguage]);
 
   const copyLinkToClipboard = async () => {
     if (generatedLink) {
@@ -893,11 +950,12 @@ export default function CapacityMatchingTab() {
       <Modal
         isOpen={showBulkModal}
         onClose={resetBulkModal}
-        title="Bulk Magic Link Generation"
-        maxWidth="2xl"
+        title={bulkStepMode ? `Sending ${currentBulkIndex + 1} of ${csvRecipients.length}` : 'Bulk Magic Link Generation'}
+        maxWidth={bulkStepMode ? '4xl' : '2xl'}
       >
         <div className="space-y-4">
-          {bulkResults.length === 0 ? (
+          {/* Phase 1: CSV Upload */}
+          {!bulkStepMode && bulkResults.length === 0 && (
             <>
               {/* CSV Upload */}
               <div>
@@ -913,7 +971,6 @@ export default function CapacityMatchingTab() {
                         onChange={handleCsvUpload}
                         className="hidden"
                         id="csv-upload-bulk"
-                        disabled={bulkGenerating}
                       />
                       <label
                         htmlFor="csv-upload-bulk"
@@ -940,7 +997,6 @@ export default function CapacityMatchingTab() {
                         type="button"
                         onClick={clearCsv}
                         className="text-sm text-red-600 hover:text-red-800"
-                        disabled={bulkGenerating}
                       >
                         Remove
                       </button>
@@ -984,45 +1040,144 @@ export default function CapacityMatchingTab() {
                 </div>
               )}
 
-              {/* Language Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Language
-                </label>
-                <select
-                  value={bulkLanguage}
-                  onChange={(e) => setBulkLanguage(e.target.value as SupportedLanguage)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                  disabled={bulkGenerating}
-                >
-                  {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
-                    <option key={lang} value={lang}>
-                      {LANGUAGE_LABELS[lang]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-2">
                 <Button
                   variant="secondary"
                   onClick={resetBulkModal}
-                  disabled={bulkGenerating}
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleBulkGenerate}
-                  disabled={bulkGenerating || csvRecipients.length === 0}
+                  onClick={startBulkStepMode}
+                  disabled={csvRecipients.length === 0}
                 >
-                  {bulkGenerating
-                    ? `Generating ${currentBulkIndex + 1}/${csvRecipients.length}...`
-                    : `Generate & Send ${csvRecipients.length} Links`}
+                  Start Sending ({csvRecipients.length})
                 </Button>
               </div>
             </>
-          ) : (
+          )}
+
+          {/* Phase 2: Step-through mode - sending one by one */}
+          {bulkStepMode && bulkResults.length < csvRecipients.length && (
+            <>
+              {/* Progress bar */}
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-fase-navy h-2 rounded-full transition-all"
+                    style={{ width: `${(bulkResults.length / csvRecipients.length) * 100}%` }}
+                  />
+                </div>
+                <span>{bulkResults.length} / {csvRecipients.length} sent</span>
+              </div>
+
+              {/* Current recipient info */}
+              {csvRecipients[currentBulkIndex] && (
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Left: Recipient details */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-500">Company</span>
+                          <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].companyName}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Email</span>
+                          <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].email}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">First Name (salutation)</span>
+                          <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].firstName}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Full Name (form)</span>
+                          <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].fullName}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Language Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email Language
+                      </label>
+                      <select
+                        value={currentBulkLanguage}
+                        onChange={(e) => setCurrentBulkLanguage(e.target.value as SupportedLanguage)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                        disabled={sendingCurrentBulk}
+                      >
+                        {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
+                          <option key={lang} value={lang}>
+                            {LANGUAGE_LABELS[lang]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <Button
+                        variant="secondary"
+                        onClick={handleSkipCurrentBulk}
+                        disabled={sendingCurrentBulk}
+                        className="flex-1"
+                      >
+                        Skip
+                      </Button>
+                      <Button
+                        onClick={handleSendCurrentBulk}
+                        disabled={sendingCurrentBulk}
+                        className="flex-1"
+                      >
+                        {sendingCurrentBulk ? 'Sending...' : 'Send Email'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Right: Email preview */}
+                  <div className="border-l pl-6">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Email Preview</span>
+                      <span className="text-xs text-gray-500">
+                        {LANGUAGE_LABELS[currentBulkLanguage]}
+                      </span>
+                    </div>
+                    <div
+                      className="border rounded-lg bg-white overflow-auto max-h-[400px]"
+                      dangerouslySetInnerHTML={{ __html: currentBulkPreviewHtml }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Quick results summary */}
+              {bulkResults.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="text-xs text-gray-500 mb-1">Recent:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {bulkResults.slice(-5).map((result, i) => (
+                      <span
+                        key={i}
+                        className={`text-xs px-2 py-1 rounded ${
+                          result.success
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {result.companyName}: {result.success ? 'Sent' : result.error}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Phase 3: Complete - show results */}
+          {bulkResults.length > 0 && bulkResults.length >= csvRecipients.length && (
             <>
               {/* Results */}
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -1043,13 +1198,23 @@ export default function CapacityMatchingTab() {
                   <div
                     key={i}
                     className={`px-3 py-2 border-b border-gray-100 last:border-b-0 flex items-center justify-between ${
-                      result.success ? 'bg-green-50' : 'bg-red-50'
+                      result.success ? 'bg-green-50' : result.error === 'Skipped' ? 'bg-gray-50' : 'bg-red-50'
                     }`}
                   >
-                    <span className="text-sm truncate">{result.email}</span>
-                    <span className={`text-xs font-medium ${result.success ? 'text-green-600' : 'text-red-600'}`}>
-                      {result.success ? 'Sent' : result.error || 'Failed'}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{result.companyName}</span>
+                      <span className="text-xs text-gray-500">{result.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {result.success && (
+                        <span className="text-xs text-gray-500">{LANGUAGE_LABELS[result.language]}</span>
+                      )}
+                      <span className={`text-xs font-medium ${
+                        result.success ? 'text-green-600' : result.error === 'Skipped' ? 'text-gray-500' : 'text-red-600'
+                      }`}>
+                        {result.success ? 'Sent' : result.error || 'Failed'}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1060,6 +1225,7 @@ export default function CapacityMatchingTab() {
                   variant="secondary"
                   onClick={() => {
                     setBulkResults([]);
+                    setBulkStepMode(false);
                     clearCsv();
                   }}
                 >
