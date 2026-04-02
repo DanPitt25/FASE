@@ -46,13 +46,15 @@ export default function CapacityMatchingTab() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
 
-  // Magic link generation - bulk CSV
+  // Magic link generation - bulk CSV/XLSX
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [csvRecipients, setCsvRecipients] = useState<Array<{
     companyName: string;
     firstName: string;
     fullName: string;
     email: string;
+    suggestedLanguage?: string;
+    title?: string;
   }>>([]);
   const [csvFileName, setCsvFileName] = useState('');
   const [csvError, setCsvError] = useState('');
@@ -224,116 +226,206 @@ export default function CapacityMatchingTab() {
     }
   };
 
-  // Handle CSV upload for bulk generation
-  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Parse rows from headers and data (shared between CSV and XLSX)
+  const parseRecipientsFromRows = (headers: string[], rows: string[][]) => {
+    // Find column indices - support multiple naming conventions
+    const emailIndex = headers.findIndex(h =>
+      h === 'email' || h === 'e-mail' || h === 'email address'
+    );
+    const companyIndex = headers.findIndex(h =>
+      h === 'company' || h === 'organization' || h === 'organisation' || h === 'company name'
+    );
+    const firstNameIndex = headers.findIndex(h =>
+      h === 'first name' || h === 'firstname' || h === 'first'
+    );
+    const surnameIndex = headers.findIndex(h =>
+      h === 'surname' || h === 'last name' || h === 'lastname' || h === 'last'
+    );
+    // Also check for a combined "full name" column as fallback
+    const fullNameIndex = headers.findIndex(h =>
+      h === 'full name' || h === 'fullname' || h === 'name' || h === 'contact name' || h === 'contact'
+    );
+    // Language column (advisory only)
+    const languageIndex = headers.findIndex(h =>
+      h === 'language' || h === 'lang'
+    );
+    // Title column (advisory only)
+    const titleIndex = headers.findIndex(h =>
+      h === 'title'
+    );
+
+    if (emailIndex === -1) {
+      setCsvError('File must have an "email" column');
+      setCsvRecipients([]);
+      return;
+    }
+
+    if (companyIndex === -1) {
+      setCsvError('File must have a "company" column');
+      setCsvRecipients([]);
+      return;
+    }
+
+    if (firstNameIndex === -1) {
+      setCsvError('File must have a "first name" column');
+      setCsvRecipients([]);
+      return;
+    }
+
+    // Need either surname OR full name column
+    if (surnameIndex === -1 && fullNameIndex === -1) {
+      setCsvError('File must have a "surname" or "full name" column');
+      setCsvRecipients([]);
+      return;
+    }
+
+    const parsed: Array<{
+      companyName: string;
+      firstName: string;
+      fullName: string;
+      email: string;
+      suggestedLanguage?: string;
+      title?: string;
+    }> = [];
+
+    for (const row of rows) {
+      const email = (row[emailIndex] || '').trim();
+      if (!email || !email.includes('@')) continue;
+
+      const companyName = (row[companyIndex] || '').trim();
+      const firstName = (row[firstNameIndex] || '').trim();
+
+      // Combine first name + surname for full name, or use full name column
+      let fullName = '';
+      if (surnameIndex !== -1) {
+        const surname = (row[surnameIndex] || '').trim();
+        fullName = `${firstName} ${surname}`.trim();
+      } else if (fullNameIndex !== -1) {
+        fullName = (row[fullNameIndex] || '').trim();
+      }
+
+      if (!companyName || !firstName || !fullName) continue;
+
+      const recipient: typeof parsed[0] = {
+        email,
+        companyName,
+        firstName,
+        fullName,
+      };
+
+      // Add advisory fields if present
+      if (languageIndex !== -1) {
+        recipient.suggestedLanguage = (row[languageIndex] || '').trim();
+      }
+      if (titleIndex !== -1) {
+        recipient.title = (row[titleIndex] || '').trim();
+      }
+
+      parsed.push(recipient);
+    }
+
+    if (parsed.length === 0) {
+      setCsvError('No valid rows found');
+      setCsvRecipients([]);
+      return;
+    }
+
+    setCsvRecipients(parsed);
+  };
+
+  // Handle file upload (CSV or XLSX)
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setCsvError('');
     setCsvFileName(file.name);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        const lines = text.split(/\r?\n/).filter(line => line.trim());
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
 
-        if (lines.length === 0) {
-          setCsvError('CSV file is empty');
-          setCsvRecipients([]);
-          return;
-        }
+    if (isExcel) {
+      // Parse XLSX using the already-imported XLSX library
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1 });
 
-        // Parse header to find column indices
-        const headerLine = lines[0].toLowerCase();
-        const headers = headerLine.split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
-
-        const emailIndex = headers.findIndex(h => h === 'email' || h === 'e-mail' || h === 'email address');
-        const companyIndex = headers.findIndex(h => h === 'company' || h === 'organization' || h === 'organisation' || h === 'company name');
-        const firstNameIndex = headers.findIndex(h => h === 'first name' || h === 'firstname' || h === 'first');
-        const fullNameIndex = headers.findIndex(h => h === 'full name' || h === 'fullname' || h === 'name' || h === 'contact name' || h === 'contact');
-
-        if (emailIndex === -1) {
-          setCsvError('CSV must have an "email" column');
-          setCsvRecipients([]);
-          return;
-        }
-
-        if (companyIndex === -1) {
-          setCsvError('CSV must have a "company" column');
-          setCsvRecipients([]);
-          return;
-        }
-
-        if (firstNameIndex === -1) {
-          setCsvError('CSV must have a "first name" column (for email salutation)');
-          setCsvRecipients([]);
-          return;
-        }
-
-        if (fullNameIndex === -1) {
-          setCsvError('CSV must have a "full name" or "name" column (for form pre-fill)');
-          setCsvRecipients([]);
-          return;
-        }
-
-        const parsed: typeof csvRecipients = [];
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i];
-          // Simple CSV parsing (handles quoted fields)
-          const values: string[] = [];
-          let current = '';
-          let inQuotes = false;
-          for (const char of line) {
-            if (char === '"' && !inQuotes) {
-              inQuotes = true;
-            } else if (char === '"' && inQuotes) {
-              inQuotes = false;
-            } else if (char === ',' && !inQuotes) {
-              values.push(current.trim());
-              current = '';
-            } else {
-              current += char;
-            }
+          if (jsonData.length === 0) {
+            setCsvError('File is empty');
+            setCsvRecipients([]);
+            return;
           }
-          values.push(current.trim());
 
-          const email = values[emailIndex]?.replace(/^["']|["']$/g, '').trim();
-          if (!email || !email.includes('@')) continue;
+          const headers = (jsonData[0] as string[]).map(h => String(h || '').toLowerCase().trim());
+          const rows = jsonData.slice(1).map(row =>
+            (row as string[]).map(cell => String(cell || ''))
+          );
 
-          const companyName = values[companyIndex]?.replace(/^["']|["']$/g, '').trim() || '';
-          const firstName = values[firstNameIndex]?.replace(/^["']|["']$/g, '').trim() || '';
-          const fullName = values[fullNameIndex]?.replace(/^["']|["']$/g, '').trim() || '';
-
-          if (!companyName || !firstName || !fullName) continue;
-
-          parsed.push({
-            email,
-            companyName,
-            firstName,
-            fullName,
-          });
-        }
-
-        if (parsed.length === 0) {
-          setCsvError('No valid rows found (need email, company, first name, full name)');
+          parseRecipientsFromRows(headers, rows);
+        } catch (err) {
+          setCsvError('Failed to parse Excel file');
           setCsvRecipients([]);
-          return;
         }
-
-        setCsvRecipients(parsed);
-      } catch (err) {
-        setCsvError('Failed to parse CSV file');
+      };
+      reader.onerror = () => {
+        setCsvError('Failed to read file');
         setCsvRecipients([]);
-      }
-    };
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // Parse CSV
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string;
+          const lines = text.split(/\r?\n/).filter(line => line.trim());
 
-    reader.onerror = () => {
-      setCsvError('Failed to read file');
-      setCsvRecipients([]);
-    };
+          if (lines.length === 0) {
+            setCsvError('File is empty');
+            setCsvRecipients([]);
+            return;
+          }
 
-    reader.readAsText(file);
+          // Parse CSV lines
+          const parseCSVLine = (line: string): string[] => {
+            const values: string[] = [];
+            let current = '';
+            let inQuotes = false;
+            for (const char of line) {
+              if (char === '"' && !inQuotes) {
+                inQuotes = true;
+              } else if (char === '"' && inQuotes) {
+                inQuotes = false;
+              } else if ((char === ',' || char === '\t') && !inQuotes) {
+                values.push(current.trim().replace(/^["']|["']$/g, ''));
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            values.push(current.trim().replace(/^["']|["']$/g, ''));
+            return values;
+          };
+
+          const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
+          const rows = lines.slice(1).map(parseCSVLine);
+
+          parseRecipientsFromRows(headers, rows);
+        } catch (err) {
+          setCsvError('Failed to parse file');
+          setCsvRecipients([]);
+        }
+      };
+      reader.onerror = () => {
+        setCsvError('Failed to read file');
+        setCsvRecipients([]);
+      };
+      reader.readAsText(file);
+    }
+
     event.target.value = '';
   };
 
@@ -957,18 +1049,18 @@ export default function CapacityMatchingTab() {
           {/* Phase 1: CSV Upload */}
           {!bulkStepMode && bulkResults.length === 0 && (
             <>
-              {/* CSV Upload */}
+              {/* File Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload CSV
+                  Upload File
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                   {csvRecipients.length === 0 ? (
                     <div className="text-center">
                       <input
                         type="file"
-                        accept=".csv"
-                        onChange={handleCsvUpload}
+                        accept=".csv,.xlsx,.xls"
+                        onChange={handleFileUpload}
                         className="hidden"
                         id="csv-upload-bulk"
                       />
@@ -979,10 +1071,10 @@ export default function CapacityMatchingTab() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <span className="text-sm font-medium">Upload CSV file</span>
+                        <span className="text-sm font-medium">Upload CSV or Excel file</span>
                       </label>
                       <p className="text-xs text-gray-500 mt-2">
-                        Required columns: email, company, first name, full name
+                        Required columns: email, company, first name, surname (or full name)
                       </p>
                     </div>
                   ) : (
@@ -1095,6 +1187,12 @@ export default function CapacityMatchingTab() {
                           <span className="text-gray-500">Full Name (form)</span>
                           <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].fullName}</p>
                         </div>
+                        {csvRecipients[currentBulkIndex].title && (
+                          <div className="col-span-2">
+                            <span className="text-gray-500">Title</span>
+                            <p className="font-medium text-gray-900">{csvRecipients[currentBulkIndex].title}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1102,6 +1200,11 @@ export default function CapacityMatchingTab() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Email Language
+                        {csvRecipients[currentBulkIndex].suggestedLanguage && (
+                          <span className="ml-2 text-xs text-gray-400 font-normal">
+                            (from file: {csvRecipients[currentBulkIndex].suggestedLanguage})
+                          </span>
+                        )}
                       </label>
                       <select
                         value={currentBulkLanguage}
