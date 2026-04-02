@@ -13,6 +13,7 @@ const NOTIFICATION_FROM = 'FASE <notifications@fasemga.com>';
 
 async function sendMagicLinkEmail(
   to: string,
+  contactName: string,
   companyName: string,
   url: string,
   expiresAt: Date,
@@ -25,7 +26,7 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  const emailHtml = generateMagicLinkEmailHtml(companyName, url, expiresAt, language);
+  const emailHtml = generateMagicLinkEmailHtml(companyName, contactName, url, expiresAt, language);
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -37,7 +38,7 @@ async function sendMagicLinkEmail(
       body: JSON.stringify({
         from: NOTIFICATION_FROM,
         to,
-        subject: `${t.subject} - ${companyName}`,
+        subject: t.subject,
         html: emailHtml,
       }),
     });
@@ -61,10 +62,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { companyName, contactEmail, sendEmail = true, language = 'en' } = body;
+    const { companyName, contactName, contactEmail, sendEmail = true, language = 'en' } = body;
 
     if (!companyName?.trim()) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
+    }
+
+    if (!contactName?.trim()) {
+      return NextResponse.json({ error: 'Contact name is required' }, { status: 400 });
     }
 
     if (!contactEmail?.trim()) {
@@ -86,7 +91,14 @@ export async function POST(request: NextRequest) {
     // Optionally send email
     let emailSent = false;
     if (sendEmail) {
-      emailSent = await sendMagicLinkEmail(contactEmail.trim(), companyName.trim(), url, expiresAt, selectedLanguage);
+      emailSent = await sendMagicLinkEmail(
+        contactEmail.trim(),
+        contactName.trim(),
+        companyName.trim(),
+        url,
+        expiresAt,
+        selectedLanguage
+      );
     }
 
     return NextResponse.json({

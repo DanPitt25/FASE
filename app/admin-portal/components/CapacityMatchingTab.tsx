@@ -36,6 +36,7 @@ export default function CapacityMatchingTab() {
   // Magic link generation
   const [showGenerateLinkModal, setShowGenerateLinkModal] = useState(false);
   const [linkCompanyName, setLinkCompanyName] = useState('');
+  const [linkContactName, setLinkContactName] = useState('');
   const [linkEmail, setLinkEmail] = useState('');
   const [linkLanguage, setLinkLanguage] = useState<SupportedLanguage>('en');
   const [sendEmailWithLink, setSendEmailWithLink] = useState(true);
@@ -83,11 +84,12 @@ export default function CapacityMatchingTab() {
     const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
     return generateMagicLinkEmailHtml(
       linkCompanyName || 'Company Name',
+      linkContactName || 'Contact Name',
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
       previewExpiry,
       linkLanguage
     );
-  }, [linkCompanyName, linkLanguage]);
+  }, [linkCompanyName, linkContactName, linkLanguage]);
 
   // Export single submission to Excel
   const exportSubmissionToExcel = (submission: Submission) => {
@@ -163,7 +165,7 @@ export default function CapacityMatchingTab() {
 
   // Handle generate magic link
   const handleGenerateLink = async () => {
-    if (!linkCompanyName.trim() || !linkEmail.trim()) {
+    if (!linkCompanyName.trim() || !linkContactName.trim() || !linkEmail.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -175,6 +177,7 @@ export default function CapacityMatchingTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyName: linkCompanyName.trim(),
+          contactName: linkContactName.trim(),
           contactEmail: linkEmail.trim(),
           sendEmail: sendEmailWithLink,
           language: linkLanguage,
@@ -206,6 +209,7 @@ export default function CapacityMatchingTab() {
   const resetLinkModal = () => {
     setShowGenerateLinkModal(false);
     setLinkCompanyName('');
+    setLinkContactName('');
     setLinkEmail('');
     setLinkLanguage('en');
     setSendEmailWithLink(true);
@@ -508,6 +512,20 @@ export default function CapacityMatchingTab() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={linkContactName}
+                    onChange={(e) => setLinkContactName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                    disabled={generatingLink}
+                    placeholder="Contact name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Contact Email *
                   </label>
                   <input
@@ -571,7 +589,7 @@ export default function CapacityMatchingTab() {
                   </Button>
                   <Button
                     onClick={handleGenerateLink}
-                    disabled={generatingLink || !linkCompanyName.trim() || !linkEmail.trim()}
+                    disabled={generatingLink || !linkCompanyName.trim() || !linkContactName.trim() || !linkEmail.trim()}
                   >
                     {generatingLink ? 'Generating...' : 'Generate Link'}
                   </Button>
@@ -640,6 +658,7 @@ export default function CapacityMatchingTab() {
                   onClick={() => {
                     setGeneratedLink(null);
                     setLinkCompanyName('');
+                    setLinkContactName('');
                     setLinkEmail('');
                     setShowEmailPreview(false);
                   }}
