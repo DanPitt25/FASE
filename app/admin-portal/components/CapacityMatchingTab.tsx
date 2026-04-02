@@ -8,7 +8,9 @@ import * as XLSX from 'xlsx';
 import type { CapacityMatchingSubmission, CapacityMatchingEntry } from '../../../lib/capacity-matching-constants';
 import {
   SupportedLanguage,
+  SalutationType,
   LANGUAGE_LABELS,
+  SALUTATION_LABELS,
   generateMagicLinkEmailHtml,
   magicLinkEmailTranslations,
 } from '../../../lib/capacity-matching-email-translations';
@@ -40,6 +42,7 @@ export default function CapacityMatchingTab() {
   const [linkFullName, setLinkFullName] = useState('');
   const [linkEmail, setLinkEmail] = useState('');
   const [linkLanguage, setLinkLanguage] = useState<SupportedLanguage>('en');
+  const [linkSalutation, setLinkSalutation] = useState<SalutationType>('neutral');
   const [sendEmailWithLink, setSendEmailWithLink] = useState(true);
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export default function CapacityMatchingTab() {
   const [bulkStepMode, setBulkStepMode] = useState(false);
   const [currentBulkIndex, setCurrentBulkIndex] = useState(0);
   const [currentBulkLanguage, setCurrentBulkLanguage] = useState<SupportedLanguage>('en');
+  const [currentBulkSalutation, setCurrentBulkSalutation] = useState<SalutationType>('neutral');
   const [sendingCurrentBulk, setSendingCurrentBulk] = useState(false);
   const [bulkResults, setBulkResults] = useState<Array<{
     email: string;
@@ -114,9 +118,10 @@ export default function CapacityMatchingTab() {
       linkFirstName || 'First Name',
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
       previewExpiry,
-      linkLanguage
+      linkLanguage,
+      linkSalutation
     );
-  }, [linkCompanyName, linkFirstName, linkLanguage]);
+  }, [linkCompanyName, linkFirstName, linkLanguage, linkSalutation]);
 
   // Export single submission to Excel
   const exportSubmissionToExcel = (submission: Submission) => {
@@ -209,6 +214,7 @@ export default function CapacityMatchingTab() {
           contactEmail: linkEmail.trim(),
           sendEmail: sendEmailWithLink,
           language: linkLanguage,
+          salutation: linkSalutation,
         }),
       });
 
@@ -450,6 +456,7 @@ export default function CapacityMatchingTab() {
     setBulkStepMode(false);
     setCurrentBulkIndex(0);
     setCurrentBulkLanguage('en');
+    setCurrentBulkSalutation('neutral');
     setBulkResults([]);
   };
 
@@ -459,6 +466,7 @@ export default function CapacityMatchingTab() {
     setCurrentBulkIndex(0);
     setBulkResults([]);
     setCurrentBulkLanguage('en');
+    setCurrentBulkSalutation('neutral');
   };
 
   // Send current recipient in step-through mode
@@ -479,6 +487,7 @@ export default function CapacityMatchingTab() {
           contactEmail: recipient.email,
           sendEmail: true,
           language: currentBulkLanguage,
+          salutation: currentBulkSalutation,
         }),
       });
 
@@ -544,9 +553,10 @@ export default function CapacityMatchingTab() {
       recipient.firstName,
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
       previewExpiry,
-      currentBulkLanguage
+      currentBulkLanguage,
+      currentBulkSalutation
     );
-  }, [csvRecipients, currentBulkIndex, currentBulkLanguage]);
+  }, [csvRecipients, currentBulkIndex, currentBulkLanguage, currentBulkSalutation]);
 
   const copyLinkToClipboard = async () => {
     if (generatedLink) {
@@ -563,6 +573,7 @@ export default function CapacityMatchingTab() {
     setLinkFullName('');
     setLinkEmail('');
     setLinkLanguage('en');
+    setLinkSalutation('neutral');
     setSendEmailWithLink(true);
     setGeneratedLink(null);
     setLinkCopied(false);
@@ -910,22 +921,41 @@ export default function CapacityMatchingTab() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Language
-                  </label>
-                  <select
-                    value={linkLanguage}
-                    onChange={(e) => setLinkLanguage(e.target.value as SupportedLanguage)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    disabled={generatingLink}
-                  >
-                    {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
-                      <option key={lang} value={lang}>
-                        {LANGUAGE_LABELS[lang]}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Language
+                    </label>
+                    <select
+                      value={linkLanguage}
+                      onChange={(e) => setLinkLanguage(e.target.value as SupportedLanguage)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={generatingLink}
+                    >
+                      {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
+                        <option key={lang} value={lang}>
+                          {LANGUAGE_LABELS[lang]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Salutation
+                    </label>
+                    <select
+                      value={linkSalutation}
+                      onChange={(e) => setLinkSalutation(e.target.value as SalutationType)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={generatingLink}
+                    >
+                      {(Object.keys(SALUTATION_LABELS) as SalutationType[]).map((sal) => (
+                        <option key={sal} value={sal}>
+                          {SALUTATION_LABELS[sal]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -1033,6 +1063,7 @@ export default function CapacityMatchingTab() {
                     setLinkFirstName('');
                     setLinkFullName('');
                     setLinkEmail('');
+                    setLinkSalutation('neutral');
                     setShowEmailPreview(false);
                   }}
                 >
@@ -1205,28 +1236,47 @@ export default function CapacityMatchingTab() {
                       </div>
                     </div>
 
-                    {/* Language Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Language
-                        {csvRecipients[currentBulkIndex].suggestedLanguage && (
-                          <span className="ml-2 text-xs text-gray-400 font-normal">
-                            (from file: {csvRecipients[currentBulkIndex].suggestedLanguage})
-                          </span>
-                        )}
-                      </label>
-                      <select
-                        value={currentBulkLanguage}
-                        onChange={(e) => setCurrentBulkLanguage(e.target.value as SupportedLanguage)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                        disabled={sendingCurrentBulk}
-                      >
-                        {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
-                          <option key={lang} value={lang}>
-                            {LANGUAGE_LABELS[lang]}
-                          </option>
-                        ))}
-                      </select>
+                    {/* Language & Salutation Selection */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Language
+                          {csvRecipients[currentBulkIndex].suggestedLanguage && (
+                            <span className="ml-1 text-xs text-gray-400 font-normal">
+                              ({csvRecipients[currentBulkIndex].suggestedLanguage})
+                            </span>
+                          )}
+                        </label>
+                        <select
+                          value={currentBulkLanguage}
+                          onChange={(e) => setCurrentBulkLanguage(e.target.value as SupportedLanguage)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          disabled={sendingCurrentBulk}
+                        >
+                          {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
+                            <option key={lang} value={lang}>
+                              {LANGUAGE_LABELS[lang]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Salutation
+                        </label>
+                        <select
+                          value={currentBulkSalutation}
+                          onChange={(e) => setCurrentBulkSalutation(e.target.value as SalutationType)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                          disabled={sendingCurrentBulk}
+                        >
+                          {(Object.keys(SALUTATION_LABELS) as SalutationType[]).map((sal) => (
+                            <option key={sal} value={sal}>
+                              {SALUTATION_LABELS[sal]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     {/* Actions */}

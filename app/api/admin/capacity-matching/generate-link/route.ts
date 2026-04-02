@@ -3,6 +3,7 @@ import { verifyAdminAccess, isAuthError } from '../../../../../lib/admin-auth';
 import { createMagicLink } from '../../../../../lib/capacity-matching-tokens';
 import {
   SupportedLanguage,
+  SalutationType,
   magicLinkEmailTranslations,
   generateMagicLinkEmailHtml,
 } from '../../../../../lib/capacity-matching-email-translations';
@@ -17,7 +18,8 @@ async function sendMagicLinkEmail(
   companyName: string,
   url: string,
   expiresAt: Date,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
+  salutation: SalutationType = 'neutral'
 ) {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) {
@@ -26,7 +28,7 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  const emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, expiresAt, language);
+  const emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, expiresAt, language, salutation);
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { companyName, firstName, fullName, contactEmail, sendEmail = true, language = 'en' } = body;
+    const { companyName, firstName, fullName, contactEmail, sendEmail = true, language = 'en', salutation = 'neutral' } = body;
 
     if (!companyName?.trim()) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -84,6 +86,10 @@ export async function POST(request: NextRequest) {
     const validLanguages: SupportedLanguage[] = ['en', 'de', 'fr', 'es', 'it', 'nl'];
     const selectedLanguage: SupportedLanguage = validLanguages.includes(language) ? language : 'en';
 
+    // Validate salutation
+    const validSalutations: SalutationType[] = ['male', 'female', 'neutral'];
+    const selectedSalutation: SalutationType = validSalutations.includes(salutation) ? salutation : 'neutral';
+
     // Create the magic link (pass fullName as the contact name for form pre-fill)
     const { token, url, expiresAt } = await createMagicLink(
       companyName.trim(),
@@ -102,7 +108,8 @@ export async function POST(request: NextRequest) {
         companyName.trim(),
         url,
         expiresAt,
-        selectedLanguage
+        selectedLanguage,
+        selectedSalutation
       );
     }
 

@@ -1,8 +1,25 @@
 export type SupportedLanguage = 'en' | 'de' | 'fr' | 'es' | 'it' | 'nl';
+export type SalutationType = 'male' | 'female' | 'neutral';
+
+export const SALUTATION_LABELS: Record<SalutationType, string> = {
+  male: 'Mr.',
+  female: 'Ms.',
+  neutral: 'Neutral',
+};
+
+// Gender-specific greetings for each language
+export const greetingsByGender: Record<SupportedLanguage, Record<SalutationType, string>> = {
+  en: { male: 'Dear Mr.', female: 'Dear Ms.', neutral: 'Dear' },
+  de: { male: 'Sehr geehrter Herr', female: 'Sehr geehrte Frau', neutral: 'Guten Tag' },
+  fr: { male: 'Cher Monsieur', female: 'Chère Madame', neutral: 'Bonjour' },
+  es: { male: 'Estimado Sr.', female: 'Estimada Sra.', neutral: 'Estimado/a' },
+  it: { male: 'Gentile Sig.', female: 'Gentile Sig.ra', neutral: 'Gentile' },
+  nl: { male: 'Geachte heer', female: 'Geachte mevrouw', neutral: 'Beste' },
+};
 
 export interface MagicLinkEmailTranslations {
   subject: string;
-  greeting: string;
+  greeting: string; // Kept for backwards compatibility, but greetingsByGender is preferred
   intro: string;
   networkingExplanation: string;
   requestInfo: string;
@@ -135,16 +152,18 @@ export function generateMagicLinkEmailHtml(
   contactName: string,
   url: string,
   expiresAt: Date,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
+  salutation: SalutationType = 'neutral'
 ): string {
   const t = magicLinkEmailTranslations[language];
+  const greeting = greetingsByGender[language][salutation];
 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <img src="https://fasemga.com/fase-logo-rgb.png" alt="FASE" style="height: 48px; margin-bottom: 24px;" />
 
       <p style="color: #374151; line-height: 1.6;">
-        ${t.greeting} ${contactName},
+        ${greeting} ${contactName},
       </p>
 
       <p style="color: #374151; line-height: 1.6;">
