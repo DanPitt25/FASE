@@ -228,29 +228,34 @@ export default function CapacityMatchingTab() {
 
   // Parse rows from headers and data (shared between CSV and XLSX)
   const parseRecipientsFromRows = (headers: string[], rows: string[][]) => {
+    // Normalize headers: lowercase, trim, remove BOM and non-breaking spaces
+    const normalizedHeaders = headers.map(h =>
+      h.toLowerCase().trim().replace(/^\ufeff/, '').replace(/\u00a0/g, ' ')
+    );
+
     // Find column indices - support multiple naming conventions
-    const emailIndex = headers.findIndex(h =>
+    const emailIndex = normalizedHeaders.findIndex(h =>
       h === 'email' || h === 'e-mail' || h === 'email address'
     );
-    const companyIndex = headers.findIndex(h =>
+    const companyIndex = normalizedHeaders.findIndex(h =>
       h === 'company' || h === 'organization' || h === 'organisation' || h === 'company name'
     );
-    const firstNameIndex = headers.findIndex(h =>
+    const firstNameIndex = normalizedHeaders.findIndex(h =>
       h === 'first name' || h === 'firstname' || h === 'first'
     );
-    const surnameIndex = headers.findIndex(h =>
+    const surnameIndex = normalizedHeaders.findIndex(h =>
       h === 'surname' || h === 'last name' || h === 'lastname' || h === 'last'
     );
     // Also check for a combined "full name" column as fallback
-    const fullNameIndex = headers.findIndex(h =>
+    const fullNameIndex = normalizedHeaders.findIndex(h =>
       h === 'full name' || h === 'fullname' || h === 'name' || h === 'contact name' || h === 'contact'
     );
     // Language column (advisory only)
-    const languageIndex = headers.findIndex(h =>
+    const languageIndex = normalizedHeaders.findIndex(h =>
       h === 'language' || h === 'lang'
     );
     // Title column (advisory only)
-    const titleIndex = headers.findIndex(h =>
+    const titleIndex = normalizedHeaders.findIndex(h =>
       h === 'title'
     );
 
@@ -359,9 +364,11 @@ export default function CapacityMatchingTab() {
             return;
           }
 
-          const headers = (jsonData[0] as string[]).map(h => String(h || '').toLowerCase().trim());
+          const headers = (jsonData[0] as string[]).map(h =>
+            String(h || '').toLowerCase().trim().replace(/^\ufeff/, '') // Remove BOM and trim
+          );
           const rows = jsonData.slice(1).map(row =>
-            (row as string[]).map(cell => String(cell || ''))
+            (row as string[]).map(cell => String(cell || '').trim())
           );
 
           parseRecipientsFromRows(headers, rows);
@@ -410,7 +417,9 @@ export default function CapacityMatchingTab() {
             return values;
           };
 
-          const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
+          const headers = parseCSVLine(lines[0]).map(h =>
+            h.toLowerCase().trim().replace(/^\ufeff/, '') // Remove BOM and trim
+          );
           const rows = lines.slice(1).map(parseCSVLine);
 
           parseRecipientsFromRows(headers, rows);
