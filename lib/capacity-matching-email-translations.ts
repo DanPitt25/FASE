@@ -10,11 +10,11 @@ export const SALUTATION_LABELS: Record<SalutationType, string> = {
 // Gender-specific greetings for each language
 export const greetingsByGender: Record<SupportedLanguage, Record<SalutationType, string>> = {
   en: { male: 'Dear Mr.', female: 'Dear Ms.', neutral: 'Dear' },
-  de: { male: 'Sehr geehrter Herr', female: 'Sehr geehrte Frau', neutral: 'Guten Tag' },
-  fr: { male: 'Cher Monsieur', female: 'Chère Madame', neutral: 'Bonjour' },
+  de: { male: 'Sehr geehrter Herr', female: 'Sehr geehrte Frau', neutral: 'Sehr geehrte/r' },
+  fr: { male: 'Cher Monsieur', female: 'Chère Madame', neutral: 'Cher/Chère' },
   es: { male: 'Estimado Sr.', female: 'Estimada Sra.', neutral: 'Estimado/a' },
   it: { male: 'Gentile Sig.', female: 'Gentile Sig.ra', neutral: 'Gentile' },
-  nl: { male: 'Geachte heer', female: 'Geachte mevrouw', neutral: 'Beste' },
+  nl: { male: 'Geachte heer', female: 'Geachte mevrouw', neutral: 'Geachte' },
 };
 
 export interface MagicLinkEmailTranslations {
