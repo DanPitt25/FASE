@@ -55,6 +55,7 @@ interface CapacityMatchingFormProps {
   // Magic link mode props
   magicLinkMode?: boolean;
   lockedCompanyName?: string;
+  initialContactName?: string;
   initialContactEmail?: string;
   magicLinkToken?: string;
   onSubmit?: (data: {
@@ -68,6 +69,7 @@ export default function CapacityMatchingForm({
   translations = {},
   magicLinkMode = false,
   lockedCompanyName,
+  initialContactName = '',
   initialContactEmail = '',
   magicLinkToken,
   onSubmit,
@@ -89,7 +91,9 @@ export default function CapacityMatchingForm({
   const companyName = magicLinkMode ? (lockedCompanyName || '') : (member?.organizationName || '');
 
   // Contact info (pre-populated but editable)
-  const [contactName, setContactName] = useState(member?.personalName || '');
+  const [contactName, setContactName] = useState(
+    magicLinkMode ? initialContactName : (member?.personalName || '')
+  );
   const [contactEmail, setContactEmail] = useState(
     magicLinkMode ? initialContactEmail : (member?.email || '')
   );

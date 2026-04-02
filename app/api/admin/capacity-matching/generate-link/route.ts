@@ -13,7 +13,7 @@ const NOTIFICATION_FROM = 'FASE <notifications@fasemga.com>';
 
 async function sendMagicLinkEmail(
   to: string,
-  contactName: string,
+  firstName: string,
   companyName: string,
   url: string,
   expiresAt: Date,
@@ -26,7 +26,7 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  const emailHtml = generateMagicLinkEmailHtml(companyName, contactName, url, expiresAt, language);
+  const emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, expiresAt, language);
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -62,14 +62,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { companyName, contactName, contactEmail, sendEmail = true, language = 'en' } = body;
+    const { companyName, firstName, fullName, contactEmail, sendEmail = true, language = 'en' } = body;
 
     if (!companyName?.trim()) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
     }
 
-    if (!contactName?.trim()) {
-      return NextResponse.json({ error: 'Contact name is required' }, { status: 400 });
+    if (!firstName?.trim()) {
+      return NextResponse.json({ error: 'First name is required' }, { status: 400 });
+    }
+
+    if (!fullName?.trim()) {
+      return NextResponse.json({ error: 'Full name is required' }, { status: 400 });
     }
 
     if (!contactEmail?.trim()) {
@@ -80,20 +84,21 @@ export async function POST(request: NextRequest) {
     const validLanguages: SupportedLanguage[] = ['en', 'de', 'fr', 'es', 'it', 'nl'];
     const selectedLanguage: SupportedLanguage = validLanguages.includes(language) ? language : 'en';
 
-    // Create the magic link
+    // Create the magic link (pass fullName as the contact name for form pre-fill)
     const { token, url, expiresAt } = await createMagicLink(
       companyName.trim(),
       contactEmail.trim(),
+      fullName.trim(),
       'admin',
       authResult.userId
     );
 
-    // Optionally send email
+    // Optionally send email (use firstName for the salutation)
     let emailSent = false;
     if (sendEmail) {
       emailSent = await sendMagicLinkEmail(
         contactEmail.trim(),
-        contactName.trim(),
+        firstName.trim(),
         companyName.trim(),
         url,
         expiresAt,

@@ -8,6 +8,7 @@ export interface CapacityMatchingToken {
   id: string;
   token: string;
   companyName: string;
+  contactName: string;
   contactEmail: string;
   createdAt: FirebaseFirestore.Timestamp;
   expiresAt: FirebaseFirestore.Timestamp;
@@ -31,6 +32,7 @@ export function generateToken(): string {
 export async function createMagicLink(
   companyName: string,
   contactEmail: string,
+  contactName: string,
   createdBy: 'admin' | 'self-request',
   adminUserId?: string
 ): Promise<{ token: string; url: string; expiresAt: Date }> {
@@ -41,6 +43,7 @@ export async function createMagicLink(
   const tokenDoc: Omit<CapacityMatchingToken, 'id'> = {
     token,
     companyName,
+    contactName,
     contactEmail: contactEmail.toLowerCase().trim(),
     createdAt: FieldValue.serverTimestamp() as any,
     expiresAt: Timestamp.fromDate(expiresAt) as any,

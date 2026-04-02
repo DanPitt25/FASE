@@ -33,10 +33,11 @@ export default function CapacityMatchingTab() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Magic link generation
+  // Magic link generation - single
   const [showGenerateLinkModal, setShowGenerateLinkModal] = useState(false);
   const [linkCompanyName, setLinkCompanyName] = useState('');
-  const [linkContactName, setLinkContactName] = useState('');
+  const [linkFirstName, setLinkFirstName] = useState('');
+  const [linkFullName, setLinkFullName] = useState('');
   const [linkEmail, setLinkEmail] = useState('');
   const [linkLanguage, setLinkLanguage] = useState<SupportedLanguage>('en');
   const [sendEmailWithLink, setSendEmailWithLink] = useState(true);
@@ -44,6 +45,25 @@ export default function CapacityMatchingTab() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
+
+  // Magic link generation - bulk CSV
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkLanguage, setBulkLanguage] = useState<SupportedLanguage>('en');
+  const [csvRecipients, setCsvRecipients] = useState<Array<{
+    companyName: string;
+    firstName: string;
+    fullName: string;
+    email: string;
+  }>>([]);
+  const [csvFileName, setCsvFileName] = useState('');
+  const [csvError, setCsvError] = useState('');
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkResults, setBulkResults] = useState<Array<{
+    email: string;
+    success: boolean;
+    error?: string;
+  }>>([]);
+  const [currentBulkIndex, setCurrentBulkIndex] = useState(0);
 
   const loadSubmissions = async () => {
     try {
@@ -84,12 +104,12 @@ export default function CapacityMatchingTab() {
     const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
     return generateMagicLinkEmailHtml(
       linkCompanyName || 'Company Name',
-      linkContactName || 'Contact Name',
+      linkFirstName || 'First Name',
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
       previewExpiry,
       linkLanguage
     );
-  }, [linkCompanyName, linkContactName, linkLanguage]);
+  }, [linkCompanyName, linkFirstName, linkLanguage]);
 
   // Export single submission to Excel
   const exportSubmissionToExcel = (submission: Submission) => {
@@ -165,7 +185,7 @@ export default function CapacityMatchingTab() {
 
   // Handle generate magic link
   const handleGenerateLink = async () => {
-    if (!linkCompanyName.trim() || !linkContactName.trim() || !linkEmail.trim()) {
+    if (!linkCompanyName.trim() || !linkFirstName.trim() || !linkFullName.trim() || !linkEmail.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -177,7 +197,8 @@ export default function CapacityMatchingTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           companyName: linkCompanyName.trim(),
-          contactName: linkContactName.trim(),
+          firstName: linkFirstName.trim(),
+          fullName: linkFullName.trim(),
           contactEmail: linkEmail.trim(),
           sendEmail: sendEmailWithLink,
           language: linkLanguage,
@@ -198,6 +219,177 @@ export default function CapacityMatchingTab() {
     }
   };
 
+  // Handle CSV upload for bulk generation
+  const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setCsvError('');
+    setCsvFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+        if (lines.length === 0) {
+          setCsvError('CSV file is empty');
+          setCsvRecipients([]);
+          return;
+        }
+
+        // Parse header to find column indices
+        const headerLine = lines[0].toLowerCase();
+        const headers = headerLine.split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+
+        const emailIndex = headers.findIndex(h => h === 'email' || h === 'e-mail' || h === 'email address');
+        const companyIndex = headers.findIndex(h => h === 'company' || h === 'organization' || h === 'organisation' || h === 'company name');
+        const firstNameIndex = headers.findIndex(h => h === 'first name' || h === 'firstname' || h === 'first');
+        const fullNameIndex = headers.findIndex(h => h === 'full name' || h === 'fullname' || h === 'name' || h === 'contact name' || h === 'contact');
+
+        if (emailIndex === -1) {
+          setCsvError('CSV must have an "email" column');
+          setCsvRecipients([]);
+          return;
+        }
+
+        if (companyIndex === -1) {
+          setCsvError('CSV must have a "company" column');
+          setCsvRecipients([]);
+          return;
+        }
+
+        if (firstNameIndex === -1) {
+          setCsvError('CSV must have a "first name" column (for email salutation)');
+          setCsvRecipients([]);
+          return;
+        }
+
+        if (fullNameIndex === -1) {
+          setCsvError('CSV must have a "full name" or "name" column (for form pre-fill)');
+          setCsvRecipients([]);
+          return;
+        }
+
+        const parsed: typeof csvRecipients = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          // Simple CSV parsing (handles quoted fields)
+          const values: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          for (const char of line) {
+            if (char === '"' && !inQuotes) {
+              inQuotes = true;
+            } else if (char === '"' && inQuotes) {
+              inQuotes = false;
+            } else if (char === ',' && !inQuotes) {
+              values.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          values.push(current.trim());
+
+          const email = values[emailIndex]?.replace(/^["']|["']$/g, '').trim();
+          if (!email || !email.includes('@')) continue;
+
+          const companyName = values[companyIndex]?.replace(/^["']|["']$/g, '').trim() || '';
+          const firstName = values[firstNameIndex]?.replace(/^["']|["']$/g, '').trim() || '';
+          const fullName = values[fullNameIndex]?.replace(/^["']|["']$/g, '').trim() || '';
+
+          if (!companyName || !firstName || !fullName) continue;
+
+          parsed.push({
+            email,
+            companyName,
+            firstName,
+            fullName,
+          });
+        }
+
+        if (parsed.length === 0) {
+          setCsvError('No valid rows found (need email, company, first name, full name)');
+          setCsvRecipients([]);
+          return;
+        }
+
+        setCsvRecipients(parsed);
+      } catch (err) {
+        setCsvError('Failed to parse CSV file');
+        setCsvRecipients([]);
+      }
+    };
+
+    reader.onerror = () => {
+      setCsvError('Failed to read file');
+      setCsvRecipients([]);
+    };
+
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const clearCsv = () => {
+    setCsvRecipients([]);
+    setCsvFileName('');
+    setCsvError('');
+    setBulkResults([]);
+    setCurrentBulkIndex(0);
+  };
+
+  const resetBulkModal = () => {
+    setShowBulkModal(false);
+    clearCsv();
+    setBulkLanguage('en');
+  };
+
+  // Handle bulk generation - one at a time
+  const handleBulkGenerate = async () => {
+    if (csvRecipients.length === 0) return;
+
+    setBulkGenerating(true);
+    setBulkResults([]);
+    setCurrentBulkIndex(0);
+
+    for (let i = 0; i < csvRecipients.length; i++) {
+      setCurrentBulkIndex(i);
+      const recipient = csvRecipients[i];
+
+      try {
+        const response = await authFetch('/api/admin/capacity-matching/generate-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName: recipient.companyName,
+            firstName: recipient.firstName,
+            fullName: recipient.fullName,
+            contactEmail: recipient.email,
+            sendEmail: true,
+            language: bulkLanguage,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setBulkResults(prev => [...prev, { email: recipient.email, success: false, error: data.error || 'Failed' }]);
+        } else {
+          setBulkResults(prev => [...prev, { email: recipient.email, success: true }]);
+        }
+      } catch (err: any) {
+        setBulkResults(prev => [...prev, { email: recipient.email, success: false, error: err.message }]);
+      }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    setBulkGenerating(false);
+  };
+
   const copyLinkToClipboard = async () => {
     if (generatedLink) {
       await navigator.clipboard.writeText(generatedLink);
@@ -209,7 +401,8 @@ export default function CapacityMatchingTab() {
   const resetLinkModal = () => {
     setShowGenerateLinkModal(false);
     setLinkCompanyName('');
-    setLinkContactName('');
+    setLinkFirstName('');
+    setLinkFullName('');
     setLinkEmail('');
     setLinkLanguage('en');
     setSendEmailWithLink(true);
@@ -277,6 +470,12 @@ export default function CapacityMatchingTab() {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowBulkModal(true)}
+            variant="secondary"
+          >
+            Bulk Magic Links (CSV)
+          </Button>
           <Button
             onClick={() => setShowGenerateLinkModal(true)}
             variant="secondary"
@@ -510,18 +709,33 @@ export default function CapacityMatchingTab() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={linkContactName}
-                    onChange={(e) => setLinkContactName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
-                    disabled={generatingLink}
-                    placeholder="Contact name"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={linkFirstName}
+                      onChange={(e) => setLinkFirstName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={generatingLink}
+                      placeholder="For email salutation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={linkFullName}
+                      onChange={(e) => setLinkFullName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                      disabled={generatingLink}
+                      placeholder="For form pre-fill"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -589,7 +803,7 @@ export default function CapacityMatchingTab() {
                   </Button>
                   <Button
                     onClick={handleGenerateLink}
-                    disabled={generatingLink || !linkCompanyName.trim() || !linkContactName.trim() || !linkEmail.trim()}
+                    disabled={generatingLink || !linkCompanyName.trim() || !linkFirstName.trim() || !linkFullName.trim() || !linkEmail.trim()}
                   >
                     {generatingLink ? 'Generating...' : 'Generate Link'}
                   </Button>
@@ -658,7 +872,8 @@ export default function CapacityMatchingTab() {
                   onClick={() => {
                     setGeneratedLink(null);
                     setLinkCompanyName('');
-                    setLinkContactName('');
+                    setLinkFirstName('');
+                    setLinkFullName('');
                     setLinkEmail('');
                     setShowEmailPreview(false);
                   }}
@@ -666,6 +881,191 @@ export default function CapacityMatchingTab() {
                   Generate Another
                 </Button>
                 <Button onClick={resetLinkModal}>
+                  Done
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Bulk Magic Link Modal */}
+      <Modal
+        isOpen={showBulkModal}
+        onClose={resetBulkModal}
+        title="Bulk Magic Link Generation"
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          {bulkResults.length === 0 ? (
+            <>
+              {/* CSV Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload CSV
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                  {csvRecipients.length === 0 ? (
+                    <div className="text-center">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleCsvUpload}
+                        className="hidden"
+                        id="csv-upload-bulk"
+                        disabled={bulkGenerating}
+                      />
+                      <label
+                        htmlFor="csv-upload-bulk"
+                        className="cursor-pointer inline-flex items-center gap-2 text-fase-navy hover:text-fase-orange"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="text-sm font-medium">Upload CSV file</span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Required columns: email, company, first name, full name
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">{csvFileName}</p>
+                        <p className="text-xs text-green-600">
+                          {csvRecipients.length} recipient{csvRecipients.length !== 1 ? 's' : ''} loaded
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearCsv}
+                        className="text-sm text-red-600 hover:text-red-800"
+                        disabled={bulkGenerating}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                  {csvError && (
+                    <p className="text-xs text-red-600 mt-2">{csvError}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Recipients Preview */}
+              {csvRecipients.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Recipients ({csvRecipients.length})
+                  </label>
+                  <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-medium">Company</th>
+                          <th className="text-left px-3 py-2 font-medium">Name</th>
+                          <th className="text-left px-3 py-2 font-medium">Email</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csvRecipients.map((r, i) => (
+                          <tr key={i} className="border-t border-gray-100">
+                            <td className="px-3 py-2 truncate max-w-[150px]">{r.companyName}</td>
+                            <td className="px-3 py-2">
+                              <span className="text-gray-900">{r.firstName}</span>
+                              <span className="text-gray-400 ml-1">({r.fullName})</span>
+                            </td>
+                            <td className="px-3 py-2 truncate max-w-[200px]">{r.email}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Language Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Language
+                </label>
+                <select
+                  value={bulkLanguage}
+                  onChange={(e) => setBulkLanguage(e.target.value as SupportedLanguage)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fase-navy focus:border-transparent"
+                  disabled={bulkGenerating}
+                >
+                  {(Object.keys(LANGUAGE_LABELS) as SupportedLanguage[]).map((lang) => (
+                    <option key={lang} value={lang}>
+                      {LANGUAGE_LABELS[lang]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={resetBulkModal}
+                  disabled={bulkGenerating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleBulkGenerate}
+                  disabled={bulkGenerating || csvRecipients.length === 0}
+                >
+                  {bulkGenerating
+                    ? `Generating ${currentBulkIndex + 1}/${csvRecipients.length}...`
+                    : `Generate & Send ${csvRecipients.length} Links`}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Results */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="font-medium text-green-800">Bulk Generation Complete</span>
+                </div>
+                <p className="text-sm text-green-700">
+                  {bulkResults.filter(r => r.success).length} of {bulkResults.length} emails sent successfully.
+                </p>
+              </div>
+
+              {/* Results List */}
+              <div className="border border-gray-300 rounded-lg max-h-64 overflow-y-auto">
+                {bulkResults.map((result, i) => (
+                  <div
+                    key={i}
+                    className={`px-3 py-2 border-b border-gray-100 last:border-b-0 flex items-center justify-between ${
+                      result.success ? 'bg-green-50' : 'bg-red-50'
+                    }`}
+                  >
+                    <span className="text-sm truncate">{result.email}</span>
+                    <span className={`text-xs font-medium ${result.success ? 'text-green-600' : 'text-red-600'}`}>
+                      {result.success ? 'Sent' : result.error || 'Failed'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setBulkResults([]);
+                    clearCsv();
+                  }}
+                >
+                  Generate More
+                </Button>
+                <Button onClick={resetBulkModal}>
                   Done
                 </Button>
               </div>

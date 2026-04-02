@@ -114,10 +114,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create the magic link
+    // Create the magic link (no contact name for self-request, user fills it in form)
     const { url, expiresAt } = await createMagicLink(
       companyName.trim(),
       contactEmail.trim(),
+      '',
       'self-request'
     );
 

@@ -9,6 +9,7 @@ import CapacityMatchingForm from '../../components/CapacityMatchingForm';
 interface TokenValidation {
   valid: boolean;
   companyName?: string;
+  contactName?: string;
   contactEmail?: string;
   error?: string;
 }
@@ -50,6 +51,7 @@ function CapacityMatchingContent() {
           setValidation({
             valid: true,
             companyName: result.companyName,
+            contactName: result.contactName || '',
             contactEmail: result.contactEmail,
           });
         } else {
@@ -154,6 +156,7 @@ function CapacityMatchingContent() {
           <CapacityMatchingForm
             magicLinkMode={true}
             lockedCompanyName={validation.companyName}
+            initialContactName={validation.contactName || ''}
             initialContactEmail={validation.contactEmail || ''}
             magicLinkToken={token || ''}
             onSubmit={handleSubmit}

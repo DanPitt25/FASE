@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         valid: true,
         companyName: validation.data.companyName,
+        contactName: validation.data.contactName || '',
         contactEmail: validation.data.contactEmail,
       });
     } else {
