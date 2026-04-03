@@ -120,12 +120,12 @@ export default function CapacityMatchingTab() {
     );
   });
 
-  // Generate email preview HTML
+  // Generate email preview HTML with live form data
   const emailPreviewHtml = useMemo(() => {
     return generateMagicLinkEmailHtml(
-      linkCompanyName || 'Company Name',
-      linkFirstName || 'First Name',
-      'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
+      linkCompanyName || '{{Company Name}}',
+      linkFirstName || '{{First Name}}',
+      '{{MAGIC_LINK_URL}}',
       linkLanguage,
       linkSalutation
     );
@@ -639,8 +639,8 @@ export default function CapacityMatchingTab() {
     const t = magicLinkEmailTranslations[linkLanguage];
     setSingleCustomEmailSubject(t.subject);
     setSingleCustomEmailHtml(generateMagicLinkEmailHtml(
-      linkCompanyName || 'Company Name',
-      linkFirstName || 'First Name',
+      linkCompanyName || '{{Company Name}}',
+      linkFirstName || '{{First Name}}',
       '{{MAGIC_LINK_URL}}',
       linkLanguage,
       linkSalutation

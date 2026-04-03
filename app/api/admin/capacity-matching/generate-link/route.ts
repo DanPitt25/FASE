@@ -29,10 +29,16 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  // If custom HTML is provided, replace the placeholder with the actual URL
-  const emailHtml = customHtml
-    ? customHtml.replace(/\{\{MAGIC_LINK_URL\}\}/g, url)
-    : generateMagicLinkEmailHtml(companyName, firstName, url, language, salutation);
+  // If custom HTML is provided, replace all placeholders with actual values
+  let emailHtml: string;
+  if (customHtml) {
+    emailHtml = customHtml
+      .replace(/\{\{MAGIC_LINK_URL\}\}/g, url)
+      .replace(/\{\{Company Name\}\}/g, companyName)
+      .replace(/\{\{First Name\}\}/g, firstName);
+  } else {
+    emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, language, salutation);
+  }
   const subject = customSubject || t.subject;
 
   try {
