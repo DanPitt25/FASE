@@ -13,6 +13,8 @@ import {
   LANGUAGE_LABELS,
   SALUTATION_LABELS,
   generateMagicLinkEmailHtml,
+  generateMagicLinkEmailBody,
+  generateMagicLinkEmailFooter,
   magicLinkEmailTranslations,
 } from '../../../lib/capacity-matching-email-translations';
 
@@ -120,9 +122,9 @@ export default function CapacityMatchingTab() {
     );
   });
 
-  // Generate email preview HTML with live form data
-  const emailPreviewHtml = useMemo(() => {
-    return generateMagicLinkEmailHtml(
+  // Generate email body preview HTML with live form data (editable part only)
+  const emailBodyPreviewHtml = useMemo(() => {
+    return generateMagicLinkEmailBody(
       linkCompanyName || '{{Company Name}}',
       linkFirstName || '{{First Name}}',
       '{{MAGIC_LINK_URL}}',
@@ -130,6 +132,11 @@ export default function CapacityMatchingTab() {
       linkSalutation
     );
   }, [linkCompanyName, linkFirstName, linkLanguage, linkSalutation]);
+
+  // Generate email footer HTML (fixed, uneditable)
+  const emailFooterHtml = useMemo(() => {
+    return generateMagicLinkEmailFooter(linkLanguage);
+  }, [linkLanguage]);
 
   // Export single submission to Excel
   const exportSubmissionToExcel = (submission: Submission) => {
@@ -571,14 +578,14 @@ export default function CapacityMatchingTab() {
     }
   };
 
-  // Generate preview HTML for current bulk recipient
+  // Generate preview HTML for current bulk recipient (body only)
   const currentBulkPreviewHtml = useMemo(() => {
     if (customEmailMode && customEmailHtml) {
       return customEmailHtml;
     }
     const recipient = csvRecipients[currentBulkIndex];
     if (!recipient) return '';
-    return generateMagicLinkEmailHtml(
+    return generateMagicLinkEmailBody(
       recipient.companyName,
       recipient.firstName,
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
@@ -587,13 +594,18 @@ export default function CapacityMatchingTab() {
     );
   }, [csvRecipients, currentBulkIndex, currentBulkLanguage, currentBulkSalutation, customEmailMode, customEmailHtml]);
 
-  // Initialize custom email content when entering custom mode
+  // Generate footer HTML for bulk mode (fixed, uneditable)
+  const currentBulkFooterHtml = useMemo(() => {
+    return generateMagicLinkEmailFooter(currentBulkLanguage);
+  }, [currentBulkLanguage]);
+
+  // Initialize custom email content when entering custom mode (only body, footer is fixed)
   const initializeCustomEmail = () => {
     const recipient = csvRecipients[currentBulkIndex];
     if (!recipient) return;
     const t = magicLinkEmailTranslations[currentBulkLanguage];
     setCustomEmailSubject(t.subject);
-    setCustomEmailHtml(generateMagicLinkEmailHtml(
+    setCustomEmailHtml(generateMagicLinkEmailBody(
       recipient.companyName,
       recipient.firstName,
       '{{MAGIC_LINK_URL}}', // Placeholder that will be replaced when sending
@@ -634,11 +646,11 @@ export default function CapacityMatchingTab() {
     setSingleCustomEmailHtml('');
   };
 
-  // Initialize custom email for single link mode
+  // Initialize custom email for single link mode (only the body, footer is fixed)
   const initializeSingleCustomEmail = () => {
     const t = magicLinkEmailTranslations[linkLanguage];
     setSingleCustomEmailSubject(t.subject);
-    setSingleCustomEmailHtml(generateMagicLinkEmailHtml(
+    setSingleCustomEmailHtml(generateMagicLinkEmailBody(
       linkCompanyName || '{{Company Name}}',
       linkFirstName || '{{First Name}}',
       '{{MAGIC_LINK_URL}}',
@@ -1114,22 +1126,33 @@ export default function CapacityMatchingTab() {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Email Body
                       </label>
-                      {singleCustomEmailMode ? (
-                        <RichTextEditor
-                          content={singleCustomEmailHtml}
-                          onChange={setSingleCustomEmailHtml}
-                        />
-                      ) : (
+                      <div className="border border-gray-300 rounded-md bg-white max-h-[400px] overflow-y-auto">
+                        {/* Editable body section */}
+                        {singleCustomEmailMode ? (
+                          <div className="border-b border-dashed border-gray-200">
+                            <RichTextEditor
+                              content={singleCustomEmailHtml}
+                              onChange={setSingleCustomEmailHtml}
+                              className="border-0 rounded-none"
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className="p-4 border-b border-dashed border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors prose prose-sm max-w-none"
+                            onClick={initializeSingleCustomEmail}
+                            dangerouslySetInnerHTML={{ __html: emailBodyPreviewHtml }}
+                          />
+                        )}
+                        {/* Fixed footer section (uneditable) */}
                         <div
-                          className="border border-gray-300 rounded-md bg-white p-4 min-h-[200px] max-h-[400px] overflow-y-auto cursor-pointer hover:border-fase-navy transition-colors"
-                          onClick={initializeSingleCustomEmail}
-                          dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
+                          className="p-4 bg-gray-50 opacity-60"
+                          dangerouslySetInnerHTML={{ __html: emailFooterHtml }}
                         />
-                      )}
+                      </div>
                       <p className="text-xs text-gray-400 mt-1">
                         {singleCustomEmailMode
-                          ? 'Placeholders like {{Company Name}} will be replaced when sending'
-                          : 'Click to edit the email content'}
+                          ? 'Placeholders like {{Company Name}} will be replaced when sending. Signature block below is fixed.'
+                          : 'Click the email body to edit. Signature block is fixed.'}
                       </p>
                     </div>
                   </div>
@@ -1473,20 +1496,35 @@ export default function CapacityMatchingTab() {
                           <label className="block text-xs font-medium text-gray-700 mb-1">
                             Email Body
                           </label>
-                          <RichTextEditor
-                            content={customEmailHtml}
-                            onChange={setCustomEmailHtml}
-                          />
+                          <div className="border border-gray-300 rounded-md bg-white max-h-[400px] overflow-y-auto">
+                            <div className="border-b border-dashed border-gray-200">
+                              <RichTextEditor
+                                content={customEmailHtml}
+                                onChange={setCustomEmailHtml}
+                                className="border-0 rounded-none"
+                              />
+                            </div>
+                            <div
+                              className="p-4 bg-gray-50 opacity-60"
+                              dangerouslySetInnerHTML={{ __html: currentBulkFooterHtml }}
+                            />
+                          </div>
                           <p className="text-xs text-gray-400 mt-1">
-                            The button link will be automatically updated when sending
+                            The button link will be automatically updated when sending. Signature block is fixed.
                           </p>
                         </div>
                       </div>
                     ) : (
-                      <div
-                        className="border rounded-lg bg-white overflow-auto max-h-[400px]"
-                        dangerouslySetInnerHTML={{ __html: currentBulkPreviewHtml }}
-                      />
+                      <div className="border rounded-lg bg-white overflow-auto max-h-[400px]">
+                        <div
+                          className="p-4 border-b border-dashed border-gray-200 prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: currentBulkPreviewHtml }}
+                        />
+                        <div
+                          className="p-4 bg-gray-50 opacity-60"
+                          dangerouslySetInnerHTML={{ __html: currentBulkFooterHtml }}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

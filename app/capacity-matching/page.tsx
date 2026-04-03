@@ -9,6 +9,7 @@ import {
   SupportedLanguage,
   capacityMatchingPageTranslations,
   CapacityMatchingPageTranslations,
+  LANGUAGE_LABELS,
 } from '../../lib/capacity-matching-email-translations';
 
 interface TokenValidation {
@@ -76,10 +77,10 @@ function CapacityMatchingContent() {
   const [validation, setValidation] = useState<TokenValidation | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
 
-  // Get language from validation result, fallback to English
-  const language: SupportedLanguage = validation?.language || 'en';
-  const t = capacityMatchingPageTranslations[language];
+  // Use selected language for translations
+  const t = capacityMatchingPageTranslations[selectedLanguage];
 
   useEffect(() => {
     async function validateToken() {
@@ -94,13 +95,15 @@ function CapacityMatchingContent() {
         const result = await response.json();
 
         if (result.valid) {
+          const validatedLanguage: SupportedLanguage = result.language || 'en';
           setValidation({
             valid: true,
             companyName: result.companyName,
             contactName: result.contactName || '',
             contactEmail: result.contactEmail,
-            language: result.language || 'en',
+            language: validatedLanguage,
           });
+          setSelectedLanguage(validatedLanguage);
         } else {
           setValidation({ valid: false, error: result.error || 'Invalid or expired link' });
         }
@@ -172,6 +175,16 @@ function CapacityMatchingContent() {
       <div className="relative z-10 w-full max-w-md sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-6rem)] lg:max-h-[calc(100vh-8rem)] bg-white rounded-lg shadow-xl border-4 border-fase-gold overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-fase-light-gold bg-white px-6 py-8 text-center relative flex-shrink-0">
+          {/* Language selector */}
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value as SupportedLanguage)}
+            className="absolute top-4 right-4 text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-fase-navy"
+          >
+            {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
+          </select>
           <Link href="/">
             <Image
               src="/fase-logo-rgb.png"

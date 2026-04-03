@@ -6,11 +6,12 @@ import {
   SalutationType,
   magicLinkEmailTranslations,
   generateMagicLinkEmailHtml,
+  wrapEmailBodyWithTemplate,
 } from '../../../../../lib/capacity-matching-email-translations';
 
 export const dynamic = 'force-dynamic';
 
-const NOTIFICATION_FROM = 'FASE <notifications@fasemga.com>';
+const NOTIFICATION_FROM = 'William Pitt <william.pitt@fasemga.com>';
 
 async function sendMagicLinkEmail(
   to: string,
@@ -29,13 +30,15 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  // If custom HTML is provided, replace all placeholders with actual values
+  // If custom HTML is provided, replace placeholders and wrap with fixed footer
   let emailHtml: string;
   if (customHtml) {
-    emailHtml = customHtml
+    const processedBody = customHtml
       .replace(/\{\{MAGIC_LINK_URL\}\}/g, url)
       .replace(/\{\{Company Name\}\}/g, companyName)
       .replace(/\{\{First Name\}\}/g, firstName);
+    // Wrap custom body with the fixed footer (signature block with logo)
+    emailHtml = wrapEmailBodyWithTemplate(processedBody, language);
   } else {
     emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, language, salutation);
   }
