@@ -49,6 +49,11 @@ export default function CapacityMatchingTab() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
 
+  // Custom email editing for single link mode
+  const [singleCustomEmailMode, setSingleCustomEmailMode] = useState(false);
+  const [singleCustomEmailSubject, setSingleCustomEmailSubject] = useState('');
+  const [singleCustomEmailHtml, setSingleCustomEmailHtml] = useState('');
+
   // Magic link generation - bulk CSV/XLSX
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [csvRecipients, setCsvRecipients] = useState<Array<{
@@ -207,18 +212,27 @@ export default function CapacityMatchingTab() {
 
     try {
       setGeneratingLink(true);
+
+      const requestBody: any = {
+        companyName: linkCompanyName.trim(),
+        firstName: linkFirstName.trim(),
+        fullName: linkFullName.trim(),
+        contactEmail: linkEmail.trim(),
+        sendEmail: sendEmailWithLink,
+        language: linkLanguage,
+        salutation: linkSalutation,
+      };
+
+      // Add custom email content if in custom mode
+      if (singleCustomEmailMode && singleCustomEmailHtml) {
+        requestBody.customHtml = singleCustomEmailHtml;
+        requestBody.customSubject = singleCustomEmailSubject || undefined;
+      }
+
       const response = await authFetch('/api/admin/capacity-matching/generate-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: linkCompanyName.trim(),
-          firstName: linkFirstName.trim(),
-          fullName: linkFullName.trim(),
-          contactEmail: linkEmail.trim(),
-          sendEmail: sendEmailWithLink,
-          language: linkLanguage,
-          salutation: linkSalutation,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -616,6 +630,29 @@ export default function CapacityMatchingTab() {
     setGeneratedLink(null);
     setLinkCopied(false);
     setShowEmailPreview(false);
+    setSingleCustomEmailMode(false);
+    setSingleCustomEmailSubject('');
+    setSingleCustomEmailHtml('');
+  };
+
+  // Initialize custom email for single link mode
+  const initializeSingleCustomEmail = () => {
+    const t = magicLinkEmailTranslations[linkLanguage];
+    setSingleCustomEmailSubject(t.subject);
+    setSingleCustomEmailHtml(generateMagicLinkEmailHtml(
+      linkCompanyName || 'Company Name',
+      linkFirstName || 'First Name',
+      '{{MAGIC_LINK_URL}}',
+      linkLanguage,
+      linkSalutation
+    ));
+    setSingleCustomEmailMode(true);
+  };
+
+  const resetSingleCustomEmail = () => {
+    setSingleCustomEmailMode(false);
+    setSingleCustomEmailSubject('');
+    setSingleCustomEmailHtml('');
   };
 
   // Handle delete
@@ -1036,19 +1073,84 @@ export default function CapacityMatchingTab() {
                 </div>
               </div>
 
-              {/* Email Preview Section */}
+              {/* Email Preview/Edit Section */}
               {showEmailPreview && (
                 <div className="border-l pl-6">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Email Preview</span>
-                    <span className="text-xs text-gray-500">
-                      Subject: {magicLinkEmailTranslations[linkLanguage].subject} - {linkCompanyName || 'Company Name'}
+                    <span className="text-sm font-medium text-gray-700">
+                      {singleCustomEmailMode ? 'Edit Email' : 'Email Preview'}
                     </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        {LANGUAGE_LABELS[linkLanguage]}
+                      </span>
+                      {!singleCustomEmailMode ? (
+                        <button
+                          type="button"
+                          onClick={initializeSingleCustomEmail}
+                          className="text-xs text-fase-navy hover:text-fase-orange"
+                          disabled={generatingLink}
+                        >
+                          Personalize
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={resetSingleCustomEmail}
+                          className="text-xs text-red-600 hover:text-red-800"
+                          disabled={generatingLink}
+                        >
+                          Reset to Template
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div
-                    className="border rounded-lg bg-white overflow-auto max-h-[400px]"
-                    dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
-                  />
+
+                  {singleCustomEmailMode ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          value={singleCustomEmailSubject}
+                          onChange={(e) => setSingleCustomEmailSubject(e.target.value)}
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
+                          disabled={generatingLink}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Email Body (HTML)
+                        </label>
+                        <textarea
+                          value={singleCustomEmailHtml}
+                          onChange={(e) => setSingleCustomEmailHtml(e.target.value)}
+                          className="w-full px-2 py-1 text-xs font-mono border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
+                          rows={12}
+                          disabled={generatingLink}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Use {"{{MAGIC_LINK_URL}}"} as placeholder for the questionnaire link
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Preview
+                        </label>
+                        <div
+                          className="border rounded-lg bg-white overflow-auto max-h-[200px] text-sm"
+                          dangerouslySetInnerHTML={{ __html: singleCustomEmailHtml.replace(/\{\{MAGIC_LINK_URL\}\}/g, '#') }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="border rounded-lg bg-white overflow-auto max-h-[400px]"
+                      dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -1103,6 +1205,9 @@ export default function CapacityMatchingTab() {
                     setLinkEmail('');
                     setLinkSalutation('neutral');
                     setShowEmailPreview(false);
+                    setSingleCustomEmailMode(false);
+                    setSingleCustomEmailSubject('');
+                    setSingleCustomEmailHtml('');
                   }}
                 >
                   Generate Another
