@@ -1114,17 +1114,22 @@ export default function CapacityMatchingTab() {
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Email Body
                       </label>
-                      <RichTextEditor
-                        content={singleCustomEmailHtml || emailPreviewHtml}
-                        onChange={(html) => {
-                          if (!singleCustomEmailMode) {
-                            initializeSingleCustomEmail();
-                          }
-                          setSingleCustomEmailHtml(html);
-                        }}
-                      />
+                      {singleCustomEmailMode ? (
+                        <RichTextEditor
+                          content={singleCustomEmailHtml}
+                          onChange={setSingleCustomEmailHtml}
+                        />
+                      ) : (
+                        <div
+                          className="border border-gray-300 rounded-md bg-white p-4 min-h-[200px] max-h-[400px] overflow-y-auto cursor-pointer hover:border-fase-navy transition-colors"
+                          onClick={initializeSingleCustomEmail}
+                          dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
+                        />
+                      )}
                       <p className="text-xs text-gray-400 mt-1">
-                        The button link will be automatically updated when sending
+                        {singleCustomEmailMode
+                          ? 'Placeholders like {{Company Name}} will be replaced when sending'
+                          : 'Click to edit the email content'}
                       </p>
                     </div>
                   </div>
