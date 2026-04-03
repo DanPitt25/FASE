@@ -41,6 +41,283 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   nl: 'Nederlands',
 };
 
+// Page translations for the capacity matching form page
+export interface CapacityMatchingPageTranslations {
+  // Loading states
+  loading: string;
+  validatingLink: string;
+  // Error states
+  linkInvalidTitle: string;
+  linkAlreadyUsed: string;
+  linkInvalid: string;
+  requestNewLink: string;
+  // Page header
+  capacityMatching: string;
+  questionnaireFor: string;
+  // Form labels
+  intro: string;
+  contactInfo: string;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  growthTargets: string;
+  addRow: string;
+  entry: string;
+  remove: string;
+  lineOfBusiness: string;
+  country: string;
+  select: string;
+  gwp2025: string;
+  gwpPlaceholder: string;
+  targetYear1: string;
+  targetYear2: string;
+  targetYear3: string;
+  notes: string;
+  notesPlaceholder: string;
+  submit: string;
+  submitting: string;
+  // Success state
+  successTitle: string;
+  successMessage: string;
+  submitAnother: string;
+  // Validation errors
+  contactNameRequired: string;
+  contactEmailRequired: string;
+  lineOfBusinessRequired: string;
+  countryRequired: string;
+}
+
+export const capacityMatchingPageTranslations: Record<SupportedLanguage, CapacityMatchingPageTranslations> = {
+  en: {
+    loading: 'Loading...',
+    validatingLink: 'Validating link...',
+    linkInvalidTitle: 'Link Invalid',
+    linkAlreadyUsed: 'This link has already been used or is invalid.',
+    linkInvalid: 'This link is no longer valid.',
+    requestNewLink: 'Request a New Link',
+    capacityMatching: 'Capacity Matching',
+    questionnaireFor: 'Questionnaire for',
+    intro: 'Help us connect you with the right capacity providers. Share your growth ambitions below and we will work to match you with carriers whose risk appetite aligns with your business.',
+    contactInfo: 'Contact Information',
+    companyName: 'Company Name',
+    contactName: 'Contact Name',
+    contactEmail: 'Contact Email',
+    growthTargets: 'Growth Targets',
+    addRow: '+ Add Row',
+    entry: 'Entry',
+    remove: 'Remove',
+    lineOfBusiness: 'Line of Business',
+    country: 'Country',
+    select: 'Select...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 if new',
+    targetYear1: 'Target Year 1 (€)',
+    targetYear2: 'Target Year 2 (€)',
+    targetYear3: 'Target Year 3 (€)',
+    notes: 'Notes',
+    notesPlaceholder: 'Optional',
+    submit: 'Submit',
+    submitting: 'Submitting...',
+    successTitle: 'Submission Received',
+    successMessage: 'Thank you for submitting your growth ambitions. Our team will review your submission and work to connect you with suitable capacity providers.',
+    submitAnother: 'Submit Another',
+    contactNameRequired: 'Contact name is required',
+    contactEmailRequired: 'Contact email is required',
+    lineOfBusinessRequired: 'Row {{row}}: Line of Business is required',
+    countryRequired: 'Row {{row}}: Country is required',
+  },
+  de: {
+    loading: 'Laden...',
+    validatingLink: 'Link wird überprüft...',
+    linkInvalidTitle: 'Link ungültig',
+    linkAlreadyUsed: 'Dieser Link wurde bereits verwendet oder ist ungültig.',
+    linkInvalid: 'Dieser Link ist nicht mehr gültig.',
+    requestNewLink: 'Neuen Link anfordern',
+    capacityMatching: 'Kapazitäts-Matching',
+    questionnaireFor: 'Fragebogen für',
+    intro: 'Helfen Sie uns, Sie mit den richtigen Kapazitätsanbietern zu verbinden. Teilen Sie unten Ihre Wachstumsambitionen mit, und wir werden Sie mit Versicherern zusammenbringen, deren Risikoappetit zu Ihrem Geschäft passt.',
+    contactInfo: 'Kontaktinformationen',
+    companyName: 'Firmenname',
+    contactName: 'Kontaktperson',
+    contactEmail: 'E-Mail-Adresse',
+    growthTargets: 'Wachstumsziele',
+    addRow: '+ Zeile hinzufügen',
+    entry: 'Eintrag',
+    remove: 'Entfernen',
+    lineOfBusiness: 'Geschäftsbereich',
+    country: 'Land',
+    select: 'Auswählen...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 wenn neu',
+    targetYear1: 'Ziel Jahr 1 (€)',
+    targetYear2: 'Ziel Jahr 2 (€)',
+    targetYear3: 'Ziel Jahr 3 (€)',
+    notes: 'Anmerkungen',
+    notesPlaceholder: 'Optional',
+    submit: 'Absenden',
+    submitting: 'Wird gesendet...',
+    successTitle: 'Eingabe erhalten',
+    successMessage: 'Vielen Dank für die Übermittlung Ihrer Wachstumsambitionen. Unser Team wird Ihre Eingabe prüfen und daran arbeiten, Sie mit geeigneten Kapazitätsanbietern zu verbinden.',
+    submitAnother: 'Weitere Eingabe',
+    contactNameRequired: 'Kontaktname ist erforderlich',
+    contactEmailRequired: 'E-Mail-Adresse ist erforderlich',
+    lineOfBusinessRequired: 'Zeile {{row}}: Geschäftsbereich ist erforderlich',
+    countryRequired: 'Zeile {{row}}: Land ist erforderlich',
+  },
+  fr: {
+    loading: 'Chargement...',
+    validatingLink: 'Validation du lien...',
+    linkInvalidTitle: 'Lien invalide',
+    linkAlreadyUsed: 'Ce lien a déjà été utilisé ou est invalide.',
+    linkInvalid: 'Ce lien n\'est plus valide.',
+    requestNewLink: 'Demander un nouveau lien',
+    capacityMatching: 'Mise en relation capacité',
+    questionnaireFor: 'Questionnaire pour',
+    intro: 'Aidez-nous à vous mettre en relation avec les bons fournisseurs de capacité. Partagez vos ambitions de croissance ci-dessous et nous travaillerons à vous mettre en relation avec des assureurs dont l\'appétit pour le risque correspond à votre activité.',
+    contactInfo: 'Informations de contact',
+    companyName: 'Nom de l\'entreprise',
+    contactName: 'Nom du contact',
+    contactEmail: 'Email de contact',
+    growthTargets: 'Objectifs de croissance',
+    addRow: '+ Ajouter une ligne',
+    entry: 'Entrée',
+    remove: 'Supprimer',
+    lineOfBusiness: 'Branche d\'activité',
+    country: 'Pays',
+    select: 'Sélectionner...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 si nouveau',
+    targetYear1: 'Objectif Année 1 (€)',
+    targetYear2: 'Objectif Année 2 (€)',
+    targetYear3: 'Objectif Année 3 (€)',
+    notes: 'Notes',
+    notesPlaceholder: 'Optionnel',
+    submit: 'Envoyer',
+    submitting: 'Envoi en cours...',
+    successTitle: 'Soumission reçue',
+    successMessage: 'Merci d\'avoir soumis vos ambitions de croissance. Notre équipe examinera votre soumission et travaillera à vous mettre en relation avec des fournisseurs de capacité appropriés.',
+    submitAnother: 'Soumettre une autre',
+    contactNameRequired: 'Le nom du contact est requis',
+    contactEmailRequired: 'L\'email de contact est requis',
+    lineOfBusinessRequired: 'Ligne {{row}}: La branche d\'activité est requise',
+    countryRequired: 'Ligne {{row}}: Le pays est requis',
+  },
+  es: {
+    loading: 'Cargando...',
+    validatingLink: 'Validando enlace...',
+    linkInvalidTitle: 'Enlace inválido',
+    linkAlreadyUsed: 'Este enlace ya ha sido utilizado o es inválido.',
+    linkInvalid: 'Este enlace ya no es válido.',
+    requestNewLink: 'Solicitar un nuevo enlace',
+    capacityMatching: 'Coincidencia de capacidad',
+    questionnaireFor: 'Cuestionario para',
+    intro: 'Ayúdenos a conectarle con los proveedores de capacidad adecuados. Comparta sus ambiciones de crecimiento a continuación y trabajaremos para emparejarlo con aseguradoras cuyo apetito de riesgo se alinee con su negocio.',
+    contactInfo: 'Información de contacto',
+    companyName: 'Nombre de la empresa',
+    contactName: 'Nombre de contacto',
+    contactEmail: 'Email de contacto',
+    growthTargets: 'Objetivos de crecimiento',
+    addRow: '+ Añadir fila',
+    entry: 'Entrada',
+    remove: 'Eliminar',
+    lineOfBusiness: 'Línea de negocio',
+    country: 'País',
+    select: 'Seleccionar...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 si nuevo',
+    targetYear1: 'Objetivo Año 1 (€)',
+    targetYear2: 'Objetivo Año 2 (€)',
+    targetYear3: 'Objetivo Año 3 (€)',
+    notes: 'Notas',
+    notesPlaceholder: 'Opcional',
+    submit: 'Enviar',
+    submitting: 'Enviando...',
+    successTitle: 'Envío recibido',
+    successMessage: 'Gracias por enviar sus ambiciones de crecimiento. Nuestro equipo revisará su envío y trabajará para conectarlo con proveedores de capacidad adecuados.',
+    submitAnother: 'Enviar otro',
+    contactNameRequired: 'El nombre de contacto es requerido',
+    contactEmailRequired: 'El email de contacto es requerido',
+    lineOfBusinessRequired: 'Fila {{row}}: La línea de negocio es requerida',
+    countryRequired: 'Fila {{row}}: El país es requerido',
+  },
+  it: {
+    loading: 'Caricamento...',
+    validatingLink: 'Verifica del link...',
+    linkInvalidTitle: 'Link non valido',
+    linkAlreadyUsed: 'Questo link è già stato utilizzato o non è valido.',
+    linkInvalid: 'Questo link non è più valido.',
+    requestNewLink: 'Richiedi un nuovo link',
+    capacityMatching: 'Matching della capacità',
+    questionnaireFor: 'Questionario per',
+    intro: 'Aiutaci a metterti in contatto con i giusti fornitori di capacità. Condividi le tue ambizioni di crescita qui sotto e lavoreremo per abbinarti a compagnie assicurative il cui appetito per il rischio sia in linea con la tua attività.',
+    contactInfo: 'Informazioni di contatto',
+    companyName: 'Nome azienda',
+    contactName: 'Nome del contatto',
+    contactEmail: 'Email di contatto',
+    growthTargets: 'Obiettivi di crescita',
+    addRow: '+ Aggiungi riga',
+    entry: 'Voce',
+    remove: 'Rimuovi',
+    lineOfBusiness: 'Linea di business',
+    country: 'Paese',
+    select: 'Seleziona...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 se nuovo',
+    targetYear1: 'Obiettivo Anno 1 (€)',
+    targetYear2: 'Obiettivo Anno 2 (€)',
+    targetYear3: 'Obiettivo Anno 3 (€)',
+    notes: 'Note',
+    notesPlaceholder: 'Opzionale',
+    submit: 'Invia',
+    submitting: 'Invio in corso...',
+    successTitle: 'Invio ricevuto',
+    successMessage: 'Grazie per aver inviato le tue ambizioni di crescita. Il nostro team esaminerà il tuo invio e lavorerà per metterti in contatto con fornitori di capacità adeguati.',
+    submitAnother: 'Invia un altro',
+    contactNameRequired: 'Il nome del contatto è obbligatorio',
+    contactEmailRequired: 'L\'email di contatto è obbligatoria',
+    lineOfBusinessRequired: 'Riga {{row}}: La linea di business è obbligatoria',
+    countryRequired: 'Riga {{row}}: Il paese è obbligatorio',
+  },
+  nl: {
+    loading: 'Laden...',
+    validatingLink: 'Link verifiëren...',
+    linkInvalidTitle: 'Link ongeldig',
+    linkAlreadyUsed: 'Deze link is al gebruikt of is ongeldig.',
+    linkInvalid: 'Deze link is niet meer geldig.',
+    requestNewLink: 'Nieuwe link aanvragen',
+    capacityMatching: 'Capaciteit Matching',
+    questionnaireFor: 'Vragenlijst voor',
+    intro: 'Help ons u in contact te brengen met de juiste capaciteitsverstrekkers. Deel hieronder uw groeiambities en we zullen werken om u te matchen met verzekeraars wiens risicobereidheid aansluit bij uw bedrijf.',
+    contactInfo: 'Contactgegevens',
+    companyName: 'Bedrijfsnaam',
+    contactName: 'Contactpersoon',
+    contactEmail: 'E-mailadres',
+    growthTargets: 'Groeidoelen',
+    addRow: '+ Rij toevoegen',
+    entry: 'Invoer',
+    remove: 'Verwijderen',
+    lineOfBusiness: 'Branche',
+    country: 'Land',
+    select: 'Selecteer...',
+    gwp2025: 'GWP 2025 (€)',
+    gwpPlaceholder: '0 indien nieuw',
+    targetYear1: 'Doel Jaar 1 (€)',
+    targetYear2: 'Doel Jaar 2 (€)',
+    targetYear3: 'Doel Jaar 3 (€)',
+    notes: 'Opmerkingen',
+    notesPlaceholder: 'Optioneel',
+    submit: 'Verzenden',
+    submitting: 'Verzenden...',
+    successTitle: 'Inzending ontvangen',
+    successMessage: 'Bedankt voor het indienen van uw groeiambities. Ons team zal uw inzending beoordelen en werken om u in contact te brengen met geschikte capaciteitsverstrekkers.',
+    submitAnother: 'Nog een indienen',
+    contactNameRequired: 'Contactnaam is verplicht',
+    contactEmailRequired: 'E-mailadres is verplicht',
+    lineOfBusinessRequired: 'Rij {{row}}: Branche is verplicht',
+    countryRequired: 'Rij {{row}}: Land is verplicht',
+  },
+};
+
 export const magicLinkEmailTranslations: Record<SupportedLanguage, MagicLinkEmailTranslations> = {
   en: {
     subject: 'The 2026 MGA Rendezvous - maximizing the value of your experience',
@@ -128,30 +405,10 @@ export const magicLinkEmailTranslations: Record<SupportedLanguage, MagicLinkEmai
   },
 };
 
-export function formatExpiryDate(date: Date, language: SupportedLanguage): string {
-  const localeMap: Record<SupportedLanguage, string> = {
-    en: 'en-GB',
-    de: 'de-DE',
-    fr: 'fr-FR',
-    es: 'es-ES',
-    it: 'it-IT',
-    nl: 'nl-NL',
-  };
-
-  return date.toLocaleDateString(localeMap[language], {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function generateMagicLinkEmailHtml(
   companyName: string,
   contactName: string,
   url: string,
-  expiresAt: Date,
   language: SupportedLanguage = 'en',
   salutation: SalutationType = 'neutral'
 ): string {

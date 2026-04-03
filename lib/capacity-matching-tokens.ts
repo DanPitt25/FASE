@@ -1,8 +1,9 @@
-import { adminDb, FieldValue, Timestamp } from './firebase-admin';
+import { adminDb, FieldValue } from './firebase-admin';
 import crypto from 'crypto';
 
 const COLLECTION = 'capacity-matching-tokens';
-const TOKEN_EXPIRY_HOURS = 48;
+
+export type SupportedLanguage = 'en' | 'de' | 'fr' | 'es' | 'it' | 'nl';
 
 export interface CapacityMatchingToken {
   id: string;
@@ -10,8 +11,8 @@ export interface CapacityMatchingToken {
   companyName: string;
   contactName: string;
   contactEmail: string;
+  language: SupportedLanguage;
   createdAt: FirebaseFirestore.Timestamp;
-  expiresAt: FirebaseFirestore.Timestamp;
   used: boolean;
   usedAt?: FirebaseFirestore.Timestamp;
   submissionId?: string;
@@ -34,19 +35,18 @@ export async function createMagicLink(
   contactEmail: string,
   contactName: string,
   createdBy: 'admin' | 'self-request',
-  adminUserId?: string
-): Promise<{ token: string; url: string; expiresAt: Date }> {
+  adminUserId?: string,
+  language: SupportedLanguage = 'en'
+): Promise<{ token: string; url: string }> {
   const token = generateToken();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000);
 
   const tokenDoc: Omit<CapacityMatchingToken, 'id'> = {
     token,
     companyName,
     contactName,
     contactEmail: contactEmail.toLowerCase().trim(),
+    language,
     createdAt: FieldValue.serverTimestamp() as any,
-    expiresAt: Timestamp.fromDate(expiresAt) as any,
     used: false,
     createdBy,
     ...(adminUserId && { adminUserId }),
@@ -58,7 +58,7 @@ export async function createMagicLink(
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://fasemga.com';
   const url = `${baseUrl}/capacity-matching?token=${token}&email=${encodeURIComponent(contactEmail.toLowerCase().trim())}`;
 
-  return { token, url, expiresAt };
+  return { token, url };
 }
 
 /**
@@ -79,17 +79,11 @@ export async function validateToken(
     .get();
 
   if (snapshot.empty) {
-    return { valid: false, error: 'Invalid or expired link' };
+    return { valid: false, error: 'This link has already been used or is invalid' };
   }
 
   const doc = snapshot.docs[0];
   const data = { id: doc.id, ...doc.data() } as CapacityMatchingToken;
-
-  // Check expiration
-  const expiresAt = data.expiresAt?.toDate?.() || new Date(0);
-  if (expiresAt < new Date()) {
-    return { valid: false, error: 'This link has expired' };
-  }
 
   return { valid: true, data };
 }
@@ -150,7 +144,6 @@ export async function getAllTokens(limit = 50): Promise<CapacityMatchingToken[]>
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
-    expiresAt: doc.data().expiresAt?.toDate?.()?.toISOString() || null,
     usedAt: doc.data().usedAt?.toDate?.()?.toISOString() || null,
   })) as any;
 }

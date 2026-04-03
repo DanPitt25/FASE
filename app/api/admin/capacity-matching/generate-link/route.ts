@@ -17,9 +17,10 @@ async function sendMagicLinkEmail(
   firstName: string,
   companyName: string,
   url: string,
-  expiresAt: Date,
   language: SupportedLanguage = 'en',
-  salutation: SalutationType = 'neutral'
+  salutation: SalutationType = 'neutral',
+  customHtml?: string,
+  customSubject?: string
 ) {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) {
@@ -28,7 +29,11 @@ async function sendMagicLinkEmail(
   }
 
   const t = magicLinkEmailTranslations[language];
-  const emailHtml = generateMagicLinkEmailHtml(companyName, firstName, url, expiresAt, language, salutation);
+  // If custom HTML is provided, replace the placeholder with the actual URL
+  const emailHtml = customHtml
+    ? customHtml.replace(/\{\{MAGIC_LINK_URL\}\}/g, url)
+    : generateMagicLinkEmailHtml(companyName, firstName, url, language, salutation);
+  const subject = customSubject || t.subject;
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -40,7 +45,7 @@ async function sendMagicLinkEmail(
       body: JSON.stringify({
         from: NOTIFICATION_FROM,
         to,
-        subject: t.subject,
+        subject,
         html: emailHtml,
       }),
     });
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { companyName, firstName, fullName, contactEmail, sendEmail = true, language = 'en', salutation = 'neutral' } = body;
+    const { companyName, firstName, fullName, contactEmail, sendEmail = true, language = 'en', salutation = 'neutral', customHtml, customSubject } = body;
 
     if (!companyName?.trim()) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -91,12 +96,13 @@ export async function POST(request: NextRequest) {
     const selectedSalutation: SalutationType = validSalutations.includes(salutation) ? salutation : 'neutral';
 
     // Create the magic link (pass fullName as the contact name for form pre-fill)
-    const { token, url, expiresAt } = await createMagicLink(
+    const { token, url } = await createMagicLink(
       companyName.trim(),
       contactEmail.trim(),
       fullName.trim(),
       'admin',
-      authResult.userId
+      authResult.userId,
+      selectedLanguage
     );
 
     // Optionally send email (use firstName for the salutation)
@@ -107,9 +113,10 @@ export async function POST(request: NextRequest) {
         firstName.trim(),
         companyName.trim(),
         url,
-        expiresAt,
         selectedLanguage,
-        selectedSalutation
+        selectedSalutation,
+        customHtml,
+        customSubject
       );
     }
 
@@ -117,7 +124,6 @@ export async function POST(request: NextRequest) {
       success: true,
       url,
       token,
-      expiresAt: expiresAt.toISOString(),
       emailSent,
     });
   } catch (error: any) {

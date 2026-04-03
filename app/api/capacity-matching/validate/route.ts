@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         companyName: validation.data.companyName,
         contactName: validation.data.contactName || '',
         contactEmail: validation.data.contactEmail,
+        language: validation.data.language || 'en',
       });
     } else {
       return NextResponse.json({

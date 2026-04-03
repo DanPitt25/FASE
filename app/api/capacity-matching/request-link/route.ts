@@ -8,22 +8,13 @@ const NOTIFICATION_FROM = 'FASE <notifications@fasemga.com>';
 async function sendMagicLinkEmail(
   to: string,
   companyName: string,
-  url: string,
-  expiresAt: Date
+  url: string
 ) {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) {
     console.error('RESEND_API_KEY not configured - skipping email');
     return false;
   }
-
-  const expiresFormatted = expiresAt.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -46,10 +37,6 @@ async function sendMagicLinkEmail(
           Complete Questionnaire
         </a>
       </div>
-
-      <p style="color: #6b7280; font-size: 14px;">
-        This link will expire on <strong>${expiresFormatted}</strong>.
-      </p>
 
       <p style="color: #6b7280; font-size: 14px;">
         If you did not request this link, you can safely ignore this email.
@@ -115,15 +102,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the magic link (no contact name for self-request, user fills it in form)
-    const { url, expiresAt } = await createMagicLink(
+    // Language defaults to 'en' for self-service requests
+    const { url } = await createMagicLink(
       companyName.trim(),
       contactEmail.trim(),
       '',
-      'self-request'
+      'self-request',
+      undefined,
+      'en'
     );
 
     // Send email
-    await sendMagicLinkEmail(contactEmail.trim(), companyName.trim(), url, expiresAt);
+    await sendMagicLinkEmail(contactEmail.trim(), companyName.trim(), url);
 
     // Always return success to prevent email enumeration
     return NextResponse.json({

@@ -5,22 +5,64 @@ import Image from 'next/image';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CapacityMatchingForm from '../../components/CapacityMatchingForm';
+import {
+  SupportedLanguage,
+  capacityMatchingPageTranslations,
+  CapacityMatchingPageTranslations,
+} from '../../lib/capacity-matching-email-translations';
 
 interface TokenValidation {
   valid: boolean;
   companyName?: string;
   contactName?: string;
   contactEmail?: string;
+  language?: SupportedLanguage;
   error?: string;
 }
 
-function LoadingState() {
+// Convert page translations to CapacityMatchingForm translations format
+function toFormTranslations(t: CapacityMatchingPageTranslations) {
+  return {
+    intro: t.intro,
+    contact_info: t.contactInfo,
+    company_name: t.companyName,
+    contact_name: t.contactName,
+    contact_email: t.contactEmail,
+    growth_targets: t.growthTargets,
+    add_row: t.addRow,
+    entry: t.entry,
+    remove: t.remove,
+    line_of_business: t.lineOfBusiness,
+    country: t.country,
+    select: t.select,
+    gwp_2025: t.gwp2025,
+    gwp_placeholder: t.gwpPlaceholder,
+    target_year_1: t.targetYear1,
+    target_year_2: t.targetYear2,
+    target_year_3: t.targetYear3,
+    notes: t.notes,
+    notes_placeholder: t.notesPlaceholder,
+    submit: t.submit,
+    submitting: t.submitting,
+    success_title: t.successTitle,
+    success_message: t.successMessage,
+    submit_another: t.submitAnother,
+    errors: {
+      contact_name_required: t.contactNameRequired,
+      contact_email_required: t.contactEmailRequired,
+      line_of_business_required: t.lineOfBusinessRequired,
+      country_required: t.countryRequired,
+    },
+  };
+}
+
+function LoadingState({ text = 'Loading...' }: { text?: string }) {
   return (
     <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
       <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       <div className="relative z-10 w-full max-w-md bg-white rounded-lg shadow-xl border-4 border-fase-gold overflow-hidden flex flex-col items-center justify-center py-16">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy"></div>
-        <p className="mt-4 text-fase-navy">Loading...</p>
+        <p className="mt-4 text-fase-navy">{text}</p>
       </div>
     </div>
   );
@@ -34,6 +76,10 @@ function CapacityMatchingContent() {
   const [validation, setValidation] = useState<TokenValidation | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Get language from validation result, fallback to English
+  const language: SupportedLanguage = validation?.language || 'en';
+  const t = capacityMatchingPageTranslations[language];
 
   useEffect(() => {
     async function validateToken() {
@@ -53,6 +99,7 @@ function CapacityMatchingContent() {
             companyName: result.companyName,
             contactName: result.contactName || '',
             contactEmail: result.contactEmail,
+            language: result.language || 'en',
           });
         } else {
           setValidation({ valid: false, error: result.error || 'Invalid or expired link' });
@@ -93,15 +140,7 @@ function CapacityMatchingContent() {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="relative flex min-h-screen w-screen items-center justify-center bg-fase-navy bg-cover bg-center bg-no-repeat p-8 sm:p-12 lg:p-16" style={{backgroundImage: 'url(/capacity.jpg)'}}>
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="relative z-10 w-full max-w-md bg-white rounded-lg shadow-xl border-4 border-fase-gold overflow-hidden flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fase-navy"></div>
-          <p className="mt-4 text-fase-navy">Validating link...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text={t.validatingLink} />;
   }
 
   // Invalid/expired link
@@ -113,13 +152,13 @@ function CapacityMatchingContent() {
           <svg className="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-xl font-semibold text-fase-navy mb-4">Link Invalid or Expired</h2>
-          <p className="text-gray-600 mb-6">{validation?.error || 'This link is no longer valid.'}</p>
+          <h2 className="text-xl font-semibold text-fase-navy mb-4">{t.linkInvalidTitle}</h2>
+          <p className="text-gray-600 mb-6">{validation?.error || t.linkInvalid}</p>
           <Link
             href="/capacity-matching/request"
             className="inline-flex items-center justify-center px-6 py-3 bg-fase-navy text-white rounded-lg hover:bg-fase-dark-navy transition-colors"
           >
-            Request a New Link
+            {t.requestNewLink}
           </Link>
         </div>
       </div>
@@ -142,8 +181,8 @@ function CapacityMatchingContent() {
               className="h-12 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
-          <h1 className="text-2xl font-noto-serif font-semibold text-fase-navy">Capacity Matching</h1>
-          <p className="text-sm text-gray-500">Questionnaire for {validation.companyName}</p>
+          <h1 className="text-2xl font-noto-serif font-semibold text-fase-navy">{t.capacityMatching}</h1>
+          <p className="text-sm text-gray-500">{t.questionnaireFor} {validation.companyName}</p>
         </div>
 
         {/* Form Content */}
@@ -160,6 +199,7 @@ function CapacityMatchingContent() {
             initialContactEmail={validation.contactEmail || ''}
             magicLinkToken={token || ''}
             onSubmit={handleSubmit}
+            translations={toFormTranslations(t)}
           />
         </div>
       </div>

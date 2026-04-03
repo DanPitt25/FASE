@@ -76,6 +76,11 @@ export default function CapacityMatchingTab() {
     language: SupportedLanguage;
   }>>([]);
 
+  // Custom email editing for bulk mode
+  const [customEmailMode, setCustomEmailMode] = useState(false);
+  const [customEmailSubject, setCustomEmailSubject] = useState('');
+  const [customEmailHtml, setCustomEmailHtml] = useState('');
+
   const loadSubmissions = async () => {
     try {
       setLoading(true);
@@ -112,12 +117,10 @@ export default function CapacityMatchingTab() {
 
   // Generate email preview HTML
   const emailPreviewHtml = useMemo(() => {
-    const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
     return generateMagicLinkEmailHtml(
       linkCompanyName || 'Company Name',
       linkFirstName || 'First Name',
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
-      previewExpiry,
       linkLanguage,
       linkSalutation
     );
@@ -458,6 +461,7 @@ export default function CapacityMatchingTab() {
     setCurrentBulkLanguage('en');
     setCurrentBulkSalutation('neutral');
     setBulkResults([]);
+    resetCustomEmail();
   };
 
   // Start step-through mode
@@ -477,18 +481,26 @@ export default function CapacityMatchingTab() {
     setSendingCurrentBulk(true);
 
     try {
+      const requestBody: any = {
+        companyName: recipient.companyName,
+        firstName: recipient.firstName,
+        fullName: recipient.fullName,
+        contactEmail: recipient.email,
+        sendEmail: true,
+        language: currentBulkLanguage,
+        salutation: currentBulkSalutation,
+      };
+
+      // Add custom email content if in custom mode
+      if (customEmailMode && customEmailHtml) {
+        requestBody.customHtml = customEmailHtml;
+        requestBody.customSubject = customEmailSubject || undefined;
+      }
+
       const response = await authFetch('/api/admin/capacity-matching/generate-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: recipient.companyName,
-          firstName: recipient.firstName,
-          fullName: recipient.fullName,
-          contactEmail: recipient.email,
-          sendEmail: true,
-          language: currentBulkLanguage,
-          salutation: currentBulkSalutation,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -508,7 +520,8 @@ export default function CapacityMatchingTab() {
           success: true,
           language: currentBulkLanguage,
         }]);
-        // Auto-advance to next
+        // Reset custom email and auto-advance to next
+        resetCustomEmail();
         if (currentBulkIndex < csvRecipients.length - 1) {
           setCurrentBulkIndex(prev => prev + 1);
         }
@@ -538,6 +551,7 @@ export default function CapacityMatchingTab() {
         language: currentBulkLanguage,
       }]);
     }
+    resetCustomEmail();
     if (currentBulkIndex < csvRecipients.length - 1) {
       setCurrentBulkIndex(prev => prev + 1);
     }
@@ -545,18 +559,42 @@ export default function CapacityMatchingTab() {
 
   // Generate preview HTML for current bulk recipient
   const currentBulkPreviewHtml = useMemo(() => {
+    if (customEmailMode && customEmailHtml) {
+      return customEmailHtml;
+    }
     const recipient = csvRecipients[currentBulkIndex];
     if (!recipient) return '';
-    const previewExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
     return generateMagicLinkEmailHtml(
       recipient.companyName,
       recipient.firstName,
       'https://fasemga.com/capacity-matching?token=PREVIEW&email=preview@example.com',
-      previewExpiry,
       currentBulkLanguage,
       currentBulkSalutation
     );
-  }, [csvRecipients, currentBulkIndex, currentBulkLanguage, currentBulkSalutation]);
+  }, [csvRecipients, currentBulkIndex, currentBulkLanguage, currentBulkSalutation, customEmailMode, customEmailHtml]);
+
+  // Initialize custom email content when entering custom mode
+  const initializeCustomEmail = () => {
+    const recipient = csvRecipients[currentBulkIndex];
+    if (!recipient) return;
+    const t = magicLinkEmailTranslations[currentBulkLanguage];
+    setCustomEmailSubject(t.subject);
+    setCustomEmailHtml(generateMagicLinkEmailHtml(
+      recipient.companyName,
+      recipient.firstName,
+      '{{MAGIC_LINK_URL}}', // Placeholder that will be replaced when sending
+      currentBulkLanguage,
+      currentBulkSalutation
+    ));
+    setCustomEmailMode(true);
+  };
+
+  // Reset custom email when moving to next recipient
+  const resetCustomEmail = () => {
+    setCustomEmailMode(false);
+    setCustomEmailSubject('');
+    setCustomEmailHtml('');
+  };
 
   const copyLinkToClipboard = async () => {
     if (generatedLink) {
@@ -1050,7 +1088,7 @@ export default function CapacityMatchingTab() {
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  This link is valid for 48 hours and can only be used once.
+                  This link can only be used once.
                 </p>
               </div>
 
@@ -1299,18 +1337,83 @@ export default function CapacityMatchingTab() {
                     </div>
                   </div>
 
-                  {/* Right: Email preview */}
+                  {/* Right: Email preview/edit */}
                   <div className="border-l pl-6">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Email Preview</span>
-                      <span className="text-xs text-gray-500">
-                        {LANGUAGE_LABELS[currentBulkLanguage]}
+                      <span className="text-sm font-medium text-gray-700">
+                        {customEmailMode ? 'Edit Email' : 'Email Preview'}
                       </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          {LANGUAGE_LABELS[currentBulkLanguage]}
+                        </span>
+                        {!customEmailMode ? (
+                          <button
+                            type="button"
+                            onClick={initializeCustomEmail}
+                            className="text-xs text-fase-navy hover:text-fase-orange"
+                            disabled={sendingCurrentBulk}
+                          >
+                            Personalize
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={resetCustomEmail}
+                            className="text-xs text-red-600 hover:text-red-800"
+                            disabled={sendingCurrentBulk}
+                          >
+                            Reset to Template
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className="border rounded-lg bg-white overflow-auto max-h-[400px]"
-                      dangerouslySetInnerHTML={{ __html: currentBulkPreviewHtml }}
-                    />
+
+                    {customEmailMode ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Subject
+                          </label>
+                          <input
+                            type="text"
+                            value={customEmailSubject}
+                            onChange={(e) => setCustomEmailSubject(e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
+                            disabled={sendingCurrentBulk}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Email Body (HTML)
+                          </label>
+                          <textarea
+                            value={customEmailHtml}
+                            onChange={(e) => setCustomEmailHtml(e.target.value)}
+                            className="w-full px-2 py-1 text-xs font-mono border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
+                            rows={12}
+                            disabled={sendingCurrentBulk}
+                          />
+                          <p className="text-xs text-gray-400 mt-1">
+                            Use {"{{MAGIC_LINK_URL}}"} as placeholder for the questionnaire link
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Preview
+                          </label>
+                          <div
+                            className="border rounded-lg bg-white overflow-auto max-h-[200px] text-sm"
+                            dangerouslySetInnerHTML={{ __html: customEmailHtml.replace('{{MAGIC_LINK_URL}}', '#') }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="border rounded-lg bg-white overflow-auto max-h-[400px]"
+                        dangerouslySetInnerHTML={{ __html: currentBulkPreviewHtml }}
+                      />
+                    )}
                   </div>
                 </div>
               )}
