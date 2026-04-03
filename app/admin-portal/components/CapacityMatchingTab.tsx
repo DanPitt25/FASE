@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Button from '../../../components/Button';
 import Modal from '../../../components/Modal';
+import RichTextEditor from '../../../components/RichTextEditor';
 import { authFetch, authDelete } from '../../../lib/auth-fetch';
 import * as XLSX from 'xlsx';
 import type { CapacityMatchingSubmission, CapacityMatchingEntry } from '../../../lib/capacity-matching-constants';
@@ -1122,27 +1123,15 @@ export default function CapacityMatchingTab() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Email Body (HTML)
+                          Email Body
                         </label>
-                        <textarea
-                          value={singleCustomEmailHtml}
-                          onChange={(e) => setSingleCustomEmailHtml(e.target.value)}
-                          className="w-full px-2 py-1 text-xs font-mono border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
-                          rows={12}
-                          disabled={generatingLink}
+                        <RichTextEditor
+                          content={singleCustomEmailHtml}
+                          onChange={setSingleCustomEmailHtml}
                         />
                         <p className="text-xs text-gray-400 mt-1">
-                          Use {"{{MAGIC_LINK_URL}}"} as placeholder for the questionnaire link
+                          The button link will be automatically updated when sending
                         </p>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Preview
-                        </label>
-                        <div
-                          className="border rounded-lg bg-white overflow-auto max-h-[200px] text-sm"
-                          dangerouslySetInnerHTML={{ __html: singleCustomEmailHtml.replace(/\{\{MAGIC_LINK_URL\}\}/g, '#') }}
-                        />
                       </div>
                     </div>
                   ) : (
@@ -1490,27 +1479,15 @@ export default function CapacityMatchingTab() {
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Email Body (HTML)
+                            Email Body
                           </label>
-                          <textarea
-                            value={customEmailHtml}
-                            onChange={(e) => setCustomEmailHtml(e.target.value)}
-                            className="w-full px-2 py-1 text-xs font-mono border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
-                            rows={12}
-                            disabled={sendingCurrentBulk}
+                          <RichTextEditor
+                            content={customEmailHtml}
+                            onChange={setCustomEmailHtml}
                           />
                           <p className="text-xs text-gray-400 mt-1">
-                            Use {"{{MAGIC_LINK_URL}}"} as placeholder for the questionnaire link
+                            The button link will be automatically updated when sending
                           </p>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Preview
-                          </label>
-                          <div
-                            className="border rounded-lg bg-white overflow-auto max-h-[200px] text-sm"
-                            dangerouslySetInnerHTML={{ __html: customEmailHtml.replace('{{MAGIC_LINK_URL}}', '#') }}
-                          />
                         </div>
                       </div>
                     ) : (
