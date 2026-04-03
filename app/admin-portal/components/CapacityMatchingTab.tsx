@@ -48,7 +48,6 @@ export default function CapacityMatchingTab() {
   const [generatingLink, setGeneratingLink] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showEmailPreview, setShowEmailPreview] = useState(false);
 
   // Custom email editing for single link mode
   const [singleCustomEmailMode, setSingleCustomEmailMode] = useState(false);
@@ -630,7 +629,6 @@ export default function CapacityMatchingTab() {
     setSendEmailWithLink(true);
     setGeneratedLink(null);
     setLinkCopied(false);
-    setShowEmailPreview(false);
     setSingleCustomEmailMode(false);
     setSingleCustomEmailSubject('');
     setSingleCustomEmailHtml('');
@@ -933,11 +931,11 @@ export default function CapacityMatchingTab() {
         isOpen={showGenerateLinkModal}
         onClose={resetLinkModal}
         title="Generate Magic Link"
-        maxWidth={showEmailPreview ? '4xl' : 'md'}
+        maxWidth={sendEmailWithLink ? '4xl' : 'md'}
       >
         <div className="space-y-4">
           {!generatedLink ? (
-            <div className={showEmailPreview ? 'grid grid-cols-2 gap-6' : ''}>
+            <div className={sendEmailWithLink ? 'grid grid-cols-2 gap-6' : ''}>
               {/* Form Section */}
               <div className="space-y-4">
                 <div>
@@ -1034,27 +1032,23 @@ export default function CapacityMatchingTab() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="sendEmail"
-                      checked={sendEmailWithLink}
-                      onChange={(e) => setSendEmailWithLink(e.target.checked)}
-                      className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
-                      disabled={generatingLink}
-                    />
-                    <label htmlFor="sendEmail" className="text-sm text-gray-700">
-                      Send email with link
-                    </label>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowEmailPreview(!showEmailPreview)}
-                    className="text-sm text-fase-navy hover:text-fase-orange"
-                  >
-                    {showEmailPreview ? 'Hide Preview' : 'Preview Email'}
-                  </button>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="sendEmail"
+                    checked={sendEmailWithLink}
+                    onChange={(e) => {
+                      setSendEmailWithLink(e.target.checked);
+                      if (!e.target.checked) {
+                        resetSingleCustomEmail();
+                      }
+                    }}
+                    className="rounded border-gray-300 text-fase-navy focus:ring-fase-navy"
+                    disabled={generatingLink}
+                  />
+                  <label htmlFor="sendEmail" className="text-sm text-gray-700">
+                    Send email with link
+                  </label>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-2">
@@ -1074,27 +1068,18 @@ export default function CapacityMatchingTab() {
                 </div>
               </div>
 
-              {/* Email Preview/Edit Section */}
-              {showEmailPreview && (
+              {/* Email Edit Section - shown when sending email */}
+              {sendEmailWithLink && (
                 <div className="border-l pl-6">
-                  <div className="mb-2 flex items-center justify-between">
+                  <div className="mb-3 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
-                      {singleCustomEmailMode ? 'Edit Email' : 'Email Preview'}
+                      Email Content
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500">
                         {LANGUAGE_LABELS[linkLanguage]}
                       </span>
-                      {!singleCustomEmailMode ? (
-                        <button
-                          type="button"
-                          onClick={initializeSingleCustomEmail}
-                          className="text-xs text-fase-navy hover:text-fase-orange"
-                          disabled={generatingLink}
-                        >
-                          Personalize
-                        </button>
-                      ) : (
+                      {singleCustomEmailMode && (
                         <button
                           type="button"
                           onClick={resetSingleCustomEmail}
@@ -1107,39 +1092,42 @@ export default function CapacityMatchingTab() {
                     </div>
                   </div>
 
-                  {singleCustomEmailMode ? (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Subject
-                        </label>
-                        <input
-                          type="text"
-                          value={singleCustomEmailSubject}
-                          onChange={(e) => setSingleCustomEmailSubject(e.target.value)}
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
-                          disabled={generatingLink}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Email Body
-                        </label>
-                        <RichTextEditor
-                          content={singleCustomEmailHtml}
-                          onChange={setSingleCustomEmailHtml}
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          The button link will be automatically updated when sending
-                        </p>
-                      </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Subject
+                      </label>
+                      <input
+                        type="text"
+                        value={singleCustomEmailSubject || magicLinkEmailTranslations[linkLanguage].subject}
+                        onChange={(e) => {
+                          if (!singleCustomEmailMode) {
+                            initializeSingleCustomEmail();
+                          }
+                          setSingleCustomEmailSubject(e.target.value);
+                        }}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fase-navy focus:border-transparent"
+                        disabled={generatingLink}
+                      />
                     </div>
-                  ) : (
-                    <div
-                      className="border rounded-lg bg-white overflow-auto max-h-[400px]"
-                      dangerouslySetInnerHTML={{ __html: emailPreviewHtml }}
-                    />
-                  )}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Email Body
+                      </label>
+                      <RichTextEditor
+                        content={singleCustomEmailHtml || emailPreviewHtml}
+                        onChange={(html) => {
+                          if (!singleCustomEmailMode) {
+                            initializeSingleCustomEmail();
+                          }
+                          setSingleCustomEmailHtml(html);
+                        }}
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        The button link will be automatically updated when sending
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1193,7 +1181,6 @@ export default function CapacityMatchingTab() {
                     setLinkFullName('');
                     setLinkEmail('');
                     setLinkSalutation('neutral');
-                    setShowEmailPreview(false);
                     setSingleCustomEmailMode(false);
                     setSingleCustomEmailSubject('');
                     setSingleCustomEmailHtml('');
